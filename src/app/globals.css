@@ -1,0 +1,187 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --navy: #0f1d35;
+  --navy-light: #1a2d4f;
+  --blue: #1e4d8c;
+  --blue-light: #2563ba;
+  --sky: #4a8fd4;
+  --teal: #2a8a82;
+  --cream: #f5f0e8;
+  --cream-dark: #ebe4d6;
+  --amber: #c8923a;
+  --mist: #e8eff7;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+}
+
+html, body {
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  background-color: var(--cream);
+}
+
+#__next {
+  height: 100%;
+  width: 100%;
+}
+
+@layer components {
+  .screen-container {
+    @apply flex flex-col h-screen w-full overflow-hidden;
+    background-color: var(--cream);
+  }
+
+  .screen-content {
+    @apply flex-1 overflow-y-auto px-8 py-6;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .screen-footer {
+    @apply flex-shrink-0 px-8 py-5 border-t border-hustad-cream-dark bg-white/60 backdrop-blur-sm;
+  }
+
+  .btn-primary {
+    @apply w-full py-4 px-6 rounded-2xl font-body font-medium text-base text-white transition-all duration-150 active:scale-[0.98];
+    background-color: var(--navy);
+    letter-spacing: 0.01em;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--navy-light);
+  }
+
+  .btn-secondary {
+    @apply w-full py-4 px-6 rounded-2xl font-body font-normal text-base transition-all duration-150 active:scale-[0.98] border;
+    color: var(--navy);
+    border-color: var(--navy);
+    background: transparent;
+  }
+
+  .btn-ghost {
+    @apply w-full py-3 px-6 rounded-xl font-body font-normal text-sm transition-all duration-150;
+    color: var(--blue);
+    background: transparent;
+  }
+
+  .btn-teal {
+    @apply w-full py-4 px-6 rounded-2xl font-body font-medium text-base text-white transition-all duration-150 active:scale-[0.98];
+    background-color: var(--teal);
+  }
+
+  .btn-amber {
+    @apply w-full py-4 px-6 rounded-2xl font-body font-medium text-base text-white transition-all duration-150 active:scale-[0.98];
+    background-color: var(--amber);
+  }
+
+  .card {
+    @apply rounded-2xl p-5 bg-white shadow-card;
+  }
+
+  .card-navy {
+    @apply rounded-2xl p-5 text-white;
+    background-color: var(--navy);
+  }
+
+  .card-mist {
+    @apply rounded-2xl p-5;
+    background-color: var(--mist);
+  }
+
+  .input-field {
+    @apply w-full rounded-xl px-4 py-3 text-base font-body border transition-all duration-150 outline-none;
+    border-color: #d0dcea;
+    background: white;
+    color: var(--navy);
+  }
+
+  .input-field:focus {
+    border-color: var(--blue-light);
+    box-shadow: 0 0 0 3px rgba(37, 99, 186, 0.08);
+  }
+
+  .label-text {
+    @apply block text-sm font-body font-medium mb-1.5;
+    color: var(--navy);
+    letter-spacing: 0.01em;
+  }
+
+  .screen-title {
+    @apply font-display font-semibold leading-tight;
+    color: var(--navy);
+    font-size: clamp(1.5rem, 4vw, 2rem);
+  }
+
+  .screen-subtitle {
+    @apply font-body font-light leading-relaxed mt-2;
+    color: #3d5278;
+    font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+  }
+
+  .compliance-banner {
+    @apply rounded-xl px-4 py-3 border-l-4 text-sm font-body font-light leading-relaxed;
+    background: #f0f4fa;
+    border-color: var(--blue);
+    color: #3d5278;
+  }
+
+  .outcome-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-body font-medium;
+    letter-spacing: 0.03em;
+  }
+
+  .priority-tile {
+    @apply flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-150 cursor-pointer;
+    border-color: var(--fog, #d0dcea);
+    background: white;
+  }
+
+  .priority-tile.selected {
+    border-color: var(--blue-light);
+    background: var(--mist);
+  }
+
+  .phase-badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-medium uppercase tracking-wider;
+  }
+
+  .rep-mode-bar {
+    @apply flex items-center gap-2 px-4 py-2 text-xs font-mono font-medium;
+    background: var(--navy);
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* Smooth screen transitions */
+  .screen-enter {
+    animation: screenIn 0.25s ease-out forwards;
+  }
+
+  @keyframes screenIn {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .progress-bar {
+    @apply h-1 rounded-full transition-all duration-500;
+    background: var(--blue);
+  }
+
+  .progress-track {
+    @apply h-1 rounded-full w-full;
+    background: var(--fog, #d0dcea);
+  }
+}
