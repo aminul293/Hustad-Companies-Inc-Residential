@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { TestimonialsSection } from "@/components/ui/testimonial-v2";
+
 interface Props {
   session: SessionState;
   onNext: () => void;
@@ -85,7 +87,7 @@ export function A03WhatWeInspect({ onNext, onBack }: Props) {
         <ProgressBar currentScreen="A03_what_we_inspect" phase="A" />
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56">
+      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-64 custom-scrollbar">
         <div className="max-w-6xl mx-auto space-y-16">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -147,9 +149,13 @@ export function A03WhatWeInspect({ onNext, onBack }: Props) {
               a replacement. If there is nothing actionable, we will tell you that.
             </p>
           </motion.div>
+
+          {/* New Testimonials Data Layer */}
+          <div className="pt-10">
+            <TestimonialsSection />
+          </div>
         </div>
       </div>
-
       <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-6">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
