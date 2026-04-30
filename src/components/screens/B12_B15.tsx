@@ -267,8 +267,8 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function B13RecommendedPath({ session, onNext, onBack }: Props) {
-  const outcome = session.findings.outcomeType!;
-  const config = PATH_CONFIG[outcome];
+  const outcome = session.findings.outcomeType || "no_damage";
+  const config = PATH_CONFIG[outcome] || PATH_CONFIG.no_damage;
 
   return (
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">

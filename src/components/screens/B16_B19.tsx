@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { submitSession, addAuditEvent, createFollowUpTask, exportSessionJSON } from "@/lib/session";
+import { downloadSummaryPDF } from "@/lib/pdf-export";
 
 interface Props {
   session: SessionState;
@@ -570,7 +571,7 @@ interface NextStepsProps {
 }
 
 export function B19NextSteps({ session, onUpdate, onFinish }: NextStepsProps) {
-  const outcome = session.findings.outcomeType!;
+  const outcome = session.findings.outcomeType || "no_damage";
   const isSigned = !!session.signatureData.signedAt;
   const isDeferred = session.sessionStatus === "deferred";
   const config = NEXT_STEPS_CONFIG[outcome] || NEXT_STEPS_CONFIG.no_damage;
@@ -584,11 +585,8 @@ export function B19NextSteps({ session, onUpdate, onFinish }: NextStepsProps) {
     }
   }, []);
 
-  const handleExport = () => {
-    const json = exportSessionJSON(session);
-    const blob = new Blob([json], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = `hustad_session_${session.sessionId}.json`; a.click();
+  const handleDownloadPDF = async () => {
+    await downloadSummaryPDF(session);
     setExported(true);
   };
 
@@ -705,12 +703,12 @@ export function B19NextSteps({ session, onUpdate, onFinish }: NextStepsProps) {
               </div>
 
               <button 
-                onClick={handleExport}
+                onClick={handleDownloadPDF}
                 className="w-full p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/5 transition-all flex items-center justify-center gap-3 group"
               >
                 <Download className="w-4 h-4 text-white/50 group-hover:text-indigo-400 transition-colors" />
                 <span className="text-[10px] font-mono text-white/50 uppercase tracking-widest group-hover:text-white/70 transition-colors">
-                  {exported ? "Session Exported ✓" : "Download Session Data (JSON)"}
+                  {exported ? "Summary Downloaded ✓" : "Download Summary (PDF)"}
                 </span>
               </button>
             </div>

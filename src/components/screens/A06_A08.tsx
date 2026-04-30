@@ -21,9 +21,11 @@ import {
   Camera, 
   Layers, 
   Send, 
-  ArrowRight 
+  ArrowRight,
+  ShieldCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Logos3 } from "@/components/ui/logos3";
 
 interface Props {
   session: SessionState;
@@ -181,6 +183,11 @@ export function A06WarrantyImpact({ onNext, onBack }: Props) {
               )}
             </AnimatePresence>
           </div>
+
+          {/* Trusted Partners Logo Bar */}
+          <div className="pt-10">
+            <Logos3 heading="National Scale. Local Expertise." />
+          </div>
         </div>
       </div>
 
@@ -290,6 +297,40 @@ export function A07WhyHustad({ onNext, onBack }: Props) {
               </div>
             </div>
           </motion.div>
+
+          {/* The Hustad Difference - Authority Section */}
+          <div className="space-y-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-md">
+              <ShieldCheck className="w-3 h-3 text-emerald-400" />
+              <span className="text-[10px] font-mono text-emerald-300 uppercase tracking-widest pt-0.5">
+                The Hustad Difference
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {AUTHORITY_METRICS.map((metric, i) => (
+                <motion.div
+                  key={metric.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 * i }}
+                  className="bg-white/[0.02] border border-white/[0.05] p-8 rounded-[32px] space-y-4"
+                >
+                  <div className="text-4xl font-display font-bold text-white tracking-tight">
+                    {metric.value}
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-sm font-medium text-indigo-300 uppercase tracking-wider">
+                      {metric.label}
+                    </div>
+                    <div className="text-xs text-white/30 font-light leading-relaxed">
+                      {metric.detail}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {LOCAL_POINTS.map((p, i) => (
@@ -421,6 +462,11 @@ export function A08WhatYouReceive({ onNext, onBack }: Props) {
               can be sent to them before any agreement is considered.
             </p>
           </div>
+
+          {/* Trusted Partners Logo Bar */}
+          <div className="pt-10 pb-20">
+            <Logos3 heading="Your Asset is in Professional Hands" />
+          </div>
         </div>
       </div>
 
@@ -447,4 +493,22 @@ const DELIVERABLES = [
   { icon: Layers, title: "Separation by category", detail: "Urgent, storm-related, and monitor-only conditions labeled clearly." },
   { icon: ArrowRight, title: "Next step path", detail: "A single, honest recommendation based only on what was documented." },
   { icon: Send, title: "Shareable summary", detail: "A takeaway you can send to a spouse, co-owner, or family member." },
+];
+
+const AUTHORITY_METRICS = [
+  {
+    value: "$100M+",
+    label: "Claims Restored",
+    detail: "Total property insurance claims successfully restored since inception.",
+  },
+  {
+    value: "1973",
+    label: "Established",
+    detail: "Over 45 years of continuous service and forensic roofing expertise.",
+  },
+  {
+    value: "One-Stop",
+    label: "Exterior Shop",
+    detail: "Full-service recovery including roofing, siding, gutters, and windows.",
+  },
 ];

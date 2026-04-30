@@ -22,7 +22,8 @@ import {
   Clock,
   Trash2,
   Lock,
-  ArrowRight
+  ArrowRight,
+  Scan
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { listDrafts, hasSameDayDraft, deleteDraft } from "@/lib/session";
@@ -37,6 +38,10 @@ interface Props {
 }
 
 export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump, isOnline }: Props) {
+  const [isAddressFocused, setIsAddressFocused] = useState(false);
+  const [suggestions, setSuggestions] = useState<{ main: string; sub: string }[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  
   const [form, setForm] = useState({
     address: session.property.address,
     homeownerName: session.property.homeownerPrimaryName,
@@ -45,12 +50,45 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
     repName: session.repName,
     insurerName: session.property.insurerNameKnown,
     claimNumber: session.property.claimNumberKnown,
+    workingDateOfLoss: session.property.workingDateOfLoss || "04/14/2026",
+    stormBasis: session.property.stormBasis || "Madison metro hail event",
     accessNotes: session.property.accessNotes,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [drafts, setDrafts] = useState<ReturnType<typeof listDrafts>>([]);
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
   const [showRepNav, setShowRepNav] = useState(false);
+
+  // --- LIVE GEO-ENGINE (WHOLE USA) ---
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      if (form.address.length < 5) {
+        setSuggestions([]);
+        return;
+      }
+      
+      setIsSearching(true);
+      try {
+        // Photon is a fast, keyless geocoding API based on OpenStreetMap
+        const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(form.address)}&limit=5&countrycode=us`);
+        const data = await res.json();
+        const formatted = data.features.map((f: any) => {
+          const p = f.properties;
+          const main = [p.housenumber, p.street].filter(Boolean).join(" ");
+          const sub = [p.city, p.state, p.postcode].filter(Boolean).join(", ");
+          return { main: main || p.name, sub: sub };
+        });
+        setSuggestions(formatted);
+      } catch (e) {
+        console.error("Geo-Engine Failure", e);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    const timer = setTimeout(fetchAddresses, 400);
+    return () => clearTimeout(timer);
+  }, [form.address]);
 
   useEffect(() => {
     setDrafts(listDrafts().filter((d) => !d.sessionStatus.startsWith("closed_")));
@@ -94,6 +132,8 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
         homeownerPrimaryMobile: form.homeownerMobile,
         insurerNameKnown: form.insurerName,
         claimNumberKnown: form.claimNumber,
+        workingDateOfLoss: form.workingDateOfLoss,
+        stormBasis: form.stormBasis,
         accessNotes: form.accessNotes,
       },
     };
@@ -242,19 +282,71 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
             <div className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.1] backdrop-blur-3xl space-y-10">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Address (Full Width) */}
-                <div className="md:col-span-2 space-y-3">
+                <div className="md:col-span-2 space-y-3 relative">
                   <p className="text-[10px] font-mono text-white/70 uppercase tracking-widest pl-2">Property Address *</p>
                   <div className="relative group">
-                    <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within:text-indigo-400 transition-colors" />
-                    <input 
+                    <MapPin className={cn("absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors", form.address ? "text-indigo-400" : "text-white/20")} />
+                    <input
                       className={cn(
-                        "w-full bg-white/[0.05] border border-white/[0.1] rounded-[24px] py-6 pl-14 pr-8 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/50 focus:bg-white/[0.08] transition-all",
-                        errors.address && "border-rose-500/50"
+                        "w-full bg-white/[0.05] border border-white/10 rounded-3xl py-6 pl-16 pr-8 text-white text-xl font-display placeholder:text-white/10 outline-none transition-all",
+                        "focus:border-indigo-500/50 focus:bg-white/[0.08] focus:shadow-[0_0_40px_rgba(99,102,241,0.1)]",
+                        errors.address && "border-rose-500/50 bg-rose-500/5"
                       )}
-                      placeholder="123 Maple Street, Madison WI 53703"
+                      placeholder="Start typing property address..."
                       value={form.address}
-                      onChange={(e) => set("address", e.target.value)}
+                      onChange={(e) => {
+                        set("address", e.target.value);
+                      }}
+                      onFocus={() => setIsAddressFocused(true)}
                     />
+                    
+                    {/* Live Suggestion Engine (Whole USA) */}
+                    <AnimatePresence>
+                      {isAddressFocused && (suggestions.length > 0 || isSearching) && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          className="absolute left-0 right-0 top-full mt-3 z-50 p-2 rounded-[32px] bg-[#0A0A0A]/95 border border-white/10 backdrop-blur-3xl shadow-2xl overflow-hidden"
+                        >
+                          {isSearching ? (
+                            <div className="p-8 flex flex-col items-center justify-center gap-4">
+                              <div className="w-8 h-8 rounded-full border-2 border-indigo-500/20 border-t-indigo-500 animate-spin" />
+                              <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest">Querying Global Geo-Database...</span>
+                            </div>
+                          ) : (
+                            suggestions.map((item, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => {
+                                  set("address", `${item.main}, ${item.sub}`);
+                                  setSuggestions([]);
+                                  setIsAddressFocused(false);
+                                }}
+                                className="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-white/[0.05] transition-all text-left group/item"
+                              >
+                                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 group-hover/item:bg-indigo-500 group-hover/item:text-white transition-all">
+                                  <Scan className="w-4 h-4 text-indigo-400 group-hover/item:text-white" />
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="text-white text-sm font-medium">{item.main || "Unnamed Location"}</span>
+                                  <span className="text-white/30 text-[10px] font-mono uppercase tracking-widest">{item.sub}</span>
+                                </div>
+                              </button>
+                            ))
+                          )}
+                          {/* Search Provider Tag */}
+                          <div className="p-3 border-t border-white/5 flex items-center justify-between">
+                            <span className="text-[8px] font-mono text-white/10 uppercase tracking-[0.3em]">Hustad Global Geo-Engine // OSM Data</span>
+                            <div className="flex gap-1">
+                              <div className="w-1 h-1 rounded-full bg-indigo-400/20" />
+                              <div className="w-1 h-1 rounded-full bg-indigo-400/40" />
+                              <div className="w-1 h-1 rounded-full bg-indigo-400/60" />
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
 
@@ -278,6 +370,29 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                 <div className="md:col-span-2 pt-4 border-t border-white/5 space-y-3">
                   <p className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest pl-2">Rep Identity *</p>
                   <input className="w-full bg-white/[0.05] border border-white/[0.1] rounded-2xl py-4 px-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/50" placeholder="Your Full Name" value={form.repName} onChange={(e) => set("repName", e.target.value)} />
+                </div>
+
+                {/* Carrier & Storm Context */}
+                <div className="md:col-span-2 pt-4 border-t border-white/5 space-y-6">
+                  <p className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest pl-2">Carrier & Storm Context</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <p className="text-[9px] font-mono text-white/40 uppercase tracking-widest pl-1">Insurance Carrier</p>
+                      <input className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl py-3 px-4 text-white text-sm outline-none focus:border-indigo-500/30" placeholder="e.g. State Farm" value={form.insurerName} onChange={(e) => set("insurerName", e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-[9px] font-mono text-white/40 uppercase tracking-widest pl-1">Claim Number (if known)</p>
+                      <input className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl py-3 px-4 text-white text-sm outline-none focus:border-indigo-500/30" placeholder="e.g. 123-456-789" value={form.claimNumber} onChange={(e) => set("claimNumber", e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-[9px] font-mono text-white/40 uppercase tracking-widest pl-1">Date of Loss</p>
+                      <input className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl py-3 px-4 text-white text-sm outline-none focus:border-indigo-500/30" value={form.workingDateOfLoss} onChange={(e) => set("workingDateOfLoss", e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-[9px] font-mono text-white/40 uppercase tracking-widest pl-1">Storm Basis</p>
+                      <input className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl py-3 px-4 text-white text-sm outline-none focus:border-indigo-500/30" value={form.stormBasis} onChange={(e) => set("stormBasis", e.target.value)} />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

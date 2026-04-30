@@ -21,6 +21,7 @@ import {
 import { cn } from "@/lib/utils";
 
 import { TestimonialsSection } from "@/components/ui/testimonial-v2";
+import { Logos3 } from "@/components/ui/logos3";
 
 interface Props {
   session: SessionState;
@@ -153,6 +154,11 @@ export function A03WhatWeInspect({ onNext, onBack }: Props) {
           {/* New Testimonials Data Layer */}
           <div className="pt-10">
             <TestimonialsSection />
+          </div>
+
+          {/* Trusted Partners Logo Bar */}
+          <div className="pt-10">
+            <Logos3 heading="Trusted by National Asset Managers" />
           </div>
         </div>
       </div>
@@ -382,6 +388,11 @@ export function A05InsuranceClarity({ onNext, onBack }: Props) {
                 permission, but we do not negotiate claims on your behalf.
               </p>
             </div>
+          </div>
+
+          {/* Trusted Partners Logo Bar */}
+          <div className="pt-10 pb-20">
+            <Logos3 heading="Preferred Partner For" />
           </div>
         </div>
       </div>

@@ -43,6 +43,7 @@ export type ScreenId =
   | "A07_why_hustad"
   | "A08_what_you_receive"
   | "A09_buyer_priorities"
+  | "A11_innovation"
   | "A10_inspection_hold"
   | "B11_rep_findings_prep"
   | "B12_findings_summary"
@@ -113,6 +114,8 @@ export interface PropertyContext {
   homeownerPrimaryMobile: string;
   insurerNameKnown: string;
   claimNumberKnown: string;
+  workingDateOfLoss: string;
+  stormBasis: string;
   accessNotes: string;
 }
 
@@ -133,8 +136,12 @@ export interface RepFindingsData {
   urgentItemsCount: number;
   stormRelatedItemsCount: number;
   monitorItemsCount: number;
+  roofingArea: string;
+  estimatedClaimValue: string;
   summaryHeadline: string;
   summaryBody: string;
+  weatherEvents: { time: string; reference: string; relevance: string }[];
+  stormSummary: string;
   topPhotoAssetIds: string[];
   urgentProtectionRecommended: boolean;
   urgentProtectionAuthorized: boolean | null;
@@ -227,6 +234,7 @@ export const SCREEN_FLOW: ScreenConfig[] = [
   { id: "A07_why_hustad", phase: "A", mode: "homeowner", label: "Why Hustad" },
   { id: "A08_what_you_receive", phase: "A", mode: "homeowner", label: "What You Receive" },
   { id: "A09_buyer_priorities", phase: "A", mode: "homeowner", label: "Your Priorities" },
+  { id: "A11_innovation", phase: "A", mode: "homeowner", label: "Forensic Innovation" },
   { id: "A10_inspection_hold", phase: "A", mode: "homeowner", label: "Inspection In Progress" },
   { id: "B11_rep_findings_prep", phase: "B", mode: "rep", label: "Findings Prep" },
   { id: "B12_findings_summary", phase: "B", mode: "both", label: "Findings Summary" },
@@ -263,7 +271,8 @@ export function getNextScreen(
     case "A06_warranty_impact": return "A07_why_hustad";
     case "A07_why_hustad": return "A08_what_you_receive";
     case "A08_what_you_receive": return "A09_buyer_priorities";
-    case "A09_buyer_priorities": return "A10_inspection_hold";
+    case "A09_buyer_priorities": return "A11_innovation";
+    case "A11_innovation": return "A10_inspection_hold";
     case "A10_inspection_hold": return "B11_rep_findings_prep";
 
     // Phase B – rep locks findings
@@ -358,6 +367,7 @@ export const PHASE_A_SCREENS: ScreenId[] = [
   "A07_why_hustad",
   "A08_what_you_receive",
   "A09_buyer_priorities",
+  "A11_innovation",
   "A10_inspection_hold",
 ];
 

@@ -15,6 +15,7 @@ import {
   A08WhatYouReceive,
 } from "@/components/screens/A06_A08";
 import { A09BuyerPriorities } from "@/components/screens/A09BuyerPriorities";
+import { A11Innovation } from "@/components/screens/A11_Innovation";
 import { A10InspectionHold, B11RepFindingsPrep } from "@/components/screens/A10_B11";
 import {
   B12FindingsSummary,
@@ -87,6 +88,9 @@ export function ScreenRouter() {
 
     case "A09_buyer_priorities":
       return <A09BuyerPriorities {...props} />;
+
+    case "A11_innovation":
+      return <A11Innovation {...props} />;
 
     case "A10_inspection_hold":
       return (

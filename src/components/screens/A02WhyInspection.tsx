@@ -13,7 +13,8 @@ import {
   AlertCircle, 
   FileText,
   ChevronRight,
-  ArrowLeft
+  ArrowLeft,
+  ShieldCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -167,7 +168,7 @@ export function A02WhyInspection({ session: _session, onNext, onBack }: Props) {
               className="bg-white/[0.02] border border-white/[0.05] p-10 rounded-[40px] flex items-center"
             >
               <p className="text-base text-white/30 font-light leading-relaxed italic">
-                &ldquo;Not every inspection leads to a claim. Some findings are monitor-only. We promise absolute transparency in every finding.&rdquo;
+                &ldquo;Experts with integrity on a local and national level. We promise absolute transparency in every finding, ensuring your peace of mind.&rdquo;
               </p>
             </motion.div>
           </div>
