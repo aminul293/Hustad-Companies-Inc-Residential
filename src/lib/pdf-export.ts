@@ -55,7 +55,7 @@ export async function downloadSummaryPDF(session: SessionState) {
     ],
     theme: "grid",
     styles: { cellPadding: 5, fontSize: 10, font: "helvetica" },
-    columnStyles: { 0: { fontStyle: "bold", width: 40, fillColor: [245, 245, 245] } },
+    columnStyles: { 0: { fontStyle: "bold", cellWidth: 40, fillColor: [245, 245, 245] } },
   });
 
   let currentY = (doc as any).lastAutoTable.finalY + 15;
@@ -315,7 +315,7 @@ export async function downloadSummaryPDF(session: SessionState) {
   doc.addPage();
   renderHeader(doc, "Authorization & Agreement");
   renderSectionTitle(doc, session.property.address || "Property Address", "Storm Restoration Contingency Agreement", 45);
-  autoTable(doc, { startY: 75, body: [["Owner", session.property.homeownerPrimaryName || "Ownership"], ["Property", session.property.address || "Address"], ["Contractor", "Hustad Companies"], ["Agreement Date", new Date().toLocaleDateString()]], theme: "grid", columnStyles: { 0: { fontStyle: "bold", width: 40, fillColor: [245, 245, 245] } } });
+  autoTable(doc, { startY: 75, body: [["Owner", session.property.homeownerPrimaryName || "Ownership"], ["Property", session.property.address || "Address"], ["Contractor", "Hustad Companies"], ["Agreement Date", new Date().toLocaleDateString()]], theme: "grid", columnStyles: { 0: { fontStyle: "bold", cellWidth: 40, fillColor: [245, 245, 245] } } });
   currentY = (doc as any).lastAutoTable.finalY + 15;
   doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(34, 52, 85); doc.text("Owner Acknowledgment", margin, currentY);
   doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(100, 100, 100); doc.text(doc.splitTextToSize("Owner acknowledges this is a pre execution business draft for discussion with counsel and ownership, not a promise of insurance recovery. Any binding restoration obligation arises only after an acceptable insured scope and a later signed project proposal or contract.", contentWidth), margin, currentY + 6);

@@ -12,11 +12,8 @@ import {
   Mail,
   MapPin,
   Phone,
-  Instagram,
-  Twitter,
-  Linkedin,
-  Facebook,
-  Github,
+  Globe,
+  Share2,
   ArrowUpRight,
   Sparkles,
   Zap,
@@ -798,7 +795,7 @@ export function DesignAgency() {
                        <Image src={`https://i.pravatar.cc/100?u=${index}`} alt="Avatar" width={40} height={40} />
                     </div>
                     <div className="ml-4">
-                      <p className="font-medium">{testimonial.author}</p>
+                      <h4 className="font-bold">{testimonial.author}</h4>
                       <p className="text-sm text-muted-foreground">{testimonial.company}</p>
                     </div>
                   </div>
@@ -815,255 +812,151 @@ export function DesignAgency() {
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeIn}
-            className="container grid items-center gap-3 px-4 md:px-6 lg:grid-cols-2 border border-muted rounded-3xl"
+            className="container px-4 md:px-6 border border-muted rounded-3xl"
           >
-            <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              className="space-y-3 p-6"
-            >
-              <div className="inline-block rounded-3xl bg-muted px-3 py-1 text-sm">Contact</div>
-              <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight">Let's Work Together</h2>
-              <p className="max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                Ready to start your next project? Get in touch with us to discuss how we can help bring your vision to
-                life.
-              </p>
-              <div className="mt-8 space-y-4">
-                <motion.div whileHover={{ x: 5 }} className="flex items-start gap-3">
-                  <div className="rounded-3xl bg-muted p-2">
-                    <MapPin className="h-5 w-5 text-primary" />
+            <div className="grid gap-3 lg:grid-cols-2 lg:gap-3 py-10">
+              <div className="space-y-4 p-6">
+                <div className="inline-block rounded-3xl bg-muted px-3 py-1 text-sm">Contact Us</div>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Let's Work Together</h2>
+                <p className="text-muted-foreground md:text-xl/relaxed">
+                  Have a project in mind? We'd love to hear from you. Get in touch with us today to discuss how we can
+                  help your business grow.
+                </p>
+                <div className="space-y-3 pt-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="h-10 w-10 rounded-3xl bg-primary/10 flex items-center justify-center">
+                      <Mail className="h-5 w-5 text-primary" />
+                    </div>
+                    <span className="text-sm font-medium">hello@studio.com</span>
                   </div>
-                  <div>
-                    <h3 className="font-medium">Our Location</h3>
-                    <p className="text-sm text-muted-foreground">123 Design Street, Creative City, 10001</p>
+                  <div className="flex items-center space-x-3">
+                    <div className="h-10 w-10 rounded-3xl bg-primary/10 flex items-center justify-center">
+                      <Phone className="h-5 w-5 text-primary" />
+                    </div>
+                    <span className="text-sm font-medium">+1 (555) 000-0000</span>
                   </div>
-                </motion.div>
-                <motion.div whileHover={{ x: 5 }} className="flex items-start gap-3">
-                  <div className="rounded-3xl bg-muted p-2">
-                    <Mail className="h-5 w-5 text-primary" />
+                  <div className="flex items-center space-x-3">
+                    <div className="h-10 w-10 rounded-3xl bg-primary/10 flex items-center justify-center">
+                      <MapPin className="h-5 w-5 text-primary" />
+                    </div>
+                    <span className="text-sm font-medium">123 Design St, San Francisco, CA 94103</span>
                   </div>
-                  <div>
-                    <h3 className="font-medium">Email Us</h3>
-                    <p className="text-sm text-muted-foreground">hello@designstudio.com</p>
-                  </div>
-                </motion.div>
-                <motion.div whileHover={{ x: 5 }} className="flex items-start gap-3">
-                  <div className="rounded-3xl bg-muted p-2">
-                    <Phone className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium">Call Us</h3>
-                    <p className="text-sm text-muted-foreground">+1 (555) 123-4567</p>
-                  </div>
+                </div>
+              </div>
+              <div className="p-6">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="rounded-3xl border bg-card p-8 shadow-sm"
+                >
+                  <form className="space-y-4">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="first-name"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          First name
+                        </label>
+                        <Input id="first-name" placeholder="John" className="rounded-2xl" />
+                      </div>
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="last-name"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Last name
+                        </label>
+                        <Input id="last-name" placeholder="Doe" className="rounded-2xl" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label
+                        htmlFor="email"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Email
+                      </label>
+                      <Input id="email" placeholder="john@example.com" type="email" className="rounded-2xl" />
+                    </div>
+                    <div className="space-y-2">
+                      <label
+                        htmlFor="message"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Message
+                      </label>
+                      <Textarea id="message" placeholder="How can we help you?" className="min-h-[120px] rounded-2xl" />
+                    </div>
+                    <Button className="w-full rounded-3xl" size="lg">
+                      Send Message
+                    </Button>
+                  </form>
                 </motion.div>
               </div>
-              <div className="mt-8 flex space-x-3">
+            </div>
+          </motion.div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="w-full py-12 px-4 border-t bg-muted/30">
+        <div className="container px-4 md:px-6">
+          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
+            <div className="col-span-1 md:col-span-2 lg:col-span-2 space-y-4">
+              <Link href="/" className="flex items-center space-x-3">
+                <div className="h-10 w-10 rounded-3xl bg-primary flex items-center justify-center">
+                  <Sparkles className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <span className="font-bold text-xl">Studio</span>
+              </Link>
+              <p className="max-w-xs text-sm text-muted-foreground">
+                We create beautiful, functional designs that help businesses grow and connect with their audience.
+              </p>
+              <div className="flex space-x-3">
                 {[
-                  { icon: <Instagram className="h-5 w-5" />, label: "Instagram" },
-                  { icon: <Twitter className="h-5 w-5" />, label: "Twitter" },
-                  { icon: <Linkedin className="h-5 w-5" />, label: "LinkedIn" },
-                  { icon: <Facebook className="h-5 w-5" />, label: "Facebook" },
+                  { icon: <Globe className="h-5 w-5" />, label: "Website" },
+                  { icon: <Share2 className="h-5 w-5" />, label: "Social" },
                 ].map((social, index) => (
                   <motion.div key={index} whileHover={{ y: -5, scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                    <Link
-                      href="#"
-                      className="rounded-3xl border p-2 text-muted-foreground hover:text-foreground hover:border-primary transition-colors"
-                    >
+                    <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
                       {social.icon}
                       <span className="sr-only">{social.label}</span>
                     </Link>
                   </motion.div>
                 ))}
               </div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              className="rounded-3xl border bg-background p-6 shadow-sm"
-            >
-              <h3 className="text-xl font-bold">Send Us a Message</h3>
-              <p className="text-sm text-muted-foreground">
-                Fill out the form below and we'll get back to you shortly.
-              </p>
-              <form className="mt-6 space-y-3">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <label
-                      htmlFor="first-name"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      First name
-                    </label>
-                    <Input id="first-name" placeholder="Enter your first name" className="rounded-3xl" />
-                  </div>
-                  <div className="space-y-2">
-                    <label
-                      htmlFor="last-name"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      Last name
-                    </label>
-                    <Input id="last-name" placeholder="Enter your last name" className="rounded-3xl" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="email"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Email
-                  </label>
-                  <Input id="email" type="email" placeholder="Enter your email" className="rounded-3xl" />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="message"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Message
-                  </label>
-                  <Textarea id="message" placeholder="Enter your message" className="min-h-[120px] rounded-3xl" />
-                </div>
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button type="submit" className="w-full rounded-3xl">
-                    Send Message
-                  </Button>
-                </motion.div>
-              </form>
-            </motion.div>
-          </motion.div>
-        </section>
-      </main>
-
-      {/* Footer */}
-      <footer className="w-full border-t">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeIn}
-          className="container grid gap-3 px-4 py-10 md:px-6 lg:grid-cols-4 border-x border-muted"
-        >
-          <div className="space-y-3">
-            <Link href="/" className="flex items-center space-x-3">
-              <motion.div
-                whileHover={{ rotate: 5, scale: 1.1 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                className="h-10 w-10 rounded-3xl bg-primary flex items-center justify-center"
-              >
-                <Sparkles className="h-5 w-5 text-primary-foreground" />
-              </motion.div>
-              <span className="font-bold text-xl">Studio</span>
-            </Link>
-            <p className="text-sm text-muted-foreground">
-              We create beautiful, functional designs that help businesses grow and connect with their audience.
-            </p>
-            <div className="flex space-x-3">
-              {[
-                { icon: <Instagram className="h-5 w-5" />, label: "Instagram" },
-                { icon: <Twitter className="h-5 w-5" />, label: "Twitter" },
-                { icon: <Linkedin className="h-5 w-5" />, label: "LinkedIn" },
-                { icon: <Github className="h-5 w-5" />, label: "GitHub" },
-              ].map((social, index) => (
-                <motion.div key={index} whileHover={{ y: -5, scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                  <Link href="#" className="text-muted-foreground hover:text-foreground">
-                    {social.icon}
-                    <span className="sr-only">{social.label}</span>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1 px-4">
-            <div>
-              <h3 className="text-lg font-medium">Company</h3>
-              <nav className="mt-4 flex flex-col space-y-2 text-sm">
-                <Link href="#about" className="text-muted-foreground hover:text-foreground">
-                  About Us
-                </Link>
-                <Link href="#" className="text-muted-foreground hover:text-foreground">
-                  Careers
-                </Link>
-                <Link href="#" className="text-muted-foreground hover:text-foreground">
-                  Our Process
-                </Link>
-                <Link href="#" className="text-muted-foreground hover:text-foreground">
-                  News & Press
-                </Link>
-              </nav>
             </div>
             <div>
-              <h3 className="text-lg font-medium">Services</h3>
-              <nav className="mt-4 flex flex-col space-y-2 text-sm">
-                <Link href="#" className="text-muted-foreground hover:text-foreground">
-                  UI/UX Design
-                </Link>
-                <Link href="#" className="text-muted-foreground hover:text-foreground">
-                  Web Development
-                </Link>
-                <Link href="#" className="text-muted-foreground hover:text-foreground">
-                  Brand Identity
-                </Link>
-                <Link href="#" className="text-muted-foreground hover:text-foreground">
-                  Digital Marketing
-                </Link>
-              </nav>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1 px-4">
-            <div>
-              <h3 className="text-lg font-medium">Resources</h3>
-              <nav className="mt-4 flex flex-col space-y-2 text-sm">
-                <Link href="#" className="text-muted-foreground hover:text-foreground">
-                  Blog
-                </Link>
-                <Link href="#" className="text-muted-foreground hover:text-foreground">
-                  Case Studies
-                </Link>
-                <Link href="#" className="text-muted-foreground hover:text-foreground">
-                  Guides & Tutorials
-                </Link>
-                <Link href="#" className="text-muted-foreground hover:text-foreground">
-                  FAQ
-                </Link>
-              </nav>
+              <h3 className="mb-4 text-sm font-bold uppercase tracking-wider">Services</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link href="#" className="hover:text-primary transition-colors">UI/UX Design</Link></li>
+                <li><Link href="#" className="hover:text-primary transition-colors">Web Development</Link></li>
+                <li><Link href="#" className="hover:text-primary transition-colors">Brand Identity</Link></li>
+                <li><Link href="#" className="hover:text-primary transition-colors">Digital Marketing</Link></li>
+              </ul>
             </div>
             <div>
-              <h3 className="text-lg font-medium">Legal</h3>
-              <nav className="mt-4 flex flex-col space-y-2 text-sm">
-                <Link href="#" className="text-muted-foreground hover:text-foreground">
-                  Privacy Policy
-                </Link>
-                <Link href="#" className="text-muted-foreground hover:text-foreground">
-                  Terms of Service
-                </Link>
-                <Link href="#" className="text-muted-foreground hover:text-foreground">
-                  Cookie Policy
-                </Link>
-              </nav>
+              <h3 className="mb-4 text-sm font-bold uppercase tracking-wider">Company</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link href="#" className="hover:text-primary transition-colors">About Us</Link></li>
+                <li><Link href="#" className="hover:text-primary transition-colors">Our Work</Link></li>
+                <li><Link href="#" className="hover:text-primary transition-colors">Careers</Link></li>
+                <li><Link href="#" className="hover:text-primary transition-colors">Contact</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="mb-4 text-sm font-bold uppercase tracking-wider">Legal</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
+                <li><Link href="#" className="hover:text-primary transition-colors">Terms of Service</Link></li>
+                <li><Link href="#" className="hover:text-primary transition-colors">Cookie Policy</Link></li>
+              </ul>
             </div>
           </div>
-          <div className="space-y-3 px-4">
-            <h3 className="text-lg font-medium">Subscribe to our newsletter</h3>
-            <p className="text-sm text-muted-foreground">
-              Stay updated with our latest projects, design tips, and company news.
-            </p>
-            <form className="flex space-x-3">
-              <Input type="email" placeholder="Enter your email" className="max-w-lg flex-1 rounded-3xl" />
-              <Button type="submit" className="rounded-3xl">
-                Subscribe
-              </Button>
-            </form>
-          </div>
-        </motion.div>
-        <div className="border-t">
-          <div className="container flex flex-col items-center justify-between gap-3 py-6 md:h-16 md:flex-row md:py-0 px-4">
-            <p className="text-xs text-muted-foreground">
-              &copy; {new Date().getFullYear()} Design Studio. All rights reserved.
-            </p>
-            <p className="text-xs text-muted-foreground">Crafted with passion in New York City</p>
+          <div className="mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
+            <p>© {new Date().getFullYear()} Studio Creative Agency. All rights reserved.</p>
           </div>
         </div>
       </footer>
