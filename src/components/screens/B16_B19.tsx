@@ -401,7 +401,7 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
   const [signed, setSigned] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const e: Record<string, string> = {};
     if (mode === "sign") {
       if (!signerName.trim()) e.name = "Required.";
@@ -415,6 +415,7 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
     if (Object.keys(e).length) { setErrors(e); return; }
 
     let updated: SessionState = { ...session };
+    
     if (mode === "sign") {
       updated = {
         ...updated,
@@ -428,12 +429,26 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
       };
       updated = submitSession(updated);
     } else {
+      // REMOTE REVIEW FLOW
+      const { generateReviewToken } = await import("@/lib/session");
+      updated = generateReviewToken(updated);
       updated = {
         ...updated,
         sessionStatus: "deferred",
         signatureData: { ...updated.signatureData, summarySendRecipient: deferEmail },
       };
-      updated = addAuditEvent(updated, "summary_sent", { recipient: deferEmail });
+      updated = addAuditEvent(updated, "summary_sent", { recipient: deferEmail, token: updated.reviewToken });
+      
+      // Stage for Cloud Relay
+      try {
+        await fetch("/api/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updated)
+        });
+      } catch (err) {
+        console.error("[CLOUD_STAGE_ERROR]", err);
+      }
     }
     onUpdate(updated);
     onNext();
@@ -567,16 +582,26 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
 interface NextStepsProps {
   session: SessionState;
   onUpdate: (s: SessionState) => void;
+  onNext: () => void;
+  onBack: () => void;
   onFinish: () => void;
 }
 
-export function B19NextSteps({ session, onUpdate, onFinish }: NextStepsProps) {
+export function B19NextSteps({ session, onUpdate, onNext, onBack, onFinish }: NextStepsProps) {
   const outcome = session.findings.outcomeType || "no_damage";
   const isSigned = !!session.signatureData.signedAt;
   const isDeferred = session.sessionStatus === "deferred";
   const config = NEXT_STEPS_CONFIG[outcome] || NEXT_STEPS_CONFIG.no_damage;
   const [exported, setExported] = useState(false);
   const [deliverySent, setDeliverySent] = useState<string | null>(null);
+  const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [quickEmail, setQuickEmail] = useState("");
+  const [quickPhone, setQuickPhone] = useState("");
+
+  const { createFollowUpTask } = require("@/lib/session");
+  const { downloadSummaryPDF } = require("@/lib/pdf-export");
+  const { addAuditEvent } = require("@/lib/session");
 
   useEffect(() => {
     if (isDeferred || (!isSigned && (outcome !== "no_damage" && outcome !== "monitor_only"))) {
@@ -585,14 +610,186 @@ export function B19NextSteps({ session, onUpdate, onFinish }: NextStepsProps) {
     }
   }, []);
 
+  // REAL-TIME REMOTE SYNC (POLLING)
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (isDeferred && !isSigned) {
+      interval = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/session?sessionId=${session.sessionId}`);
+          if (res.ok) {
+            const remoteSession = await res.json();
+            if (remoteSession.sessionStatus === "signed" || remoteSession.signatureData.signedAt) {
+              console.log("[SYNC] Remote signature detected!");
+              onUpdate({
+                ...session,
+                sessionStatus: remoteSession.sessionStatus,
+                signatureData: remoteSession.signatureData,
+                auditEvents: remoteSession.auditEvents
+              });
+              clearInterval(interval);
+            }
+          }
+        } catch (e) {
+          console.error("[SYNC_ERROR]", e);
+        }
+      }, 10000); // Poll every 10 seconds
+    }
+
+    return () => clearInterval(interval);
+  }, [isDeferred, isSigned, session.sessionId]);
+
   const handleDownloadPDF = async () => {
     await downloadSummaryPDF(session);
     setExported(true);
   };
+  const handleDelivery = async (method: "email" | "text") => {
+    setIsSending(true);
+    setError(null);
 
-  const handleDelivery = (method: "email" | "text") => {
-    onUpdate(addAuditEvent(session, "summary_delivery_requested", { method, recipient: session.property.homeownerPrimaryEmail }));
-    setDeliverySent(method);
+    try {
+      if (method === "email") {
+        // 1. Generate Forensic PDF in background
+        const { getSummaryPDFBase64 } = await import("@/lib/pdf-export");
+        const pdfBase64 = await getSummaryPDFBase64(session);
+
+        // 2. Prepare recipients (Sanitize empty strings)
+        const currentEmail = (session.signatureData.signerEmail || session.property.homeownerPrimaryEmail || "").trim();
+        const primaryEmail = currentEmail || quickEmail.trim();
+        const decisionMakerEmail = (session.buyerData.decisionMakerEmail || "").trim();
+
+        if (!primaryEmail) throw new Error("Primary homeowner email is missing. Please add an email address to send the dossier.");
+
+        // 3. Force-Sync to Cloud Relay (Mandatory for remote link to work)
+        await fetch("/api/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...session,
+            property: { ...session.property, homeownerPrimaryEmail: primaryEmail }
+          })
+        });
+
+        // 4. Update local session with email if it was missing
+        if (!currentEmail && primaryEmail) {
+          onUpdate({
+            ...session,
+            property: { ...session.property, homeownerPrimaryEmail: primaryEmail }
+          });
+        }
+
+        const reviewUrl = session.reviewToken 
+          ? `${window.location.origin}/review/${session.reviewToken}` 
+          : null;
+
+        const reviewButtonHtml = reviewUrl ? `
+          <div style="margin: 32px 0; text-align: center;">
+            <a href="${reviewUrl}" style="background-color: #6366f1; color: #ffffff; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">REVIEW & AUTHORIZE DOSSIER</a>
+          </div>
+        ` : '';
+
+        // 5. Dispatch to API
+        const response = await fetch("/api/send-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            to: primaryEmail,
+            cc: (decisionMakerEmail && decisionMakerEmail !== primaryEmail) ? decisionMakerEmail : null,
+            subject: `Hustad Forensic Dossier: ${session.property.address}`,
+            pdfBase64,
+            fileName: `Hustad_Dossier_${session.sessionId.slice(-6).toUpperCase()}.pdf`,
+            sessionId: session.sessionId,
+            html: `
+              <div style="font-family: sans-serif; color: #1e293b; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                <div style="background-color: #0f172a; padding: 24px; text-align: center;">
+                  <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 2px;">HUSTAD RESIDENTIAL</h1>
+                </div>
+                <div style="padding: 32px;">
+                  <h2 style="font-size: 20px; color: #0f172a; margin-top: 0;">Forensic Dossier Ready</h2>
+                  <p>Hello,</p>
+                  <p>Your property inspection at <strong>${session.property.address}</strong> is complete. We have generated a high-fidelity Forensic Dossier documenting all site findings and weather validations.</p>
+                  
+                  <div style="background-color: #f8fafc; border-left: 4px solid #6366f1; padding: 16px; margin: 24px 0;">
+                    <p style="margin: 0; font-size: 14px; color: #64748b;"><strong>Outcome:</strong> ${outcome.toUpperCase().replace(/_/g, " ")}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 14px; color: #64748b;"><strong>ID:</strong> ${session.sessionId.toUpperCase()}</p>
+                  </div>
+
+                  ${reviewButtonHtml}
+
+                  <p>A full technical copy of the dossier is attached to this email for your records.</p>
+                  
+                  <p style="margin-top: 32px; font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 16px;">
+                    This is an automated delivery from the Hustad Forensic Platform. For immediate questions, please contact your representative: <strong>${session.repName}</strong>.
+                  </p>
+                </div>
+              </div>
+            `
+          })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          setDeliverySent("email");
+          onUpdate(addAuditEvent(session, "summary_delivery_success", { method: "email", recipient: primaryEmail }));
+        } else {
+          throw new Error(result.error || "Email delivery failed");
+        }
+      } else {
+        // SMS DISPATCH
+        const currentPhone = session.property.homeownerPrimaryPhone || "";
+        const phone = (currentPhone || quickPhone.trim()).replace(/\D/g, "");
+
+        if (!phone) throw new Error("No phone number found for this property. Please add a phone number to send the text summary.");
+
+        // 1. Force-Sync to Cloud Relay
+        await fetch("/api/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...session,
+            property: { ...session.property, homeownerPrimaryPhone: phone }
+          })
+        });
+
+        // 2. Update local session with phone if it was missing
+        if (!currentPhone && phone) {
+          onUpdate({
+            ...session,
+            property: { ...session.property, homeownerPrimaryPhone: phone }
+          });
+        }
+
+        const reviewUrl = session.reviewToken 
+          ? `${window.location.origin}/review/${session.reviewToken}` 
+          : '';
+
+        const response = await fetch("/api/send-sms", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            to: phone,
+            sessionId: session.sessionId,
+            address: session.property.address,
+            outcome: session.findings.outcomeType,
+            message: `Hustad Residential: Your Forensic Dossier for ${session.property.address} is ready. Review & Sign here: ${reviewUrl}`
+          })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          setDeliverySent("text");
+          onUpdate(addAuditEvent(session, "summary_delivery_success", { method: "text", recipient: phone }));
+        } else {
+          throw new Error(result.error || "SMS delivery failed");
+        }
+      }
+    } catch (err: any) {
+      console.error("[DELIVERY_ERROR]", err);
+      setError(err.message);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -679,27 +876,86 @@ export function B19NextSteps({ session, onUpdate, onFinish }: NextStepsProps) {
               </div>
 
               {/* Delivery Matrix */}
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  { id: "email", label: "Email Summary", icon: Mail },
-                  { id: "text", label: "Text Summary", icon: MessageSquare }
-                ].map((opt) => (
-                  <button
-                    key={opt.id}
-                    onClick={() => handleDelivery(opt.id as any)}
-                    className={cn(
-                      "p-6 rounded-[32px] border transition-all duration-300 flex flex-col items-center gap-3 text-center",
-                      deliverySent === opt.id 
-                        ? "bg-indigo-500/20 border-indigo-500/40" 
-                        : "bg-white/[0.02] border-white/[0.05] hover:border-white/20"
-                    )}
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { id: "email", label: "Email Summary", icon: Mail },
+                    { id: "text", label: "Text Summary", icon: MessageSquare }
+                  ].map((opt) => {
+                    const recipient = opt.id === "email" 
+                      ? (session.signatureData.signerEmail || session.property.homeownerPrimaryEmail)
+                      : (session.property.homeownerPrimaryPhone || "No Phone");
+                    
+                    return (
+                      <div key={opt.id} className="space-y-2">
+                        <button
+                          disabled={isSending && opt.id === "email"}
+                          onClick={() => handleDelivery(opt.id as any)}
+                          className={cn(
+                            "w-full p-6 rounded-[32px] border transition-all duration-300 flex flex-col items-center gap-3 text-center",
+                            deliverySent === opt.id 
+                              ? "bg-indigo-500/20 border-indigo-500/40" 
+                              : "bg-white/[0.02] border-white/[0.05] hover:border-white/20",
+                            isSending && opt.id === "email" && "animate-pulse"
+                          )}
+                        >
+                          <opt.icon className={cn("w-5 h-5", deliverySent === opt.id ? "text-indigo-400" : "text-white/50")} />
+                          <span className={cn("text-[10px] font-mono uppercase tracking-widest", deliverySent === opt.id ? "text-white" : "text-white/70")}>
+                            {isSending && opt.id === "email" ? "Sending..." : deliverySent === opt.id ? "Sent ✓" : opt.label}
+                          </span>
+                        </button>
+                        <p className="text-[9px] font-mono text-white/30 truncate px-2 text-center uppercase tracking-tighter">
+                          {recipient}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Quick-Fix Email Terminal */}
+                {!(session.signatureData.signerEmail || session.property.homeownerPrimaryEmail) && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }} 
+                    animate={{ opacity: 1, height: "auto" }} 
+                    className="p-6 rounded-[32px] bg-indigo-500/[0.05] border border-indigo-500/20 space-y-3"
                   >
-                    <opt.icon className={cn("w-5 h-5", deliverySent === opt.id ? "text-indigo-400" : "text-white/50")} />
-                    <span className={cn("text-[10px] font-mono uppercase tracking-widest", deliverySent === opt.id ? "text-white" : "text-white/70")}>
-                      {deliverySent === opt.id ? "Sent ✓" : opt.label}
-                    </span>
-                  </button>
-                ))}
+                    <p className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest pl-1 pt-2">Data Gap: Homeowner Contact Required</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="relative group">
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400/50 group-focus-within:text-indigo-400 transition-colors" />
+                        <input 
+                          type="email"
+                          placeholder="Email Address"
+                          value={quickEmail}
+                          onChange={(e) => setQuickEmail(e.target.value)}
+                          className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white placeholder:text-white/20 focus:border-indigo-400/50 outline-none transition-all text-sm"
+                        />
+                      </div>
+                      <div className="relative group">
+                        <MessageSquare className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400/50 group-focus-within:text-indigo-400 transition-colors" />
+                        <input 
+                          type="tel"
+                          placeholder="Phone Number"
+                          value={quickPhone}
+                          onChange={(e) => setQuickPhone(e.target.value)}
+                          className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white placeholder:text-white/20 focus:border-indigo-400/50 outline-none transition-all text-sm"
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {deliverySent === "email" && (
+                  <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-center">
+                    <p className="text-[10px] font-mono text-green-400 uppercase tracking-widest">
+                      Dossier dispatched to inbox ✓
+                    </p>
+                  </motion.div>
+                )}
+                {error && (
+                  <p className="text-[10px] font-mono text-rose-400 uppercase tracking-widest pl-2">
+                    Error: {error}
+                  </p>
+                )}
               </div>
 
               <button 
@@ -717,8 +973,12 @@ export function B19NextSteps({ session, onUpdate, onFinish }: NextStepsProps) {
       </div>
 
       <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20">
-        <div className="max-w-md mx-auto">
-          <StarButton onClick={onFinish} lightColor="#FAFAFA" backgroundColor="#060606" className="w-full h-18 rounded-full active:scale-95 transition-transform">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-6">
+          <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
+            <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-display font-medium text-white">Back</span>
+          </button>
+          <StarButton onClick={onFinish} lightColor="#FAFAFA" backgroundColor="#060606" className="flex-1 max-w-md h-18 rounded-full active:scale-95 transition-transform">
             <div className="flex items-center gap-4">
               <span className="text-lg font-display font-medium tracking-wide">Finish Session</span>
               <ChevronRight className="w-5 h-5 text-white/90" />

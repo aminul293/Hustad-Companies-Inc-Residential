@@ -23,14 +23,13 @@
 }
 
 html, body {
-  overflow: hidden;
-  height: 100%;
+  min-height: 100%;
   width: 100%;
   background-color: var(--cream);
 }
 
 #__next {
-  height: 100%;
+  min-height: 100%;
   width: 100%;
 }
 

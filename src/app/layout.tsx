@@ -20,7 +20,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       </head>
-      <body className="font-body bg-hustad-cream overflow-hidden h-screen w-screen">
+      <body className="font-body bg-hustad-cream">
         {children}
       </body>
     </html>

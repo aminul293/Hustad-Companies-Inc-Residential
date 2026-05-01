@@ -45,7 +45,7 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
   const { findings } = session;
   const outcome = findings.outcomeType!;
   const [showUnlockConfirm, setShowUnlockConfirm] = useState(false);
-  const summaryPhotos = session.photoAssets.filter((p) => p.selectedForSummary);
+  const summaryPhotos = (session.photoAssets || []).filter((p) => p.selectedForSummary);
 
   const handleUnlock = () => {
     const updated = unlockSummary(session);

@@ -7,16 +7,17 @@ import { HustadHeader } from "@/components/ui/HustadHeader";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { ElegantShape } from "@/components/ui/shape-landing-hero";
 import { StarButton } from "@/components/ui/star-button";
-import { CheckCircle2, Clock, ArrowRight } from "lucide-react";
+import { CheckCircle2, Clock, ArrowRight, ArrowLeft } from "lucide-react";
 
 interface Props {
   session: SessionState;
   onNext: () => void;
+  onBack: () => void;
   onSkip: () => void;
   dark?: boolean;
 }
 
-export function A01Welcome({ session, onNext, onSkip }: Props) {
+export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
   const name = session.property.homeownerPrimaryName;
 
   const [titleNumber, setTitleNumber] = useState(0);
@@ -204,7 +205,15 @@ export function A01Welcome({ session, onNext, onSkip }: Props) {
               </StarButton>
               
               <button 
-                className="text-sm font-body text-white/30 hover:text-white/60 transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-px after:bg-white/20 after:origin-bottom-right after:scale-x-0 hover:after:origin-bottom-left hover:after:scale-x-100 after:transition-transform after:duration-300"
+                className="text-sm font-body text-white/30 hover:text-white/60 transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-px after:bg-white/20 after:origin-bottom-right after:scale-x-0 hover:after:origin-bottom-left hover:after:scale-x-100 after:transition-transform after:duration-300 flex items-center gap-2"
+                onClick={onBack}
+              >
+                <ArrowLeft className="w-3 h-3" />
+                <span>Exit Walkthrough</span>
+              </button>
+              
+              <button 
+                className="text-sm font-body text-white/30 hover:text-white/60 transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-px after:bg-white/20 after:origin-bottom-right after:scale-x-0 hover:after:origin-bottom-left hover:after:scale-x-100 after:transition-transform after:duration-300 mt-2"
                 onClick={onSkip}
               >
                 I&rsquo;d rather wait for the live review

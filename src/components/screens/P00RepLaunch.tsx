@@ -366,6 +366,20 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                   </div>
                 </div>
 
+                {/* Homeowner Email (Now Visible) */}
+                <div className="space-y-3">
+                  <p className="text-[10px] font-mono text-white/70 uppercase tracking-widest pl-2">Email Address</p>
+                  <div className="relative group">
+                    <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                    <input 
+                      className="w-full bg-white/[0.05] border border-white/[0.1] rounded-2xl py-4 pl-12 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/50" 
+                      placeholder="homeowner@example.com" 
+                      value={form.homeownerEmail} 
+                      onChange={(e) => set("homeownerEmail", e.target.value)} 
+                    />
+                  </div>
+                </div>
+
                 {/* Rep Identity */}
                 <div className="md:col-span-2 pt-4 border-t border-white/5 space-y-3">
                   <p className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest pl-2">Rep Identity *</p>
