@@ -18,9 +18,9 @@ if (!CLIENT_ID || !TENANT_ID || !CLIENT_SECRET) {
 async function getAccessToken() {
   const url = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token`;
   const body = new URLSearchParams({
-    client_id: CLIENT_ID,
+    client_id: CLIENT_ID!,
     scope: 'https://graph.microsoft.com/.default',
-    client_secret: CLIENT_SECRET,
+    client_secret: CLIENT_SECRET!,
     grant_type: 'client_credentials',
   });
 
