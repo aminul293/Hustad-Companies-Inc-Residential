@@ -25,7 +25,7 @@ interface Props {
   onUpdate: (s: SessionState) => void;
 }
 
-export function A02WhyInspection({ session: _session, onNext, onBack }: Props) {
+export function A02WhyInspection({ session, onUpdate, onNext, onBack }: Props) {
   return (
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606] selection:bg-indigo-500/30 selection:text-white">
       {/* Background Assets: Forensic Rapid Deployment Cloud */}

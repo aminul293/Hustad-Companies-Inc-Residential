@@ -38,7 +38,7 @@ interface Props {
 // A06 – Warranty & Impact Clarity
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function A06WarrantyImpact({ onNext, onBack }: Props) {
+export function A06WarrantyImpact({ session, onUpdate, onNext, onBack }: Props) {
   const [expanded, setExpanded] = useState(false);
   
   return (
@@ -232,7 +232,7 @@ const WARRANTY_TYPES = [
 // A07 – Why Hustad Locally
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function A07WhyHustad({ onNext, onBack }: Props) {
+export function A07WhyHustad({ session, onUpdate, onNext, onBack }: Props) {
   return (
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
       {/* Background Assets: Rapid Deployment Cloud */}
@@ -393,7 +393,7 @@ const LOCAL_POINTS = [
 // A08 – What You Will Receive Today
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function A08WhatYouReceive({ onNext, onBack }: Props) {
+export function A08WhatYouReceive({ session, onUpdate, onNext, onBack }: Props) {
   return (
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
       {/* Background Assets: Forensic Intelligence Cloud */}

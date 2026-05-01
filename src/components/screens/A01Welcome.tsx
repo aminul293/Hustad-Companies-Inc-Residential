@@ -11,13 +11,14 @@ import { CheckCircle2, Clock, ArrowRight, ArrowLeft } from "lucide-react";
 
 interface Props {
   session: SessionState;
+  onUpdate: (s: SessionState) => void;
   onNext: () => void;
   onBack: () => void;
   onSkip: () => void;
   dark?: boolean;
 }
 
-export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
+export function A01Welcome({ session, onUpdate, onNext, onBack, onSkip }: Props) {
   const name = session.property.homeownerPrimaryName;
 
   const [titleNumber, setTitleNumber] = useState(0);

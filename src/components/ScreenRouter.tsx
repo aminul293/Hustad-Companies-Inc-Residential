@@ -78,6 +78,7 @@ export function ScreenRouter() {
       return (
         <A01Welcome
           session={session}
+          onUpdate={updateSession}
           onNext={goNext}
           onBack={goBack}
           onSkip={() => jumpTo("A10_inspection_hold")}

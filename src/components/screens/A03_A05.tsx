@@ -34,7 +34,7 @@ interface Props {
 // A03 – What We Inspect
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function A03WhatWeInspect({ onNext, onBack }: Props) {
+export function A03WhatWeInspect({ session, onUpdate, onNext, onBack }: Props) {
   return (
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606] selection:bg-indigo-500/30 selection:text-white">
       {/* Background Assets: Forensic Rapid Deployment Cloud */}
@@ -203,7 +203,7 @@ const CATEGORIES = [
 // A04 – How Findings Are Sorted
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function A04HowFindingsSorted({ onNext, onBack }: Props) {
+export function A04HowFindingsSorted({ session, onUpdate, onNext, onBack }: Props) {
   return (
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
       {/* Background Assets: Rapid Deployment Cloud */}
@@ -302,7 +302,7 @@ const STEPS = [
 // A05 – Insurance Clarity
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function A05InsuranceClarity({ onNext, onBack }: Props) {
+export function A05InsuranceClarity({ session, onUpdate, onNext, onBack }: Props) {
   return (
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[radial-gradient(circle_at_50%_0%,#1e1b4b_0%,#060606_70%)]">
       {/* Background Assets: Forensic Rapid Deployment Cloud */}
