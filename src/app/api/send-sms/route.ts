@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import twilio from 'twilio';
 
+export const dynamic = 'force-dynamic';
+
+
 const accountSid = process.env.TWILIO_ACCOUNT_SID || 'AC_PLACEHOLDER';
 const authToken = process.env.TWILIO_AUTH_TOKEN || 'AUTH_PLACEHOLDER';
 const client = twilio(accountSid, authToken);
