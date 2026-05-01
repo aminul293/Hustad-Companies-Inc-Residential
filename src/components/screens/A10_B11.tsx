@@ -162,6 +162,7 @@ interface RepPrepProps {
   session: SessionState;
   onUpdate: (s: SessionState) => void;
   onNext: () => void;
+  onBack: () => void;
 }
 
 const OUTCOME_OPTIONS: { value: OutcomeType; label: string; description: string; icon: any; color: string }[] = [
@@ -172,7 +173,7 @@ const OUTCOME_OPTIONS: { value: OutcomeType; label: string; description: string;
   { value: "full_restoration_candidate", label: "Full Restoration", description: "Complete asset restoration.", icon: LayoutGrid, color: "rose" },
 ];
 
-export function B11RepFindingsPrep({ session, onUpdate, onNext }: RepPrepProps) {
+export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPrepProps) {
   const f = session.findings;
   const [outcomeType, setOutcome] = useState<OutcomeType | null>(f.outcomeType);
   const [urgentCount, setUrgentCount] = useState(f.urgentItemsCount);
@@ -191,6 +192,47 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext }: RepPrepProps) 
   const [internalNotes, setInternalNotes] = useState(f.internalNotes);
   const [urgentRecommended, setUrgentRecommended] = useState(f.urgentProtectionRecommended);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isWeatherLoading, setIsWeatherLoading] = useState(false);
+
+  const fetchLiveWeather = async () => {
+    setIsWeatherLoading(true);
+    
+    const getCoords = () => new Promise<{lat: number, lon: number} | null>((resolve) => {
+      if (!navigator.geolocation) return resolve(null);
+      navigator.geolocation.getCurrentPosition(
+        (p) => resolve({ lat: p.coords.latitude, lon: p.coords.longitude }),
+        () => resolve(null),
+        { timeout: 5000 }
+      );
+    });
+
+    try {
+      const coords = await getCoords();
+      const url = coords 
+        ? `/api/weather/nws?lat=${coords.lat}&lon=${coords.lon}`
+        : "/api/weather/nws?office=MKX";
+
+      const res = await fetch(url);
+      const data = await res.json();
+      
+      if (data.reports && data.reports.length > 0) {
+        const newEvents = data.reports.slice(0, 3).map((r: any) => ({
+          time: r.time,
+          reference: r.reference,
+          relevance: `Located in ${r.county} county. ${r.details || "Forensic validation of storm intensity."}`
+        }));
+        setWeatherEvents(newEvents);
+        setStormSummary(`NWS forensic data from the ${data.office} office confirms a significant ${data.reports[0].type.toLowerCase()} event in the region. Local storm reports (LSRs) provide authoritative verification of intensity.`);
+      } else {
+        alert(`No official NWS storm reports found for the ${data.office || "local"} region in the last 48 hours. The area is currently "Forensic Clear" according to official records.`);
+      }
+    } catch (err) {
+      console.error("Failed to fetch weather:", err);
+      alert("Weather Sync Error: Could not connect to NWS Forensic Terminal. Please check your connection or enter data manually.");
+    } finally {
+      setIsWeatherLoading(false);
+    }
+  };
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -241,13 +283,13 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext }: RepPrepProps) 
           dataUrl,
           caption: "Inspection Detail",
           category: "storm_related" as const,
-          displayOrder: session.photoAssets.length,
+          displayOrder: (session.photoAssets || []).length,
           selectedForSummary: true,
           createdAt: new Date().toISOString(),
         };
         onUpdate({
           ...session,
-          photoAssets: [...session.photoAssets, newAsset],
+          photoAssets: [...(session.photoAssets || []), newAsset],
         });
       };
       reader.readAsDataURL(file);
@@ -410,6 +452,17 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext }: RepPrepProps) 
                   </div>
                   <h2 className="text-xs font-mono font-bold text-white/80 uppercase tracking-[0.3em]">Forensic Weather Validation</h2>
                   <div className="h-[1px] flex-1 bg-gradient-to-r from-white/10 to-transparent ml-6" />
+                  <button 
+                    onClick={fetchLiveWeather}
+                    disabled={isWeatherLoading}
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-2 rounded-xl border border-sky-500/30 bg-sky-500/5 text-[10px] font-mono text-sky-400 uppercase tracking-widest hover:bg-sky-500/10 transition-all",
+                      isWeatherLoading && "opacity-50 cursor-not-allowed"
+                    )}
+                  >
+                    <Upload className={cn("w-3 h-3", isWeatherLoading && "animate-spin")} />
+                    {isWeatherLoading ? "Fetching..." : "Fetch Live NWS Data"}
+                  </button>
                 </div>
 
                 <div className="p-10 rounded-[40px] bg-white/[0.02] border border-white/[0.05] space-y-8">
@@ -503,7 +556,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext }: RepPrepProps) 
                   </div>
                   <h2 className="text-xs font-mono font-bold text-white/80 uppercase tracking-[0.3em]">Evidence Log</h2>
                 </div>
-                <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.05]">{session.photoAssets.length} Assets Attached</span>
+                <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.05]">{(session.photoAssets || []).length} Assets Attached</span>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -515,11 +568,11 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext }: RepPrepProps) 
                   <input type="file" accept="image/*" multiple capture="environment" className="hidden" onChange={handleFileChange} />
                 </label>
 
-                {session.photoAssets.slice().reverse().map((photo) => (
+                {(session.photoAssets || []).slice().reverse().map((photo) => (
                   <div key={photo.assetId} className="group relative aspect-[4/3] rounded-3xl overflow-hidden border border-white/[0.05] bg-white/[0.04] shadow-2xl">
                     <img src={photo.dataUrl} alt="Finding" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                     <button 
-                      onClick={() => onUpdate({ ...session, photoAssets: session.photoAssets.filter(p => p.assetId !== photo.assetId) })}
+                      onClick={() => onUpdate({ ...session, photoAssets: (session.photoAssets || []).filter(p => p.assetId !== photo.assetId) })}
                       className="absolute top-3 right-3 w-8 h-8 rounded-xl bg-black/80 backdrop-blur-md text-white/40 hover:text-rose-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -537,14 +590,18 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext }: RepPrepProps) 
 
       {/* Control Surface (Footer) */}
       <div className="absolute bottom-0 inset-x-0 p-10 z-50 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A] to-transparent pt-32 pointer-events-none">
-        <div className="max-w-4xl mx-auto flex flex-col items-center pointer-events-auto">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-8 pointer-events-auto">
+          <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
+            <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-display font-medium text-white">Back</span>
+          </button>
           <StarButton 
             onClick={handleLock}
             disabled={!outcomeType}
             lightColor="#FAFAFA"
             backgroundColor="#0A0A0A"
             className={cn(
-              "w-full h-20 rounded-[40px] transition-all duration-500",
+              "flex-1 h-20 rounded-[40px] transition-all duration-500",
               !outcomeType ? "opacity-20 grayscale cursor-not-allowed" : "active:scale-95 shadow-[0_20px_60px_-15px_rgba(99,102,241,0.2)]"
             )}
           >
@@ -562,19 +619,6 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext }: RepPrepProps) 
               <ChevronRight className="w-6 h-6 text-white/30" />
             </div>
           </StarButton>
-          
-          <div className="flex items-center gap-4 mt-6 font-mono text-[9px] uppercase tracking-[0.3em]">
-            {!outcomeType ? (
-              <span className="text-white/20">Awaiting Rep Determination</span>
-            ) : Object.keys(errors).length > 0 ? (
-              <span className="text-rose-500/60 animate-pulse">Validation Warning: {Object.keys(errors).join(", ")}</span>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Shield className="w-3 h-3 text-emerald-500/50" />
-                <span className="text-white/40">Ready for Ownership Review // Forensic Integrity Guaranteed</span>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>

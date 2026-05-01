@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useSession } from "@/components/SessionProvider";
 import { P00RepLaunch } from "@/components/screens/P00RepLaunch";
 import { A01Welcome } from "@/components/screens/A01Welcome";
@@ -43,6 +44,23 @@ export function ScreenRouter() {
     onBack: goBack,
   };
 
+  // SYNC URL WITH SCREEN (Enables Browser Back/Forward)
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("screen", session.currentScreen);
+    window.history.pushState({ screen: session.currentScreen }, "", url.toString());
+  }, [session.currentScreen]);
+
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state?.screen) {
+        jumpTo(event.state.screen);
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [jumpTo]);
+
   switch (session.currentScreen) {
     case "P00_rep_launch":
       return (
@@ -61,6 +79,7 @@ export function ScreenRouter() {
         <A01Welcome
           session={session}
           onNext={goNext}
+          onBack={goBack}
           onSkip={() => jumpTo("A10_inspection_hold")}
         />
       );

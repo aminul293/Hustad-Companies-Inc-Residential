@@ -19,6 +19,7 @@ export function createSession(repId: string, repName: string): SessionState {
   const now = new Date().toISOString();
   return {
     sessionId: `sess_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    reviewToken: undefined,
     repId,
     repName,
     createdAt: now,
@@ -385,4 +386,11 @@ export function submitSession(session: SessionState): SessionState {
     "authorization_submitted",
     { outcome }
   );
+}
+
+export function generateReviewToken(session: SessionState): SessionState {
+  if (session.reviewToken) return session; // Already exists
+  const token = `rt_${Math.random().toString(36).slice(2, 10)}_${Date.now().toString(36)}`;
+  const updated = { ...session, reviewToken: token };
+  return addAuditEvent(updated, "review_token_generated", { token });
 }

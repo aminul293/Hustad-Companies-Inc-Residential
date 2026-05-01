@@ -181,6 +181,7 @@ export interface AuditEvent {
 export interface SessionState {
   // Identity
   sessionId: string;
+  reviewToken?: string;
   repId: string;
   repName: string;
   createdAt: string;

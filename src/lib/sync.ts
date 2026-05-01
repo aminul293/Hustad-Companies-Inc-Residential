@@ -70,10 +70,9 @@ function getAuthHeaders(): Record<string, string> {
 
 export async function syncSessionToServer(session: SessionState): Promise<boolean> {
   try {
-    const token = getAuthToken();
-    if (!token) return false; // Not authenticated, skip sync
-
-    const res = await fetch(`${API_BASE}/api/sessions`, {
+    // For local relay / remote review staging, we don't strictly require a token
+    // but we prefer it if available.
+    const res = await fetch(`${API_BASE}/api/session`, {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify(session),
@@ -93,7 +92,7 @@ export async function syncSessionToServer(session: SessionState): Promise<boolea
 
 export async function fetchSessionsFromServer(): Promise<any[]> {
   try {
-    const res = await fetch(`${API_BASE}/api/sessions`, {
+    const res = await fetch(`${API_BASE}/api/session`, {
       headers: getAuthHeaders(),
     });
     if (!res.ok) return [];
@@ -106,7 +105,7 @@ export async function fetchSessionsFromServer(): Promise<any[]> {
 
 export async function fetchSessionById(sessionId: string) {
   try {
-    const res = await fetch(`${API_BASE}/api/sessions/${sessionId}`, {
+    const res = await fetch(`${API_BASE}/api/session/${sessionId}`, {
       headers: getAuthHeaders(),
     });
     if (!res.ok) return null;
