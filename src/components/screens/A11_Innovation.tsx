@@ -46,7 +46,7 @@ const staggerContainer = {
   },
 };
 
-export function A11Innovation({ onNext, onBack }: Props) {
+export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
   return (
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606] selection:bg-indigo-500/30">
       {/* Background HUD Layer */}
