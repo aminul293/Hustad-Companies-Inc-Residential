@@ -12,7 +12,7 @@ const CLIENT_SECRET = process.env.AZURE_CLIENT_SECRET;
 const SENDER_EMAIL = process.env.SENDER_EMAIL || 'info@hustadcompanies.com';
 
 if (!CLIENT_ID || !TENANT_ID || !CLIENT_SECRET) {
-  console.error("CRITICAL: Azure credentials missing from environment variables.");
+  throw new Error("CRITICAL: Azure credentials missing from environment variables.");
 }
 
 async function getAccessToken() {
