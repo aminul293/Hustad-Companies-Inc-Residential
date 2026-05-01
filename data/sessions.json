@@ -465,7 +465,7 @@
       "repId": "2",
       "repName": "Field Rep",
       "createdAt": "2026-05-01T18:22:21.828Z",
-      "lastSavedAt": "2026-05-01T18:41:41.617Z",
+      "lastSavedAt": "2026-05-01T18:37:22.465Z",
       "sessionStatus": "deferred",
       "currentScreen": "B19_next_steps",
       "mode": "rep",
@@ -604,44 +604,24 @@
           "createdAt": "2026-05-01T18:37:22.461Z"
         },
         {
-          "taskId": "task_1777660731064_ox6e",
+          "taskId": "task_1777660731066_kojh",
           "owner": "2",
           "dueDate": "2026-05-03",
           "reason": "Signature deferred",
           "status": "open",
           "recipientName": "",
           "recipientEmail": "john@example.com",
-          "createdAt": "2026-05-01T18:38:51.064Z"
+          "createdAt": "2026-05-01T18:38:51.066Z"
         },
         {
-          "taskId": "task_1777660756475_xlk4",
+          "taskId": "task_1777665704470_xv5e",
           "owner": "2",
           "dueDate": "2026-05-03",
           "reason": "Signature deferred",
           "status": "open",
           "recipientName": "",
           "recipientEmail": "john@example.com",
-          "createdAt": "2026-05-01T18:39:16.475Z"
-        },
-        {
-          "taskId": "task_1777660901607_ly6f",
-          "owner": "2",
-          "dueDate": "2026-05-03",
-          "reason": "Signature deferred",
-          "status": "open",
-          "recipientName": "",
-          "recipientEmail": "john@example.com",
-          "createdAt": "2026-05-01T18:41:41.607Z"
-        },
-        {
-          "taskId": "task_1777660980537_fl21",
-          "owner": "2",
-          "dueDate": "2026-05-03",
-          "reason": "Signature deferred",
-          "status": "open",
-          "recipientName": "",
-          "recipientEmail": "john@example.com",
-          "createdAt": "2026-05-01T18:43:00.537Z"
+          "createdAt": "2026-05-01T20:01:44.470Z"
         }
       ],
       "syncStatus": "local_only",
@@ -834,9 +814,9 @@
         {
           "eventName": "follow_up_created",
           "actorId": "2",
-          "occurredAt": "2026-05-01T18:38:51.064Z",
+          "occurredAt": "2026-05-01T18:38:51.066Z",
           "metadata": {
-            "taskId": "task_1777660731064_ox6e",
+            "taskId": "task_1777660731066_kojh",
             "reason": "Signature deferred",
             "dueDate": "2026-05-03"
           }
@@ -844,29 +824,9 @@
         {
           "eventName": "follow_up_created",
           "actorId": "2",
-          "occurredAt": "2026-05-01T18:39:16.475Z",
+          "occurredAt": "2026-05-01T20:01:44.470Z",
           "metadata": {
-            "taskId": "task_1777660756475_xlk4",
-            "reason": "Signature deferred",
-            "dueDate": "2026-05-03"
-          }
-        },
-        {
-          "eventName": "follow_up_created",
-          "actorId": "2",
-          "occurredAt": "2026-05-01T18:41:41.607Z",
-          "metadata": {
-            "taskId": "task_1777660901607_ly6f",
-            "reason": "Signature deferred",
-            "dueDate": "2026-05-03"
-          }
-        },
-        {
-          "eventName": "follow_up_created",
-          "actorId": "2",
-          "occurredAt": "2026-05-01T18:43:00.537Z",
-          "metadata": {
-            "taskId": "task_1777660980537_fl21",
+            "taskId": "task_1777665704470_xv5e",
             "reason": "Signature deferred",
             "dueDate": "2026-05-03"
           }
@@ -874,7 +834,7 @@
       ],
       "reviewToken": "rt_cbdcmc5v_mon8ycpn",
       "tokenGeneratedAt": "2026-05-01T18:29:08.776Z",
-      "syncedAt": "2026-05-01T18:43:02.569Z"
+      "syncedAt": "2026-05-01T20:01:46.572Z"
     },
     "sess_1777660769700_917cn1": {
       "sessionId": "sess_1777660769700_917cn1",
@@ -2139,7 +2099,7 @@
       "repId": "2",
       "repName": "Aminul",
       "createdAt": "2026-04-28T18:59:58.643Z",
-      "lastSavedAt": "2026-05-01T19:36:40.322Z",
+      "lastSavedAt": "2026-05-01T19:36:45.376Z",
       "sessionStatus": "phase_a_complete",
       "currentScreen": "B11_rep_findings_prep",
       "mode": "rep",
@@ -2323,7 +2283,7 @@
         }
       ],
       "tokenGeneratedAt": "2026-04-28T18:59:58.643Z",
-      "syncedAt": "2026-05-01T19:36:47.523Z"
+      "syncedAt": "2026-05-01T19:59:23.462Z"
     }
   },
   "tokens": {
