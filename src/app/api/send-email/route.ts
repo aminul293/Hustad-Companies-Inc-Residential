@@ -11,11 +11,13 @@ const TENANT_ID = process.env.AZURE_TENANT_ID;
 const CLIENT_SECRET = process.env.AZURE_CLIENT_SECRET;
 const SENDER_EMAIL = process.env.SENDER_EMAIL || 'info@hustadcompanies.com';
 
-if (!CLIENT_ID || !TENANT_ID || !CLIENT_SECRET) {
-  throw new Error("CRITICAL: Azure credentials missing from environment variables.");
-}
+export const dynamic = 'force-dynamic';
 
 async function getAccessToken() {
+  if (!CLIENT_ID || !TENANT_ID || !CLIENT_SECRET) {
+    throw new Error("CRITICAL: Azure credentials missing from environment variables.");
+  }
+
   const url = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token`;
   const body = new URLSearchParams({
     client_id: CLIENT_ID!,
