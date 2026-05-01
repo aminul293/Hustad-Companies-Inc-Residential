@@ -737,7 +737,7 @@ export function B19NextSteps({ session, onUpdate, onNext, onBack, onFinish }: Ne
         }
       } else {
         // SMS DISPATCH
-        const currentPhone = session.property.homeownerPrimaryPhone || "";
+        const currentPhone = session.property.homeownerPrimaryMobile || "";
         const phone = (currentPhone || quickPhone.trim()).replace(/\D/g, "");
 
         if (!phone) throw new Error("No phone number found for this property. Please add a phone number to send the text summary.");
@@ -748,7 +748,7 @@ export function B19NextSteps({ session, onUpdate, onNext, onBack, onFinish }: Ne
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...session,
-            property: { ...session.property, homeownerPrimaryPhone: phone }
+            property: { ...session.property, homeownerPrimaryMobile: phone }
           })
         });
 
@@ -756,7 +756,7 @@ export function B19NextSteps({ session, onUpdate, onNext, onBack, onFinish }: Ne
         if (!currentPhone && phone) {
           onUpdate({
             ...session,
-            property: { ...session.property, homeownerPrimaryPhone: phone }
+            property: { ...session.property, homeownerPrimaryMobile: phone }
           });
         }
 
@@ -884,7 +884,7 @@ export function B19NextSteps({ session, onUpdate, onNext, onBack, onFinish }: Ne
                   ].map((opt) => {
                     const recipient = opt.id === "email" 
                       ? (session.signatureData.signerEmail || session.property.homeownerPrimaryEmail)
-                      : (session.property.homeownerPrimaryPhone || "No Phone");
+                      : (session.property.homeownerPrimaryMobile || "No Phone");
                     
                     return (
                       <div key={opt.id} className="space-y-2">
