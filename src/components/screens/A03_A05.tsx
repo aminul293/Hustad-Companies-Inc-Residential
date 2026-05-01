@@ -27,6 +27,7 @@ interface Props {
   session: SessionState;
   onNext: () => void;
   onBack: () => void;
+  onUpdate: (s: SessionState) => void;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -22,6 +22,7 @@ interface Props {
   session: SessionState;
   onNext: () => void;
   onBack: () => void;
+  onUpdate: (s: SessionState) => void;
 }
 
 export function A02WhyInspection({ session: _session, onNext, onBack }: Props) {

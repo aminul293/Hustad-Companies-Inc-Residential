@@ -160,6 +160,8 @@ export function ScreenRouter() {
         <B19NextSteps
           session={session}
           onUpdate={updateSession}
+          onNext={goNext}
+          onBack={goBack}
           onFinish={resetSession}
         />
       );
