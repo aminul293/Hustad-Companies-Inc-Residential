@@ -125,6 +125,7 @@ export function ScreenRouter() {
           session={session}
           onUpdate={updateSession}
           onNext={goNext}
+          onBack={goBack}
         />
       );
 
