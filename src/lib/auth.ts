@@ -1,69 +1,71 @@
-import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
-import { NextRequest } from "next/server";
-import { getServiceClient } from "./supabase-server";
+import { NextAuthOptions } from "next-auth";
+import AzureADProvider from "next-auth/providers/azure-ad";
+import * as jwt from "jsonwebtoken";
+import * as bcrypt from "bcryptjs";
+import { NextRequest, NextResponse } from "next/server";
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
-const TOKEN_EXPIRY = "12h"; // Field sessions can be long
+const JWT_SECRET = process.env.JWT_SECRET || "hustad-secret-2024";
 
-export interface TokenPayload {
-  repId: string;
-  email: string;
-  name: string;
-  role: string;
+// --- EXISTING AUTH LOGIC (RESTORED) ---
+export async function checkPassword(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash);
 }
 
-export function signToken(payload: TokenPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
+export async function checkPin(pin: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(pin, hash);
 }
 
-export function verifyToken(token: string): TokenPayload | null {
+export function signToken(payload: any): string {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+}
+
+export function verifyToken(token: string): any {
   try {
-    return jwt.verify(token, JWT_SECRET) as TokenPayload;
+    return jwt.verify(token, JWT_SECRET);
   } catch {
     return null;
   }
 }
 
-export function hashPassword(password: string): string {
-  return bcrypt.hashSync(password, 10);
+export function getTokenFromRequest(req: NextRequest): any {
+  const token = req.cookies.get("hustad_token")?.value;
+  if (!token) return null;
+  return verifyToken(token);
 }
 
-export function checkPassword(password: string, hash: string): boolean {
-  return bcrypt.compareSync(password, hash);
-}
-
-export function hashPin(pin: string): string {
-  return bcrypt.hashSync(pin, 8);
-}
-
-export function checkPin(pin: string, hash: string): boolean {
-  return bcrypt.compareSync(pin, hash);
-}
-
-// Extract token from Authorization header or cookie
-export function getTokenFromRequest(req: NextRequest): TokenPayload | null {
-  // Check Authorization header
-  const authHeader = req.headers.get("authorization");
-  if (authHeader?.startsWith("Bearer ")) {
-    return verifyToken(authHeader.slice(7));
-  }
-  // Check cookie
-  const cookie = req.cookies.get("hustad_token");
-  if (cookie?.value) {
-    return verifyToken(cookie.value);
-  }
-  return null;
-}
-
-// Middleware helper — returns null payload or throws JSON response
-export async function requireAuth(req: NextRequest): Promise<TokenPayload> {
+export async function requireAuth(req: NextRequest) {
   const payload = getTokenFromRequest(req);
   if (!payload) {
-    throw new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
+    throw NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   return payload;
 }
+
+// --- NEW ENTERPRISE AUTH LOGIC (NEXT-AUTH) ---
+export const authOptions: NextAuthOptions = {
+  providers: [
+    AzureADProvider({
+      clientId: process.env.AZURE_AD_CLIENT_ID || "local-dev-client-id",
+      clientSecret: process.env.AZURE_AD_CLIENT_SECRET || "local-dev-client-secret",
+      tenantId: process.env.AZURE_AD_TENANT_ID || "common",
+    }),
+  ],
+  callbacks: {
+    async session({ session, token }) {
+      if (session.user) {
+        (session.user as any).id = token.sub;
+      }
+      return session;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+  },
+  pages: {
+    signIn: "/login",
+  },
+  secret: process.env.NEXTAUTH_SECRET || "hustad-fallback-secret-2026-field-secure",
+};

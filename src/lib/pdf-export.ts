@@ -109,7 +109,13 @@ async function generateDossier(session: SessionState): Promise<jsPDF> {
     startY: currentY,
     margin: { left: 45 },
     head: [["PROJECT METRIC", "VALUE"]],
-    body: [["ESTIMATED VALUE", session.findings.estimatedClaimValue || "$28,800"], ["SQ. FT. INVENTORY", `${session.findings.roofingArea || "3,200"} SF`], ["WEATHER EVENT", (session.property || {}).stormBasis || "NWS VALIDATED"]],
+    body: [
+      ["ESTIMATED VALUE", session.findings.estimatedClaimValue || "$28,800"], 
+      ["SQ. FT. INVENTORY", `${session.findings.roofingArea || "3,200"} SF`], 
+      ["WEATHER EVENT", (session.property || {}).stormBasis || "NWS VALIDATED"],
+      ["MANUFACTURER", session.pathData.manufacturerSelected || "PENDING"],
+      ["PROTECTION LEVEL", session.pathData.warrantyOptionSelected || "STANDARD"]
+    ],
     theme: "striped",
     headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontSize: 8 },
     styles: { fontSize: 8.5, cellPadding: 4 },
@@ -136,12 +142,30 @@ async function generateDossier(session: SessionState): Promise<jsPDF> {
     styles: { fontSize: 7.5, cellPadding: 3 },
   });
 
-  const photoAssets = session.photoAssets || [];
+  const photoAssets = (session.photoAssets || []).filter(p => p.selectedForSummary && !p.isSensitive);
   if (photoAssets.length > 0) {
     currentY = (doc as any).lastAutoTable.finalY + 15;
     doc.setTextColor(15, 23, 42); doc.setFont("times", "bold"); doc.setFontSize(12); doc.text("SENSORY EVIDENCE_01", 45, currentY);
     try {
-      doc.addImage(photoAssets[0].dataUrl, "JPEG", 45, currentY + 5, contentWidth - 30, 80);
+      const asset = photoAssets[0];
+      doc.addImage(asset.dataUrl, "JPEG", 45, currentY + 5, contentWidth - 30, 80);
+      
+      // Draw annotations for the first large photo
+      if (asset.annotations) {
+        doc.setLineWidth(0.5);
+        asset.annotations.forEach(ann => {
+          doc.setDrawColor(ann.color === "#ef4444" ? 239 : 99, ann.color === "#ef4444" ? 68 : 102, ann.color === "#ef4444" ? 68 : 241);
+          if (ann.type === "circle") {
+            doc.circle(45 + (ann.x * (contentWidth - 30) / 100), (currentY + 5) + (ann.y * 80 / 100), (ann.radius || 5) * (contentWidth - 30) / 100, "S");
+          } else if (ann.type === "arrow") {
+            doc.line(45 + (ann.x * (contentWidth - 30) / 100), (currentY + 5) + (ann.y * 80 / 100), 45 + ((ann.toX || ann.x) * (contentWidth - 30) / 100), (currentY + 5) + ((ann.toY || ann.y) * 80 / 100));
+          } else if (ann.type === "label" && ann.text) {
+            doc.setFillColor(ann.color === "#ef4444" ? 239 : 99, ann.color === "#ef4444" ? 68 : 102, ann.color === "#ef4444" ? 68 : 241);
+            doc.rect(45 + (ann.x * (contentWidth - 30) / 100) - 10, (currentY + 5) + (ann.y * 80 / 100) - 3, 20, 6, "F");
+            doc.setTextColor(255, 255, 255); doc.setFontSize(5); doc.text(ann.text.toUpperCase(), 45 + (ann.x * (contentWidth - 30) / 100), (currentY + 5) + (ann.y * 80 / 100) + 1, { align: "center" });
+          }
+        });
+      }
       doc.setDrawColor(15, 23, 42); doc.setLineWidth(0.5); doc.rect(45, currentY + 5, contentWidth - 30, 80, "S");
     } catch (e) {}
   }
@@ -192,10 +216,38 @@ async function generateDossier(session: SessionState): Promise<jsPDF> {
         const x = 45 + (col * ( (contentWidth - 40) / 2 + 10)); const y = 40 + (row * 100);
         try { 
           doc.addImage(asset.dataUrl, "JPEG", x, y, (contentWidth - 40) / 2, 80); 
+          
+          // --- DRAW FORENSIC ANNOTATIONS ---
+          if (asset.annotations && asset.annotations.length > 0) {
+            const imgWidth = (contentWidth - 40) / 2;
+            const imgHeight = 80;
+            doc.setLineWidth(0.5);
+            asset.annotations.forEach(ann => {
+              if (ann.color === "#ef4444") doc.setDrawColor(239, 68, 68);
+              else doc.setDrawColor(99, 102, 241);
+              
+              if (ann.type === "circle") {
+                doc.circle(x + (ann.x * imgWidth / 100), y + (ann.y * imgHeight / 100), (ann.radius || 5) * imgWidth / 100, "S");
+              } else if (ann.type === "arrow") {
+                doc.line(x + (ann.x * imgWidth / 100), y + (ann.y * imgHeight / 100), x + ((ann.toX || ann.x) * imgWidth / 100), y + ((ann.toY || ann.y) * imgHeight / 100));
+              } else if (ann.type === "label" && ann.text) {
+                doc.setFillColor(ann.color === "#ef4444" ? 239 : 99, ann.color === "#ef4444" ? 68 : 102, ann.color === "#ef4444" ? 68 : 241);
+                doc.rect(x + (ann.x * imgWidth / 100) - 10, y + (ann.y * imgHeight / 100) - 3, 20, 6, "F");
+                doc.setTextColor(255, 255, 255); doc.setFontSize(5); doc.text(ann.text.toUpperCase(), x + (ann.x * imgWidth / 100), y + (ann.y * imgHeight / 100) + 1, { align: "center" });
+              } else if (ann.type === "blur") {
+                doc.setFillColor(255, 255, 255); doc.rect(x + (ann.x * imgWidth / 100), y + (ann.y * imgHeight / 100), ((ann.toX || ann.x) - ann.x) * imgWidth / 100, ((ann.toY || ann.y) - ann.y) * imgHeight / 100, "F");
+              }
+            });
+          }
+
           doc.setDrawColor(15, 23, 42); doc.setLineWidth(0.5); doc.rect(x, y, (contentWidth - 40) / 2, 80, "S");
           doc.setFillColor(15, 23, 42); doc.rect(x, y + 80, 40, 6, "F");
           doc.setFontSize(6); doc.setTextColor(255, 255, 255); doc.setFont("courier", "bold");
-          doc.text(`TAG_${asset.category.toUpperCase()}`, x + 3, y + 84); 
+          doc.text(`TAG_${(asset.tags?.[0] || asset.category).toUpperCase()}`, x + 3, y + 84); 
+          if (asset.severity) {
+            doc.setTextColor(asset.severity === 'critical' ? 239 : 148, asset.severity === 'critical' ? 68 : 163, asset.severity === 'critical' ? 68 : 184);
+            doc.text(`[${asset.severity.toUpperCase()}]`, x + 3, y + 88);
+          }
         } catch (e) {}
       });
       currentPhotoIdx += 4;

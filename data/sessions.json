@@ -465,7 +465,7 @@
       "repId": "2",
       "repName": "Field Rep",
       "createdAt": "2026-05-01T18:22:21.828Z",
-      "lastSavedAt": "2026-05-01T18:37:22.465Z",
+      "lastSavedAt": "2026-05-01T20:01:44.503Z",
       "sessionStatus": "deferred",
       "currentScreen": "B19_next_steps",
       "mode": "rep",
@@ -622,6 +622,16 @@
           "recipientName": "",
           "recipientEmail": "john@example.com",
           "createdAt": "2026-05-01T20:01:44.470Z"
+        },
+        {
+          "taskId": "task_1777918733835_lrxf",
+          "owner": "2",
+          "dueDate": "2026-05-06",
+          "reason": "Signature deferred",
+          "status": "open",
+          "recipientName": "",
+          "recipientEmail": "john@example.com",
+          "createdAt": "2026-05-04T18:18:53.835Z"
         }
       ],
       "syncStatus": "local_only",
@@ -830,11 +840,21 @@
             "reason": "Signature deferred",
             "dueDate": "2026-05-03"
           }
+        },
+        {
+          "eventName": "follow_up_created",
+          "actorId": "2",
+          "occurredAt": "2026-05-04T18:18:53.835Z",
+          "metadata": {
+            "taskId": "task_1777918733835_lrxf",
+            "reason": "Signature deferred",
+            "dueDate": "2026-05-06"
+          }
         }
       ],
       "reviewToken": "rt_cbdcmc5v_mon8ycpn",
       "tokenGeneratedAt": "2026-05-01T18:29:08.776Z",
-      "syncedAt": "2026-05-01T20:01:46.572Z"
+      "syncedAt": "2026-05-04T18:18:55.878Z"
     },
     "sess_1777660769700_917cn1": {
       "sessionId": "sess_1777660769700_917cn1",
@@ -2099,7 +2119,7 @@
       "repId": "2",
       "repName": "Aminul",
       "createdAt": "2026-04-28T18:59:58.643Z",
-      "lastSavedAt": "2026-05-01T19:36:45.376Z",
+      "lastSavedAt": "2026-05-04T18:12:33.519Z",
       "sessionStatus": "phase_a_complete",
       "currentScreen": "B11_rep_findings_prep",
       "mode": "rep",
@@ -2280,10 +2300,1171 @@
           "metadata": {
             "screen": "B11_rep_findings_prep"
           }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "2",
+          "occurredAt": "2026-05-04T18:10:48.320Z",
+          "metadata": {
+            "screen": "A10_inspection_hold"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "2",
+          "occurredAt": "2026-05-04T18:11:10.091Z",
+          "metadata": {
+            "screen": "B11_rep_findings_prep"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "2",
+          "occurredAt": "2026-05-04T18:11:18.454Z",
+          "metadata": {
+            "screen": "A10_inspection_hold"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "2",
+          "occurredAt": "2026-05-04T18:11:21.920Z",
+          "metadata": {
+            "screen": "B11_rep_findings_prep"
+          }
         }
       ],
       "tokenGeneratedAt": "2026-04-28T18:59:58.643Z",
-      "syncedAt": "2026-05-01T19:59:23.462Z"
+      "syncedAt": "2026-05-04T18:12:49.901Z"
+    },
+    "sess_1777386477689_11guh4": {
+      "sessionId": "sess_1777386477689_11guh4",
+      "repId": "rep_001",
+      "repName": "Hustad Rep",
+      "createdAt": "2026-04-28T14:27:57.689Z",
+      "lastSavedAt": "2026-04-28T15:09:05.961Z",
+      "sessionStatus": "summary_locked",
+      "currentScreen": "B19_next_steps",
+      "mode": "rep",
+      "phaseACompleted": false,
+      "property": {
+        "address": "yhdbc",
+        "cityStateZip": "Madison, WI",
+        "propertyType": "single_family",
+        "homeownerPrimaryName": "",
+        "homeownerPrimaryEmail": "",
+        "homeownerPrimaryMobile": "",
+        "insurerNameKnown": "",
+        "claimNumberKnown": "",
+        "accessNotes": ""
+      },
+      "buyerData": {
+        "buyerPriorities": [],
+        "insurerContactStatus": null,
+        "anotherDecisionMakerPresent": null,
+        "decisionMakerRelation": "",
+        "decisionMakerName": "",
+        "decisionMakerEmail": "",
+        "decisionMakerMobile": "",
+        "buyerQuestions": ""
+      },
+      "findings": {
+        "outcomeType": "no_damage",
+        "recommendedPath": null,
+        "urgentItemsCount": 0,
+        "stormRelatedItemsCount": 0,
+        "monitorItemsCount": 0,
+        "summaryHeadline": "JBJWF",
+        "summaryBody": "NWFIN",
+        "topPhotoAssetIds": [],
+        "urgentProtectionRecommended": false,
+        "urgentProtectionAuthorized": null,
+        "internalNotes": "",
+        "summaryLockedAt": "2026-05-04T16:00:01.995Z",
+        "summaryLockedBy": "rep_001",
+        "roofingArea": "3,200",
+        "estimatedClaimValue": "$28,800",
+        "weatherEvents": [
+          {
+            "time": "5:39 PM CDT",
+            "reference": "NWS MKX LSR: 1 E Madison, 3.25 inch hail",
+            "relevance": "Same east Madison trade area near property."
+          },
+          {
+            "time": "5:34 PM CDT",
+            "reference": "NWS MKX LSR: 1 E Maple Bluff, 3.00 inch hail",
+            "relevance": "Confirms large hail north of the property."
+          },
+          {
+            "time": "5:33 PM CDT",
+            "reference": "NWS MKX LSR: 1 S Maple Bluff, 2.00 inch hail",
+            "relevance": "Provides additional nearby hail support."
+          }
+        ],
+        "stormSummary": "NWS Milwaukee and Sullivan products support a severe Dane County hail event on April 14, 2026."
+      },
+      "pathData": {
+        "selectedPath": null,
+        "manufacturerSelected": null,
+        "productSelected": "",
+        "impactUpgradeSelected": false,
+        "warrantyOptionSelected": "",
+        "claimRelatedWork": null,
+        "agreementAcknowledged": false
+      },
+      "signatureData": {
+        "signerName": "",
+        "signerEmail": "",
+        "signerMobile": "",
+        "preferredFollowUpMethod": null,
+        "signatureImage": null,
+        "summarySendRecipient": "",
+        "deferralReason": "",
+        "signedAt": null
+      },
+      "photoAssets": [],
+      "followUpTasks": [],
+      "syncStatus": "local_only",
+      "auditEvents": [
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-04-28T14:28:03.294Z",
+          "metadata": {
+            "screen": "A01_welcome"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-04-28T14:28:13.561Z",
+          "metadata": {
+            "screen": "A02_why_inspection"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-04-28T14:28:15.591Z",
+          "metadata": {
+            "screen": "A01_welcome"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-04-28T14:28:39.257Z",
+          "metadata": {
+            "screen": "A02_why_inspection"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-04-28T14:55:49.305Z",
+          "metadata": {
+            "screen": "A01_welcome"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-04-28T14:57:33.154Z",
+          "metadata": {
+            "screen": "A10_inspection_hold"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T15:59:37.252Z",
+          "metadata": {
+            "screen": "B11_rep_findings_prep"
+          }
+        },
+        {
+          "eventName": "outcome_type_set",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T16:00:01.995Z",
+          "metadata": {
+            "outcomeType": "no_damage"
+          }
+        },
+        {
+          "eventName": "rep_summary_locked",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T16:00:01.995Z",
+          "metadata": {
+            "lockedAt": "2026-05-04T16:00:01.995Z",
+            "repId": "rep_001",
+            "outcomeType": "no_damage"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T16:00:01.996Z",
+          "metadata": {
+            "screen": "B12_findings_summary"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T16:00:05.245Z",
+          "metadata": {
+            "screen": "B13_recommended_path"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T16:00:07.205Z",
+          "metadata": {
+            "screen": "B19_next_steps"
+          }
+        }
+      ],
+      "tokenGeneratedAt": "2026-04-28T14:27:57.689Z",
+      "syncedAt": "2026-05-04T16:00:09.300Z"
+    },
+    "sess_1777910409553_nwlmxm": {
+      "sessionId": "sess_1777910409553_nwlmxm",
+      "repId": "rep_001",
+      "repName": "Hustad Rep",
+      "createdAt": "2026-05-04T16:00:09.553Z",
+      "lastSavedAt": "2026-05-04T16:00:09.553Z",
+      "sessionStatus": "draft",
+      "currentScreen": "P00_rep_launch",
+      "mode": "rep",
+      "phaseACompleted": false,
+      "property": {
+        "address": "",
+        "cityStateZip": "Madison, WI",
+        "propertyType": "single_family",
+        "homeownerPrimaryName": "",
+        "homeownerPrimaryEmail": "",
+        "homeownerPrimaryMobile": "",
+        "insurerNameKnown": "",
+        "claimNumberKnown": "",
+        "workingDateOfLoss": "",
+        "stormBasis": "",
+        "accessNotes": ""
+      },
+      "buyerData": {
+        "buyerPriorities": [],
+        "insurerContactStatus": null,
+        "anotherDecisionMakerPresent": null,
+        "decisionMakerRelation": "",
+        "decisionMakerName": "",
+        "decisionMakerEmail": "",
+        "decisionMakerMobile": "",
+        "buyerQuestions": ""
+      },
+      "findings": {
+        "outcomeType": null,
+        "recommendedPath": null,
+        "urgentItemsCount": 0,
+        "stormRelatedItemsCount": 0,
+        "monitorItemsCount": 0,
+        "roofingArea": "",
+        "estimatedClaimValue": "",
+        "weatherEvents": [],
+        "stormSummary": "",
+        "summaryHeadline": "",
+        "summaryBody": "",
+        "topPhotoAssetIds": [],
+        "urgentProtectionRecommended": false,
+        "urgentProtectionAuthorized": null,
+        "internalNotes": "",
+        "summaryLockedAt": null,
+        "summaryLockedBy": null
+      },
+      "pathData": {
+        "selectedPath": null,
+        "manufacturerSelected": null,
+        "productSelected": "",
+        "impactUpgradeSelected": false,
+        "warrantyOptionSelected": "",
+        "claimRelatedWork": null,
+        "agreementAcknowledged": false
+      },
+      "signatureData": {
+        "signerName": "",
+        "signerEmail": "",
+        "signerMobile": "",
+        "preferredFollowUpMethod": null,
+        "signatureImage": null,
+        "summarySendRecipient": "",
+        "deferralReason": "",
+        "signedAt": null
+      },
+      "photoAssets": [],
+      "followUpTasks": [],
+      "syncStatus": "local_only",
+      "auditEvents": [],
+      "tokenGeneratedAt": "2026-05-04T16:00:09.553Z",
+      "syncedAt": "2026-05-04T16:00:11.586Z"
+    },
+    "sess_1777910444253_lqmdch": {
+      "sessionId": "sess_1777910444253_lqmdch",
+      "repId": "rep_1",
+      "repName": "Alex Rivers",
+      "createdAt": "2026-05-04T16:00:44.253Z",
+      "lastSavedAt": "2026-05-04T16:01:01.787Z",
+      "sessionStatus": "draft",
+      "currentScreen": "B19_next_steps",
+      "mode": "rep",
+      "phaseACompleted": false,
+      "property": {
+        "address": "",
+        "cityStateZip": "Madison, WI",
+        "propertyType": "single_family",
+        "homeownerPrimaryName": "",
+        "homeownerPrimaryEmail": "",
+        "homeownerPrimaryMobile": "",
+        "insurerNameKnown": "",
+        "claimNumberKnown": "",
+        "workingDateOfLoss": "",
+        "stormBasis": "",
+        "accessNotes": ""
+      },
+      "buyerData": {
+        "buyerPriorities": [],
+        "insurerContactStatus": null,
+        "anotherDecisionMakerPresent": null,
+        "decisionMakerRelation": "",
+        "decisionMakerName": "",
+        "decisionMakerEmail": "",
+        "decisionMakerMobile": "",
+        "buyerQuestions": ""
+      },
+      "findings": {
+        "outcomeType": null,
+        "recommendedPath": null,
+        "urgentItemsCount": 0,
+        "stormRelatedItemsCount": 0,
+        "monitorItemsCount": 0,
+        "roofingArea": "",
+        "estimatedClaimValue": "",
+        "weatherEvents": [],
+        "stormSummary": "",
+        "summaryHeadline": "",
+        "summaryBody": "",
+        "topPhotoAssetIds": [],
+        "urgentProtectionRecommended": false,
+        "urgentProtectionAuthorized": null,
+        "internalNotes": "",
+        "summaryLockedAt": null,
+        "summaryLockedBy": null
+      },
+      "pathData": {
+        "selectedPath": null,
+        "manufacturerSelected": null,
+        "productSelected": "",
+        "impactUpgradeSelected": false,
+        "warrantyOptionSelected": "",
+        "claimRelatedWork": null,
+        "agreementAcknowledged": false
+      },
+      "signatureData": {
+        "signerName": "",
+        "signerEmail": "",
+        "signerMobile": "",
+        "preferredFollowUpMethod": null,
+        "signatureImage": null,
+        "summarySendRecipient": "",
+        "deferralReason": "",
+        "signedAt": null
+      },
+      "photoAssets": [],
+      "followUpTasks": [],
+      "syncStatus": "local_only",
+      "auditEvents": [
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_1",
+          "occurredAt": "2026-05-04T16:00:44.255Z",
+          "metadata": {
+            "screen": "A01_welcome"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_1",
+          "occurredAt": "2026-05-04T16:00:48.210Z",
+          "metadata": {
+            "screen": "P00_rep_launch"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_1",
+          "occurredAt": "2026-05-04T16:03:22.314Z",
+          "metadata": {
+            "screen": "P00_rep_launch"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_1",
+          "occurredAt": "2026-05-04T16:03:25.084Z",
+          "metadata": {
+            "screen": "B19_next_steps"
+          }
+        }
+      ],
+      "tokenGeneratedAt": "2026-05-04T16:00:44.253Z",
+      "syncedAt": "2026-05-04T16:03:27.104Z"
+    },
+    "sess_1777910609844_eok3w9": {
+      "sessionId": "sess_1777910609844_eok3w9",
+      "repId": "rep_001",
+      "repName": "Hustad Rep",
+      "createdAt": "2026-05-04T16:03:29.844Z",
+      "lastSavedAt": "2026-05-04T16:32:19.368Z",
+      "sessionStatus": "draft",
+      "currentScreen": "B19_next_steps",
+      "mode": "rep",
+      "phaseACompleted": false,
+      "property": {
+        "address": "",
+        "cityStateZip": "Madison, WI",
+        "propertyType": "single_family",
+        "homeownerPrimaryName": "",
+        "homeownerPrimaryEmail": "",
+        "homeownerPrimaryMobile": "",
+        "insurerNameKnown": "",
+        "claimNumberKnown": "",
+        "workingDateOfLoss": "",
+        "stormBasis": "",
+        "accessNotes": ""
+      },
+      "buyerData": {
+        "buyerPriorities": [],
+        "insurerContactStatus": null,
+        "anotherDecisionMakerPresent": null,
+        "decisionMakerRelation": "",
+        "decisionMakerName": "",
+        "decisionMakerEmail": "",
+        "decisionMakerMobile": "",
+        "buyerQuestions": ""
+      },
+      "findings": {
+        "outcomeType": null,
+        "recommendedPath": null,
+        "urgentItemsCount": 0,
+        "stormRelatedItemsCount": 0,
+        "monitorItemsCount": 0,
+        "roofingArea": "",
+        "estimatedClaimValue": "",
+        "weatherEvents": [],
+        "stormSummary": "",
+        "summaryHeadline": "",
+        "summaryBody": "",
+        "topPhotoAssetIds": [],
+        "urgentProtectionRecommended": false,
+        "urgentProtectionAuthorized": null,
+        "internalNotes": "",
+        "summaryLockedAt": null,
+        "summaryLockedBy": null
+      },
+      "pathData": {
+        "selectedPath": null,
+        "manufacturerSelected": null,
+        "productSelected": "",
+        "impactUpgradeSelected": false,
+        "warrantyOptionSelected": "",
+        "claimRelatedWork": null,
+        "agreementAcknowledged": false
+      },
+      "signatureData": {
+        "signerName": "",
+        "signerEmail": "",
+        "signerMobile": "",
+        "preferredFollowUpMethod": null,
+        "signatureImage": null,
+        "summarySendRecipient": "",
+        "deferralReason": "",
+        "signedAt": null
+      },
+      "photoAssets": [],
+      "followUpTasks": [],
+      "syncStatus": "local_only",
+      "auditEvents": [
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T18:00:41.501Z",
+          "metadata": {
+            "screen": "B19_next_steps"
+          }
+        }
+      ],
+      "tokenGeneratedAt": "2026-05-04T16:03:29.844Z",
+      "syncedAt": "2026-05-04T18:00:43.619Z"
+    },
+    "sess_1777911285858_oektl4": {
+      "sessionId": "sess_1777911285858_oektl4",
+      "repId": "rep_001",
+      "repName": "Hustad Rep",
+      "createdAt": "2026-05-04T16:14:45.857Z",
+      "lastSavedAt": "2026-05-04T17:55:00.387Z",
+      "sessionStatus": "summary_locked",
+      "currentScreen": "B19_next_steps",
+      "mode": "rep",
+      "phaseACompleted": true,
+      "property": {
+        "address": "",
+        "cityStateZip": "Madison, WI",
+        "propertyType": "single_family",
+        "homeownerPrimaryName": "",
+        "homeownerPrimaryEmail": "",
+        "homeownerPrimaryMobile": "",
+        "insurerNameKnown": "",
+        "claimNumberKnown": "",
+        "workingDateOfLoss": "",
+        "stormBasis": "",
+        "accessNotes": ""
+      },
+      "buyerData": {
+        "buyerPriorities": [
+          "insurance_process"
+        ],
+        "insurerContactStatus": "not_yet",
+        "anotherDecisionMakerPresent": false,
+        "decisionMakerRelation": "",
+        "decisionMakerName": "",
+        "decisionMakerEmail": "",
+        "decisionMakerMobile": "",
+        "buyerQuestions": ""
+      },
+      "findings": {
+        "outcomeType": "no_damage",
+        "recommendedPath": null,
+        "urgentItemsCount": 0,
+        "stormRelatedItemsCount": 0,
+        "monitorItemsCount": 0,
+        "roofingArea": "3,200",
+        "estimatedClaimValue": "$28,800",
+        "weatherEvents": [],
+        "stormSummary": "NWS Milwaukee and Sullivan products support a severe Dane County hail event on April 14, 2026.",
+        "summaryHeadline": "uhub",
+        "summaryBody": "kbkjb",
+        "topPhotoAssetIds": [],
+        "urgentProtectionRecommended": false,
+        "urgentProtectionAuthorized": null,
+        "internalNotes": "",
+        "summaryLockedAt": "2026-05-04T18:16:38.140Z",
+        "summaryLockedBy": "rep_001",
+        "findingCategories": []
+      },
+      "pathData": {
+        "selectedPath": null,
+        "manufacturerSelected": null,
+        "productSelected": "",
+        "impactUpgradeSelected": false,
+        "warrantyOptionSelected": "",
+        "claimRelatedWork": null,
+        "agreementAcknowledged": false
+      },
+      "signatureData": {
+        "signerName": "",
+        "signerEmail": "",
+        "signerMobile": "",
+        "preferredFollowUpMethod": null,
+        "signatureImage": null,
+        "summarySendRecipient": "",
+        "deferralReason": "",
+        "signedAt": null
+      },
+      "photoAssets": [],
+      "followUpTasks": [],
+      "syncStatus": "local_only",
+      "auditEvents": [
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T17:12:59.412Z",
+          "metadata": {
+            "screen": "A01_welcome"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T17:18:34.209Z",
+          "metadata": {
+            "screen": "A02_why_inspection"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T17:18:53.391Z",
+          "metadata": {
+            "screen": "A03_what_we_inspect"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T17:19:01.470Z",
+          "metadata": {
+            "screen": "A04_how_findings_sorted"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T17:19:08.210Z",
+          "metadata": {
+            "screen": "A05_insurance_clarity"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T17:19:17.557Z",
+          "metadata": {
+            "screen": "A06_warranty_impact"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T17:19:26.825Z",
+          "metadata": {
+            "screen": "A07_why_hustad"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T17:19:34.815Z",
+          "metadata": {
+            "screen": "A08_what_you_receive"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T17:19:42.897Z",
+          "metadata": {
+            "screen": "A09_buyer_priorities"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T17:21:29.211Z",
+          "metadata": {
+            "screen": "A08_what_you_receive"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T17:24:32.894Z",
+          "metadata": {
+            "screen": "A09_buyer_priorities"
+          }
+        },
+        {
+          "eventName": "phase_a_completed",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T17:27:32.038Z"
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T17:27:32.038Z",
+          "metadata": {
+            "screen": "A11_innovation"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T17:27:47.255Z",
+          "metadata": {
+            "screen": "A10_inspection_hold"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T17:28:18.008Z",
+          "metadata": {
+            "screen": "B11_rep_findings_prep"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T17:59:15.830Z",
+          "metadata": {
+            "screen": "A10_inspection_hold"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T17:59:19.267Z",
+          "metadata": {
+            "screen": "B11_rep_findings_prep"
+          }
+        },
+        {
+          "eventName": "outcome_type_set",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T18:16:38.140Z",
+          "metadata": {
+            "outcomeType": "no_damage"
+          }
+        },
+        {
+          "eventName": "rep_summary_locked",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T18:16:38.140Z",
+          "metadata": {
+            "lockedAt": "2026-05-04T18:16:38.140Z",
+            "repId": "rep_001",
+            "outcomeType": "no_damage"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T18:16:38.141Z",
+          "metadata": {
+            "screen": "B12_findings_summary"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T18:16:40.960Z",
+          "metadata": {
+            "screen": "B13_recommended_path"
+          }
+        },
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T18:16:44.107Z",
+          "metadata": {
+            "screen": "B19_next_steps"
+          }
+        }
+      ],
+      "tokenGeneratedAt": "2026-05-04T16:14:45.857Z",
+      "syncedAt": "2026-05-04T18:16:46.338Z"
+    },
+    "sess_1777917644713_76d4pq": {
+      "sessionId": "sess_1777917644713_76d4pq",
+      "repId": "rep_001",
+      "repName": "Hustad Rep",
+      "createdAt": "2026-05-04T18:00:44.713Z",
+      "lastSavedAt": "2026-05-04T18:12:51.502Z",
+      "sessionStatus": "draft",
+      "currentScreen": "P00_rep_launch",
+      "mode": "rep",
+      "phaseACompleted": false,
+      "property": {
+        "address": "",
+        "cityStateZip": "Madison, WI",
+        "propertyType": "single_family",
+        "homeownerPrimaryName": "",
+        "homeownerPrimaryEmail": "",
+        "homeownerPrimaryMobile": "",
+        "insurerNameKnown": "",
+        "claimNumberKnown": "",
+        "workingDateOfLoss": "",
+        "stormBasis": "",
+        "accessNotes": ""
+      },
+      "buyerData": {
+        "buyerPriorities": [],
+        "insurerContactStatus": null,
+        "anotherDecisionMakerPresent": null,
+        "decisionMakerRelation": "",
+        "decisionMakerName": "",
+        "decisionMakerEmail": "",
+        "decisionMakerMobile": "",
+        "buyerQuestions": ""
+      },
+      "findings": {
+        "outcomeType": null,
+        "recommendedPath": null,
+        "urgentItemsCount": 0,
+        "stormRelatedItemsCount": 0,
+        "monitorItemsCount": 0,
+        "roofingArea": "",
+        "estimatedClaimValue": "",
+        "weatherEvents": [],
+        "stormSummary": "",
+        "summaryHeadline": "",
+        "summaryBody": "",
+        "topPhotoAssetIds": [],
+        "urgentProtectionRecommended": false,
+        "urgentProtectionAuthorized": null,
+        "internalNotes": "",
+        "summaryLockedAt": null,
+        "summaryLockedBy": null,
+        "findingCategories": [],
+        "aiPdfCopy": "",
+        "aiFollowUpNote": ""
+      },
+      "pathData": {
+        "selectedPath": null,
+        "manufacturerSelected": null,
+        "productSelected": "",
+        "impactUpgradeSelected": false,
+        "warrantyOptionSelected": "",
+        "claimRelatedWork": null,
+        "agreementAcknowledged": false
+      },
+      "signatureData": {
+        "signerName": "",
+        "signerEmail": "",
+        "signerMobile": "",
+        "preferredFollowUpMethod": null,
+        "signatureImage": null,
+        "summarySendRecipient": "",
+        "deferralReason": "",
+        "signedAt": null
+      },
+      "photoAssets": [],
+      "followUpTasks": [],
+      "remoteReview": {
+        "status": "sent",
+        "sentAt": null,
+        "openedAt": null,
+        "viewedAt": null,
+        "signedAt": null,
+        "declinedAt": null,
+        "declineReason": "",
+        "callbackRequestedAt": null,
+        "callbackPhone": "",
+        "callbackPreferredTime": "",
+        "approvedAt": null,
+        "questions": [],
+        "recipientName": "",
+        "recipientEmail": "",
+        "recipientRelation": "",
+        "statusHistory": []
+      },
+      "syncStatus": "local_only",
+      "auditEvents": [],
+      "tokenGeneratedAt": "2026-05-04T18:00:44.713Z",
+      "syncedAt": "2026-05-04T18:16:07.110Z"
+    },
+    "sess_1777918610395_uy54e7": {
+      "sessionId": "sess_1777918610395_uy54e7",
+      "repId": "rep_001",
+      "repName": "Hustad Rep",
+      "createdAt": "2026-05-04T18:16:50.395Z",
+      "lastSavedAt": "2026-05-04T18:16:50.395Z",
+      "sessionStatus": "draft",
+      "currentScreen": "B19_next_steps",
+      "mode": "rep",
+      "phaseACompleted": false,
+      "property": {
+        "address": "",
+        "cityStateZip": "Madison, WI",
+        "propertyType": "single_family",
+        "homeownerPrimaryName": "",
+        "homeownerPrimaryEmail": "",
+        "homeownerPrimaryMobile": "",
+        "insurerNameKnown": "",
+        "claimNumberKnown": "",
+        "workingDateOfLoss": "",
+        "stormBasis": "",
+        "accessNotes": ""
+      },
+      "buyerData": {
+        "buyerPriorities": [],
+        "insurerContactStatus": null,
+        "anotherDecisionMakerPresent": null,
+        "decisionMakerRelation": "",
+        "decisionMakerName": "",
+        "decisionMakerEmail": "",
+        "decisionMakerMobile": "",
+        "buyerQuestions": ""
+      },
+      "findings": {
+        "outcomeType": null,
+        "recommendedPath": null,
+        "urgentItemsCount": 0,
+        "stormRelatedItemsCount": 0,
+        "monitorItemsCount": 0,
+        "roofingArea": "",
+        "estimatedClaimValue": "",
+        "weatherEvents": [],
+        "stormSummary": "",
+        "summaryHeadline": "",
+        "summaryBody": "",
+        "topPhotoAssetIds": [],
+        "urgentProtectionRecommended": false,
+        "urgentProtectionAuthorized": null,
+        "internalNotes": "",
+        "summaryLockedAt": null,
+        "summaryLockedBy": null,
+        "findingCategories": [],
+        "aiPdfCopy": "",
+        "aiFollowUpNote": ""
+      },
+      "pathData": {
+        "selectedPath": null,
+        "manufacturerSelected": null,
+        "productSelected": "",
+        "impactUpgradeSelected": false,
+        "warrantyOptionSelected": "",
+        "claimRelatedWork": null,
+        "agreementAcknowledged": false
+      },
+      "signatureData": {
+        "signerName": "",
+        "signerEmail": "",
+        "signerMobile": "",
+        "preferredFollowUpMethod": null,
+        "signatureImage": null,
+        "summarySendRecipient": "",
+        "deferralReason": "",
+        "signedAt": null
+      },
+      "photoAssets": [],
+      "followUpTasks": [],
+      "remoteReview": {
+        "status": "sent",
+        "sentAt": null,
+        "openedAt": null,
+        "viewedAt": null,
+        "signedAt": null,
+        "declinedAt": null,
+        "declineReason": "",
+        "callbackRequestedAt": null,
+        "callbackPhone": "",
+        "callbackPreferredTime": "",
+        "approvedAt": null,
+        "questions": [],
+        "recipientName": "",
+        "recipientEmail": "",
+        "recipientRelation": "",
+        "statusHistory": []
+      },
+      "syncStatus": "local_only",
+      "auditEvents": [
+        {
+          "eventName": "screen_navigated",
+          "actorId": "rep_001",
+          "occurredAt": "2026-05-04T18:17:18.500Z",
+          "metadata": {
+            "screen": "B19_next_steps"
+          }
+        }
+      ],
+      "tokenGeneratedAt": "2026-05-04T18:16:50.395Z",
+      "syncedAt": "2026-05-04T18:17:20.555Z"
+    },
+    "sess_1777918641141_ee48fb": {
+      "sessionId": "sess_1777918641141_ee48fb",
+      "repId": "rep_001",
+      "repName": "Hustad Rep",
+      "createdAt": "2026-05-04T18:17:21.141Z",
+      "lastSavedAt": "2026-05-04T18:17:21.141Z",
+      "sessionStatus": "draft",
+      "currentScreen": "P00_rep_launch",
+      "mode": "rep",
+      "phaseACompleted": false,
+      "property": {
+        "address": "",
+        "cityStateZip": "Madison, WI",
+        "propertyType": "single_family",
+        "homeownerPrimaryName": "",
+        "homeownerPrimaryEmail": "",
+        "homeownerPrimaryMobile": "",
+        "insurerNameKnown": "",
+        "claimNumberKnown": "",
+        "workingDateOfLoss": "",
+        "stormBasis": "",
+        "accessNotes": ""
+      },
+      "buyerData": {
+        "buyerPriorities": [],
+        "insurerContactStatus": null,
+        "anotherDecisionMakerPresent": null,
+        "decisionMakerRelation": "",
+        "decisionMakerName": "",
+        "decisionMakerEmail": "",
+        "decisionMakerMobile": "",
+        "buyerQuestions": ""
+      },
+      "findings": {
+        "outcomeType": null,
+        "recommendedPath": null,
+        "urgentItemsCount": 0,
+        "stormRelatedItemsCount": 0,
+        "monitorItemsCount": 0,
+        "roofingArea": "",
+        "estimatedClaimValue": "",
+        "weatherEvents": [],
+        "stormSummary": "",
+        "summaryHeadline": "",
+        "summaryBody": "",
+        "topPhotoAssetIds": [],
+        "urgentProtectionRecommended": false,
+        "urgentProtectionAuthorized": null,
+        "internalNotes": "",
+        "summaryLockedAt": null,
+        "summaryLockedBy": null,
+        "findingCategories": [],
+        "aiPdfCopy": "",
+        "aiFollowUpNote": ""
+      },
+      "pathData": {
+        "selectedPath": null,
+        "manufacturerSelected": null,
+        "productSelected": "",
+        "impactUpgradeSelected": false,
+        "warrantyOptionSelected": "",
+        "claimRelatedWork": null,
+        "agreementAcknowledged": false
+      },
+      "signatureData": {
+        "signerName": "",
+        "signerEmail": "",
+        "signerMobile": "",
+        "preferredFollowUpMethod": null,
+        "signatureImage": null,
+        "summarySendRecipient": "",
+        "deferralReason": "",
+        "signedAt": null
+      },
+      "photoAssets": [],
+      "followUpTasks": [],
+      "remoteReview": {
+        "status": "sent",
+        "sentAt": null,
+        "openedAt": null,
+        "viewedAt": null,
+        "signedAt": null,
+        "declinedAt": null,
+        "declineReason": "",
+        "callbackRequestedAt": null,
+        "callbackPhone": "",
+        "callbackPreferredTime": "",
+        "approvedAt": null,
+        "questions": [],
+        "recipientName": "",
+        "recipientEmail": "",
+        "recipientRelation": "",
+        "statusHistory": []
+      },
+      "syncStatus": "local_only",
+      "auditEvents": [],
+      "tokenGeneratedAt": "2026-05-04T18:17:21.141Z",
+      "syncedAt": "2026-05-04T18:17:23.853Z"
+    },
+    "sess_1777918737829_fgrz7l": {
+      "sessionId": "sess_1777918737829_fgrz7l",
+      "repId": "2",
+      "repName": "Field Rep",
+      "createdAt": "2026-05-04T18:18:57.829Z",
+      "lastSavedAt": "2026-05-04T18:18:57.829Z",
+      "sessionStatus": "draft",
+      "currentScreen": "P00_rep_launch",
+      "mode": "rep",
+      "phaseACompleted": false,
+      "property": {
+        "address": "",
+        "cityStateZip": "Madison, WI",
+        "propertyType": "single_family",
+        "homeownerPrimaryName": "",
+        "homeownerPrimaryEmail": "",
+        "homeownerPrimaryMobile": "",
+        "insurerNameKnown": "",
+        "claimNumberKnown": "",
+        "workingDateOfLoss": "",
+        "stormBasis": "",
+        "accessNotes": ""
+      },
+      "buyerData": {
+        "buyerPriorities": [],
+        "insurerContactStatus": null,
+        "anotherDecisionMakerPresent": null,
+        "decisionMakerRelation": "",
+        "decisionMakerName": "",
+        "decisionMakerEmail": "",
+        "decisionMakerMobile": "",
+        "buyerQuestions": ""
+      },
+      "findings": {
+        "outcomeType": null,
+        "recommendedPath": null,
+        "urgentItemsCount": 0,
+        "stormRelatedItemsCount": 0,
+        "monitorItemsCount": 0,
+        "roofingArea": "",
+        "estimatedClaimValue": "",
+        "weatherEvents": [],
+        "stormSummary": "",
+        "summaryHeadline": "",
+        "summaryBody": "",
+        "topPhotoAssetIds": [],
+        "urgentProtectionRecommended": false,
+        "urgentProtectionAuthorized": null,
+        "internalNotes": "",
+        "summaryLockedAt": null,
+        "summaryLockedBy": null,
+        "findingCategories": [],
+        "aiPdfCopy": "",
+        "aiFollowUpNote": ""
+      },
+      "pathData": {
+        "selectedPath": null,
+        "manufacturerSelected": null,
+        "productSelected": "",
+        "impactUpgradeSelected": false,
+        "warrantyOptionSelected": "",
+        "claimRelatedWork": null,
+        "agreementAcknowledged": false
+      },
+      "signatureData": {
+        "signerName": "",
+        "signerEmail": "",
+        "signerMobile": "",
+        "preferredFollowUpMethod": null,
+        "signatureImage": null,
+        "summarySendRecipient": "",
+        "deferralReason": "",
+        "signedAt": null
+      },
+      "photoAssets": [],
+      "followUpTasks": [],
+      "remoteReview": {
+        "status": "sent",
+        "sentAt": null,
+        "openedAt": null,
+        "viewedAt": null,
+        "signedAt": null,
+        "declinedAt": null,
+        "declineReason": "",
+        "callbackRequestedAt": null,
+        "callbackPhone": "",
+        "callbackPreferredTime": "",
+        "approvedAt": null,
+        "questions": [],
+        "recipientName": "",
+        "recipientEmail": "",
+        "recipientRelation": "",
+        "statusHistory": []
+      },
+      "syncStatus": "local_only",
+      "auditEvents": [],
+      "tokenGeneratedAt": "2026-05-04T18:18:57.829Z",
+      "syncedAt": "2026-05-04T18:19:00.911Z"
     }
   },
   "tokens": {
