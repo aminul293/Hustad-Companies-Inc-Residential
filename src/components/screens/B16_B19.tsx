@@ -597,10 +597,6 @@ export function B19NextSteps({ session, onUpdate, onNext, onBack, onFinish }: Ne
   const [quickEmail, setQuickEmail] = useState("");
   const [quickPhone, setQuickPhone] = useState("");
 
-  const { createFollowUpTask } = require("@/lib/session");
-  const { downloadSummaryPDF } = require("@/lib/pdf-export");
-  const { addAuditEvent } = require("@/lib/session");
-
   useEffect(() => {
     if (isDeferred || (!isSigned && (outcome !== "no_damage" && outcome !== "monitor_only"))) {
       const reason = isDeferred ? "Signature deferred" : "Follow-up required";
@@ -726,6 +722,18 @@ export function B19NextSteps({ session, onUpdate, onNext, onBack, onFinish }: Ne
           })
         });
 
+        if (!response.ok) {
+          const text = await response.text();
+          let msg = "Email delivery failed";
+          try {
+            const errJson = JSON.parse(text);
+            msg = errJson.error || msg;
+          } catch {
+            msg = text || msg;
+          }
+          throw new Error(msg);
+        }
+
         const result = await response.json();
         if (result.success) {
           setDeliverySent("email");
@@ -773,6 +781,18 @@ export function B19NextSteps({ session, onUpdate, onNext, onBack, onFinish }: Ne
             message: `Hustad Residential: Your Forensic Dossier for ${session.property.address} is ready. Review & Sign here: ${reviewUrl}`
           })
         });
+
+        if (!response.ok) {
+          const text = await response.text();
+          let msg = "SMS delivery failed";
+          try {
+            const errJson = JSON.parse(text);
+            msg = errJson.error || msg;
+          } catch {
+            msg = text || msg;
+          }
+          throw new Error(msg);
+        }
 
         const result = await response.json();
         if (result.success) {
