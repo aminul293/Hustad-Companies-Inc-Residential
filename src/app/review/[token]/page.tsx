@@ -5,21 +5,10 @@ import { useParams } from "next/navigation";
 import type { SessionState, SelectedPath, Annotation } from "@/types/session";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  ShieldCheck, 
-  FileText, 
-  PenTool, 
-  CheckCircle2, 
-  AlertTriangle,
-  Download,
-  ExternalLink,
-  ChevronRight,
-  Camera,
-  MapPin,
-  Lock,
-  ArrowRight,
-  Wrench,
-  Zap,
-  Eye
+  ShieldCheck, FileText, PenTool, CheckCircle2, AlertTriangle,
+  Download, ChevronRight, Camera, MapPin, Lock, ArrowRight,
+  Wrench, Zap, Eye, MessageSquare, Phone, Clock, XCircle,
+  ThumbsUp, Send, User, Home, Shield, CalendarDays
 } from "lucide-react";
 import SignatureCanvas from "react-signature-canvas";
 import { cn } from "@/lib/utils";
@@ -37,6 +26,12 @@ export default function RemoteReviewPage() {
   const [selectedPath, setSelectedPath] = useState<SelectedPath>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [activePanel, setActivePanel] = useState<"sign"|"question"|"callback"|"decline"|null>(null);
+  const [questionText, setQuestionText] = useState("");
+  const [callbackPhone, setCallbackPhone] = useState("");
+  const [callbackTime, setCallbackTime] = useState("");
+  const [declineReason, setDeclineReason] = useState("");
+  const [actionSent, setActionSent] = useState<string|null>(null);
   
   const sigPad = useRef<SignatureCanvas>(null);
 
@@ -62,6 +57,8 @@ export default function RemoteReviewPage() {
         setSession(data);
         setSignerName(data.property.homeownerPrimaryName || "");
         setSelectedPath(data.pathData.selectedPath);
+        // Track opened status
+        fetch('/api/review/action', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({token, action:'opened'}) });
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -70,6 +67,20 @@ export default function RemoteReviewPage() {
     }
     fetchSession();
   }, [token]);
+
+  const trackViewed = () => {
+    fetch('/api/review/action', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({token, action:'viewed'}) });
+  };
+
+  const sendAction = async (action: string, payload: any) => {
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/review/action', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({token, action, payload}) });
+      if (!res.ok) throw new Error('Failed');
+      setActionSent(action);
+    } catch { alert('Failed to submit. Please try again.'); }
+    finally { setIsSubmitting(false); }
+  };
 
   const handleVerify = () => {
     if (!session) return;
@@ -226,16 +237,29 @@ export default function RemoteReviewPage() {
             <span className="text-[9px] font-mono text-white/50 uppercase tracking-[0.3em]">Residential</span>
           </div>
           <div className="space-y-2">
-            <h1 className="text-4xl font-display font-medium tracking-tight">Forensic Review</h1>
+            <h1 className="text-4xl font-display font-medium tracking-tight">Co-Decision Review</h1>
             <p className="text-white/50 font-light text-sm">{address?.toUpperCase()}</p>
           </div>
         </header>
 
+        {/* Property Context */}
+        <section className="p-8 rounded-[40px] bg-white/[0.02] border border-white/[0.06] space-y-4">
+          <div className="flex items-center gap-2 mb-4"><Home className="w-4 h-4 text-indigo-400" /><span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Property Context</span></div>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div><p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mb-1">Address</p><p className="text-white/80">{session!.property.address || '—'}</p></div>
+            <div><p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mb-1">Homeowner</p><p className="text-white/80">{session!.property.homeownerPrimaryName || '—'}</p></div>
+            <div><p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mb-1">Insurance Carrier</p><p className="text-white/80">{session!.property.insurerNameKnown || 'Not provided'}</p></div>
+            <div><p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mb-1">Date of Loss</p><p className="text-white/80">{session!.property.workingDateOfLoss || '—'}</p></div>
+            <div><p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mb-1">Storm Basis</p><p className="text-white/80">{session!.property.stormBasis || '—'}</p></div>
+            <div><p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mb-1">Inspector</p><p className="text-white/80">{session!.repName}</p></div>
+          </div>
+        </section>
+
         {/* Outcome Summary */}
-        <section className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl space-y-8">
+        <section onMouseEnter={trackViewed} className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl space-y-8">
           <div className="flex items-center gap-3 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 w-fit">
             <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest pt-0.5">Audit Identification</span>
+            <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest pt-0.5">Findings Summary</span>
           </div>
           <div className="space-y-4">
             <h2 className="text-5xl font-display font-medium tracking-tighter leading-none capitalize">
@@ -305,42 +329,81 @@ export default function RemoteReviewPage() {
           </div>
         </section>
 
-        {/* Remote Authorization */}
-        <section className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.08] space-y-8">
-          <div className="flex items-center gap-3">
-            <PenTool className="w-4 h-4 text-indigo-400" />
-            <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest pt-0.5">Authorization Signal</span>
-          </div>
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest pl-2">Full Legal Name</label>
-              <input 
-                value={signerName}
-                onChange={(e) => setSignerName(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 text-white outline-none focus:border-indigo-500/50 transition-all"
-                placeholder="Authorized Signer Name"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest pl-2">Digital Signature</label>
-              <div className="h-48 bg-white/5 border border-dashed border-white/10 rounded-[32px] overflow-hidden">
-                <SignatureCanvas 
-                  ref={sigPad}
-                  penColor="white"
-                  canvasProps={{ className: "w-full h-full cursor-crosshair" }}
-                />
-              </div>
-            </div>
-            <button 
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="w-full py-6 rounded-full bg-white text-black font-display font-bold text-lg hover:bg-neutral-200 transition-all flex items-center justify-center gap-3"
-            >
-              {isSubmitting ? "Authorizing..." : "Submit Secure Authorization"}
-              {!isSubmitting && <ArrowRight className="w-5 h-5" />}
-            </button>
-          </div>
+        {/* Disclaimer */}
+        <section className="p-6 rounded-3xl bg-amber-500/5 border border-amber-500/10 space-y-3">
+          <div className="flex items-center gap-2"><Shield className="w-4 h-4 text-amber-400" /><span className="text-[10px] font-mono text-amber-300 uppercase tracking-widest">Advisory Notice</span></div>
+          <p className="text-[11px] text-white/50 leading-relaxed">This document is a forensic inspection summary only. No insurance outcome is guaranteed. Hustad does not represent that any carrier will approve, deny, or modify a claim. Warranty terms are manufacturer-specific and subject to product registration requirements. All decisions remain yours.</p>
         </section>
+
+        {/* Action Panel */}
+        {actionSent ? (
+          <section className="p-10 rounded-[48px] bg-emerald-500/5 border border-emerald-500/20 text-center space-y-4">
+            <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />
+            <h3 className="text-2xl font-display font-medium text-white">Response Received</h3>
+            <p className="text-white/50 text-sm">Your {actionSent === 'question' ? 'question has been sent' : actionSent === 'callback' ? 'callback request has been submitted' : actionSent === 'decline' ? 'response has been recorded' : actionSent === 'approve' ? 'approval has been submitted' : 'authorization has been submitted'} to your Hustad representative.</p>
+          </section>
+        ) : (
+          <section className="space-y-6">
+            <div className="flex items-center gap-2 px-3"><PenTool className="w-4 h-4 text-indigo-400" /><span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Your Response</span></div>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                {id:'question' as const, label:'Ask a Question', icon: MessageSquare, color:'sky'},
+                {id:'callback' as const, label:'Request Callback', icon: Phone, color:'emerald'},
+                {id:'sign' as const, label:'Sign Remotely', icon: PenTool, color:'indigo'},
+                {id:'decline' as const, label:'Decline / Defer', icon: XCircle, color:'rose'},
+              ].map(a => (
+                <button key={a.id} onClick={() => setActivePanel(a.id)} className={cn('p-5 rounded-3xl border text-left transition-all', activePanel === a.id ? `bg-${a.color}-500/10 border-${a.color}-500/30` : 'bg-white/[0.02] border-white/5 hover:border-white/15')}>
+                  <a.icon className={cn('w-5 h-5 mb-2', activePanel === a.id ? `text-${a.color}-400` : 'text-white/30')} />
+                  <p className="text-xs font-display font-medium text-white/80">{a.label}</p>
+                </button>
+              ))}
+            </div>
+            <button onClick={() => sendAction('approve', {})} disabled={isSubmitting} className="w-full p-5 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all flex items-center justify-center gap-3">
+              <ThumbsUp className="w-5 h-5 text-emerald-400" />
+              <span className="text-sm font-display font-medium text-emerald-300">Approve Next Step (Without Signing)</span>
+            </button>
+
+            <AnimatePresence mode="wait">
+              {activePanel === 'question' && (
+                <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="p-8 rounded-[40px] bg-white/[0.03] border border-white/[0.08] space-y-4">
+                  <textarea value={questionText} onChange={e => setQuestionText(e.target.value)} placeholder="Type your question for the Hustad representative..." className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-white text-sm outline-none focus:border-sky-500/40 resize-none h-32" />
+                  <button onClick={() => sendAction('question', {questionText, askerName: signerName})} disabled={isSubmitting || !questionText.trim()} className="w-full py-4 rounded-full bg-sky-500 text-white font-display font-medium flex items-center justify-center gap-2 disabled:opacity-30">
+                    <Send className="w-4 h-4" />{isSubmitting ? 'Sending...' : 'Send Question'}
+                  </button>
+                </motion.div>
+              )}
+              {activePanel === 'callback' && (
+                <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="p-8 rounded-[40px] bg-white/[0.03] border border-white/[0.08] space-y-4">
+                  <input value={callbackPhone} onChange={e => setCallbackPhone(e.target.value)} placeholder="Your phone number" className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-emerald-500/40" />
+                  <input value={callbackTime} onChange={e => setCallbackTime(e.target.value)} placeholder="Preferred time (e.g. Tomorrow 2-4pm)" className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-emerald-500/40" />
+                  <button onClick={() => sendAction('callback', {phone: callbackPhone, preferredTime: callbackTime})} disabled={isSubmitting || !callbackPhone.trim()} className="w-full py-4 rounded-full bg-emerald-500 text-white font-display font-medium flex items-center justify-center gap-2 disabled:opacity-30">
+                    <Phone className="w-4 h-4" />{isSubmitting ? 'Requesting...' : 'Request Callback'}
+                  </button>
+                </motion.div>
+              )}
+              {activePanel === 'sign' && (
+                <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="p-8 rounded-[40px] bg-white/[0.03] border border-white/[0.08] space-y-4">
+                  <input value={signerName} onChange={e => setSignerName(e.target.value)} placeholder="Full Legal Name" className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white outline-none focus:border-indigo-500/40" />
+                  <div className="h-40 bg-white/5 border border-dashed border-white/10 rounded-[28px] overflow-hidden">
+                    <SignatureCanvas ref={sigPad} penColor="white" canvasProps={{className:'w-full h-full cursor-crosshair'}} />
+                  </div>
+                  <button onClick={handleSubmit} disabled={isSubmitting} className="w-full py-5 rounded-full bg-white text-black font-display font-bold text-lg hover:bg-neutral-200 transition-all flex items-center justify-center gap-3">
+                    {isSubmitting ? 'Authorizing...' : 'Submit Remote Authorization'}
+                    {!isSubmitting && <ArrowRight className="w-5 h-5" />}
+                  </button>
+                </motion.div>
+              )}
+              {activePanel === 'decline' && (
+                <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="p-8 rounded-[40px] bg-white/[0.03] border border-white/[0.08] space-y-4">
+                  <textarea value={declineReason} onChange={e => setDeclineReason(e.target.value)} placeholder="Optional: Let us know your reason or concerns..." className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-white text-sm outline-none focus:border-rose-500/40 resize-none h-24" />
+                  <button onClick={() => sendAction('decline', {reason: declineReason})} disabled={isSubmitting} className="w-full py-4 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-300 font-display font-medium flex items-center justify-center gap-2">
+                    <XCircle className="w-4 h-4" />{isSubmitting ? 'Submitting...' : 'Decline / Defer for Now'}
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </section>
+        )}
       </main>
     </div>
   );

@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 import { submitSession, addAuditEvent, createFollowUpTask, exportSessionJSON } from "@/lib/session";
 import { downloadSummaryPDF } from "@/lib/pdf-export";
 import { PRODUCT_CONFIG, IMPACT_DISCLAIMER } from "@/config/products";
+import { RemoteStatusTracker } from "@/components/RemoteStatusTracker";
 
 interface Props {
   session: SessionState;
@@ -871,6 +872,15 @@ export function B19NextSteps({ session, onUpdate, onNext, onBack, onFinish }: Ne
                   ))}
                 </div>
               </div>
+
+              {/* Remote Co-Decision-Maker Status */}
+              {isDeferred && session.reviewToken && (
+                <RemoteStatusTracker 
+                  token={session.reviewToken}
+                  recipientEmail={session.signatureData.summarySendRecipient || session.buyerData.decisionMakerEmail}
+                  recipientName={session.buyerData.decisionMakerName || session.property.homeownerPrimaryName}
+                />
+              )}
 
               {/* Delivery Matrix */}
               <div className="space-y-4">
