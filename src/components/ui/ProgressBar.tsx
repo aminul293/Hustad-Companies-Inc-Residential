@@ -74,6 +74,7 @@ export function ProgressBar({ currentScreen, phase }: ProgressBarProps) {
           <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2/3 h-px bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent blur-sm" />
         </div>
       </div>
+    );
   }
 
   return (
