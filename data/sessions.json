@@ -3834,7 +3834,7 @@
       "repId": "rep_001",
       "repName": "Hustad Rep",
       "createdAt": "2026-05-04T18:52:44.499Z",
-      "lastSavedAt": "2026-05-04T18:52:44.499Z",
+      "lastSavedAt": "2026-05-04T18:52:44.505Z",
       "sessionStatus": "draft",
       "currentScreen": "P00_rep_launch",
       "mode": "rep",
@@ -3926,7 +3926,7 @@
       "syncStatus": "local_only",
       "auditEvents": [],
       "tokenGeneratedAt": "2026-05-04T18:52:44.499Z",
-      "syncedAt": "2026-05-04T18:52:47.113Z"
+      "syncedAt": "2026-05-04T19:00:18.852Z"
     }
   },
   "tokens": {
