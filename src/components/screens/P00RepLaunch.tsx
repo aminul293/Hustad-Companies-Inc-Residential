@@ -103,6 +103,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
 
   const handleSelectRep = (rep: RepIdentity) => {
     setSelectedRep(rep);
+    set("repName", rep.name);
   };
 
   // --- LIVE GEO-ENGINE (WHOLE USA) ---
@@ -178,13 +179,17 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
   const handleStart = () => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
+
+    // CREATE A TRULY NEW SESSION
+    const repId = (authSession?.user as any)?.id || selectedRep?.id || "rep_001";
+    const baseNewSession = createSession(repId, form.repName);
+
     const updated: SessionState = {
-      ...session,
-      repName: form.repName,
+      ...baseNewSession,
       mode: "rep",
       sessionStatus: "phase_a_active",
       property: {
-        ...session.property,
+        ...baseNewSession.property,
         address: form.address,
         homeownerPrimaryName: form.homeownerName,
         homeownerPrimaryEmail: form.homeownerEmail,
