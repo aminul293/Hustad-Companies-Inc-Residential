@@ -78,12 +78,27 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
   const handleStartNew = () => {
     // Priority: Authenticated User > Selected Rep
     const repName = authSession?.user?.name || selectedRep?.name;
-    const repId = (authSession?.user as any)?.id || selectedRep?.id;
     
-    if (!repName || !repId) return;
-    const newSession = createSession(repId, repName);
-    onUpdate(newSession);
-    onNext();
+    if (repName) {
+      set("repName", repName);
+    }
+    
+    // Close dashboard to reveal the form
+    setShowDashboard(false);
+    
+    // Reset form for a fresh start if needed, but keeping repName
+    setForm(f => ({
+      ...f,
+      address: "",
+      homeownerName: "",
+      homeownerEmail: "",
+      homeownerMobile: "",
+      insurerName: "",
+      claimNumber: "",
+      workingDateOfLoss: "05/04/2026",
+      stormBasis: "Madison metro hail event",
+      accessNotes: "",
+    }));
   };
 
   const handleSelectRep = (rep: RepIdentity) => {
