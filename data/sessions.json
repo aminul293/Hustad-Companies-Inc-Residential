@@ -2119,7 +2119,7 @@
       "repId": "2",
       "repName": "Aminul",
       "createdAt": "2026-04-28T18:59:58.643Z",
-      "lastSavedAt": "2026-05-04T18:12:33.519Z",
+      "lastSavedAt": "2026-05-04T18:39:25.743Z",
       "sessionStatus": "phase_a_complete",
       "currentScreen": "B11_rep_findings_prep",
       "mode": "rep",
@@ -2335,7 +2335,7 @@
         }
       ],
       "tokenGeneratedAt": "2026-04-28T18:59:58.643Z",
-      "syncedAt": "2026-05-04T18:12:49.901Z"
+      "syncedAt": "2026-05-04T18:41:03.245Z"
     },
     "sess_1777386477689_11guh4": {
       "sessionId": "sess_1777386477689_11guh4",
@@ -3066,7 +3066,7 @@
       "repId": "rep_001",
       "repName": "Hustad Rep",
       "createdAt": "2026-05-04T18:00:44.713Z",
-      "lastSavedAt": "2026-05-04T18:12:51.502Z",
+      "lastSavedAt": "2026-05-04T18:34:02.441Z",
       "sessionStatus": "draft",
       "currentScreen": "P00_rep_launch",
       "mode": "rep",
@@ -3158,7 +3158,7 @@
       "syncStatus": "local_only",
       "auditEvents": [],
       "tokenGeneratedAt": "2026-05-04T18:00:44.713Z",
-      "syncedAt": "2026-05-04T18:16:07.110Z"
+      "syncedAt": "2026-05-04T18:37:28.400Z"
     },
     "sess_1777918610395_uy54e7": {
       "sessionId": "sess_1777918610395_uy54e7",
@@ -3273,7 +3273,7 @@
       "repId": "rep_001",
       "repName": "Hustad Rep",
       "createdAt": "2026-05-04T18:17:21.141Z",
-      "lastSavedAt": "2026-05-04T18:17:21.141Z",
+      "lastSavedAt": "2026-05-04T18:29:57.900Z",
       "sessionStatus": "draft",
       "currentScreen": "P00_rep_launch",
       "mode": "rep",
@@ -3365,7 +3365,7 @@
       "syncStatus": "local_only",
       "auditEvents": [],
       "tokenGeneratedAt": "2026-05-04T18:17:21.141Z",
-      "syncedAt": "2026-05-04T18:17:23.853Z"
+      "syncedAt": "2026-05-04T18:42:14.500Z"
     },
     "sess_1777918737829_fgrz7l": {
       "sessionId": "sess_1777918737829_fgrz7l",

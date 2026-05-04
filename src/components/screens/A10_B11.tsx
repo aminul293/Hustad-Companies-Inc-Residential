@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   Zap,
   Eye,
+  EyeOff,
   Trash2,
   FileText,
   Upload,
