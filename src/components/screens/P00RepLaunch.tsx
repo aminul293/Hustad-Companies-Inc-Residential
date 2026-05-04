@@ -399,6 +399,106 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
               )}
             </div>
 
+            {/* Property Intake Form — Appears after rep selection or auth */}
+            <AnimatePresence>
+              {(selectedRep || authStatus === "authenticated") && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-8">
+                  <div className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl space-y-8">
+                    {/* Address */}
+                    <div className="space-y-2 relative">
+                      <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest pl-2">Property Address <span className="text-rose-400">*</span></p>
+                      <div className="relative">
+                        <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-400/50" />
+                        <input
+                          value={form.address}
+                          onChange={(e) => set("address", e.target.value)}
+                          onFocus={() => setIsAddressFocused(true)}
+                          onBlur={() => setTimeout(() => setIsAddressFocused(false), 200)}
+                          className={cn("w-full bg-white/[0.04] border rounded-2xl py-5 pl-14 pr-6 text-white placeholder:text-white/30 outline-none transition-all text-lg", errors.address ? "border-rose-500/50" : "border-white/[0.1] focus:border-indigo-500/50")}
+                          placeholder="Start typing property address..."
+                        />
+                        {isSearching && <div className="absolute right-6 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />}
+                      </div>
+                      {errors.address && <p className="text-[10px] text-rose-400 pl-2">{errors.address}</p>}
+                      {isAddressFocused && suggestions.length > 0 && (
+                        <div className="absolute z-50 left-0 right-0 top-full mt-2 rounded-2xl bg-[#111] border border-white/10 overflow-hidden shadow-2xl">
+                          {suggestions.map((s, i) => (
+                            <button key={i} onMouseDown={() => { set("address", s.main + (s.sub ? ", " + s.sub : "")); setSuggestions([]); }} className="w-full px-6 py-4 text-left hover:bg-white/5 transition-colors flex items-start gap-3 border-b border-white/5 last:border-0">
+                              <MapPin className="w-4 h-4 text-indigo-400 mt-0.5 shrink-0" />
+                              <div><p className="text-sm text-white">{s.main}</p><p className="text-[10px] text-white/30">{s.sub}</p></div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Name + Phone */}
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest pl-2">Homeowner Name</p>
+                        <div className="relative">
+                          <User className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                          <input value={form.homeownerName} onChange={(e) => set("homeownerName", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="Full Name" />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest pl-2">Mobile Number</p>
+                        <div className="relative">
+                          <Smartphone className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                          <input value={form.homeownerMobile} onChange={(e) => set("homeownerMobile", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="(608) 000-0000" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Email */}
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest pl-2">Email Address</p>
+                      <div className="relative max-w-sm">
+                        <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                        <input value={form.homeownerEmail} onChange={(e) => set("homeownerEmail", e.target.value)} type="email" className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="homeowner@example.com" />
+                      </div>
+                    </div>
+
+                    <div className="h-[1px] bg-white/[0.06]" />
+
+                    {/* Rep Identity */}
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest pl-2">Rep Identity <span className="text-rose-400">*</span></p>
+                      <input value={form.repName} onChange={(e) => set("repName", e.target.value)} className={cn("w-full bg-white/[0.04] border rounded-2xl py-4 px-6 text-white outline-none transition-all", errors.repName ? "border-rose-500/50" : "border-white/[0.1] focus:border-indigo-500/50")} />
+                      {errors.repName && <p className="text-[10px] text-rose-400 pl-2">{errors.repName}</p>}
+                    </div>
+
+                    <div className="h-[1px] bg-white/[0.06]" />
+
+                    {/* Carrier & Storm Context */}
+                    <div className="space-y-4">
+                      <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest pl-2">Carrier & Storm Context</p>
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-1">
+                          <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest pl-2">Insurance Carrier</p>
+                          <input value={form.insurerName} onChange={(e) => set("insurerName", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="e.g. State Farm" />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest pl-2">Claim Number (if known)</p>
+                          <input value={form.claimNumber} onChange={(e) => set("claimNumber", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="e.g. 123-456-789" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-1">
+                          <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest pl-2">Date of Loss</p>
+                          <input value={form.workingDateOfLoss} onChange={(e) => set("workingDateOfLoss", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="MM/DD/YYYY" />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest pl-2">Storm Basis</p>
+                          <input value={form.stormBasis} onChange={(e) => set("stormBasis", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="Madison metro hail event" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Compliance Banner */}
             <div className="p-6 rounded-3xl bg-indigo-500/5 border border-indigo-500/10 flex items-start gap-4">
               <Shield className="w-5 h-5 text-indigo-400 mt-0.5" />
@@ -466,21 +566,25 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
       {/* Footer CTA */}
       <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-24">
         <div className="max-w-3xl mx-auto">
-          {/* Bottom Action (Hidden in Dashboard mode) */}
-          <div className="flex justify-center">
-            <button 
-              onClick={() => selectedRep && setShowDashboard(true)}
-              disabled={!selectedRep}
-              className={cn(
-                "group flex items-center gap-4 px-12 py-6 rounded-full transition-all duration-500",
-                selectedRep 
-                  ? "bg-white text-black scale-100 opacity-100" 
-                  : "bg-white/5 text-white/20 scale-95 opacity-0 pointer-events-none"
-              )}
-            >
-              <span className="text-lg font-display font-medium tracking-wide">Enter Command Center</span>
-              <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-            </button>
+          <div className="flex justify-center gap-4">
+            {(selectedRep || authStatus === "authenticated") && (
+              <>
+                <button 
+                  onClick={() => setShowDashboard(true)}
+                  className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all"
+                >
+                  <LayoutGrid className="w-4 h-4 text-white/70" />
+                  <span className="text-sm font-display font-medium text-white">Command Center</span>
+                </button>
+                <button 
+                  onClick={handleStart}
+                  className="group flex items-center gap-4 px-12 py-6 rounded-full bg-white text-black transition-all hover:bg-neutral-200 active:scale-95"
+                >
+                  <span className="text-lg font-display font-medium tracking-wide">Launch Inspection</span>
+                  <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                </button>
+              </>
+            )}
           </div>
           
           <div className="flex items-center justify-center gap-4 mt-6">
