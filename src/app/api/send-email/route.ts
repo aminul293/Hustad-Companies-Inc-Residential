@@ -88,9 +88,15 @@ export async function POST(request: Request) {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('[OUTLOOK_SYSTEM] Graph API Detailed Error:', JSON.stringify(errorData, null, 2));
-      const message = errorData.error?.message || `Graph Error: ${response.status}`;
+      const text = await response.text();
+      let message = `Graph Error: ${response.status}`;
+      try {
+        const errorData = JSON.parse(text);
+        message = errorData.error?.message || message;
+      } catch {
+        message = text || message;
+      }
+      console.error('[OUTLOOK_SYSTEM] Graph API Detailed Error:', text);
       throw new Error(message);
     }
 

@@ -11,6 +11,7 @@ export function ProgressBar({ currentScreen, phase }: ProgressBarProps) {
   if (phase === "A") {
     const idx = PHASE_A_SCREENS.indexOf(currentScreen as ScreenId);
     const pct = idx >= 0 ? ((idx + 1) / PHASE_A_SCREENS.length) * 100 : 0;
+    return (
       <div className="px-8 py-6 flex justify-center">
         <div className="relative group max-w-2xl w-full">
           {/* Main Glass Pill Container */}
