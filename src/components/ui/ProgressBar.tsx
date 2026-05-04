@@ -10,7 +10,7 @@ interface ProgressBarProps {
 export function ProgressBar({ currentScreen, phase }: ProgressBarProps) {
   if (phase === "A") {
     const idx = PHASE_A_SCREENS.indexOf(currentScreen as ScreenId);
-    const pct = idx >= 0 ? ((idx + 1) / PHASE_A_SCREENS.length) * 100 : 0;
+    
     return (
       <div className="px-8 py-6 flex justify-center">
         <div className="relative group max-w-2xl w-full">
@@ -45,10 +45,10 @@ export function ProgressBar({ currentScreen, phase }: ProgressBarProps) {
                     }`}
                   >
                     {isActive && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-white to-rose-500 animate-pulse" />
-                    )}
-                    {isActive && (
-                      <div className="absolute inset-0 blur-[4px] bg-white/50 opacity-50" />
+                      <>
+                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-white to-rose-500 animate-pulse" />
+                        <div className="absolute inset-0 blur-[4px] bg-white/50 opacity-50" />
+                      </>
                     )}
                   </div>
                 );
