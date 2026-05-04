@@ -23,10 +23,20 @@ import {
   Trash2,
   Lock,
   ArrowRight,
-  Scan
+  Scan,
+  TrendingUp,
+  Zap,
+  List,
+  Search,
+  LogIn,
+  Plus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { listDrafts, hasSameDayDraft, deleteDraft } from "@/lib/session";
+import { listDrafts, hasSameDayDraft, deleteDraft, createSession } from "@/lib/session";
+import { RepCommandCenter } from "@/components/RepCommandCenter";
+import { getLiveReps } from "@/lib/reps";
+import type { RepIdentity } from "@/config/reps";
+import { useSession as useAuthSession, signIn, signOut } from "next-auth/react";
 
 interface Props {
   session: SessionState;
@@ -37,7 +47,13 @@ interface Props {
   isOnline: boolean;
 }
 
+// REPS constant removed, using FIELD_REPS from config
+
 export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump, isOnline }: Props) {
+  const { data: authSession, status: authStatus } = useAuthSession();
+  const [selectedRep, setSelectedRep] = useState<RepIdentity | null>(null);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [liveReps, setLiveReps] = useState<RepIdentity[]>([]);
   const [isAddressFocused, setIsAddressFocused] = useState(false);
   const [suggestions, setSuggestions] = useState<{ main: string; sub: string }[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -58,6 +74,21 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
   const [drafts, setDrafts] = useState<ReturnType<typeof listDrafts>>([]);
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
   const [showRepNav, setShowRepNav] = useState(false);
+
+  const handleStartNew = () => {
+    // Priority: Authenticated User > Selected Rep
+    const repName = authSession?.user?.name || selectedRep?.name;
+    const repId = (authSession?.user as any)?.id || selectedRep?.id;
+    
+    if (!repName || !repId) return;
+    const newSession = createSession(repId, repName);
+    onUpdate(newSession);
+    onNext();
+  };
+
+  const handleSelectRep = (rep: RepIdentity) => {
+    setSelectedRep(rep);
+  };
 
   // --- LIVE GEO-ENGINE (WHOLE USA) ---
   useEffect(() => {
@@ -91,8 +122,9 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
   }, [form.address]);
 
   useEffect(() => {
+    setLiveReps(getLiveReps());
     setDrafts(listDrafts().filter((d) => !d.sessionStatus.startsWith("closed_")));
-  }, []);
+  }, [showDashboard]);
 
   useEffect(() => {
     if (form.address.trim().length > 5) {
@@ -108,6 +140,18 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
       setDuplicateWarning(null);
     }
   }, [form.address, session.sessionId]);
+
+  if (showDashboard && selectedRep) {
+    return (
+      <RepCommandCenter 
+        onLoadDraft={(id) => {
+          onLoadDraft(id);
+          setShowDashboard(false);
+        }} 
+        onNewSession={handleStartNew}
+      />
+    );
+  }
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -278,137 +322,81 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
               </p>
             </motion.div>
 
-            {/* Main Form Bento */}
-            <div className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.1] backdrop-blur-3xl space-y-10">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Address (Full Width) */}
-                <div className="md:col-span-2 space-y-3 relative">
-                  <p className="text-[10px] font-mono text-white/70 uppercase tracking-widest pl-2">Property Address *</p>
-                  <div className="relative group">
-                    <MapPin className={cn("absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors", form.address ? "text-indigo-400" : "text-white/20")} />
-                    <input
-                      className={cn(
-                        "w-full bg-white/[0.05] border border-white/10 rounded-3xl py-6 pl-16 pr-8 text-white text-xl font-display placeholder:text-white/10 outline-none transition-all",
-                        "focus:border-indigo-500/50 focus:bg-white/[0.08] focus:shadow-[0_0_40px_rgba(99,102,241,0.1)]",
-                        errors.address && "border-rose-500/50 bg-rose-500/5"
-                      )}
-                      placeholder="Start typing property address..."
-                      value={form.address}
-                      onChange={(e) => {
-                        set("address", e.target.value);
-                      }}
-                      onFocus={() => setIsAddressFocused(true)}
-                    />
-                    
-                    {/* Live Suggestion Engine (Whole USA) */}
-                    <AnimatePresence>
-                      {isAddressFocused && (suggestions.length > 0 || isSearching) && (
-                        <motion.div 
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 10 }}
-                          className="absolute left-0 right-0 top-full mt-3 z-50 p-2 rounded-[32px] bg-[#0A0A0A]/95 border border-white/10 backdrop-blur-3xl shadow-2xl overflow-hidden"
-                        >
-                          {isSearching ? (
-                            <div className="p-8 flex flex-col items-center justify-center gap-4">
-                              <div className="w-8 h-8 rounded-full border-2 border-indigo-500/20 border-t-indigo-500 animate-spin" />
-                              <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest">Querying Global Geo-Database...</span>
-                            </div>
-                          ) : (
-                            suggestions.map((item, idx) => (
-                              <button
-                                key={idx}
-                                onClick={() => {
-                                  set("address", `${item.main}, ${item.sub}`);
-                                  setSuggestions([]);
-                                  setIsAddressFocused(false);
-                                }}
-                                className="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-white/[0.05] transition-all text-left group/item"
-                              >
-                                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 group-hover/item:bg-indigo-500 group-hover/item:text-white transition-all">
-                                  <Scan className="w-4 h-4 text-indigo-400 group-hover/item:text-white" />
-                                </div>
-                                <div className="flex flex-col">
-                                  <span className="text-white text-sm font-medium">{item.main || "Unnamed Location"}</span>
-                                  <span className="text-white/30 text-[10px] font-mono uppercase tracking-widest">{item.sub}</span>
-                                </div>
-                              </button>
-                            ))
-                          )}
-                          {/* Search Provider Tag */}
-                          <div className="p-3 border-t border-white/5 flex items-center justify-between">
-                            <span className="text-[8px] font-mono text-white/10 uppercase tracking-[0.3em]">Hustad Global Geo-Engine // OSM Data</span>
-                            <div className="flex gap-1">
-                              <div className="w-1 h-1 rounded-full bg-indigo-400/20" />
-                              <div className="w-1 h-1 rounded-full bg-indigo-400/40" />
-                              <div className="w-1 h-1 rounded-full bg-indigo-400/60" />
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-
-                {/* Homeowner Details */}
-                <div className="space-y-3">
-                  <p className="text-[10px] font-mono text-white/70 uppercase tracking-widest pl-2">Homeowner Name</p>
-                  <div className="relative group">
-                    <User className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                    <input className="w-full bg-white/[0.05] border border-white/[0.1] rounded-2xl py-4 pl-12 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/50" placeholder="Full Name" value={form.homeownerName} onChange={(e) => set("homeownerName", e.target.value)} />
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <p className="text-[10px] font-mono text-white/70 uppercase tracking-widest pl-2">Mobile Number</p>
-                  <div className="relative group">
-                    <Smartphone className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                    <input className="w-full bg-white/[0.05] border border-white/[0.1] rounded-2xl py-4 pl-12 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/50" placeholder="(608) 000-0000" value={form.homeownerMobile} onChange={(e) => set("homeownerMobile", e.target.value)} />
-                  </div>
-                </div>
-
-                {/* Homeowner Email (Now Visible) */}
-                <div className="space-y-3">
-                  <p className="text-[10px] font-mono text-white/70 uppercase tracking-widest pl-2">Email Address</p>
-                  <div className="relative group">
-                    <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                    <input 
-                      className="w-full bg-white/[0.05] border border-white/[0.1] rounded-2xl py-4 pl-12 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/50" 
-                      placeholder="homeowner@example.com" 
-                      value={form.homeownerEmail} 
-                      onChange={(e) => set("homeownerEmail", e.target.value)} 
-                    />
-                  </div>
-                </div>
-
-                {/* Rep Identity */}
-                <div className="md:col-span-2 pt-4 border-t border-white/5 space-y-3">
-                  <p className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest pl-2">Rep Identity *</p>
-                  <input className="w-full bg-white/[0.05] border border-white/[0.1] rounded-2xl py-4 px-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/50" placeholder="Your Full Name" value={form.repName} onChange={(e) => set("repName", e.target.value)} />
-                </div>
-
-                {/* Carrier & Storm Context */}
-                <div className="md:col-span-2 pt-4 border-t border-white/5 space-y-6">
-                  <p className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest pl-2">Carrier & Storm Context</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <p className="text-[9px] font-mono text-white/40 uppercase tracking-widest pl-1">Insurance Carrier</p>
-                      <input className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl py-3 px-4 text-white text-sm outline-none focus:border-indigo-500/30" placeholder="e.g. State Farm" value={form.insurerName} onChange={(e) => set("insurerName", e.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-[9px] font-mono text-white/40 uppercase tracking-widest pl-1">Claim Number (if known)</p>
-                      <input className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl py-3 px-4 text-white text-sm outline-none focus:border-indigo-500/30" placeholder="e.g. 123-456-789" value={form.claimNumber} onChange={(e) => set("claimNumber", e.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-[9px] font-mono text-white/40 uppercase tracking-widest pl-1">Date of Loss</p>
-                      <input className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl py-3 px-4 text-white text-sm outline-none focus:border-indigo-500/30" value={form.workingDateOfLoss} onChange={(e) => set("workingDateOfLoss", e.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-[9px] font-mono text-white/40 uppercase tracking-widest pl-1">Storm Basis</p>
-                      <input className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl py-3 px-4 text-white text-sm outline-none focus:border-indigo-500/30" value={form.stormBasis} onChange={(e) => set("stormBasis", e.target.value)} />
-                    </div>
-                  </div>
-                </div>
+            {/* Enterprise Login / Rep Selection */}
+            <div className="space-y-8">
+              <div className="flex items-center justify-between px-2">
+                <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest">Production Identity Layer</p>
+                {authStatus === "authenticated" && (
+                  <button onClick={() => signOut()} className="text-[9px] font-mono text-white/30 hover:text-white uppercase tracking-widest">Switch Account</button>
+                )}
               </div>
+
+              {authStatus === "authenticated" ? (
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-8 rounded-[40px] bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-between group">
+                  <div className="flex items-center gap-6">
+                    <div className="w-16 h-16 rounded-3xl bg-indigo-500 flex items-center justify-center text-white shadow-[0_0_30px_rgba(99,102,241,0.4)]">
+                      <User className="w-8 h-8" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest mb-1">Authenticated Operative</p>
+                      <h3 className="text-2xl font-display font-medium text-white">{authSession.user?.name}</h3>
+                      <p className="text-xs text-white/40">{authSession.user?.email}</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setShowDashboard(true)} className="h-14 w-14 rounded-2xl bg-white text-black flex items-center justify-center hover:scale-105 transition-all">
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                </motion.div>
+              ) : (
+                <div className="space-y-6">
+                  <button 
+                    onClick={() => signIn("azure-ad")}
+                    className="w-full p-8 rounded-[40px] bg-white text-black flex items-center justify-between hover:bg-neutral-200 transition-all group"
+                  >
+                    <div className="flex items-center gap-6">
+                      <div className="w-12 h-12 rounded-2xl bg-black/5 flex items-center justify-center">
+                        <Mail className="w-6 h-6" />
+                      </div>
+                      <div className="text-left">
+                        <h3 className="text-xl font-display font-medium">Login with Outlook</h3>
+                        <p className="text-[10px] font-mono text-black/40 uppercase tracking-widest">Enterprise Identity</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </button>
+
+                  <div className="flex items-center gap-4 px-4">
+                    <div className="h-[1px] flex-1 bg-white/10" />
+                    <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest">Or Select Operative</span>
+                    <div className="h-[1px] flex-1 bg-white/10" />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {liveReps.map((rep) => (
+                      <button
+                        key={rep.id}
+                        onClick={() => handleSelectRep(rep)}
+                        className={cn(
+                          "group relative p-8 rounded-[40px] border transition-all duration-500 text-left overflow-hidden",
+                          selectedRep?.id === rep.id 
+                            ? "bg-white/10 border-white/30" 
+                            : "bg-white/[0.03] border-white/[0.08] hover:border-white/20"
+                        )}
+                      >
+                        <div className="flex flex-col gap-4">
+                          <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center transition-colors", selectedRep?.id === rep.id ? "bg-indigo-500" : "bg-white/5")}>
+                            <User className="w-6 h-6 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-medium text-white">{rep.name}</h3>
+                            <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest leading-tight">{rep.role}</p>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Compliance Banner */}
@@ -471,42 +459,6 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                 )}
               </div>
             </section>
-
-            {/* Rep Navigation */}
-            <section className="space-y-6">
-              <button 
-                onClick={() => setShowRepNav(!showRepNav)}
-                className="w-full p-6 rounded-[32px] bg-white/[0.02] border border-white/[0.05] flex items-center justify-between group hover:bg-white/[0.04] transition-all"
-              >
-                <div className="flex items-center gap-4">
-                  <Lock className="w-5 h-5 text-white/20 group-hover:text-indigo-400 transition-colors" />
-                  <span className="text-[10px] font-mono text-white/70 uppercase tracking-widest">Operational Navigation</span>
-                </div>
-                <ChevronRight className={cn("w-5 h-5 text-white/20 transition-transform", showRepNav && "rotate-90")} />
-              </button>
-
-              <AnimatePresence>
-                {showRepNav && (
-                  <motion.div 
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="grid grid-cols-1 gap-2 overflow-hidden"
-                  >
-                    {SCREEN_FLOW.filter((s) => s.id !== "P00_rep_launch").map((s) => (
-                      <button
-                        key={s.id}
-                        onClick={() => onRepJump(s.id)}
-                        className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:border-indigo-500/30 text-left flex items-center justify-between group transition-all"
-                      >
-                        <span className="text-[10px] font-mono text-white/50 group-hover:text-white transition-colors uppercase tracking-widest">{s.label}</span>
-                        <ArrowRight className="w-3 h-3 text-white/10 group-hover:text-indigo-400 transition-all" />
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </section>
           </div>
         </div>
       </div>
@@ -514,14 +466,24 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
       {/* Footer CTA */}
       <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-24">
         <div className="max-w-3xl mx-auto">
-          <StarButton onClick={handleStart} lightColor="#FAFAFA" backgroundColor="#060606" className="w-full h-18 rounded-full active:scale-95 transition-transform">
-            <div className="flex items-center gap-4">
-              <span className="text-lg font-display font-medium tracking-wide">Start Session — Hand to Homeowner</span>
-              <ChevronRight className="w-5 h-5 text-white/60" />
-            </div>
-          </StarButton>
+          {/* Bottom Action (Hidden in Dashboard mode) */}
+          <div className="flex justify-center">
+            <button 
+              onClick={() => selectedRep && setShowDashboard(true)}
+              disabled={!selectedRep}
+              className={cn(
+                "group flex items-center gap-4 px-12 py-6 rounded-full transition-all duration-500",
+                selectedRep 
+                  ? "bg-white text-black scale-100 opacity-100" 
+                  : "bg-white/5 text-white/20 scale-95 opacity-0 pointer-events-none"
+              )}
+            >
+              <span className="text-lg font-display font-medium tracking-wide">Enter Command Center</span>
+              <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+            </button>
+          </div>
           
-          <div className="flex items-center gap-4 mt-6">
+          <div className="flex items-center justify-center gap-4 mt-6">
             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20">
               <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
               <span className="text-[9px] font-mono text-indigo-300 uppercase tracking-wider">Weather Shield: ACTIVE</span>

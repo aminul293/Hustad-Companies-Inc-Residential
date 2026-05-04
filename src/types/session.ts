@@ -15,6 +15,12 @@ export type SelectedPath =
   | "full_restoration"
   | null;
 
+export type PhotoTag = 
+  | "shingle" | "ridge" | "soft_metal" | "siding" | "screen" 
+  | "gutter" | "flashing" | "urgent_protection" | "monitor_only";
+
+export type PhotoSeverity = "low" | "medium" | "high" | "critical";
+
 export type SessionStatus =
   | "draft"
   | "phase_a_active"
@@ -72,9 +78,59 @@ export type DeliveryMethod = "email" | "text" | "both";
 
 export type SyncStatus = "local_only" | "queued" | "syncing" | "synced" | "error";
 
+export type RemoteReviewStatus =
+  | "sent"
+  | "opened"
+  | "viewed"
+  | "question_submitted"
+  | "callback_requested"
+  | "approved"
+  | "signed"
+  | "declined"
+  | "expired";
+
+export interface RemoteQuestion {
+  questionId: string;
+  askedAt: string;
+  questionText: string;
+  askerName: string;
+  replyText?: string;
+  repliedAt?: string;
+}
+
+export interface RemoteReviewData {
+  status: RemoteReviewStatus;
+  sentAt: string | null;
+  openedAt: string | null;
+  viewedAt: string | null;
+  signedAt: string | null;
+  declinedAt: string | null;
+  declineReason: string;
+  callbackRequestedAt: string | null;
+  callbackPhone: string;
+  callbackPreferredTime: string;
+  approvedAt: string | null;
+  questions: RemoteQuestion[];
+  recipientName: string;
+  recipientEmail: string;
+  recipientRelation: string;
+  statusHistory: { status: RemoteReviewStatus; at: string }[];
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // PHOTO ASSETS
 // ─────────────────────────────────────────────────────────────────────────────
+
+export interface Annotation {
+  type: "circle" | "arrow" | "label" | "blur";
+  x: number;
+  y: number;
+  toX?: number;
+  toY?: number;
+  radius?: number;
+  color: string;
+  text?: string;
+}
 
 export interface PhotoAsset {
   assetId: string;
@@ -83,6 +139,13 @@ export interface PhotoAsset {
   category: "urgent" | "storm_related" | "monitor_only" | "general";
   displayOrder: number;
   selectedForSummary: boolean;
+  annotations?: Annotation[];
+  tags?: PhotoTag[];
+  severity?: PhotoSeverity;
+  isSensitive?: boolean;
+  wasShownToBuyer?: boolean;
+  wasInPdf?: boolean;
+  comparisonAssetId?: string;
   createdAt: string;
 }
 
@@ -148,6 +211,9 @@ export interface RepFindingsData {
   internalNotes: string;
   summaryLockedAt: string | null;
   summaryLockedBy: string | null;
+  findingCategories: string[];
+  aiPdfCopy: string;
+  aiFollowUpNote: string;
 }
 
 export interface PathSelectionData {
@@ -205,6 +271,9 @@ export interface SessionState {
 
   // Follow-up tasks
   followUpTasks: FollowUpTask[];
+
+  // Remote co-decision-maker review
+  remoteReview: RemoteReviewData;
 
   // Offline / sync
   syncStatus: SyncStatus;

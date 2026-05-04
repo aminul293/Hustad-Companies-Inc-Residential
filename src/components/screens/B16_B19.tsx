@@ -30,6 +30,7 @@ import {
 import { cn } from "@/lib/utils";
 import { submitSession, addAuditEvent, createFollowUpTask, exportSessionJSON } from "@/lib/session";
 import { downloadSummaryPDF } from "@/lib/pdf-export";
+import { PRODUCT_CONFIG, IMPACT_DISCLAIMER } from "@/config/products";
 
 interface Props {
   session: SessionState;
@@ -62,12 +63,8 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
     onNext();
   };
 
-  const warrantyOptions = manufacturer === "GAF"
-    ? ["System Plus", "Silver Pledge", "Golden Pledge"]
-    : manufacturer === "OwensCorning"
-    ? ["System Protection", "Preferred Protection", "Platinum Protection"]
-    : manufacturer === "CertainTeed"
-    ? ["Standard", "SureStart", "5-Star"]
+  const warrantyOptions = manufacturer && PRODUCT_CONFIG[manufacturer]
+    ? PRODUCT_CONFIG[manufacturer].warranties
     : [];
 
   return (
@@ -138,19 +135,19 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
               <section className="space-y-6">
                 <p className="text-[10px] font-mono text-white/70 uppercase tracking-[0.3em] pl-2">Precision Manufacturer</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {(["GAF", "OwensCorning", "CertainTeed"] as const).map((m) => (
+                  {Object.values(PRODUCT_CONFIG).map((m) => (
                     <button
-                      key={m}
-                      onClick={() => { setManufacturer(m); setWarranty(""); }}
+                      key={m.id}
+                      onClick={() => { setManufacturer(m.id as any); setWarranty(""); }}
                       className={cn(
                         "p-6 rounded-[32px] border transition-all duration-300 text-center",
-                        manufacturer === m 
+                        manufacturer === m.id 
                           ? "bg-indigo-500/20 border-indigo-500/50 shadow-xl" 
                           : "bg-white/[0.03] border-white/[0.05] hover:border-white/20"
                       )}
                     >
-                      <p className={cn("text-lg font-display font-medium", manufacturer === m ? "text-white" : "text-white/90")}>
-                        {m === "OwensCorning" ? "Owens Corning" : m}
+                      <p className={cn("text-lg font-display font-medium", manufacturer === m.id ? "text-white" : "text-white/90")}>
+                        {m.label}
                       </p>
                     </button>
                   ))}
@@ -203,7 +200,7 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
                 {impactUpgrade && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="p-4 rounded-2xl bg-black/40 border border-white/5 flex items-start gap-3">
                     <Info className="w-4 h-4 text-indigo-400 mt-1 shrink-0" />
-                    <p className="text-[10px] font-mono text-white/70 uppercase tracking-widest leading-relaxed">Laboratory rated protection. Eligibility confirmed in final proposal.</p>
+                    <p className="text-[10px] font-mono text-white/70 uppercase tracking-widest leading-relaxed">{IMPACT_DISCLAIMER}</p>
                   </motion.div>
                 )}
               </div>

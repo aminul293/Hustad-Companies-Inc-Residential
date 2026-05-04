@@ -170,7 +170,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const loadDraft = useCallback((sessionId: string) => {
     const draft = loadDraftById(sessionId);
-    if (draft) setSession(draft);
+    if (draft) {
+      // If we are resuming from the launch screen, move to the first real screen
+      if (draft.currentScreen === "P00_rep_launch") {
+        const next = navigateTo(draft, "A01_welcome");
+        setSession(next);
+      } else {
+        setSession(draft);
+      }
+    }
   }, []);
 
   if (!session) return null;

@@ -32,6 +32,11 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { lockSummary, setOutcomeType } from "@/lib/session";
+import { AIAssistSummary } from "@/components/AIAssistSummary";
+import { PhotoAnnotationLayer } from "@/components/PhotoAnnotationLayer";
+import { ProofRefinementModal } from "@/components/ProofRefinementModal";
+import { Reorder } from "framer-motion";
+import type { Annotation, PhotoAsset } from "@/types/session";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // A10 – Inspection In Progress Hold Screen
@@ -191,8 +196,28 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
   const [stormSummary, setStormSummary] = useState(f.stormSummary || "NWS Milwaukee and Sullivan products support a severe Dane County hail event on April 14, 2026.");
   const [internalNotes, setInternalNotes] = useState(f.internalNotes);
   const [urgentRecommended, setUrgentRecommended] = useState(f.urgentProtectionRecommended);
+  const [findingCategories, setFindingCategories] = useState<string[]>(f.findingCategories || []);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const COMMON_CATEGORIES = [
+    "Hail Impact", "Wind Displacement", "Granule Loss", "Thermal Cracking",
+    "Mechanical Damage", "Flashing Failure", "Gutter Compromise", "Collateral Metal Impact"
+  ];
+
+  const toggleCategory = (cat: string) => {
+    setFindingCategories(prev => 
+      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
+    );
+  };
   const [isWeatherLoading, setIsWeatherLoading] = useState(false);
+  const [annotatingAssetId, setAnnotatingAssetId] = useState<string | null>(null);
+  const [refiningAssetId, setRefiningAssetId] = useState<string | null>(null);
+
+  const photoAssets = session.photoAssets || [];
+  
+  const setPhotoAssets = (newAssets: PhotoAsset[]) => {
+    onUpdate({ ...session, photoAssets: newAssets });
+  };
 
   const fetchLiveWeather = async () => {
     setIsWeatherLoading(true);
@@ -262,6 +287,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
         stormSummary,
         internalNotes,
         urgentProtectionRecommended: urgentRecommended,
+        findingCategories,
       },
     };
     updated = setOutcomeType(updated, outcomeType!);
@@ -296,8 +322,37 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
     });
   };
 
+  const annotatingAsset = (session.photoAssets || []).find(p => p.assetId === annotatingAssetId);
+
   return (
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#0A0A0A]">
+      <AnimatePresence>
+        {annotatingAsset && (
+          <PhotoAnnotationLayer 
+            photo={annotatingAsset}
+            onSave={(annotations) => {
+              const updatedAssets = session.photoAssets.map(p => 
+                p.assetId === annotatingAssetId ? { ...p, annotations } : p
+              );
+              onUpdate({ ...session, photoAssets: updatedAssets });
+              setAnnotatingAssetId(null);
+            }}
+            onCancel={() => setAnnotatingAssetId(null)}
+          />
+        )}
+        {refiningAssetId && (
+          <ProofRefinementModal 
+            photo={photoAssets.find(p => p.assetId === refiningAssetId)!}
+            allPhotos={photoAssets}
+            onSave={(updated) => {
+              const newAssets = photoAssets.map(p => p.assetId === refiningAssetId ? updated : p);
+              setPhotoAssets(newAssets);
+              setRefiningAssetId(null);
+            }}
+            onCancel={() => setRefiningAssetId(null)}
+          />
+        )}
+      </AnimatePresence>
       {/* HUD Background Layers */}
       <div className="absolute inset-0 pointer-events-none opacity-30">
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-indigo-500/5 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2" />
@@ -516,6 +571,56 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
           {/* Right Column: Documentation & Summary */}
           <div className="lg:col-span-4 space-y-12">
             
+            {/* AI Findings Intelligence */}
+            <section className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+                  <Activity className="w-4 h-4 text-indigo-400" />
+                </div>
+                <h2 className="text-xs font-mono font-bold text-white/80 uppercase tracking-[0.3em]">AI Findings Support</h2>
+              </div>
+              
+              {/* Finding Categories Multi-Select */}
+              <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/[0.05] space-y-4">
+                <p className="text-[9px] font-mono text-white/30 uppercase tracking-[0.4em] pl-1 font-bold">Documented Forensic Categories</p>
+                <div className="flex flex-wrap gap-2">
+                  {COMMON_CATEGORIES.map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => toggleCategory(cat)}
+                      className={cn(
+                        "px-3 py-1.5 rounded-full text-[9px] font-mono uppercase tracking-wider border transition-all",
+                        findingCategories.includes(cat)
+                          ? "bg-indigo-500 border-indigo-400 text-white shadow-[0_0_15px_rgba(99,102,241,0.3)]"
+                          : "bg-white/5 border-white/10 text-white/40 hover:border-white/20"
+                      )}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <AIAssistSummary 
+                findings={findingCategories.length > 0 ? findingCategories : [OUTCOME_OPTIONS.find(o => o.value === outcomeType)?.label || "General Damage"]}
+                outcome={outcomeType || "no_damage"}
+                onApprove={(draft) => {
+                  setHeadline(draft.headline);
+                  setBody(draft.findingSummary);
+                  onUpdate({
+                    ...session,
+                    findings: {
+                      ...session.findings,
+                      summaryHeadline: draft.headline,
+                      summaryBody: draft.findingSummary,
+                      aiPdfCopy: draft.pdfCopy,
+                      aiFollowUpNote: draft.followUpNote
+                    }
+                  });
+                }}
+              />
+            </section>
+
             {/* Summary Instrument */}
             <section className="space-y-8">
               <div className="flex items-center gap-3">
@@ -556,32 +661,68 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                   </div>
                   <h2 className="text-xs font-mono font-bold text-white/80 uppercase tracking-[0.3em]">Evidence Log</h2>
                 </div>
-                <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.05]">{(session.photoAssets || []).length} Assets Attached</span>
+                <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.05]">{photoAssets.length} Assets Attached</span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <label className="aspect-[4/3] rounded-3xl border border-dashed border-white/10 bg-white/[0.01] hover:bg-white/[0.03] hover:border-indigo-500/30 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all duration-500 group overflow-hidden">
-                  <div className="w-12 h-12 rounded-full bg-white/[0.03] border border-white/[0.05] flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Upload className="w-5 h-5 text-white/20 group-hover:text-indigo-400" />
-                  </div>
-                  <span className="text-[9px] font-mono text-white/20 uppercase tracking-[0.3em] font-bold">Upload Data</span>
+              <div className="grid grid-cols-1 gap-4">
+                <label className="h-24 rounded-3xl border border-dashed border-white/10 bg-white/[0.01] hover:bg-white/[0.03] hover:border-indigo-500/30 flex items-center justify-center gap-3 cursor-pointer transition-all duration-500 group overflow-hidden">
+                  <Upload className="w-5 h-5 text-white/20 group-hover:text-indigo-400" />
+                  <span className="text-[9px] font-mono text-white/20 uppercase tracking-[0.3em] font-bold">Upload Forensic Data</span>
                   <input type="file" accept="image/*" multiple capture="environment" className="hidden" onChange={handleFileChange} />
                 </label>
 
-                {(session.photoAssets || []).slice().reverse().map((photo) => (
-                  <div key={photo.assetId} className="group relative aspect-[4/3] rounded-3xl overflow-hidden border border-white/[0.05] bg-white/[0.04] shadow-2xl">
-                    <img src={photo.dataUrl} alt="Finding" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                    <button 
-                      onClick={() => onUpdate({ ...session, photoAssets: (session.photoAssets || []).filter(p => p.assetId !== photo.assetId) })}
-                      className="absolute top-3 right-3 w-8 h-8 rounded-xl bg-black/80 backdrop-blur-md text-white/40 hover:text-rose-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0"
+                <Reorder.Group axis="y" values={photoAssets} onReorder={setPhotoAssets} className="space-y-3">
+                  {photoAssets.map((photo) => (
+                    <Reorder.Item 
+                      key={photo.assetId} 
+                      value={photo}
+                      className={cn(
+                        "group relative h-24 rounded-[28px] overflow-hidden border border-white/[0.05] bg-white/[0.03] flex items-center gap-6 p-3 cursor-grab active:cursor-grabbing",
+                        photo.isSensitive && "opacity-50 grayscale"
+                      )}
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <p className="text-[8px] font-mono text-white/60 uppercase tracking-widest truncate">{photo.category}</p>
-                    </div>
-                  </div>
-                ))}
+                      <div className="w-20 h-full rounded-2xl overflow-hidden bg-black flex-shrink-0">
+                        <img src={photo.dataUrl} alt="" className="w-full h-full object-cover" />
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          {photo.tags?.map(t => (
+                            <span key={t} className="px-1.5 py-0.5 rounded-md bg-white/5 text-[7px] font-mono text-white/40 uppercase tracking-widest">{t}</span>
+                          ))}
+                          {photo.isSensitive && <EyeOff className="w-3 h-3 text-rose-500" />}
+                        </div>
+                        <p className="text-[10px] font-display font-medium text-white/70 truncate">{photo.caption}</p>
+                        <div className="flex items-center gap-3 mt-1">
+                          {photo.severity && (
+                            <div className="flex items-center gap-1">
+                              <div className={cn("w-1 h-1 rounded-full", 
+                                photo.severity === 'critical' ? 'bg-rose-500' : 
+                                photo.severity === 'high' ? 'bg-amber-500' : 'bg-emerald-500'
+                              )} />
+                              <span className="text-[7px] font-mono text-white/20 uppercase tracking-widest">{photo.severity}</span>
+                            </div>
+                          )}
+                          <span className="text-[7px] font-mono text-white/20 uppercase tracking-widest">
+                            {photo.annotations?.length || 0} Markups
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 pr-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => setAnnotatingAssetId(photo.assetId)} className="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-indigo-400">
+                          <Scan className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => setRefiningAssetId(photo.assetId)} className="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-emerald-400">
+                          <Database className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => setPhotoAssets(photoAssets.filter(p => p.assetId !== photo.assetId))} className="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-rose-500">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </Reorder.Item>
+                  ))}
+                </Reorder.Group>
               </div>
             </section>
           </div>

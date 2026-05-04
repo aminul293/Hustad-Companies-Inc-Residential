@@ -69,6 +69,9 @@ export function createSession(repId: string, repName: string): SessionState {
       internalNotes: "",
       summaryLockedAt: null,
       summaryLockedBy: null,
+      findingCategories: [],
+      aiPdfCopy: "",
+      aiFollowUpNote: "",
     },
     pathData: {
       selectedPath: null,
@@ -91,6 +94,24 @@ export function createSession(repId: string, repName: string): SessionState {
     },
     photoAssets: [],
     followUpTasks: [],
+    remoteReview: {
+      status: "sent",
+      sentAt: null,
+      openedAt: null,
+      viewedAt: null,
+      signedAt: null,
+      declinedAt: null,
+      declineReason: "",
+      callbackRequestedAt: null,
+      callbackPhone: "",
+      callbackPreferredTime: "",
+      approvedAt: null,
+      questions: [],
+      recipientName: "",
+      recipientEmail: "",
+      recipientRelation: "",
+      statusHistory: [],
+    },
     syncStatus: "local_only",
     auditEvents: [],
   };
@@ -110,12 +131,24 @@ export function saveSession(session: SessionState): void {
 
   // Update drafts index
   const index = getDraftsIndex();
+  
+  // Calculate missing fields for dashboard validation
+  let missing = 0;
+  if (!session.property.address) missing++;
+  if (!session.property.homeownerPrimaryName) missing++;
+  if (session.photoAssets.length === 0) missing++;
+
   index[session.sessionId] = {
     sessionId: session.sessionId,
-    address: session.property.address,
+    address: session.property.address || "Untitled Property",
+    homeownerName: session.property.homeownerPrimaryName || "Unknown Owner",
     repName: session.repName,
     lastSavedAt: updated.lastSavedAt,
     sessionStatus: session.sessionStatus,
+    outcomeType: session.findings.outcomeType,
+    syncStatus: session.syncStatus,
+    hasFollowUp: session.followUpTasks.length > 0,
+    missingFieldsCount: missing,
   };
   localStorage.setItem(DRAFTS_INDEX_KEY, JSON.stringify(index));
 }
@@ -139,9 +172,14 @@ export function clearActiveSession(): void {
 interface DraftMeta {
   sessionId: string;
   address: string;
+  homeownerName: string;
   repName: string;
   lastSavedAt: string;
   sessionStatus: string;
+  outcomeType: string | null;
+  syncStatus: string;
+  hasFollowUp: boolean;
+  missingFieldsCount: number;
 }
 
 function getDraftsIndex(): Record<string, DraftMeta> {
