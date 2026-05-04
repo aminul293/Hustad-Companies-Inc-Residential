@@ -3933,7 +3933,7 @@
       "repId": "rep_alpha_01",
       "repName": "Field Operative Alpha",
       "createdAt": "2026-05-04T19:02:06.681Z",
-      "lastSavedAt": "2026-05-04T19:02:06.711Z",
+      "lastSavedAt": "2026-05-04T19:02:10.283Z",
       "sessionStatus": "draft",
       "currentScreen": "A01_welcome",
       "mode": "rep",
@@ -4034,7 +4034,7 @@
         }
       ],
       "tokenGeneratedAt": "2026-05-04T19:02:06.681Z",
-      "syncedAt": "2026-05-04T19:02:12.577Z"
+      "syncedAt": "2026-05-04T19:15:43.240Z"
     }
   },
   "tokens": {
