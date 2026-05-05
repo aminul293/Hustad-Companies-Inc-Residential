@@ -215,21 +215,21 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
       {/* All-Weather Operational Atmosphere */}
       <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
         {/* Subtle Cinematic Rain/Particle System */}
-        {[...Array(20)].map((_, i) => (
+        {[...Array(12)].map((_, i) => (
           <motion.div
             key={i}
             initial={{ y: -100, x: Math.random() * 2000, opacity: 0 }}
             animate={{ 
               y: 1200, 
-              opacity: [0, 0.4, 0],
+              opacity: [0, 0.3, 0],
             }}
             transition={{ 
-              duration: 2 + Math.random() * 2, 
+              duration: 3 + Math.random() * 2, 
               repeat: Infinity, 
               ease: "linear",
               delay: Math.random() * 5
             }}
-            className="absolute w-[1px] h-20 bg-gradient-to-b from-indigo-500/0 via-indigo-400/20 to-indigo-500/0 rotate-[15deg]"
+            className="absolute w-[1px] h-24 bg-gradient-to-b from-indigo-500/0 via-white/10 to-indigo-500/0 rotate-[15deg]"
           />
         ))}
 
@@ -424,58 +424,93 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
               {(selectedRep || authStatus === "authenticated") && (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-8">
                   <div className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl space-y-8">
-                    {/* Address */}
-                    <div className="space-y-2 relative">
-                      <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest pl-2">Property Address <span className="text-rose-400">*</span></p>
-                      <div className="relative">
-                        <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-400/50" />
-                        <input
-                          value={form.address}
-                          onChange={(e) => set("address", e.target.value)}
-                          onFocus={() => setIsAddressFocused(true)}
-                          onBlur={() => setTimeout(() => setIsAddressFocused(false), 200)}
-                          className={cn("w-full bg-white/[0.04] border rounded-2xl py-5 pl-14 pr-6 text-white placeholder:text-white/30 outline-none transition-all text-lg", errors.address ? "border-rose-500/50" : "border-white/[0.1] focus:border-indigo-500/50")}
-                          placeholder="Start typing property address..."
-                        />
-                        {isSearching && <div className="absolute right-6 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />}
+                    {/* Property Identification */}
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-3 px-2">
+                        <div className="h-px flex-1 bg-white/[0.05]" />
+                        <span className="text-[10px] font-mono text-white/30 uppercase tracking-[0.2em]">Property Identification</span>
+                        <div className="h-px flex-1 bg-white/[0.05]" />
                       </div>
-                      {errors.address && <p className="text-[10px] text-rose-400 pl-2">{errors.address}</p>}
-                      {isAddressFocused && suggestions.length > 0 && (
-                        <div className="absolute z-50 left-0 right-0 top-full mt-2 rounded-2xl bg-[#111] border border-white/10 overflow-hidden shadow-2xl">
-                          {suggestions.map((s, i) => (
-                            <button key={i} onMouseDown={() => { set("address", s.main + (s.sub ? ", " + s.sub : "")); setSuggestions([]); }} className="w-full px-6 py-4 text-left hover:bg-white/5 transition-colors flex items-start gap-3 border-b border-white/5 last:border-0">
-                              <MapPin className="w-4 h-4 text-indigo-400 mt-0.5 shrink-0" />
-                              <div><p className="text-sm text-white">{s.main}</p><p className="text-[10px] text-white/30">{s.sub}</p></div>
-                            </button>
-                          ))}
+
+                      <div className="space-y-2 relative">
+                        <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest pl-2">Property Address <span className="text-rose-400">*</span></p>
+                        <div className="relative group">
+                          <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-400/50 group-focus-within:text-indigo-400 transition-colors" />
+                          <input
+                            value={form.address}
+                            onChange={(e) => set("address", e.target.value)}
+                            onFocus={() => setIsAddressFocused(true)}
+                            onBlur={() => setTimeout(() => setIsAddressFocused(false), 200)}
+                            className={cn(
+                              "w-full bg-white/[0.04] border rounded-2xl py-5 pl-14 pr-6 text-white placeholder:text-white/20 outline-none transition-all text-lg",
+                              errors.address ? "border-rose-500/50" : "border-white/[0.1] focus:border-indigo-500/30 focus:bg-white/[0.06] focus:ring-4 focus:ring-indigo-500/5"
+                            )}
+                            placeholder="Start typing property address..."
+                          />
+                          {isSearching && <div className="absolute right-6 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />}
                         </div>
-                      )}
+                        {errors.address && <p className="text-[10px] text-rose-400 pl-2">{errors.address}</p>}
+                        
+                        <AnimatePresence>
+                          {isAddressFocused && suggestions.length > 0 && (
+                            <motion.div 
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="absolute z-50 left-0 right-0 top-[calc(100%+8px)] rounded-2xl bg-[#111]/90 backdrop-blur-xl border border-white/10 overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+                            >
+                              {suggestions.map((s, i) => (
+                                <button 
+                                  key={i} 
+                                  onMouseDown={() => { set("address", s.main + (s.sub ? ", " + s.sub : "")); setSuggestions([]); }} 
+                                  className="w-full px-6 py-4 text-left hover:bg-white/5 transition-colors flex items-start gap-4 border-b border-white/5 last:border-0 group/item"
+                                >
+                                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0 group-hover/item:bg-indigo-500/20 transition-colors">
+                                    <MapPin className="w-4 h-4 text-indigo-400" />
+                                  </div>
+                                  <div>
+                                    <p className="text-sm text-white font-medium">{s.main}</p>
+                                    <p className="text-[10px] text-white/40 font-mono uppercase tracking-wider">{s.sub}</p>
+                                  </div>
+                                </button>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
                     </div>
 
-                    {/* Name + Phone */}
-                    <div className="grid grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest pl-2">Homeowner Name</p>
-                        <div className="relative">
-                          <User className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                          <input value={form.homeownerName} onChange={(e) => set("homeownerName", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="Full Name" />
-                        </div>
+                    {/* Ownership Details */}
+                    <div className="space-y-6 pt-4">
+                      <div className="flex items-center gap-3 px-2">
+                        <div className="h-px flex-1 bg-white/[0.05]" />
+                        <span className="text-[10px] font-mono text-white/30 uppercase tracking-[0.2em]">Ownership Details</span>
+                        <div className="h-px flex-1 bg-white/[0.05]" />
                       </div>
-                      <div className="space-y-2">
-                        <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest pl-2">Mobile Number</p>
-                        <div className="relative">
-                          <Smartphone className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                          <input value={form.homeownerMobile} onChange={(e) => set("homeownerMobile", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="(608) 000-0000" />
-                        </div>
-                      </div>
-                    </div>
 
-                    {/* Email */}
-                    <div className="space-y-2">
-                      <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest pl-2">Email Address</p>
-                      <div className="relative max-w-sm">
-                        <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                        <input value={form.homeownerEmail} onChange={(e) => set("homeownerEmail", e.target.value)} type="email" className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="homeowner@example.com" />
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest pl-2">Homeowner Name</p>
+                          <div className="relative group">
+                            <User className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-white/50 transition-colors" />
+                            <input value={form.homeownerName} onChange={(e) => set("homeownerName", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all" placeholder="Full Name" />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest pl-2">Mobile Number</p>
+                          <div className="relative group">
+                            <Smartphone className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-white/50 transition-colors" />
+                            <input value={form.homeownerMobile} onChange={(e) => set("homeownerMobile", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all" placeholder="(608) 000-0000" />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest pl-2">Email Address</p>
+                        <div className="relative group max-w-sm">
+                          <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-white/50 transition-colors" />
+                          <input value={form.homeownerEmail} onChange={(e) => set("homeownerEmail", e.target.value)} type="email" className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all" placeholder="homeowner@example.com" />
+                        </div>
                       </div>
                     </div>
 
@@ -598,9 +633,9 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                 </button>
                 <button 
                   onClick={handleStart}
-                  className="group flex items-center gap-4 px-12 py-6 rounded-full bg-white text-black transition-all hover:bg-neutral-200 active:scale-95"
+                  className="group flex items-center gap-4 px-12 py-6 rounded-full bg-white text-black transition-all hover:bg-neutral-200 active:scale-95 shadow-[0_20px_50px_rgba(255,255,255,0.1)]"
                 >
-                  <span className="text-lg font-display font-medium tracking-wide">Launch Inspection</span>
+                  <span className="text-lg font-display font-semibold tracking-tight">Launch Inspection</span>
                   <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                 </button>
               </>

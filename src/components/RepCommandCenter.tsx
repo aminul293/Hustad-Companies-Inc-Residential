@@ -36,11 +36,49 @@ export function RepCommandCenter({ onLoadDraft, onNewSession }: Props) {
   const [isAdding, setIsAdding] = useState(false);
   const [newRep, setNewRep] = useState({ name: "", role: "" });
 
+  const [serverSessions, setServerSessions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
     setLiveReps(getLiveReps());
+    
+    const loadServerData = async () => {
+      setIsLoading(true);
+      try {
+        const { fetchSessionsFromServer } = await import("@/lib/sync");
+        const sessions = await fetchSessionsFromServer();
+        setServerSessions(sessions);
+      } catch (e) {
+        console.warn("Failed to fetch server sessions", e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadServerData();
   }, [view]);
 
-  const drafts = useMemo(() => listDrafts(), []);
+  const drafts = useMemo(() => {
+    const local = listDrafts();
+    // Merge server sessions into local drafts if they don't exist locally
+    const merged = [...local];
+    serverSessions.forEach(s => {
+      if (!merged.find(m => m.sessionId === s.session_id)) {
+        merged.push({
+          sessionId: s.session_id,
+          address: s.property_address || "Untitled Property",
+          homeownerName: s.homeowner_name || "Unknown Owner",
+          repName: s.rep_name || "Unknown Rep",
+          lastSavedAt: s.updated_at,
+          sessionStatus: s.session_status,
+          outcomeType: s.outcome_type,
+          syncStatus: "synced",
+          hasFollowUp: false,
+          missingFieldsCount: 0
+        });
+      }
+    });
+    return merged.sort((a, b) => new Date(b.lastSavedAt).getTime() - new Date(a.lastSavedAt).getTime());
+  }, [serverSessions]);
 
   const filteredDrafts = useMemo(() => {
     return drafts.filter(d => {
@@ -96,17 +134,20 @@ export function RepCommandCenter({ onLoadDraft, onNewSession }: Props) {
           <>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { label: "Active Drafts", value: stats.active, icon: Clock, color: "text-indigo-400" },
-                { label: "Pending Auth", value: stats.pending, icon: CheckCircle2, color: "text-emerald-400" },
-                { label: "Missing Data", value: stats.missing, icon: AlertCircle, color: "text-rose-400" },
-                { label: "Cloud Synced", value: stats.synced, icon: CheckCircle2, color: "text-sky-400" },
+                { label: "Active Drafts", value: stats.active, icon: Clock, color: "text-indigo-400", bg: "bg-indigo-500/5" },
+                { label: "Pending Auth", value: stats.pending, icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/5" },
+                { label: "Missing Data", value: stats.missing, icon: AlertCircle, color: "text-rose-400", bg: "bg-rose-500/5" },
+                { label: "Cloud Synced", value: stats.synced, icon: CheckCircle2, color: "text-sky-400", bg: "bg-sky-500/5" },
               ].map((s, i) => (
-                <div key={i} className="p-4 rounded-3xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-xl">
-                  <div className="flex items-center gap-2 mb-1">
-                    <s.icon className={cn("w-3.5 h-3.5", s.color)} />
-                    <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">{s.label}</span>
+                <div key={i} className={cn("p-6 rounded-[32px] border border-white/[0.08] backdrop-blur-xl transition-all hover:border-white/20 hover:bg-white/[0.02] group", s.bg)}>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={cn("p-2 rounded-xl bg-white/5", s.color)}>
+                      <s.icon className="w-4 h-4" />
+                    </div>
+                    <span className="text-[9px] font-mono text-white/30 uppercase tracking-[0.2em] group-hover:text-white/50 transition-colors">Live Status</span>
                   </div>
-                  <p className="text-2xl font-display font-medium">{s.value}</p>
+                  <p className="text-3xl font-display font-semibold tracking-tight mb-1">{s.value}</p>
+                  <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest">{s.label}</p>
                 </div>
               ))}
             </div>
@@ -154,50 +195,57 @@ export function RepCommandCenter({ onLoadDraft, onNewSession }: Props) {
         {view === "dashboard" ? (
           <div className="space-y-4">
             {filteredDrafts.length > 0 ? (
-              filteredDrafts.map((d) => (
-                <button
-                  key={d.sessionId}
-                  onClick={() => onLoadDraft(d.sessionId)}
-                  className="w-full group p-6 rounded-[32px] bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/20 transition-all text-left"
-                >
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3">
-                        <div className={cn(
-                          "px-2 py-0.5 rounded font-mono text-[9px] uppercase tracking-wider",
-                          d.syncStatus === "synced" ? "bg-emerald-500/10 text-emerald-400" : "bg-amber-500/10 text-amber-400"
-                        )}>
-                          {d.syncStatus === "synced" ? "Synced" : "Local"}
-                        </div>
-                        {d.missingFieldsCount > 0 && (
-                          <div className="flex items-center gap-1 text-[9px] font-mono text-rose-400 uppercase tracking-wider">
-                            <AlertCircle className="w-3 h-3" />
-                            {d.missingFieldsCount} Missing
+              <div className="grid grid-cols-1 gap-4">
+                {filteredDrafts.map((d) => (
+                  <button
+                    key={d.sessionId}
+                    onClick={() => onLoadDraft(d.sessionId)}
+                    className="w-full group p-6 rounded-[32px] bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/20 transition-all text-left relative overflow-hidden"
+                  >
+                    {/* Subtle hover gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-indigo-500/0 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <div className={cn(
+                            "px-3 py-1 rounded-full font-mono text-[9px] uppercase tracking-widest border",
+                            d.syncStatus === "synced" 
+                              ? "bg-emerald-500/5 text-emerald-400 border-emerald-500/20" 
+                              : "bg-amber-500/5 text-amber-400 border-amber-500/20"
+                          )}>
+                            {d.syncStatus === "synced" ? "Cloud Synced" : "Local Storage"}
                           </div>
-                        )}
+                          {d.missingFieldsCount > 0 && (
+                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/5 border border-rose-500/20 text-[9px] font-mono text-rose-400 uppercase tracking-widest">
+                              <AlertCircle className="w-3 h-3" />
+                              {d.missingFieldsCount} Incomplete
+                            </div>
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xl font-display font-medium tracking-tight group-hover:text-indigo-300 transition-colors">{d.address}</p>
+                          <div className="flex items-center gap-6 text-[11px] font-mono text-white/40 uppercase tracking-wider">
+                            <span className="flex items-center gap-2"><User className="w-3.5 h-3.5 text-indigo-400/50" /> {d.homeownerName || "No Owner Listed"}</span>
+                            <span className="flex items-center gap-2"><Calendar className="w-3.5 h-3.5 text-indigo-400/50" /> {new Date(d.lastSavedAt).toLocaleDateString()}</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="space-y-1">
-                        <p className="text-lg font-display font-medium">{d.address}</p>
-                        <div className="flex items-center gap-4 text-xs text-white/40">
-                          <span className="flex items-center gap-1.5"><User className="w-3 h-3" /> {d.homeownerName}</span>
-                          <span className="flex items-center gap-1.5"><Calendar className="w-3 h-3" /> {new Date(d.lastSavedAt).toLocaleDateString()}</span>
+                      <div className="flex items-center gap-8">
+                        <div className="text-right hidden md:block">
+                          <p className="text-[9px] font-mono text-white/20 uppercase tracking-[0.2em] mb-1.5">Operational Phase</p>
+                          <p className="text-[10px] font-mono font-medium text-white/60 tracking-widest">
+                            {d.sessionStatus.replace(/_/g, " ").toUpperCase()}
+                          </p>
+                        </div>
+                        <div className="h-14 w-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:scale-105 transition-all">
+                          <ChevronRight className="w-6 h-6 text-white group-hover:text-black transition-colors" />
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-6">
-                      <div className="text-right hidden md:block">
-                        <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest mb-1">Status</p>
-                        <p className="text-xs font-display font-medium text-white/70">
-                          {d.sessionStatus.replace(/_/g, " ").toUpperCase()}
-                        </p>
-                      </div>
-                      <div className="h-12 w-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-indigo-500 transition-all">
-                        <ChevronRight className="w-5 h-5 text-white/40 group-hover:text-white" />
-                      </div>
-                    </div>
-                  </div>
-                </button>
-              ))
+                  </button>
+                ))}
+              </div>
             ) : (
               <div className="py-20 text-center opacity-30">
                 <Search className="w-12 h-12 mx-auto mb-4" />

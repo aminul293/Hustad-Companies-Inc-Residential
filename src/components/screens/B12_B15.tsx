@@ -114,7 +114,7 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
                 <CheckCircle2 className="w-3 h-3 text-indigo-400" />
                 <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest pt-0.5">Summary Locked & Audited</span>
               </div>
-              <h1 className="text-5xl md:text-7xl font-display font-medium text-white tracking-tighter leading-[1.05]">
+              <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
                 {findings.summaryHeadline || "Reviewing your findings."}
               </h1>
             </motion.div>
@@ -217,10 +217,15 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
             <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white">Previous</span>
           </button>
-          <StarButton onClick={onNext} lightColor="#FAFAFA" backgroundColor="#060606" className="flex-1 max-w-md h-16 rounded-full active:scale-95 transition-transform">
-            <div className="flex items-center gap-4">
-              <span className="text-base font-display font-medium tracking-wide">Show Recommended Path</span>
-              <ChevronRight className="w-5 h-5 text-white/90" />
+          <StarButton 
+            onClick={onNext} 
+            lightColor="#FAFAFA" 
+            backgroundColor="#060606" 
+            className="flex-1 max-w-md h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+          >
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-xl font-display font-semibold tracking-tight">Show Recommended Path</span>
+              <ChevronRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
             </div>
           </StarButton>
         </div>
@@ -308,7 +313,7 @@ export function B13RecommendedPath({ session, onNext, onBack }: Props) {
               <Clock className="w-3.5 h-3.5 text-indigo-400" />
               <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-[0.2em] pt-0.5">Recommended Strategy</span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-display font-medium text-white tracking-tighter leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
               {config.headline}
             </h1>
             <p className="text-xl text-white/70 font-light leading-relaxed max-w-2xl mx-auto">
@@ -369,10 +374,15 @@ export function B13RecommendedPath({ session, onNext, onBack }: Props) {
             <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white">Previous</span>
           </button>
-          <StarButton onClick={onNext} lightColor="#FAFAFA" backgroundColor="#060606" className="flex-1 max-w-md h-16 rounded-full active:scale-95 transition-transform">
-            <div className="flex items-center gap-4">
-              <span className="text-base font-display font-medium tracking-wide">{config.ctaLabel}</span>
-              <ChevronRight className="w-5 h-5 text-white/90" />
+          <StarButton 
+            onClick={onNext} 
+            lightColor="#FAFAFA" 
+            backgroundColor="#060606" 
+            className="flex-1 max-w-md h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+          >
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-xl font-display font-semibold tracking-tight">{config.ctaLabel}</span>
+              <ChevronRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
             </div>
           </StarButton>
         </div>
@@ -500,10 +510,10 @@ export function B14PathDecision({ session, onUpdate, onNext, onBack }: Props) {
               <LayoutGrid className="w-3.5 h-3.5 text-indigo-400" />
               <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-[0.2em] pt-0.5">Selection Matrix</span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-display font-medium text-white tracking-tighter leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
               Two legitimate paths exist.
               <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white/90 to-rose-300">Which fits your situation?</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">Which fits your situation?</span>
             </h1>
           </motion.div>
 
@@ -588,10 +598,19 @@ export function B14PathDecision({ session, onUpdate, onNext, onBack }: Props) {
             <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white">Back</span>
           </button>
-          <StarButton onClick={handleContinue} disabled={!selected} lightColor="#FAFAFA" backgroundColor="#060606" className="flex-1 max-w-md h-16 rounded-full active:scale-95 transition-transform">
-            <div className="flex items-center gap-4">
-              <span className="text-base font-display font-medium tracking-wide">Continue with {selected ? (selected === "claim_review" ? "Claim Review" : "Direct Repair") : "Selected Path"}</span>
-              <ChevronRight className="w-5 h-5 text-white/90" />
+          <StarButton 
+            onClick={handleContinue} 
+            disabled={!selected} 
+            lightColor="#FAFAFA" 
+            backgroundColor="#060606" 
+            className={cn(
+              "flex-1 max-w-md h-20 rounded-full transition-all group",
+              !selected ? "opacity-20 grayscale" : "shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95"
+            )}
+          >
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-xl font-display font-semibold tracking-tight">Continue with {selected ? (selected === "claim_review" ? "Claim Review" : "Direct Repair") : "Selected Path"}</span>
+              <ChevronRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
             </div>
           </StarButton>
         </div>
@@ -651,7 +670,7 @@ export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props
               <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
               <span className="text-[10px] font-mono text-rose-500 uppercase tracking-[0.2em] pt-0.5">Critical Protection Required</span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-display font-medium text-white tracking-tighter leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
               <span className="text-rose-500">{session.findings.urgentItemsCount} urgent item{session.findings.urgentItemsCount !== 1 ? "s" : ""}</span> need
               <br />immediate attention.
             </h1>
@@ -722,10 +741,19 @@ export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props
             <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white">Back</span>
           </button>
-          <StarButton onClick={handleContinue} disabled={authorized === null} lightColor="#FAFAFA" backgroundColor="#060606" className="flex-1 max-w-md h-16 rounded-full active:scale-95 transition-transform">
-            <div className="flex items-center gap-4">
-              <span className="text-base font-display font-medium tracking-wide">Continue</span>
-              <ChevronRight className="w-5 h-5 text-white/90" />
+          <StarButton 
+            onClick={handleContinue} 
+            disabled={authorized === null} 
+            lightColor="#FAFAFA" 
+            backgroundColor="#060606" 
+            className={cn(
+              "flex-1 max-w-md h-20 rounded-full transition-all group",
+              authorized === null ? "opacity-20 grayscale" : "shadow-[0_20px_60px_rgba(244,63,94,0.2)] active:scale-95"
+            )}
+          >
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-xl font-display font-semibold tracking-tight">Continue</span>
+              <ChevronRight className="w-5 h-5 text-rose-400 group-hover:translate-x-1 transition-transform" />
             </div>
           </StarButton>
         </div>

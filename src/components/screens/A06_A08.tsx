@@ -99,10 +99,10 @@ export function A06WarrantyImpact({ session, onUpdate, onNext, onBack }: Props) 
                 Asset Protection
               </span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-display font-medium text-white tracking-tighter leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
               Three types of warranty.
               <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white/90 to-rose-300">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">
                 Each one is different.
               </span>
             </h1>
@@ -198,10 +198,15 @@ export function A06WarrantyImpact({ session, onUpdate, onNext, onBack }: Props) 
             <ArrowLeft className="w-4 h-4 text-white/40 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white/60">Previous</span>
           </button>
-          <StarButton onClick={onNext} lightColor="#FAFAFA" backgroundColor="#060606" className="flex-1 max-w-md h-16 rounded-full active:scale-95 transition-transform">
-            <div className="flex items-center gap-4">
-              <span className="text-base font-display font-medium tracking-wide">Why Hustad Locally</span>
-              <ChevronRight className="w-5 h-5 text-white/60" />
+          <StarButton 
+            onClick={onNext} 
+            lightColor="#FAFAFA" 
+            backgroundColor="#060606" 
+            className="flex-1 max-w-md h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+          >
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-xl font-display font-semibold tracking-tight">Why Hustad Locally</span>
+              <ChevronRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
             </div>
           </StarButton>
         </div>
@@ -272,10 +277,10 @@ export function A07WhyHustad({ session, onUpdate, onNext, onBack }: Props) {
       <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56">
         <div className="max-w-5xl mx-auto space-y-16">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <h1 className="text-5xl md:text-7xl font-display font-medium text-white tracking-tighter leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
               Madison roots.
               <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white/90 to-rose-300">Local accountability.</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">Local accountability.</span>
             </h1>
           </motion.div>
 
@@ -370,10 +375,15 @@ export function A07WhyHustad({ session, onUpdate, onNext, onBack }: Props) {
             <ArrowLeft className="w-4 h-4 text-white/40 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white/60">Previous</span>
           </button>
-          <StarButton onClick={onNext} lightColor="#FAFAFA" backgroundColor="#060606" className="flex-1 max-w-md h-16 rounded-full active:scale-95 transition-transform">
-            <div className="flex items-center gap-4">
-              <span className="text-base font-display font-medium tracking-wide">Walkthrough Package</span>
-              <ChevronRight className="w-5 h-5 text-white/60" />
+          <StarButton 
+            onClick={onNext} 
+            lightColor="#FAFAFA" 
+            backgroundColor="#060606" 
+            className="flex-1 max-w-md h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+          >
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-xl font-display font-semibold tracking-tight">Walkthrough Package</span>
+              <ChevronRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
             </div>
           </StarButton>
         </div>
@@ -423,12 +433,12 @@ export function A08WhatYouReceive({ session, onUpdate, onNext, onBack }: Props) 
       <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56">
         <div className="max-w-5xl mx-auto space-y-16">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <h1 className="text-5xl md:text-7xl font-display font-medium text-white tracking-tighter leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
               Here is exactly what
               <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white/90 to-rose-300">the rep will bring back.</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">the rep will bring back.</span>
             </h1>
-            <p className="text-xl text-white/30 font-light leading-relaxed">When the exterior review is complete, you will receive a structured findings package — not a verbal summary.</p>
+            <p className="text-xl text-white/30 font-light leading-relaxed mt-8 max-w-2xl">When the exterior review is complete, you will receive a structured findings package — not a verbal summary.</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -477,10 +487,15 @@ export function A08WhatYouReceive({ session, onUpdate, onNext, onBack }: Props) 
             <ArrowLeft className="w-4 h-4 text-white/40 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white/60">Previous</span>
           </button>
-          <StarButton onClick={onNext} lightColor="#FAFAFA" backgroundColor="#060606" className="flex-1 max-w-md h-16 rounded-full active:scale-95 transition-transform">
-            <div className="flex items-center gap-4">
-              <span className="text-base font-display font-medium tracking-wide">Tell Us What Matters</span>
-              <ChevronRight className="w-5 h-5 text-white/60" />
+          <StarButton 
+            onClick={onNext} 
+            lightColor="#FAFAFA" 
+            backgroundColor="#060606" 
+            className="flex-1 max-w-md h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+          >
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-xl font-display font-semibold tracking-tight">Tell Us What Matters</span>
+              <ChevronRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
             </div>
           </StarButton>
         </div>

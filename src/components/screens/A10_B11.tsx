@@ -107,10 +107,10 @@ export function A10InspectionHold({ session, onRepReturn }: HoldProps) {
           </motion.div>
 
           <div className="space-y-4">
-            <h1 className="text-4xl md:text-6xl font-display font-medium text-white tracking-tighter leading-[1.1]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
               The rep is finishing
               <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white/90 to-rose-300">the exterior review.</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">the exterior review.</span>
             </h1>
             <p className="text-lg text-white/50 font-light leading-relaxed max-w-lg mx-auto">
               They will return with documented findings, one recommendation,
@@ -145,11 +145,11 @@ export function A10InspectionHold({ session, onRepReturn }: HoldProps) {
                 onClick={onRepReturn}
                 lightColor="#FAFAFA"
                 backgroundColor="#060606"
-                className="w-full h-18 rounded-3xl active:scale-95 transition-transform"
+                className="w-full h-20 rounded-3xl active:scale-95 transition-transform shadow-[0_20px_60px_rgba(99,102,241,0.2)] group"
               >
                 <div className="flex items-center gap-4">
-                  <span className="text-lg font-display font-medium">Begin Findings Review</span>
-                  <ChevronRight className="w-5 h-5" />
+                  <span className="text-xl font-display font-medium">Begin Findings Review</span>
+                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </div>
               </StarButton>
             </motion.div>
@@ -743,11 +743,11 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
             lightColor="#FAFAFA"
             backgroundColor="#0A0A0A"
             className={cn(
-              "flex-1 h-20 rounded-[40px] transition-all duration-500",
-              !outcomeType ? "opacity-20 grayscale cursor-not-allowed" : "active:scale-95 shadow-[0_20px_60px_-15px_rgba(99,102,241,0.2)]"
+              "flex-1 h-20 rounded-[40px] transition-all duration-500 group",
+              !outcomeType ? "opacity-20 grayscale cursor-not-allowed" : "active:scale-95 shadow-[0_20px_60px_rgba(99,102,241,0.2)]"
             )}
           >
-            <div className="flex items-center gap-6">
+            <div className="flex items-center justify-center gap-6">
               <div className="relative">
                 {Object.keys(errors).length > 0 ? (
                   <AlertCircle className="w-7 h-7 text-rose-500 animate-pulse" />
@@ -758,7 +758,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
               <span className="text-xl font-display font-medium text-white tracking-wide">
                 {!outcomeType ? "Classification Required" : "Execute Immutable Lock & Finalize"}
               </span>
-              <ChevronRight className="w-6 h-6 text-white/30" />
+              <ChevronRight className="w-6 h-6 text-white/30 group-hover:translate-x-1 transition-transform" />
             </div>
           </StarButton>
         </div>

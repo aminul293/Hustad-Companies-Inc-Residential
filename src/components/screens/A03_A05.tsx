@@ -102,16 +102,16 @@ export function A03WhatWeInspect({ session, onUpdate, onNext, onBack }: Props) {
                 Categorization System
               </span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-display font-medium text-white tracking-tighter leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
               Three categories.
               <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white/90 to-rose-300 animate-shimmer bg-[length:200%_auto]">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">
                 Clear, honest labels.
               </span>
             </h1>
-            <p className="text-xl text-white/30 font-light max-w-2xl leading-relaxed">
+            <p className="text-xl text-white/30 font-light max-w-2xl leading-relaxed mt-8">
               Hustad organizes every finding into one of three categories so
-              you understand urgency at a glance.
+              you understand urgency and impact at a glance.
             </p>
           </motion.div>
 
@@ -169,10 +169,15 @@ export function A03WhatWeInspect({ session, onUpdate, onNext, onBack }: Props) {
             <ArrowLeft className="w-4 h-4 text-white/40 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white/60">Previous</span>
           </button>
-          <StarButton onClick={onNext} lightColor="#FAFAFA" backgroundColor="#060606" className="flex-1 max-w-md h-16 rounded-full active:scale-95 transition-transform">
-            <div className="flex items-center gap-4">
-              <span className="text-base font-display font-medium tracking-wide">How the Review Works</span>
-              <ChevronRight className="w-5 h-5 text-white/60" />
+          <StarButton 
+            onClick={onNext} 
+            lightColor="#FAFAFA" 
+            backgroundColor="#060606" 
+            className="flex-1 max-w-md h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+          >
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-xl font-display font-semibold tracking-tight">How the Review Works</span>
+              <ChevronRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
             </div>
           </StarButton>
         </div>
@@ -243,12 +248,12 @@ export function A04HowFindingsSorted({ session, onUpdate, onNext, onBack }: Prop
       <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56">
         <div className="max-w-4xl mx-auto space-y-16">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <h1 className="text-5xl md:text-7xl font-display font-medium text-white tracking-tighter leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
               When the rep returns,
               <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white/90 to-rose-300">here&rsquo;s the sequence.</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">here&rsquo;s the sequence.</span>
             </h1>
-            <p className="text-xl text-white/30 font-light leading-relaxed">No surprises. No sales pressure. Just a structured walk through what was actually found.</p>
+            <p className="text-xl text-white/30 font-light leading-relaxed mt-8 max-w-2xl">No surprises. No sales pressure. Just a structured walk through what was actually found on your property.</p>
           </motion.div>
 
           <div className="space-y-4">
@@ -279,10 +284,15 @@ export function A04HowFindingsSorted({ session, onUpdate, onNext, onBack }: Prop
             <ArrowLeft className="w-4 h-4 text-white/40 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white/60">Previous</span>
           </button>
-          <StarButton onClick={onNext} lightColor="#FAFAFA" backgroundColor="#060606" className="flex-1 max-w-md h-16 rounded-full active:scale-95 transition-transform">
-            <div className="flex items-center gap-4">
-              <span className="text-base font-display font-medium tracking-wide">Insurance Clarity</span>
-              <ChevronRight className="w-5 h-5 text-white/60" />
+          <StarButton 
+            onClick={onNext} 
+            lightColor="#FAFAFA" 
+            backgroundColor="#060606" 
+            className="flex-1 max-w-md h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+          >
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-xl font-display font-semibold tracking-tight">Insurance Clarity</span>
+              <ChevronRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
             </div>
           </StarButton>
         </div>
@@ -354,12 +364,12 @@ export function A05InsuranceClarity({ session, onUpdate, onNext, onBack }: Props
       <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56">
         <div className="max-w-5xl mx-auto space-y-16">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <h1 className="text-5xl md:text-7xl font-display font-medium text-white tracking-tighter leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
               What insurance can and
               <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white/90 to-rose-300">cannot promise you.</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">cannot promise you.</span>
             </h1>
-            <p className="text-xl text-white/30 font-light leading-relaxed">A few things that are worth knowing before the review — so nothing feels like a surprise later.</p>
+            <p className="text-xl text-white/30 font-light leading-relaxed mt-8 max-w-2xl">A few things that are worth knowing before the review — so nothing feels like a surprise later.</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -404,10 +414,15 @@ export function A05InsuranceClarity({ session, onUpdate, onNext, onBack }: Props
             <ArrowLeft className="w-4 h-4 text-white/40 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white/60">Previous</span>
           </button>
-          <StarButton onClick={onNext} lightColor="#FAFAFA" backgroundColor="#060606" className="flex-1 max-w-md h-16 rounded-full active:scale-95 transition-transform">
-            <div className="flex items-center gap-4">
-              <span className="text-base font-display font-medium tracking-wide">Next Phase</span>
-              <ChevronRight className="w-5 h-5 text-white/60" />
+          <StarButton 
+            onClick={onNext} 
+            lightColor="#FAFAFA" 
+            backgroundColor="#060606" 
+            className="flex-1 max-w-md h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+          >
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-xl font-display font-semibold tracking-tight">Next Phase</span>
+              <ChevronRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
             </div>
           </StarButton>
         </div>

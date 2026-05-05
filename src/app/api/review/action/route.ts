@@ -1,23 +1,7 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { getSessionByToken, upsertSession } from '@/lib/supabase-relay';
 
 export const dynamic = 'force-dynamic';
-
-const DB_PATH = path.join(process.cwd(), 'data', 'sessions.json');
-
-function readDb() {
-  try {
-    if (!fs.existsSync(DB_PATH)) return { sessions: {}, tokens: {} };
-    const data = fs.readFileSync(DB_PATH, 'utf8');
-    const parsed = JSON.parse(data);
-    return { sessions: parsed.sessions || {}, tokens: parsed.tokens || {} };
-  } catch { return { sessions: {}, tokens: {} }; }
-}
-
-function writeDb(data: any) {
-  fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
-}
 
 export async function POST(request: Request) {
   try {
@@ -28,16 +12,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing token or action' }, { status: 400 });
     }
 
-    const db = readDb();
-    const sessionId = db.tokens[token];
-    if (!sessionId || !db.sessions[sessionId]) {
+    const session = await getSessionByToken(token);
+    if (!session) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 404 });
     }
 
-    const session = db.sessions[sessionId];
     const now = new Date().toISOString();
 
-    // Initialize remoteReview if missing (backward compat)
+    // Initialize remoteReview if missing
     if (!session.remoteReview) {
       session.remoteReview = {
         status: "sent",
@@ -133,10 +115,10 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
     }
 
-    db.sessions[sessionId] = { ...session, syncedAt: now };
-    writeDb(db);
+    // Upsert back to Supabase
+    await upsertSession(session);
 
-    console.log(`[REMOTE_PORTAL] Action: ${action} | Session: ${sessionId} | Status: ${session.remoteReview.status}`);
+    console.log(`[SUPABASE_RELAY] Action: ${action} | Session: ${session.sessionId} | Status: ${session.remoteReview.status}`);
 
     return NextResponse.json({ 
       success: true, 
@@ -144,7 +126,7 @@ export async function POST(request: Request) {
       remoteReview: session.remoteReview 
     });
   } catch (error: any) {
-    console.error('[REMOTE_PORTAL] Error:', error);
+    console.error('[SUPABASE_RELAY] Action Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

@@ -90,18 +90,14 @@ export function A02WhyInspection({ session, onUpdate, onNext, onBack }: Props) {
               </span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-display font-medium text-white tracking-tighter leading-[1.05] max-w-4xl">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05] max-w-4xl">
               Hail damage isn&rsquo;t always
               <br />
-              <span className="relative inline-block">
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white/90 to-rose-300 animate-shimmer bg-[length:200%_auto]">
-                  visible from the ground.
-                </span>
-                <span className="absolute -bottom-2 left-0 w-full h-px bg-gradient-to-r from-indigo-500/0 via-indigo-500/40 to-rose-500/0" />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">
+                visible from the ground.
               </span>
             </h1>
-            
-            <p className="text-xl text-white/30 font-light max-w-2xl leading-relaxed">
+            <p className="text-xl text-white/30 font-light max-w-2xl leading-relaxed mt-8">
               What you can see from your yard rarely tells the full story.
               We look deeper to protect your asset.
             </p>
@@ -187,17 +183,15 @@ export function A02WhyInspection({ session, onUpdate, onNext, onBack }: Props) {
             <span className="text-sm font-display font-medium text-white/60">Previous Step</span>
           </button>
 
-          <StarButton
-            onClick={onNext}
-            lightColor="#FAFAFA"
-            backgroundColor="#060606"
-            className="flex-1 max-w-md h-16 rounded-full shadow-[0_0_40px_rgba(99,102,241,0.2)] active:scale-95 transition-transform"
+          <StarButton 
+            onClick={onNext} 
+            lightColor="#FAFAFA" 
+            backgroundColor="#060606" 
+            className="flex-1 max-w-md h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
           >
-            <div className="flex items-center gap-4">
-              <span className="text-base font-display font-medium tracking-wide">
-                Show Me What You Inspect
-              </span>
-              <ChevronRight className="w-5 h-5 text-white/60" />
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-xl font-display font-semibold tracking-tight">Show Me What You Inspect</span>
+              <ChevronRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
             </div>
           </StarButton>
         </div>

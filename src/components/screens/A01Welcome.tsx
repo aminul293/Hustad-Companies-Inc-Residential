@@ -117,14 +117,18 @@ export function A01Welcome({ session, onUpdate, onNext, onBack, onSkip }: Props)
                 </p>
               </div>
               
-              <h1 className="font-display font-medium text-white text-5xl md:text-7xl leading-tight tracking-tight max-w-6xl mx-auto">
-                {name ? `Hello, ${name.split(" ")[0]}.` : "Welcome."}
+              <h1 className="font-display font-medium text-white text-5xl md:text-8xl leading-[1.1] tracking-tight max-w-6xl mx-auto">
+                {name ? (
+                  <>
+                    <span className="text-white/50">Hello,</span> {name.split(" ")[0]}.
+                  </>
+                ) : "Welcome."}
                 <br />
-                <div className="flex flex-col md:flex-row justify-center items-center md:items-baseline gap-x-2 py-6">
-                  <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80 whitespace-nowrap">
+                <div className="flex flex-col md:flex-row justify-center items-center md:items-baseline gap-x-4 py-8">
+                  <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40 whitespace-nowrap">
                     Let&rsquo;s have a 
                   </span>
-                  <span className="relative inline-flex items-baseline overflow-hidden min-w-[280px] md:min-w-[380px]">
+                  <span className="relative inline-flex items-baseline overflow-hidden min-w-[300px] md:min-w-[420px]">
                     {/* Ghost element to set the baseline and height */}
                     <span className="opacity-0 pointer-events-none select-none pb-2">
                       walkthrough
@@ -132,7 +136,7 @@ export function A01Welcome({ session, onUpdate, onNext, onBack, onSkip }: Props)
                     {titles.map((title, index) => (
                       <motion.div
                         key={index}
-                        className="absolute inset-0 flex items-center justify-center font-semibold bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white/90 to-rose-300 whitespace-nowrap pb-2"
+                        className="absolute inset-0 flex items-center justify-center font-semibold bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300 whitespace-nowrap pb-2"
                         initial={{ opacity: 0, y: "100%" }}
                         transition={{ type: "spring", stiffness: 80, damping: 18 }}
                         animate={
@@ -145,7 +149,7 @@ export function A01Welcome({ session, onUpdate, onNext, onBack, onSkip }: Props)
                       </motion.div>
                     ))}
                   </span>
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white/90 to-rose-300 whitespace-nowrap">
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-200 via-white to-indigo-200 whitespace-nowrap">
                     walkthrough.
                   </span>
                 </div>
@@ -197,11 +201,11 @@ export function A01Welcome({ session, onUpdate, onNext, onBack, onSkip }: Props)
                 onClick={onNext}
                 lightColor="#FAFAFA"
                 backgroundColor="#060606"
-                className="w-full max-w-md h-16 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.5)] active:scale-95 transition-transform"
+                className="w-full max-w-md h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
               >
-                <div className="flex items-center justify-center gap-3">
-                  <span className="text-lg font-display font-medium">Start My Walkthrough</span>
-                  <ArrowRight className="w-6 h-6 text-white/60" />
+                <div className="flex items-center justify-center gap-4">
+                  <span className="text-xl font-display font-semibold tracking-tight">Start My Walkthrough</span>
+                  <ArrowRight className="w-6 h-6 text-indigo-400 group-hover:translate-x-1 transition-transform" />
                 </div>
               </StarButton>
               
