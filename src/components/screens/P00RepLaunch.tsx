@@ -157,7 +157,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
     }
   }, [form.address, session.sessionId]);
 
-  if (showDashboard && selectedRep) {
+  if (showDashboard && (selectedRep || authStatus === "authenticated")) {
     return (
       <RepCommandCenter 
         onLoadDraft={(id) => {
@@ -370,7 +370,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
               ) : (
                 <div className="space-y-6">
                   <button 
-                    onClick={() => signIn("azure-ad")}
+                    onClick={() => signIn("azure-ad", { callbackUrl: "/" })}
                     className="w-full p-8 rounded-[40px] bg-white text-black flex items-center justify-between hover:bg-neutral-200 transition-all group"
                   >
                     <div className="flex items-center gap-6">
