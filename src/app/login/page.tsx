@@ -2,8 +2,23 @@
 
 import { signIn } from "next-auth/react";
 import { Mail } from "lucide-react";
+import { useState } from "react";
 
 export default function LoginPage() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleLogin = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      await signIn("azure-ad", { callbackUrl: "/" });
+    } catch (e: any) {
+      setError(e?.message || "Sign-in failed. Please try again.");
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="relative min-h-screen flex items-center justify-center px-6 overflow-hidden bg-[#0A0F1E] text-white">
       {/* Background orbs */}
@@ -44,22 +59,35 @@ export default function LoginPage() {
             </p>
 
             <button
-              onClick={() => signIn("azure-ad", { callbackUrl: "/" })}
-              className="w-full flex items-center justify-between gap-4 p-6 rounded-2xl bg-white text-black hover:bg-neutral-100 active:scale-[0.98] transition-all duration-200 group/btn shadow-[0_4px_24px_rgba(255,255,255,0.08)]"
+              onClick={handleLogin}
+              disabled={loading}
+              className="w-full flex items-center justify-between gap-4 p-6 rounded-2xl bg-white text-black hover:bg-neutral-100 active:scale-[0.98] transition-all duration-200 group/btn shadow-[0_4px_24px_rgba(255,255,255,0.08)] disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <div className="flex items-center gap-4">
                 <div className="w-11 h-11 rounded-xl bg-black/5 flex items-center justify-center shrink-0">
-                  <Mail className="w-5 h-5 text-black" />
+                  {loading ? (
+                    <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                  ) : (
+                    <Mail className="w-5 h-5 text-black" />
+                  )}
                 </div>
                 <div className="text-left">
-                  <p className="text-lg font-semibold leading-tight">Login with Outlook</p>
+                  <p className="text-lg font-semibold leading-tight">
+                    {loading ? "Redirecting to Microsoft..." : "Login with Outlook"}
+                  </p>
                   <p className="text-[10px] font-mono text-black/40 uppercase tracking-widest mt-0.5">Enterprise Identity</p>
                 </div>
               </div>
-              <svg className="w-5 h-5 text-black/40 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+              {!loading && (
+                <svg className="w-5 h-5 text-black/40 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              )}
             </button>
+
+            {error && (
+              <p className="text-[11px] text-red-400 font-mono text-center px-2">{error}</p>
+            )}
           </div>
         </div>
 
