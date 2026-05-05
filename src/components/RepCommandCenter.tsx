@@ -22,6 +22,7 @@ import { listDrafts } from "@/lib/session";
 import { getLiveReps, saveCustomRep, deleteCustomRep } from "@/lib/reps";
 import type { RepIdentity } from "@/config/reps";
 import { motion, AnimatePresence } from "framer-motion";
+import { CenterPointJobs } from "@/components/CenterPointJobs";
 
 interface Props {
   onLoadDraft: (id: string) => void;
@@ -31,7 +32,7 @@ interface Props {
 export function RepCommandCenter({ onLoadDraft, onNewSession }: Props) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<string>("all");
-  const [view, setView] = useState<"dashboard" | "settings">("dashboard");
+  const [view, setView] = useState<"dashboard" | "centerpoint" | "settings">("dashboard");
   const [liveReps, setLiveReps] = useState<RepIdentity[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [newRep, setNewRep] = useState({ name: "", role: "" });
@@ -112,14 +113,25 @@ export function RepCommandCenter({ onLoadDraft, onNewSession }: Props) {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setView(view === "dashboard" ? "settings" : "dashboard")}
-              className="p-3 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all group"
-            >
-              {view === "dashboard" ? <Settings className="w-5 h-5 text-white/40 group-hover:text-white" /> : <LayoutGrid className="w-5 h-5 text-white/40 group-hover:text-white" />}
-            </button>
+            {/* Tab switcher */}
+            <div className="flex items-center gap-1 p-1 bg-white/5 border border-white/10 rounded-full">
+              {([
+                { id: "dashboard", label: "Inspections" },
+                { id: "centerpoint", label: "CenterPoint" },
+                { id: "settings", label: "Settings" },
+              ] as const).map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setView(tab.id)}
+                  className={cn(
+                    "px-4 py-2 rounded-full text-xs font-display transition-all",
+                    view === tab.id ? "bg-white text-black" : "text-white/40 hover:text-white"
+                  )}
+                >{tab.label}</button>
+              ))}
+            </div>
             {view === "dashboard" && (
-              <button 
+              <button
                 onClick={onNewSession}
                 className="px-6 py-3 bg-white text-black rounded-full font-display font-medium text-sm hover:bg-white/90 transition-all flex items-center gap-2"
               >
@@ -192,7 +204,9 @@ export function RepCommandCenter({ onLoadDraft, onNewSession }: Props) {
       </div>
 
       <div className="flex-1 overflow-y-auto p-8">
-        {view === "dashboard" ? (
+        {view === "centerpoint" ? (
+          <CenterPointJobs />
+        ) : view === "dashboard" ? (
           <div className="space-y-4">
             {filteredDrafts.length > 0 ? (
               <div className="grid grid-cols-1 gap-4">
