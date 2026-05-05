@@ -86,13 +86,13 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
               <Zap className="w-3 h-3 text-indigo-400" />
               <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest pt-0.5">The Technical Edge</span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-display font-medium text-white tracking-tighter leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
               Forensic analysis.
               <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white/90 to-rose-300">Digital accountability.</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">Digital accountability.</span>
             </h1>
-            <p className="text-xl text-white/30 font-light max-w-2xl leading-relaxed">
-              Hustad replaces manual guesswork with a technical ecosystem designed to protect your asset value.
+            <p className="text-xl text-white/30 font-light max-w-2xl leading-relaxed mt-8">
+              Hustad replaces manual guesswork with a technical ecosystem designed to protect your asset value at every stage.
             </p>
           </motion.div>
 
@@ -217,10 +217,15 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
             <ArrowLeft className="w-4 h-4 text-white/40 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white/60">Priorities</span>
           </button>
-          <StarButton onClick={onNext} lightColor="#FAFAFA" backgroundColor="#060606" className="flex-1 max-w-md h-16 rounded-full active:scale-95 transition-transform">
-            <div className="flex items-center gap-4">
-              <span className="text-base font-display font-medium tracking-wide">Begin Inspection Review</span>
-              <ChevronRight className="w-5 h-5 text-white/60" />
+          <StarButton 
+            onClick={onNext} 
+            lightColor="#FAFAFA" 
+            backgroundColor="#060606" 
+            className="flex-1 max-w-md h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+          >
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-xl font-display font-semibold tracking-tight">Begin Inspection Review</span>
+              <ChevronRight className="w-6 h-6 text-indigo-400 group-hover:translate-x-1 transition-transform" />
             </div>
           </StarButton>
         </div>

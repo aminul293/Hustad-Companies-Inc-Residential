@@ -44,7 +44,7 @@ function SplineSceneBasic() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-6 w-fit">
               <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest">Active Protection System</span>
             </div>
-            <h1 className="text-5xl md:text-6xl font-display font-medium bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 leading-[1.1] tracking-tighter">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
               What matters <br /> most to you?
             </h1>
             <p className="mt-6 text-neutral-400 text-lg font-light max-w-md leading-relaxed">
@@ -411,10 +411,15 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
             <ArrowLeft className="w-4 h-4 text-white/40 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white/60">Previous</span>
           </button>
-          <StarButton onClick={handleSave} lightColor="#FAFAFA" backgroundColor="#060606" className="flex-1 max-w-md h-16 rounded-full active:scale-95 transition-transform">
-            <div className="flex items-center gap-4">
-              <span className="text-base font-display font-medium tracking-wide">Save My Priorities</span>
-              <ChevronRight className="w-5 h-5 text-white/60" />
+          <StarButton 
+            onClick={handleSave} 
+            lightColor="#FAFAFA" 
+            backgroundColor="#060606" 
+            className="flex-1 max-w-md h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+          >
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-xl font-display font-semibold tracking-tight">Save My Priorities</span>
+              <ChevronRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
             </div>
           </StarButton>
         </div>

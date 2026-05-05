@@ -123,10 +123,10 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
               <Shield className="w-3 h-3 text-indigo-400" />
               <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest pt-0.5">System Configuration</span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-display font-medium text-white tracking-tighter leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
               Choose your system
               <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white/90 to-rose-300">and protection level.</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">and protection level.</span>
             </h1>
           </motion.div>
 
@@ -216,10 +216,15 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
             <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white">Back</span>
           </button>
-          <StarButton onClick={handleContinue} lightColor="#FAFAFA" backgroundColor="#060606" className="flex-1 max-w-md h-16 rounded-full active:scale-95 transition-transform">
-            <div className="flex items-center gap-4">
-              <span className="text-base font-display font-medium tracking-wide">Agreement Summary</span>
-              <ChevronRight className="w-5 h-5 text-white/90" />
+          <StarButton 
+            onClick={handleContinue} 
+            lightColor="#FAFAFA" 
+            backgroundColor="#060606" 
+            className="flex-1 max-w-md h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+          >
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-xl font-display font-semibold tracking-tight">Agreement Summary</span>
+              <ChevronRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
             </div>
           </StarButton>
         </div>
@@ -286,10 +291,10 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
               <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
               <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-[0.2em] pt-0.5">Authorization Terms</span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-display font-medium text-white tracking-tighter leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
               Before the signature —
               <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white/90 to-rose-300">here is what you are authorizing.</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">here is what you are authorizing.</span>
             </h1>
           </motion.div>
 
@@ -361,10 +366,15 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
             <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white">Back</span>
           </button>
-          <StarButton onClick={handleContinue} lightColor="#FAFAFA" backgroundColor="#060606" className="flex-1 max-w-md h-16 rounded-full active:scale-95 transition-transform">
-            <div className="flex items-center gap-4">
-              <span className="text-base font-display font-medium tracking-wide">Continue to Signature</span>
-              <ChevronRight className="w-5 h-5 text-white/90" />
+          <StarButton 
+            onClick={handleContinue} 
+            lightColor="#FAFAFA" 
+            backgroundColor="#060606" 
+            className="flex-1 max-w-md h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+          >
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-xl font-display font-semibold tracking-tight">Continue to Signature</span>
+              <ChevronRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
             </div>
           </StarButton>
         </div>
@@ -472,10 +482,10 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
               <PenTool className="w-3.5 h-3.5 text-indigo-400" />
               <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-[0.2em] pt-0.5">Authorization</span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-display font-medium text-white tracking-tighter leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
               Ready to authorize,
               <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white/90 to-rose-300">or send for review?</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">or send for review?</span>
             </h1>
           </motion.div>
 
@@ -559,12 +569,17 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
             <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white">Back</span>
           </button>
-          <StarButton onClick={handleSubmit} lightColor="#FAFAFA" backgroundColor="#060606" className="flex-1 max-w-md h-16 rounded-full active:scale-95 transition-transform">
-            <div className="flex items-center gap-4">
-              <span className="text-base font-display font-medium tracking-wide">
+          <StarButton 
+            onClick={handleSubmit} 
+            lightColor="#FAFAFA" 
+            backgroundColor="#060606" 
+            className="flex-1 max-w-md h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+          >
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-xl font-display font-semibold tracking-tight">
                 {mode === "sign" ? "Submit Authorization" : mode === "defer" ? "Send for Review" : "Continue"}
               </span>
-              <ChevronRight className="w-5 h-5 text-white/90" />
+              <ChevronRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
             </div>
           </StarButton>
         </div>

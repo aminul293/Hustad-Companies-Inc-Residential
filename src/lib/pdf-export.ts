@@ -24,10 +24,38 @@ export async function downloadSummaryPDF(session: SessionState) {
 }
 
 /**
+ * Helper to downscale and compress images to keep PDF size manageable for email payloads.
+ */
+async function compressImage(dataUrl: string, maxWidth = 1000): Promise<string> {
+  if (typeof window === "undefined") return dataUrl;
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      let width = img.width;
+      let height = img.height;
+      if (width > maxWidth) {
+        height = (maxWidth / width) * height;
+        width = maxWidth;
+      }
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      ctx?.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL("image/jpeg", 0.7)); // 0.7 quality is sweet spot
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
+/**
  * Shared internal generation logic for the Forensic Laboratory Dossier.
  */
 async function generateDossier(session: SessionState): Promise<jsPDF> {
-  const doc = new jsPDF();
+  const doc = new jsPDF({
+    compress: true // Enable PDF stream compression
+  });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 20;
@@ -148,7 +176,8 @@ async function generateDossier(session: SessionState): Promise<jsPDF> {
     doc.setTextColor(15, 23, 42); doc.setFont("times", "bold"); doc.setFontSize(12); doc.text("SENSORY EVIDENCE_01", 45, currentY);
     try {
       const asset = photoAssets[0];
-      doc.addImage(asset.dataUrl, "JPEG", 45, currentY + 5, contentWidth - 30, 80);
+      const compressed = await compressImage(asset.dataUrl);
+      doc.addImage(compressed, "JPEG", 45, currentY + 5, contentWidth - 30, 80, undefined, "FAST");
       
       // Draw annotations for the first large photo
       if (asset.annotations) {
@@ -211,11 +240,15 @@ async function generateDossier(session: SessionState): Promise<jsPDF> {
       doc.setFillColor(15, 23, 42); doc.rect(0, 0, 30, pageHeight, "F");
       doc.setTextColor(255, 255, 255); doc.setFontSize(8); doc.setFont("courier", "bold");
       doc.text("EVIDENCE_LOG", 10, 40, { angle: 90 });
-      photoAssets.slice(currentPhotoIdx, currentPhotoIdx + 4).forEach((asset, idx) => {
+      
+      const chunk = photoAssets.slice(currentPhotoIdx, currentPhotoIdx + 4);
+      for (let idx = 0; idx < chunk.length; idx++) {
+        const asset = chunk[idx];
         const col = idx % 2; const row = Math.floor(idx / 2);
         const x = 45 + (col * ( (contentWidth - 40) / 2 + 10)); const y = 40 + (row * 100);
         try { 
-          doc.addImage(asset.dataUrl, "JPEG", x, y, (contentWidth - 40) / 2, 80); 
+          const compressed = await compressImage(asset.dataUrl, 600);
+          doc.addImage(compressed, "JPEG", x, y, (contentWidth - 40) / 2, 80, undefined, "FAST"); 
           
           // --- DRAW FORENSIC ANNOTATIONS ---
           if (asset.annotations && asset.annotations.length > 0) {
@@ -249,7 +282,7 @@ async function generateDossier(session: SessionState): Promise<jsPDF> {
             doc.text(`[${asset.severity.toUpperCase()}]`, x + 3, y + 88);
           }
         } catch (e) {}
-      });
+      }
       currentPhotoIdx += 4;
     }
   }
