@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AuthProvider } from "@/components/AuthProvider";
 
 export const metadata: Metadata = {
   title: "Hustad Residential | Storm Inspection Platform",
@@ -21,7 +22,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       </head>
       <body className="font-body bg-hustad-cream">
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
