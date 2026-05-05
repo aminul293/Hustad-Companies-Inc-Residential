@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, ChevronRight, RefreshCw, ExternalLink, Building2, Calendar, DollarSign, ArrowRight } from "lucide-react";
+import { Search, ChevronRight, RefreshCw, Building2, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -21,13 +21,6 @@ const STAGES: Record<string, { label: string; next: string | null; color: string
 };
 
 const STAGE_ORDER = ["lead_opened","lead_pending","lead_quoted","lead_sold","opened","scheduled","started","completed","invoiced","closed"];
-
-const DOMAIN_FILTERS = [
-  { id: "", label: "All" },
-  { id: "Sales", label: "Sales" },
-  { id: "Production", label: "Production" },
-  { id: "Service", label: "Service" },
-];
 
 const STATUS_FILTERS = [
   { id: "", label: "All Stages" },
@@ -68,7 +61,6 @@ export function CenterPointJobs() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState("");
-  const [domain, setDomain] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const [totalJobs, setTotalJobs] = useState(0);
@@ -84,7 +76,6 @@ export function CenterPointJobs() {
     try {
       const params = new URLSearchParams({ page: String(targetPage) });
       if (search) params.set("search", search);
-      if (domain) params.set("domain", domain);
       if (statusFilter) params.set("status", statusFilter);
 
       const res = await fetch(`/api/centerpoint?${params.toString()}`);
@@ -104,12 +95,12 @@ export function CenterPointJobs() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [search, domain, statusFilter, page]);
+  }, [search, statusFilter, page]);
 
   useEffect(() => {
     setPage(1);
     fetchJobs({ newPage: 1 });
-  }, [search, domain, statusFilter]);
+  }, [search, statusFilter]);
 
   const handleLoadMore = () => {
     const next = page + 1;
@@ -181,20 +172,8 @@ export function CenterPointJobs() {
           </button>
         </form>
 
-        {/* Domain filter */}
+        {/* Stage filter */}
         <div className="flex items-center gap-3 overflow-x-auto pb-1">
-          <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest shrink-0">Domain</span>
-          {DOMAIN_FILTERS.map(f => (
-            <button
-              key={f.id}
-              onClick={() => setDomain(f.id)}
-              className={cn(
-                "px-4 py-2 rounded-full border text-xs font-display transition-all whitespace-nowrap shrink-0",
-                domain === f.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"
-              )}
-            >{f.label}</button>
-          ))}
-          <span className="text-white/10 shrink-0">|</span>
           <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest shrink-0">Stage</span>
           {STATUS_FILTERS.map(f => (
             <button
