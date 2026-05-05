@@ -1,3 +1,7 @@
+/**
+ * HUSTAD RESIDENTIAL TABLET PLATFORM
+ * STATUS: PRODUCTION_HARDENED
+ */
 export interface RepIdentity {
   id: string;
   name: string;
