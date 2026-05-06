@@ -68,10 +68,11 @@ export async function DELETE() {
 
 // GET /api/auth — Check current session
 export async function GET(req: NextRequest) {
-  const { getTokenFromRequest } = await import("@/lib/auth");
-  const payload = getTokenFromRequest(req);
-  if (!payload) {
+  const { requireAuth } = await import("@/lib/auth");
+  try {
+    const payload = await requireAuth(req);
+    return NextResponse.json({ authenticated: true, rep: payload });
+  } catch {
     return NextResponse.json({ authenticated: false }, { status: 401 });
   }
-  return NextResponse.json({ authenticated: true, rep: payload });
 }

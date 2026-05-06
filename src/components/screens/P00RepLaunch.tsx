@@ -35,6 +35,7 @@ import { cn } from "@/lib/utils";
 import { listDrafts, hasSameDayDraft, deleteDraft, createSession } from "@/lib/session";
 import { RepCommandCenter } from "@/components/RepCommandCenter";
 import { useSession as useAuthSession, signIn, signOut } from "next-auth/react";
+import { getAuthenticatedRep } from "@/lib/rep-identity";
 
 interface Props {
   session: SessionState;
@@ -49,6 +50,7 @@ interface Props {
 
 export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump, isOnline }: Props) {
   const { data: authSession, status: authStatus } = useAuthSession();
+  const authRep = getAuthenticatedRep(authSession);
   const [showDashboard, setShowDashboard] = useState(false);
   const [isAddressFocused, setIsAddressFocused] = useState(false);
   const [suggestions, setSuggestions] = useState<{ main: string; sub: string }[]>([]);
@@ -72,12 +74,12 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
   const [showRepNav, setShowRepNav] = useState(false);
 
   const handleStartNew = () => {
-    // Priority: Authenticated User
-    const repName = authSession?.user?.name;
-    
-    if (repName) {
-      set("repName", repName);
+    if (!authRep) {
+      void signIn("azure-ad", { callbackUrl: "/" }, { prompt: "select_account" });
+      return;
     }
+
+    set("repName", authRep.name);
     
     // Close dashboard to reveal the form
     setShowDashboard(false);
@@ -130,12 +132,24 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
   }, [form.address]);
 
   useEffect(() => {
-    setDrafts(listDrafts().filter((d) => !d.sessionStatus.startsWith("closed_")));
-  }, [showDashboard]);
+    const scopedDrafts = authRep ? listDrafts(authRep.id) : [];
+    setDrafts(scopedDrafts.filter((d) => !d.sessionStatus.startsWith("closed_")));
+  }, [showDashboard, authRep?.id]);
+
+  useEffect(() => {
+    if (!authRep) return;
+    setForm((current) => ({ ...current, repName: authRep.name }));
+    setErrors((current) => {
+      if (!current.repName) return current;
+      const next = { ...current };
+      delete next.repName;
+      return next;
+    });
+  }, [authRep?.id, authRep?.name]);
 
   useEffect(() => {
     if (form.address.trim().length > 5) {
-      const existing = hasSameDayDraft(form.address);
+      const existing = hasSameDayDraft(form.address, authRep?.id);
       if (existing && existing.sessionId !== session.sessionId) {
         setDuplicateWarning(
           `A draft already exists for "${existing.address}" today.`
@@ -146,11 +160,12 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
     } else {
       setDuplicateWarning(null);
     }
-  }, [form.address, session.sessionId]);
+  }, [form.address, session.sessionId, authRep?.id]);
 
-  if (showDashboard && authStatus === "authenticated") {
+  if (showDashboard && authStatus === "authenticated" && authRep) {
     return (
       <RepCommandCenter 
+        currentRep={authRep}
         onLoadDraft={(id) => {
           onLoadDraft(id);
           setShowDashboard(false);
@@ -168,12 +183,16 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
   };
 
   const handleStart = () => {
+    if (!authRep) {
+      void signIn("azure-ad", { callbackUrl: "/" }, { prompt: "select_account" });
+      return;
+    }
+
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
 
     // CREATE A TRULY NEW SESSION
-    const repId = (authSession?.user as any)?.id || "rep_001";
-    const baseNewSession = createSession(repId, form.repName);
+    const baseNewSession = createSession(authRep.id, authRep.name, authRep.email);
 
     const updated: SessionState = {
       ...baseNewSession,
@@ -338,11 +357,11 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
               <div className="flex items-center justify-between px-2">
                 <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest">Production Identity Layer</p>
                 {authStatus === "authenticated" && (
-                  <button onClick={() => signOut()} className="text-[9px] font-mono text-white/30 hover:text-white uppercase tracking-widest">Switch Account</button>
+                  <button onClick={() => signOut({ callbackUrl: "/login" })} className="text-[9px] font-mono text-white/30 hover:text-white uppercase tracking-widest">Switch Account</button>
                 )}
               </div>
 
-              {authStatus === "authenticated" ? (
+              {authStatus === "authenticated" && authRep ? (
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-8 rounded-[40px] bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-between group">
                   <div className="flex items-center gap-6">
                     <div className="w-16 h-16 rounded-3xl bg-indigo-500 flex items-center justify-center text-white shadow-[0_0_30px_rgba(99,102,241,0.4)]">
@@ -350,8 +369,8 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                     </div>
                     <div>
                       <p className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest mb-1">Authenticated Operative</p>
-                      <h3 className="text-2xl font-display font-medium text-white">{authSession.user?.name}</h3>
-                      <p className="text-xs text-white/40">{authSession.user?.email}</p>
+                      <h3 className="text-2xl font-display font-medium text-white">{authRep.name}</h3>
+                      <p className="text-xs text-white/40">{authRep.email}</p>
                     </div>
                   </div>
                   <button onClick={() => setShowDashboard(true)} className="h-14 w-14 rounded-2xl bg-white text-black flex items-center justify-center hover:scale-105 transition-all">
@@ -361,7 +380,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
               ) : (
                 <div className="space-y-6">
                   <button 
-                    onClick={() => signIn("azure-ad", { callbackUrl: "/" })}
+                    onClick={() => signIn("azure-ad", { callbackUrl: "/" }, { prompt: "select_account" })}
                     className="w-full p-8 rounded-[40px] bg-white text-black flex items-center justify-between hover:bg-neutral-200 transition-all group shadow-[0_20px_50px_rgba(255,255,255,0.1)]"
                   >
                     <div className="flex items-center gap-6">
@@ -390,7 +409,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
 
             {/* Property Intake Form — Appears after auth */}
             <AnimatePresence>
-              {authStatus === "authenticated" && (
+              {authStatus === "authenticated" && authRep && (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-8">
                   <div className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl space-y-8">
                     {/* Property Identification */}
@@ -488,7 +507,8 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                     {/* Rep Identity */}
                     <div className="space-y-2">
                       <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest pl-2">Rep Identity <span className="text-rose-400">*</span></p>
-                      <input value={form.repName} onChange={(e) => set("repName", e.target.value)} className={cn("w-full bg-white/[0.04] border rounded-2xl py-4 px-6 text-white outline-none transition-all", errors.repName ? "border-rose-500/50" : "border-white/[0.1] focus:border-indigo-500/50")} />
+                      <input value={authRep.name} readOnly className={cn("w-full bg-white/[0.04] border rounded-2xl py-4 px-6 text-white outline-none transition-all cursor-default", errors.repName ? "border-rose-500/50" : "border-white/[0.1]")} />
+                      {authRep.email && <p className="text-[10px] text-white/30 pl-2">{authRep.email}</p>}
                       {errors.repName && <p className="text-[10px] text-rose-400 pl-2">{errors.repName}</p>}
                     </div>
 
@@ -565,7 +585,11 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                         </div>
                         <div className="flex items-center gap-2">
                           <button 
-                            onClick={(e) => { e.stopPropagation(); deleteDraft(d.sessionId); setDrafts(listDrafts().filter(x => !x.sessionStatus.startsWith("closed_"))); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteDraft(d.sessionId);
+                              setDrafts(authRep ? listDrafts(authRep.id).filter(x => !x.sessionStatus.startsWith("closed_")) : []);
+                            }}
                             className="p-2 rounded-xl text-white/20 hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100"
                           >
                             <Trash2 className="w-4 h-4" />
