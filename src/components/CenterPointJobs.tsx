@@ -96,7 +96,7 @@ export function CenterPointJobs() {
       if (search) params.set("search", search);
       if (statusFilter) params.set("status", statusFilter);
 
-      const res = await fetch(`/api/centerpoint?${params.toString()}`);
+      const res = await fetch(`/api/centerpoint?${params.toString()}&t=${Date.now()}`);
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error || `Server responded with status ${res.status}`);
@@ -148,6 +148,9 @@ export function CenterPointJobs() {
           lastSync: new Date().toISOString(),
         }));
         // Refresh the list from Supabase
+        // Clear current list to force a clean re-render
+        setJobs([]);
+        setPage(1);
         fetchJobs({ refresh: true, newPage: 1 });
         fetchSyncStatus();
       } else {
@@ -230,7 +233,14 @@ export function CenterPointJobs() {
     setSearch(searchInput);
   };
 
-  const stageIndex = (status: string) => STAGE_ORDER.indexOf(status);
+  const stageIndex = (status: string) => {
+    const s = status.toLowerCase().replace(/\s+/g, "_");
+    const idx = STAGE_ORDER.indexOf(s);
+    if (idx !== -1) return idx;
+    // Handle aliases
+    if (s === "closed_out") return STAGE_ORDER.indexOf("closed");
+    return -1;
+  };
 
   return (
     <div className="flex flex-col h-full">
