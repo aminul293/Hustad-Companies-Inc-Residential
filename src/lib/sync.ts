@@ -8,40 +8,6 @@ const API_BASE = typeof window !== "undefined"
 // AUTH
 // ─────────────────────────────────────────────────────────────────────────────
 
-export async function login(email: string, password: string, pin?: string) {
-  const res = await fetch(`${API_BASE}/api/auth`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password, pin }),
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.error || "Login failed");
-  }
-  const data = await res.json();
-  if (typeof window !== "undefined") {
-    localStorage.setItem("hustad_auth_token", data.token);
-    localStorage.setItem("hustad_rep", JSON.stringify(data.rep));
-  }
-  return data;
-}
-
-export async function logout() {
-  await fetch(`${API_BASE}/api/auth`, { method: "DELETE" });
-  if (typeof window !== "undefined") {
-    localStorage.removeItem("hustad_auth_token");
-    localStorage.removeItem("hustad_rep");
-  }
-}
-
-export async function checkAuth() {
-  const res = await fetch(`${API_BASE}/api/auth`, {
-    headers: getAuthHeaders(),
-  });
-  if (!res.ok) return null;
-  return res.json();
-}
-
 export function getStoredRep() {
   if (typeof window === "undefined") return null;
   try {
@@ -52,16 +18,9 @@ export function getStoredRep() {
   }
 }
 
-export function getAuthToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("hustad_auth_token");
-}
-
 function getAuthHeaders(): Record<string, string> {
-  const token = getAuthToken();
-  return token
-    ? { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }
-    : { "Content-Type": "application/json" };
+  // Authentication is now handled by NextAuth session cookies automatically
+  return { "Content-Type": "application/json" };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
