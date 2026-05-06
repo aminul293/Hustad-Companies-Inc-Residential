@@ -13,26 +13,29 @@ export async function GET(req: NextRequest) {
     const supabase = getServiceClient();
     const offset = (page - 1) * PAGE_SIZE;
 
-  let query = supabase
-    .from("centerpoint_jobs")
-    .select("*", { count: "exact" })
-    .order("cp_updated_at", { ascending: false })
-    .range(offset, offset + PAGE_SIZE - 1);
+    console.log(`[CENTERPOINT_API] Request: page=${page}, status=${status}, search=${search}`);
 
-  if (status && status !== "all") {
-    query = query.eq("status", status);
-  }
+    let query = supabase
+      .from("centerpoint_jobs")
+      .select("*", { count: "exact" })
+      .order("cp_updated_at", { ascending: false, nullsFirst: false })
+      .range(offset, offset + PAGE_SIZE - 1);
 
-  if (search) {
-    // Match on job number (name) or property name
-    query = query.or(`name.ilike.%${search}%,property_name.ilike.%${search}%`);
-  }
+    if (status && status !== "all") {
+      query = query.eq("status", status);
+    }
 
-  const { data, count, error } = await query;
+    if (search) {
+      query = query.or(`name.ilike.%${search}%,property_name.ilike.%${search}%`);
+    }
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+    const { data, count, error } = await query;
+    console.log(`[CENTERPOINT_API] Result: count=${count}, dataLength=${data?.length || 0}`);
+
+    if (error) {
+      console.error("[CENTERPOINT_API] Supabase Error:", error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
 
   // Map Supabase rows back to the CPJob shape the UI expects
   const mapped = (data ?? []).map((row) => ({
