@@ -161,15 +161,40 @@ export async function POST() {
       const finalRows = Array.from(uniqueRows.values());
 
       if (finalRows.length > 0) {
-        // Clear out any potential duplicates with different cp_ids before upserting
+        // 1. Fetch current local states to prevent regressions
         const names = finalRows.map(r => r.name);
-        await supabase.from("centerpoint_jobs").delete().in("name", names);
+        const { data: localJobs } = await supabase
+          .from("centerpoint_jobs")
+          .select("name, status")
+          .in("name", names);
 
+        const localMap = new Map(localJobs?.map(j => [j.name, j.status]));
+
+        // 2. Filter rows: only update if it's a forward progression or same stage
+        const protectedRows = finalRows.map(row => {
+          const localStatus = localMap.get(row.name);
+          if (localStatus) {
+            const localIdx = STAGE_ORDER.indexOf(localStatus);
+            const incomingIdx = STAGE_ORDER.indexOf(row.status);
+            
+            // If CPC is sending an older stage than what we have locally, 
+            // keep our local status but update other metadata (price, property name, etc)
+            if (incomingIdx < localIdx && localIdx !== -1) {
+              console.log(`[SYNC] Protecting stage for ${row.name}: keeping ${localStatus} over ${row.status}`);
+              return { ...row, status: localStatus };
+            }
+          }
+          return row;
+        });
+
+        // 3. Clear and Upsert
+        await supabase.from("centerpoint_jobs").delete().in("name", names);
         const { error } = await supabase
           .from("centerpoint_jobs")
-          .upsert(finalRows, { onConflict: "cp_id" });
+          .upsert(protectedRows, { onConflict: "cp_id" });
+        
         if (error) throw new Error(`Supabase upsert failed: ${error.message}`);
-        upserted += finalRows.length;
+        upserted += protectedRows.length;
       }
 
       cpPage++;
