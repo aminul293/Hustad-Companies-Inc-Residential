@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase-server";
 
 const PAGE_SIZE = 25;
+const STAGE_ORDER = ["lead_opened","lead_pending","lead_quoted","lead_sold","opened","scheduled","started","completed","invoiced","closed"];
 
 export async function GET(req: NextRequest) {
   try {
@@ -37,8 +38,19 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+  // Deduplicate by job name (keep most advanced stage) to guard against DB duplicates
+  const byName = new Map<string, any>();
+  (data ?? []).forEach((row) => {
+    const existing = byName.get(row.name);
+    if (!existing) { byName.set(row.name, row); return; }
+    const eIdx = STAGE_ORDER.indexOf(existing.status);
+    const nIdx = STAGE_ORDER.indexOf(row.status);
+    if (nIdx > eIdx) byName.set(row.name, row);
+  });
+  const deduped = Array.from(byName.values());
+
   // Map Supabase rows back to the CPJob shape the UI expects
-  const mapped = (data ?? []).map((row) => ({
+  const mapped = deduped.map((row) => ({
     id: row.cp_id,
     promotedAt: row.promoted_at ?? null,
     promotedTicketId: row.promoted_ticket_id ?? null,
@@ -64,7 +76,7 @@ export async function GET(req: NextRequest) {
       data: mapped,
       meta: {
         page: {
-          total: count ?? 0,
+          total: deduped.length,
           currentPage: page,
           perPage: PAGE_SIZE,
         },

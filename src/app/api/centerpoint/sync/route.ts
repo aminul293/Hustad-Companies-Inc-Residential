@@ -83,6 +83,38 @@ export async function POST() {
 
   const supabase = getServiceClient();
 
+  // Cleanup: remove duplicate job names, keeping the most advanced stage
+  const { data: allJobsForCleanup } = await supabase
+    .from("centerpoint_jobs")
+    .select("cp_id, name, status");
+
+  if (allJobsForCleanup && allJobsForCleanup.length > 0) {
+    const nameToRows = new Map<string, any[]>();
+    allJobsForCleanup.forEach((row: any) => {
+      const arr = nameToRows.get(row.name) ?? [];
+      arr.push(row);
+      nameToRows.set(row.name, arr);
+    });
+
+    const cpIdsToDelete: string[] = [];
+    for (const rows of nameToRows.values()) {
+      if (rows.length <= 1) continue;
+      const best = rows.reduce((b: any, r: any) => {
+        const bIdx = STAGE_ORDER.indexOf(b.status);
+        const rIdx = STAGE_ORDER.indexOf(r.status);
+        return rIdx > bIdx ? r : b;
+      });
+      rows
+        .filter((r: any) => r.cp_id !== best.cp_id)
+        .forEach((r: any) => cpIdsToDelete.push(r.cp_id));
+    }
+
+    if (cpIdsToDelete.length > 0) {
+      console.log(`[SYNC] Cleanup: removing ${cpIdsToDelete.length} duplicate job records`);
+      await supabase.from("centerpoint_jobs").delete().in("cp_id", cpIdsToDelete);
+    }
+  }
+
   const { data: lastLog } = await supabase
     .from("cp_sync_log")
     .select("completed_at")
