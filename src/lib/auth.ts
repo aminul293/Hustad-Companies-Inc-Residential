@@ -4,6 +4,11 @@ import * as jwt from "jsonwebtoken";
 import * as bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 
+// Force NEXTAUTH_URL on Vercel if missing to fix OAuthSignin errors
+if (process.env.VERCEL_URL && !process.env.NEXTAUTH_URL) {
+  process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_URL}`;
+}
+
 const JWT_SECRET = process.env.JWT_SECRET || "hustad-secret-2024";
 
 // --- EXISTING AUTH LOGIC (RESTORED) ---
