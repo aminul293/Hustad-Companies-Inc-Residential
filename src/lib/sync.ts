@@ -23,6 +23,15 @@ function getAuthHeaders(): Record<string, string> {
   return { "Content-Type": "application/json" };
 }
 
+function getAuthToken(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem("hustad_token");
+  } catch {
+    return null;
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // SESSION SYNC
 // ─────────────────────────────────────────────────────────────────────────────
@@ -51,7 +60,7 @@ export async function syncSessionToServer(session: SessionState): Promise<boolea
 
 export async function fetchSessionsFromServer(): Promise<any[]> {
   try {
-    const res = await fetch(`${API_BASE}/api/session`, {
+    const res = await fetch(`${API_BASE}/api/sessions`, {
       headers: getAuthHeaders(),
     });
     if (!res.ok) return [];
