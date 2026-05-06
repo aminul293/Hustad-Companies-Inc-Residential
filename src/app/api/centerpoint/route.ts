@@ -41,6 +41,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    // TEMP DEBUG: expose raw supabase row for job 1329675
+    const debugRow = (data ?? []).find((r: any) => r.name === "1329675") ?? null;
+
   // Deduplicate by job name (keep most advanced stage) to guard against DB duplicates
   const byName = new Map<string, any>();
   (data ?? []).forEach((row) => {
@@ -78,6 +81,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       data: mapped,
+      _debug1329675: debugRow,
       meta: {
         page: {
           total: deduped.length,
