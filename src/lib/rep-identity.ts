@@ -1,4 +1,3 @@
-import type { Session } from "next-auth";
 import type { SessionState } from "@/types/session";
 
 export interface AuthenticatedRep {
@@ -7,22 +6,11 @@ export interface AuthenticatedRep {
   email: string;
 }
 
-export function getAuthenticatedRep(
-  authSession: Session | null | undefined
-): AuthenticatedRep | null {
-  const user = authSession?.user;
-  if (!user) return null;
-
-  const email = (user.email || "").trim();
-  const name = (user.name || email || "Hustad Rep").trim();
-  const id = String((user as any).id || email || name).trim();
-
-  if (!id) return null;
-
+export function getAuthenticatedRep(): AuthenticatedRep {
   return {
-    id,
-    name,
-    email,
+    id: "rep_001",
+    name: "Hustad Rep",
+    email: "rep@hustad.com",
   };
 }
 
