@@ -8,7 +8,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import { useSession as useAuthSession } from "next-auth/react";
+
 import type { SessionState, ScreenId } from "@/types/session";
 import { getNextScreen, shouldShowScreen, SCREEN_FLOW } from "@/types/session";
 import {
@@ -52,32 +52,23 @@ export function useSession() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function SessionProvider({ children }: { children: ReactNode }) {
-  const { data: authSession, status: authStatus } = useAuthSession();
-  const authRep = getAuthenticatedRep(authSession);
+  const authRep = getAuthenticatedRep();
   const [session, setSession] = useState<SessionState | null>(null);
   const [isOnline, setIsOnline] = useState(true);
 
   useEffect(() => {
-    if (authStatus === "loading") return;
+    const stored = loadActiveSession();
+    const next =
+      stored?.repId === authRep.id
+        ? stampSessionWithRep(stored, authRep)
+        : createSession(authRep.id, authRep.name, authRep.email);
 
-    if (authStatus === "authenticated" && authRep) {
-      const stored = loadActiveSession();
-      const next =
-        stored?.repId === authRep.id
-          ? stampSessionWithRep(stored, authRep)
-          : createSession(authRep.id, authRep.name, authRep.email);
-
-      setSession(next);
-      return;
-    }
-
-    setSession(createSession("rep_001", "Hustad Rep"));
-  }, [authStatus, authRep?.id, authRep?.name, authRep?.email]);
+    setSession(next);
+  }, [authRep.id, authRep.name, authRep.email]);
 
   // Autosave locally + sync to server (debounced)
   useEffect(() => {
     if (!session) return;
-    if (authStatus !== "authenticated") return;
     saveSession(session);
 
     // Debounced server sync
@@ -92,7 +83,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }, 2000); // 2 second debounce for server sync
 
     return () => clearTimeout(timer);
-  }, [session, authStatus]);
+  }, [session]);
 
   // ── Device sleep/wake handler ──────────────────────────────────────────
   useEffect(() => {
@@ -110,7 +101,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
     const handleOnline = () => {
       setIsOnline(true);
-      if (authStatus !== "authenticated") return;
       // Process offline sync queue when we come back online
       processSyncQueue().then((count) => {
         if (count > 0) console.log(`Synced ${count} queued session(s)`);
@@ -128,7 +118,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, [session?.sessionId, session?.lastSavedAt, authStatus, authRep?.id, authRep?.name, authRep?.email]);
+  }, [session?.sessionId, session?.lastSavedAt, authRep.id, authRep.name, authRep.email]);
 
   const updateSession = useCallback((s: SessionState) => {
     setSession(authRep ? stampSessionWithRep(s, authRep) : s);
