@@ -18,7 +18,7 @@ import {
   Info
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { listDrafts } from "@/lib/session";
+import { createSession, saveSession, listDrafts } from "@/lib/session";
 import { getLiveReps, saveCustomRep, deleteCustomRep } from "@/lib/reps";
 import type { RepIdentity } from "@/config/reps";
 import type { AuthenticatedRep } from "@/lib/rep-identity";
@@ -68,21 +68,21 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession }: Prop
       const job = customEvent.detail;
       const attr = job.attributes;
       
-      const { createSession, saveSession } = require("@/lib/session");
       const repInfo = currentRep;
       
+      // Initialize a new session with the rep's identity
       const newSession = createSession(repInfo.id, repInfo.name, repInfo.email);
       
       // Map CenterPoint data to SessionState property context
       newSession.centerpointId = job.id;
       newSession.property.address = attr.propertyName || attr.name || "Unknown Address";
       newSession.property.homeownerPrimaryName = attr.name || "Unknown Homeowner";
-      newSession.sessionStatus = "phase_a_active"; // Start them active
+      newSession.sessionStatus = "phase_a_active"; 
       
-      // Save it locally (this acts as the 'push to our database' step)
+      // Persist to local storage and trigger the dashboard view
       saveSession(newSession);
       
-      // Switch view back to dashboard to see the new ticket
+      // Auto-transition to dashboard to show the new ticket
       setView("dashboard");
     };
 
