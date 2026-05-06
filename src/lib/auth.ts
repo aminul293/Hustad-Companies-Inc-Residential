@@ -74,4 +74,5 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
   },
   secret: process.env.NEXTAUTH_SECRET || "hustad-fallback-secret-2026-field-secure",
+  debug: true,
 };
