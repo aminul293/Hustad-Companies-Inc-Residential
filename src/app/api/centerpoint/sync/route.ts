@@ -162,34 +162,37 @@ export async function POST() {
       const finalRows = Array.from(uniqueRows.values());
 
       if (finalRows.length > 0) {
-        // 1. Fetch current local states to prevent regressions
+        // 1. Fetch ALL current records for these job names (to catch different cp_ids)
         const names = finalRows.map(r => r.name);
-        const { data: localJobs } = await supabase
+        const { data: existingJobs } = await supabase
           .from("centerpoint_jobs")
-          .select("name, status")
+          .select("id, name, status, cp_id")
           .in("name", names);
 
-        const localMap = new Map(localJobs?.map(j => [j.name, j.status]));
+        const localMap = new Map(existingJobs?.map(j => [j.name, j.status]));
+        
+        // 2. Hard Delete ALL existing records for these names to ensure no duplicates survive
+        if (existingJobs && existingJobs.length > 0) {
+          console.log(`[SYNC] Purging ${existingJobs.length} potential duplicates for: ${names.join(", ")}`);
+          await supabase.from("centerpoint_jobs").delete().in("name", names);
+        }
 
-        // 2. Filter rows: only update if it's a forward progression or same stage
+        // 3. Progression Protection: If we're replacing a record, don't allow a regression
         const protectedRows = finalRows.map(row => {
           const localStatus = localMap.get(row.name);
           if (localStatus) {
             const localIdx = STAGE_ORDER.indexOf(localStatus);
             const incomingIdx = STAGE_ORDER.indexOf(row.status);
             
-            // If CPC is sending an older stage than what we have locally, 
-            // keep our local status but update other metadata (price, property name, etc)
             if (incomingIdx < localIdx && localIdx !== -1) {
-              console.log(`[SYNC] Protecting stage for ${row.name}: keeping ${localStatus} over ${row.status}`);
+              console.log(`[SYNC] Regression prevented for ${row.name}: keeping ${localStatus}`);
               return { ...row, status: localStatus };
             }
           }
           return row;
         });
 
-        // 3. Clear and Upsert
-        await supabase.from("centerpoint_jobs").delete().in("name", names);
+        // 4. Fresh Insert (Clean slate for these job numbers)
         const { error } = await supabase
           .from("centerpoint_jobs")
           .upsert(protectedRows, { onConflict: "cp_id" });
