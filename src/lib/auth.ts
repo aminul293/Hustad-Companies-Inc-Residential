@@ -4,8 +4,8 @@ import * as jwt from "jsonwebtoken";
 import * as bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 
-// Force NEXTAUTH_URL on Vercel if missing to fix OAuthSignin errors
-if (process.env.VERCEL_URL && !process.env.NEXTAUTH_URL) {
+// Force NEXTAUTH_URL on Vercel if missing or set to localhost
+if (process.env.VERCEL_URL && (!process.env.NEXTAUTH_URL || process.env.NEXTAUTH_URL.includes("localhost"))) {
   process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_URL}`;
 }
 
