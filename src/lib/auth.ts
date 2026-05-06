@@ -12,8 +12,13 @@ import { NextRequest, NextResponse } from "next/server";
 const nextAuthSecret = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET;
 const legacyJwtSecret = process.env.JWT_SECRET || nextAuthSecret || "hustad-dev-secret";
 
-if (!nextAuthSecret && process.env.NODE_ENV === "production") {
-  console.warn("CRITICAL: NEXTAUTH_SECRET is missing in production. Authentication will fail.");
+if (process.env.NODE_ENV === "production") {
+  console.log("[AUTH_DIAGNOSTIC] Checking Environment Variables...");
+  console.log("[AUTH_DIAGNOSTIC] AZURE_AD_CLIENT_ID:", process.env.AZURE_AD_CLIENT_ID ? "PRESENT" : "MISSING");
+  console.log("[AUTH_DIAGNOSTIC] AZURE_AD_TENANT_ID:", process.env.AZURE_AD_TENANT_ID ? "PRESENT" : "MISSING");
+  console.log("[AUTH_DIAGNOSTIC] AZURE_AD_CLIENT_SECRET:", process.env.AZURE_AD_CLIENT_SECRET ? "PRESENT" : "MISSING");
+  console.log("[AUTH_DIAGNOSTIC] NEXTAUTH_SECRET:", process.env.NEXTAUTH_SECRET ? "PRESENT" : "MISSING");
+  console.log("[AUTH_DIAGNOSTIC] NEXTAUTH_URL:", process.env.NEXTAUTH_URL || "AUTO-DETECTED");
 }
 
 // --- ENTERPRISE AUTH (NEXT-AUTH) ---
