@@ -42,7 +42,8 @@ export async function GET(req: NextRequest) {
     }
 
     // TEMP DEBUG: expose raw supabase row for job 1329675
-    const debugRow = (data ?? []).find((r: any) => r.name === "1329675") ?? null;
+    const debugRow = (data ?? []).find((r: any) => String(r.name) === "1329675") ?? null;
+    const debugAllNames = (data ?? []).map((r: any) => ({ name: r.name, type: typeof r.name, status: r.status }));
 
   // Deduplicate by job name (keep most advanced stage) to guard against DB duplicates
   const byName = new Map<string, any>();
@@ -82,6 +83,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       data: mapped,
       _debug1329675: debugRow,
+      _debugAllNames: debugAllNames,
       meta: {
         page: {
           total: deduped.length,
