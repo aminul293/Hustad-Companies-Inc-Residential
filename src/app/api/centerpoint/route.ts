@@ -14,8 +14,8 @@ export async function GET(req: NextRequest) {
     const supabase = getServiceClient();
     const offset = (page - 1) * PAGE_SIZE;
 
-    console.log(`[CENTERPOINT_API] Request: page=${page}, status=${status}, search=${search}`);
-
+    // Explicitly select columns — exclude the `raw` JSONB column which would
+    // override normalized fields (e.g. status) if select("*") were used.
     let query = supabase
       .from("centerpoint_jobs")
       .select(
@@ -33,57 +33,49 @@ export async function GET(req: NextRequest) {
       query = query.or(`name.ilike.%${search}%,property_name.ilike.%${search}%`);
     }
 
-    const { data, count, error } = await query;
-    console.log(`[CENTERPOINT_API] Result: count=${count}, dataLength=${data?.length || 0}`);
+    const { data, error } = await query;
 
     if (error) {
       console.error("[CENTERPOINT_API] Supabase Error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // TEMP DEBUG: expose raw supabase row for job 1329675
-    const debugRow = (data ?? []).find((r: any) => String(r.name) === "1329675") ?? null;
-    const debugAllNames = (data ?? []).map((r: any) => ({ name: r.name, type: typeof r.name, status: r.status }));
+    // Deduplicate by job name (keep most advanced stage) to guard against DB duplicates
+    const byName = new Map<string, any>();
+    (data ?? []).forEach((row) => {
+      const existing = byName.get(row.name);
+      if (!existing) { byName.set(row.name, row); return; }
+      const eIdx = STAGE_ORDER.indexOf(existing.status);
+      const nIdx = STAGE_ORDER.indexOf(row.status);
+      if (nIdx > eIdx) byName.set(row.name, row);
+    });
+    const deduped = Array.from(byName.values());
 
-  // Deduplicate by job name (keep most advanced stage) to guard against DB duplicates
-  const byName = new Map<string, any>();
-  (data ?? []).forEach((row) => {
-    const existing = byName.get(row.name);
-    if (!existing) { byName.set(row.name, row); return; }
-    const eIdx = STAGE_ORDER.indexOf(existing.status);
-    const nIdx = STAGE_ORDER.indexOf(row.status);
-    if (nIdx > eIdx) byName.set(row.name, row);
-  });
-  const deduped = Array.from(byName.values());
-
-  // Map Supabase rows back to the CPJob shape the UI expects
-  const mapped = deduped.map((row) => ({
-    _dbId: row.id,
-    id: row.cp_id,
-    promotedAt: row.promoted_at ?? null,
-    promotedTicketId: row.promoted_ticket_id ?? null,
-    attributes: {
-      name: row.name,
-      propertyName: row.property_name,
-      opportunityType: row.opportunity_type,
-      workType: row.work_type,
-      domain: row.domain ?? "",
-      status: row.status,
-      displayStatus: row.display_status,
-      price: Number(row.price),
-      startDate: row.start_date,
-      createdAt: row.cp_created_at,
-      updatedAt: row.cp_updated_at,
-      latestStageTransitionedAt: row.stage_transitioned_at,
-      custom: { description: row.description },
-      customWithLabels: { serviceTypeHustad: row.service_type_hustad },
-    },
-  }));
+    // Map Supabase rows back to the CPJob shape the UI expects
+    const mapped = deduped.map((row) => ({
+      id: row.cp_id,
+      promotedAt: row.promoted_at ?? null,
+      promotedTicketId: row.promoted_ticket_id ?? null,
+      attributes: {
+        name: row.name,
+        propertyName: row.property_name,
+        opportunityType: row.opportunity_type,
+        workType: row.work_type,
+        domain: row.domain ?? "",
+        status: row.status,
+        displayStatus: row.display_status,
+        price: Number(row.price),
+        startDate: row.start_date,
+        createdAt: row.cp_created_at,
+        updatedAt: row.cp_updated_at,
+        latestStageTransitionedAt: row.stage_transitioned_at,
+        custom: { description: row.description },
+        customWithLabels: { serviceTypeHustad: row.service_type_hustad },
+      },
+    }));
 
     return NextResponse.json({
       data: mapped,
-      _debug1329675: debugRow,
-      _debugAllNames: debugAllNames,
       meta: {
         page: {
           total: deduped.length,
