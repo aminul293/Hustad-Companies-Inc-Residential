@@ -23,6 +23,7 @@ import { getLiveReps, saveCustomRep, deleteCustomRep } from "@/lib/reps";
 import type { RepIdentity } from "@/config/reps";
 import { motion, AnimatePresence } from "framer-motion";
 import { CenterPointJobs } from "@/components/CenterPointJobs";
+import { HustadTickets } from "@/components/HustadTickets";
 
 interface Props {
   onLoadDraft: (id: string) => void;
@@ -32,7 +33,7 @@ interface Props {
 export function RepCommandCenter({ onLoadDraft, onNewSession }: Props) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<string>("all");
-  const [view, setView] = useState<"dashboard" | "centerpoint" | "settings">("dashboard");
+  const [view, setView] = useState<"dashboard" | "centerpoint" | "tickets" | "settings">("dashboard");
   const [liveReps, setLiveReps] = useState<RepIdentity[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [newRep, setNewRep] = useState({ name: "", role: "" });
@@ -57,6 +58,35 @@ export function RepCommandCenter({ onLoadDraft, onNewSession }: Props) {
     };
     loadServerData();
   }, [view]);
+
+  // Handle importing a job from CenterPoint to the active Pipeline
+  useEffect(() => {
+    const handleImportJob = (e: Event) => {
+      const customEvent = e as CustomEvent<any>;
+      const job = customEvent.detail;
+      const attr = job.attributes;
+      
+      const { createSession, saveSession } = require("@/lib/session");
+      const repInfo = liveReps[0] || { id: "rep_001", name: "Hustad Rep" };
+      
+      const newSession = createSession(repInfo.id, repInfo.name);
+      
+      // Map CenterPoint data to SessionState property context
+      newSession.centerpointId = job.id;
+      newSession.property.address = attr.propertyName || attr.name || "Unknown Address";
+      newSession.property.homeownerPrimaryName = attr.name || "Unknown Homeowner";
+      newSession.sessionStatus = "phase_a_active"; // Start them active
+      
+      // Save it locally (this acts as the 'push to our database' step)
+      saveSession(newSession);
+      
+      // Switch view back to dashboard to see the new ticket
+      setView("dashboard");
+    };
+
+    window.addEventListener('importCenterPointJob', handleImportJob);
+    return () => window.removeEventListener('importCenterPointJob', handleImportJob);
+  }, [liveReps]);
 
   const drafts = useMemo(() => {
     const local = listDrafts();
@@ -117,7 +147,8 @@ export function RepCommandCenter({ onLoadDraft, onNewSession }: Props) {
             <div className="flex items-center gap-1 p-1 bg-white/5 border border-white/10 rounded-full">
               {([
                 { id: "dashboard", label: "Inspections" },
-                { id: "centerpoint", label: "CenterPoint" },
+                { id: "centerpoint", label: "CP Inbox" },
+                { id: "tickets", label: "Tickets" },
                 { id: "settings", label: "Settings" },
               ] as const).map(tab => (
                 <button
@@ -206,6 +237,8 @@ export function RepCommandCenter({ onLoadDraft, onNewSession }: Props) {
       <div className="flex-1 overflow-y-auto p-8">
         {view === "centerpoint" ? (
           <CenterPointJobs />
+        ) : view === "tickets" ? (
+          <HustadTickets />
         ) : view === "dashboard" ? (
           <div className="space-y-4">
             {filteredDrafts.length > 0 ? (

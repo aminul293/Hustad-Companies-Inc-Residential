@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, ChevronRight, RefreshCw, Building2, ArrowRight } from "lucide-react";
+import { Search, ChevronRight, RefreshCw, Building2, ArrowRight, CloudDownload, CheckCircle2, Ticket } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -38,6 +38,8 @@ const STATUS_FILTERS = [
 
 interface CPJob {
   id: string;
+  promotedAt: string | null;
+  promotedTicketId: string | null;
   attributes: {
     name: string;
     propertyName: string | null;
@@ -56,6 +58,13 @@ interface CPJob {
   };
 }
 
+interface SyncStatus {
+  lastSync: string | null;
+  totalCached: number;
+  syncing: boolean;
+  result: string | null;
+}
+
 export function CenterPointJobs() {
   const [jobs, setJobs] = useState<CPJob[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,6 +76,13 @@ export function CenterPointJobs() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [transitioningId, setTransitioningId] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState("");
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>({
+    lastSync: null,
+    totalCached: 0,
+    syncing: false,
+    result: null,
+  });
+  const [promotingId, setPromotingId] = useState<string | null>(null);
 
   const fetchJobs = useCallback(async (opts?: { refresh?: boolean; newPage?: number }) => {
     const isRefresh = opts?.refresh;
@@ -96,6 +112,46 @@ export function CenterPointJobs() {
       setRefreshing(false);
     }
   }, [search, statusFilter, page]);
+
+  const fetchSyncStatus = useCallback(async () => {
+    try {
+      const res = await fetch("/api/centerpoint/sync");
+      const data = await res.json();
+      const lastCompleted = (data.logs ?? []).find((l: any) => l.status === "completed");
+      setSyncStatus(prev => ({
+        ...prev,
+        lastSync: lastCompleted?.completed_at ?? null,
+        totalCached: data.total_cached ?? 0,
+      }));
+    } catch {}
+  }, []);
+
+  const handleSync = async () => {
+    setSyncStatus(prev => ({ ...prev, syncing: true, result: null }));
+    try {
+      const res = await fetch("/api/centerpoint/sync", { method: "POST" });
+      const data = await res.json();
+      if (data.ok) {
+        setSyncStatus(prev => ({
+          ...prev,
+          syncing: false,
+          result: `Synced ${data.upserted} jobs`,
+          lastSync: new Date().toISOString(),
+        }));
+        // Refresh the list from Supabase
+        fetchJobs({ refresh: true, newPage: 1 });
+        fetchSyncStatus();
+      } else {
+        setSyncStatus(prev => ({ ...prev, syncing: false, result: `Error: ${data.error}` }));
+      }
+    } catch (e: any) {
+      setSyncStatus(prev => ({ ...prev, syncing: false, result: `Error: ${e.message}` }));
+    }
+  };
+
+  useEffect(() => {
+    fetchSyncStatus();
+  }, [fetchSyncStatus]);
 
   useEffect(() => {
     setPage(1);
@@ -131,6 +187,35 @@ export function CenterPointJobs() {
     }
   };
 
+  const handlePromote = async (job: CPJob) => {
+    setPromotingId(job.id);
+    try {
+      const attr = job.attributes;
+      const res = await fetch("/api/tickets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cp_job_id: job.id,
+          cp_job_name: attr.name,
+          property_name: attr.propertyName || attr.name || `Job #${job.id}`,
+          price: attr.price,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setJobs(prev => prev.map(j =>
+          j.id === job.id
+            ? { ...j, promotedAt: new Date().toISOString(), promotedTicketId: data.ticket.id }
+            : j
+        ));
+      }
+    } catch (e) {
+      console.error("Promote failed", e);
+    } finally {
+      setPromotingId(null);
+    }
+  };
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSearch(searchInput);
@@ -142,19 +227,48 @@ export function CenterPointJobs() {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-8 pb-0 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex items-center justify-between gap-4">
+          <div className="min-w-0">
             <h2 className="text-2xl font-display font-medium tracking-tight">CenterPoint Jobs</h2>
-            <p className="text-sm text-white/40 mt-1">
-              {totalJobs.toLocaleString()} total jobs · live sync
-            </p>
+            <div className="flex items-center gap-3 mt-1 flex-wrap">
+              <p className="text-sm text-white/40">
+                {totalJobs.toLocaleString()} jobs
+                {syncStatus.totalCached > 0 && ` · ${syncStatus.totalCached.toLocaleString()} cached`}
+              </p>
+              {syncStatus.lastSync && (
+                <span className="flex items-center gap-1 text-[10px] font-mono text-white/25 uppercase tracking-widest">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-500/50" />
+                  synced {new Date(syncStatus.lastSync).toLocaleString()}
+                </span>
+              )}
+              {syncStatus.result && (
+                <span className="text-[10px] font-mono text-indigo-400/70">{syncStatus.result}</span>
+              )}
+            </div>
           </div>
-          <button
-            onClick={() => fetchJobs({ refresh: true, newPage: 1 })}
-            className={cn("p-3 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all", refreshing && "animate-spin")}
-          >
-            <RefreshCw className="w-4 h-4 text-white/50" />
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Sync from CenterPoint → Supabase */}
+            <button
+              onClick={handleSync}
+              disabled={syncStatus.syncing}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2.5 rounded-full border text-xs font-display transition-all",
+                syncStatus.syncing
+                  ? "bg-indigo-500/10 border-indigo-500/20 text-indigo-400/50 cursor-not-allowed"
+                  : "bg-indigo-500/10 border-indigo-500/20 text-indigo-300 hover:bg-indigo-500/20"
+              )}
+            >
+              <CloudDownload className={cn("w-3.5 h-3.5", syncStatus.syncing && "animate-pulse")} />
+              {syncStatus.syncing ? "Syncing…" : "Sync Now"}
+            </button>
+            {/* Refresh list from Supabase */}
+            <button
+              onClick={() => fetchJobs({ refresh: true, newPage: 1 })}
+              className={cn("p-3 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all", refreshing && "animate-spin")}
+            >
+              <RefreshCw className="w-4 h-4 text-white/50" />
+            </button>
+          </div>
         </div>
 
         {/* Search */}
@@ -316,32 +430,61 @@ export function CenterPointJobs() {
                             ))}
                           </div>
 
-                          {/* Stage transition CTA */}
-                          {nextStage && (
-                            <div className="flex items-center justify-between pt-2 border-t border-white/[0.05]">
-                              <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest">
-                                Move to next stage
-                              </p>
-                              <button
-                                onClick={() => handleStageTransition(job, nextStage)}
-                                disabled={isTransitioning}
-                                className="flex items-center gap-3 px-5 py-2.5 rounded-full bg-white text-black text-xs font-display font-medium hover:bg-white/90 active:scale-95 transition-all disabled:opacity-50"
-                              >
-                                {isTransitioning ? (
-                                  <div className="w-3.5 h-3.5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                          {/* Stage transition CTA & Import to Pipeline */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 border-t border-white/[0.05]">
+                            <div>
+                              <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest mb-2">Actions</p>
+                              <div className="flex items-center gap-3">
+                                {nextStage ? (
+                                  <button
+                                    onClick={() => handleStageTransition(job, nextStage)}
+                                    disabled={isTransitioning}
+                                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 text-white text-xs font-display font-medium hover:bg-white/20 active:scale-95 transition-all disabled:opacity-50"
+                                  >
+                                    {isTransitioning ? (
+                                      <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                    ) : (
+                                      <ArrowRight className="w-3.5 h-3.5" />
+                                    )}
+                                    Move to {STAGES[nextStage]?.label ?? nextStage}
+                                  </button>
                                 ) : (
-                                  <ArrowRight className="w-3.5 h-3.5" />
+                                  <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest">Final stage</span>
                                 )}
-                                {STAGES[nextStage]?.label ?? nextStage}
-                              </button>
-                            </div>
-                          )}
 
-                          {!nextStage && (
-                            <div className="pt-2 border-t border-white/[0.05]">
-                              <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest">Final stage — no further transitions</span>
+                                <button
+                                  onClick={() => {
+                                    const event = new CustomEvent('importCenterPointJob', { detail: job });
+                                    window.dispatchEvent(event);
+                                    handleStageTransition(job, "opened");
+                                  }}
+                                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-indigo-500 text-white text-xs font-display font-medium hover:bg-indigo-400 active:scale-95 transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)]"
+                                >
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                  Import to Pipeline
+                                </button>
+
+                                {job.promotedAt ? (
+                                  <span className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-display text-emerald-400">
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    In Tickets
+                                  </span>
+                                ) : (
+                                  <button
+                                    onClick={() => handlePromote(job)}
+                                    disabled={promotingId === job.id}
+                                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 text-xs font-display text-white/60 hover:bg-white hover:text-black hover:border-white transition-all disabled:opacity-40"
+                                  >
+                                    {promotingId === job.id
+                                      ? <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
+                                      : <Ticket className="w-3.5 h-3.5" />
+                                    }
+                                    Push to Tickets
+                                  </button>
+                                )}
+                              </div>
                             </div>
-                          )}
+                          </div>
                         </div>
                       </motion.div>
                     )}
