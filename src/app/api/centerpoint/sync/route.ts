@@ -3,7 +3,7 @@ import { getServiceClient } from "@/lib/supabase-server";
 
 const CP_BASE = "https://api.centerpointconnect.io/centerpoint";
 const HUSTAD_TYPE = "STORM INSPECTION-HAIL";
-const FETCH_SIZE = 100;
+const FETCH_SIZE = 250;
 
 function getCpKey(): string {
   const key = process.env.CENTERPOINT_API_KEY;
@@ -130,10 +130,12 @@ export async function POST() {
         scanned++;
         const a = r.attributes;
 
+        /* 
         if (deltaSince && a.updatedAt && a.updatedAt <= deltaSince) {
           reachedDelta = true;
           break;
         }
+        */
 
         const isHailInspection = a?.customWithLabels?.serviceTypeHustad === HUSTAD_TYPE;
         const isResidential = residentialIds.has(Number(a?.billedCompanyId));
