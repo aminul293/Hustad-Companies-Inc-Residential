@@ -63,6 +63,26 @@ export async function POST(request: Request) {
 
     await upsertSession(session);
 
+    // If this session originated from CenterPoint, and we just hit a terminal stage, update CP
+    if (session.centerpointId) {
+      const isTerminal = session.sessionStatus === 'signed' || session.sessionStatus.startsWith('closed_');
+      if (isTerminal) {
+        try {
+          const cpStage = session.sessionStatus === 'signed' ? 'completed' : 'closed';
+          // We can call our own internal PATCH route for centerpoint transitions
+          const patchUrl = new URL(`/api/centerpoint/${session.centerpointId}`, request.url);
+          await fetch(patchUrl.toString(), {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: cpStage })
+          });
+          console.log(`[SUPABASE_RELAY] Auto-transitioned CP Job ${session.centerpointId} to ${cpStage}`);
+        } catch (e) {
+          console.error('[SUPABASE_RELAY] Failed to update CenterPoint stage automatically', e);
+        }
+      }
+    }
+
     console.log(`[SUPABASE_RELAY] Synced Session: ${sessionId} | Status: ${session.sessionStatus}`);
 
     return NextResponse.json({ success: true });

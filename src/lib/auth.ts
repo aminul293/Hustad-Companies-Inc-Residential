@@ -45,6 +45,7 @@ export async function requireAuth(req: NextRequest) {
 export const authOptions: NextAuthOptions = {
   providers: [
     AzureADProvider({
+      id: "azure-ad",
       clientId: process.env.AZURE_AD_CLIENT_ID || "local-dev-client-id",
       clientSecret: process.env.AZURE_AD_CLIENT_SECRET || "local-dev-client-secret",
       tenantId: process.env.AZURE_AD_TENANT_ID || "common",

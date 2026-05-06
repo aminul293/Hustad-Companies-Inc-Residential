@@ -23,7 +23,7 @@ export function ProgressBar({ currentScreen, phase }: ProgressBarProps) {
                 Progress
               </span>
               <span className="text-sm font-display font-medium text-white tracking-tight">
-                {String(idx + 1).padStart(2, "0")} <span className="text-white/20 mx-1">/</span> {PHASE_A_SCREENS.length}
+                {String(Math.max(0, idx + 1)).padStart(2, "0")} <span className="text-white/20 mx-1">/</span> {PHASE_A_SCREENS.length}
               </span>
             </div>
 

@@ -247,6 +247,7 @@ export interface AuditEvent {
 export interface SessionState {
   // Identity
   sessionId: string;
+  centerpointId?: string;
   reviewToken?: string;
   repId: string;
   repName: string;
