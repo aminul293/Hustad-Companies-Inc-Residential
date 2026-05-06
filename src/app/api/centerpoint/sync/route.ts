@@ -4,6 +4,7 @@ import { getServiceClient } from "@/lib/supabase-server";
 const CP_BASE = "https://api.centerpointconnect.io/centerpoint";
 const HUSTAD_TYPE = "STORM INSPECTION-HAIL";
 const FETCH_SIZE = 250;
+const STAGE_ORDER = ["lead_opened","lead_pending","lead_quoted","lead_sold","opened","scheduled","started","completed","invoiced","closed"];
 
 function getCpKey(): string {
   const key = process.env.CENTERPOINT_API_KEY;
