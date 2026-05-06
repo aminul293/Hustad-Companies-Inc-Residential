@@ -251,6 +251,7 @@ export interface SessionState {
   reviewToken?: string;
   repId: string;
   repName: string;
+  repEmail?: string;
   createdAt: string;
   lastSavedAt: string;
 

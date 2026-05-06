@@ -25,7 +25,7 @@ function LoginContent() {
     setLoading(true);
     setError("");
     try {
-      await signIn("azure-ad", { callbackUrl: "/" });
+      await signIn("azure-ad", { callbackUrl: "/" }, { prompt: "select_account" });
     } catch (e: any) {
       setError(e?.message || "Sign-in failed. Please try again.");
       setLoading(false);
