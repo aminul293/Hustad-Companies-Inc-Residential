@@ -7,3 +7,4 @@ node_modules/
 out/
 data/
 .vercel
+.env.local.backup
