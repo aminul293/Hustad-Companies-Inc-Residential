@@ -2,11 +2,24 @@
 
 import { signIn } from "next-auth/react";
 import { Mail } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
-export default function LoginPage() {
+function LoginContent() {
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const errorParam = searchParams.get("error");
+    if (errorParam) {
+      if (errorParam === "OAuthSignin" || errorParam === "OAuthCallback") {
+        setError("Microsoft login failed. Please ensure Azure AD is configured in Vercel and the redirect URI is correct.");
+      } else {
+        setError(`Login error: ${errorParam}`);
+      }
+    }
+  }, [searchParams]);
 
   const handleLogin = async () => {
     setLoading(true);
@@ -108,5 +121,13 @@ export default function LoginPage() {
         }
       `}} />
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0A0F1E]" />}>
+      <LoginContent />
+    </Suspense>
   );
 }
