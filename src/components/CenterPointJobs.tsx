@@ -150,9 +150,11 @@ export function CenterPointJobs() {
         // Refresh the list from Supabase
         // Clear current list to force a clean re-render
         setJobs([]);
-        setPage(1);
-        fetchJobs({ refresh: true, newPage: 1 });
-        fetchSyncStatus();
+        // Wait 800ms for DB to settle, then refresh
+        setTimeout(() => {
+          fetchJobs({ refresh: true, newPage: 1 });
+          fetchSyncStatus();
+        }, 800);
       } else {
         setSyncStatus(prev => ({ ...prev, syncing: false, result: `Error: ${data.error}` }));
       }
