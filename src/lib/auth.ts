@@ -65,7 +65,18 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
   },
   secret: nextAuthSecret,
-  debug: process.env.NEXTAUTH_DEBUG === "true",
+  debug: true, // Force debug on for troubleshooting the current server error
+  logger: {
+    error(code, metadata) {
+      console.error(`[NEXTAUTH_ERROR] ${code}`, metadata);
+    },
+    warn(code) {
+      console.warn(`[NEXTAUTH_WARN] ${code}`);
+    },
+    debug(code, metadata) {
+      console.log(`[NEXTAUTH_DEBUG] ${code}`, metadata);
+    },
+  },
 };
 
 export interface AuthPayload {
