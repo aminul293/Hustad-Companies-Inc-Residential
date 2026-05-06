@@ -151,12 +151,25 @@ export async function POST() {
         rowsToUpsert.push(toRow(r));
       }
 
-      // De-duplicate in memory: only keep the most recent update for each job number (name)
+      // De-duplicate in memory: pick the one that is FURTHER ALONG in the pipeline
       const uniqueRows = new Map();
       rowsToUpsert.forEach(row => {
         const existing = uniqueRows.get(row.name);
-        if (!existing || (row.cp_updated_at && (!existing.cp_updated_at || row.cp_updated_at > existing.cp_updated_at))) {
+        if (!existing) {
           uniqueRows.set(row.name, row);
+          return;
+        }
+
+        const existingIdx = STAGE_ORDER.indexOf(existing.status === "closed_out" ? "closed" : existing.status);
+        const incomingIdx = STAGE_ORDER.indexOf(row.status === "closed_out" ? "closed" : row.status);
+
+        // Keep the one that is further along, OR if same stage, pick the newest updatedAt
+        if (incomingIdx > existingIdx) {
+          uniqueRows.set(row.name, row);
+        } else if (incomingIdx === existingIdx) {
+          if (row.cp_updated_at && (!existing.cp_updated_at || row.cp_updated_at > existing.cp_updated_at)) {
+            uniqueRows.set(row.name, row);
+          }
         }
       });
       const finalRows = Array.from(uniqueRows.values());
