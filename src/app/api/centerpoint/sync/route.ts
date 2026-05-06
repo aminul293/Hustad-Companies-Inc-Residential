@@ -43,6 +43,12 @@ async function getResidentialCompanyIds(): Promise<Set<number>> {
 // ─── Map CenterPoint record → Supabase row ───────────────────────────────────
 function toRow(r: any) {
   const a = r.attributes;
+  
+  // Normalize status for the pipeline (e.g. "Closed Out" -> "closed")
+  let normalizedStatus = (a.status || "").toLowerCase().replace(/\s+/g, "_");
+  if (normalizedStatus === "closed_out") normalizedStatus = "closed";
+  if (normalizedStatus === "new_lead") normalizedStatus = "lead_opened";
+
   return {
     cp_id: String(r.id),
     name: a.name ?? "",
@@ -50,8 +56,8 @@ function toRow(r: any) {
     opportunity_type: a.opportunityType ?? null,
     work_type: a.workType ?? null,
     domain: a.domain ?? null,
-    status: a.status ?? "",
-    display_status: a.displayStatus ?? "",
+    status: normalizedStatus,
+    display_status: a.displayStatus || a.status || "",
     price: a.price ?? 0,
     start_date: a.startDate ?? null,
     billed_company_id: a.billedCompanyId ? String(a.billedCompanyId) : null,
@@ -144,12 +150,26 @@ export async function POST() {
         rowsToUpsert.push(toRow(r));
       }
 
-      if (rowsToUpsert.length > 0) {
+      // De-duplicate in memory: only keep the most recent update for each job number (name)
+      const uniqueRows = new Map();
+      rowsToUpsert.forEach(row => {
+        const existing = uniqueRows.get(row.name);
+        if (!existing || (row.cp_updated_at && (!existing.cp_updated_at || row.cp_updated_at > existing.cp_updated_at))) {
+          uniqueRows.set(row.name, row);
+        }
+      });
+      const finalRows = Array.from(uniqueRows.values());
+
+      if (finalRows.length > 0) {
+        // Clear out any potential duplicates with different cp_ids before upserting
+        const names = finalRows.map(r => r.name);
+        await supabase.from("centerpoint_jobs").delete().in("name", names);
+
         const { error } = await supabase
           .from("centerpoint_jobs")
-          .upsert(rowsToUpsert, { onConflict: "cp_id" });
+          .upsert(finalRows, { onConflict: "cp_id" });
         if (error) throw new Error(`Supabase upsert failed: ${error.message}`);
-        upserted += rowsToUpsert.length;
+        upserted += finalRows.length;
       }
 
       cpPage++;
