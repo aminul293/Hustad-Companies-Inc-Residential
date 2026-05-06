@@ -57,27 +57,28 @@ function toRow(r: any) {
 }
 
 // ─── POST /api/centerpoint/sync ──────────────────────────────────────────────
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   const supabase = getServiceClient();
 
   // Get last completed sync timestamp for delta mode
+  // Use maybeSingle() so 0 rows returns null instead of an error
   const { data: lastLog } = await supabase
     .from("cp_sync_log")
     .select("completed_at")
     .eq("status", "completed")
     .order("completed_at", { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
   const deltaSince: string | null = lastLog?.completed_at ?? null;
 
-  // Create a running log entry
+  // Create a running log entry (best-effort — don't let log failure block sync)
   const { data: logRow } = await supabase
     .from("cp_sync_log")
     .insert({ status: "running", delta_since: deltaSince })
     .select("id")
-    .single();
-  const logId: string = logRow?.id;
+    .maybeSingle();
+  const logId: string | undefined = logRow?.id;
 
   try {
     const residentialIds = await getResidentialCompanyIds();
@@ -141,15 +142,17 @@ export async function POST(req: NextRequest) {
     }
 
     // Mark sync completed
-    await supabase
-      .from("cp_sync_log")
-      .update({
-        status: "completed",
-        completed_at: new Date().toISOString(),
-        jobs_upserted: upserted,
-        jobs_scanned: scanned,
-      })
-      .eq("id", logId);
+    if (logId) {
+      await supabase
+        .from("cp_sync_log")
+        .update({
+          status: "completed",
+          completed_at: new Date().toISOString(),
+          jobs_upserted: upserted,
+          jobs_scanned: scanned,
+        })
+        .eq("id", logId);
+    }
 
     return NextResponse.json({
       ok: true,
@@ -159,10 +162,12 @@ export async function POST(req: NextRequest) {
       delta_since: deltaSince,
     });
   } catch (err: any) {
-    await supabase
-      .from("cp_sync_log")
-      .update({ status: "failed", error: err.message })
-      .eq("id", logId);
+    if (logId) {
+      await supabase
+        .from("cp_sync_log")
+        .update({ status: "failed", error: err.message })
+        .eq("id", logId);
+    }
 
     return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
   }

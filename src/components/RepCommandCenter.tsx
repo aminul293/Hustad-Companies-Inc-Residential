@@ -136,10 +136,10 @@ export function RepCommandCenter({ onLoadDraft, onNewSession }: Props) {
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <h1 className="text-3xl font-display font-medium tracking-tight">
-              {view === "dashboard" ? "Rep Command Center" : "System Settings"}
+              {{ dashboard: "Rep Command Center", centerpoint: "CP Inbox", tickets: "Hustad Tickets", settings: "System Settings" }[view]}
             </h1>
             <p className="text-sm text-white/50 font-light">
-              {view === "dashboard" ? "Field intelligence and session management." : "Manage field identities and operational parameters."}
+              {{ dashboard: "Field intelligence and session management.", centerpoint: "Jobs synced from CenterPoint Connect.", tickets: "Your managed pipeline — stages, touches, and write-back.", settings: "Manage field identities and operational parameters." }[view]}
             </p>
           </div>
           <div className="flex items-center gap-3">
