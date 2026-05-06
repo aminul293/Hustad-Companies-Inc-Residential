@@ -34,7 +34,6 @@ import {
 import { cn } from "@/lib/utils";
 import { listDrafts, hasSameDayDraft, deleteDraft, createSession } from "@/lib/session";
 import { RepCommandCenter } from "@/components/RepCommandCenter";
-import { useSession as useAuthSession, signIn, signOut } from "next-auth/react";
 import { getAuthenticatedRep } from "@/lib/rep-identity";
 
 interface Props {
@@ -49,8 +48,7 @@ interface Props {
 // REPS constant removed, using FIELD_REPS from config
 
 export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump, isOnline }: Props) {
-  const { data: authSession, status: authStatus } = useAuthSession();
-  const authRep = getAuthenticatedRep(authSession);
+  const authRep = getAuthenticatedRep();
   const [showDashboard, setShowDashboard] = useState(false);
   const [isAddressFocused, setIsAddressFocused] = useState(false);
   const [suggestions, setSuggestions] = useState<{ main: string; sub: string }[]>([]);
@@ -74,11 +72,6 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
   const [showRepNav, setShowRepNav] = useState(false);
 
   const handleStartNew = () => {
-    if (!authRep) {
-      void signIn("azure-ad", { callbackUrl: "/" }, { prompt: "select_account" });
-      return;
-    }
-
     set("repName", authRep.name);
     
     // Close dashboard to reveal the form
@@ -162,7 +155,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
     }
   }, [form.address, session.sessionId, authRep?.id]);
 
-  if (showDashboard && authStatus === "authenticated" && authRep) {
+  if (showDashboard) {
     return (
       <RepCommandCenter 
         currentRep={authRep}
@@ -183,11 +176,6 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
   };
 
   const handleStart = () => {
-    if (!authRep) {
-      void signIn("azure-ad", { callbackUrl: "/" }, { prompt: "select_account" });
-      return;
-    }
-
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
 
@@ -355,193 +343,157 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
             {/* Enterprise Login / Rep Selection */}
             <div className="space-y-8">
               <div className="flex items-center justify-between px-2">
-                <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest">Production Identity Layer</p>
-                {authStatus === "authenticated" && (
-                  <button onClick={() => signOut({ callbackUrl: "/login" })} className="text-[9px] font-mono text-white/30 hover:text-white uppercase tracking-widest">Switch Account</button>
-                )}
+                <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest">Active Identity Layer</p>
               </div>
 
-              {authStatus === "authenticated" && authRep ? (
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-8 rounded-[40px] bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-between group">
-                  <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 rounded-3xl bg-indigo-500 flex items-center justify-center text-white shadow-[0_0_30px_rgba(99,102,241,0.4)]">
-                      <User className="w-8 h-8" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest mb-1">Authenticated Operative</p>
-                      <h3 className="text-2xl font-display font-medium text-white">{authRep.name}</h3>
-                      <p className="text-xs text-white/40">{authRep.email}</p>
-                    </div>
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-8 rounded-[40px] bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-between group">
+                <div className="flex items-center gap-6">
+                  <div className="w-16 h-16 rounded-3xl bg-indigo-500 flex items-center justify-center text-white shadow-[0_0_30px_rgba(99,102,241,0.4)]">
+                    <User className="w-8 h-8" />
                   </div>
-                  <button onClick={() => setShowDashboard(true)} className="h-14 w-14 rounded-2xl bg-white text-black flex items-center justify-center hover:scale-105 transition-all">
-                    <ChevronRight className="w-6 h-6" />
-                  </button>
-                </motion.div>
-              ) : (
-                <div className="space-y-6">
-                  <button 
-                    onClick={() => signIn("azure-ad", { callbackUrl: "/" }, { prompt: "select_account" })}
-                    className="w-full p-8 rounded-[40px] bg-white text-black flex items-center justify-between hover:bg-neutral-200 transition-all group shadow-[0_20px_50px_rgba(255,255,255,0.1)]"
-                  >
-                    <div className="flex items-center gap-6">
-                      <div className="w-12 h-12 rounded-2xl bg-black/5 flex items-center justify-center">
-                        {authStatus === "loading" ? (
-                          <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                        ) : (
-                          <Mail className="w-6 h-6" />
-                        )}
-                      </div>
-                      <div className="text-left">
-                        <h3 className="text-xl font-display font-medium">Login with Outlook</h3>
-                        <p className="text-[10px] font-mono text-black/40 uppercase tracking-widest">Enterprise Identity Required</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                  
-                  <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-rose-500/5 border border-rose-500/10">
-                    <Lock className="w-4 h-4 text-rose-400" />
-                    <p className="text-[10px] font-mono text-rose-400/70 uppercase tracking-widest">Authentication required to access property intake</p>
+                  <div>
+                    <p className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest mb-1">Active Operative</p>
+                    <h3 className="text-2xl font-display font-medium text-white">{authRep.name}</h3>
+                    <p className="text-xs text-white/40">{authRep.email}</p>
                   </div>
                 </div>
-              )}
+                <button onClick={() => setShowDashboard(true)} className="h-14 w-14 rounded-2xl bg-white text-black flex items-center justify-center hover:scale-105 transition-all">
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              </motion.div>
             </div>
 
-            {/* Property Intake Form — Appears after auth */}
-            <AnimatePresence>
-              {authStatus === "authenticated" && authRep && (
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-8">
-                  <div className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl space-y-8">
-                    {/* Property Identification */}
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-3 px-2">
-                        <div className="h-px flex-1 bg-white/[0.05]" />
-                        <span className="text-[10px] font-mono text-white/30 uppercase tracking-[0.2em]">Property Identification</span>
-                        <div className="h-px flex-1 bg-white/[0.05]" />
-                      </div>
+            {/* Property Intake Form */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-8">
+              <div className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl space-y-8">
+                {/* Property Identification */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3 px-2">
+                    <div className="h-px flex-1 bg-white/[0.05]" />
+                    <span className="text-[10px] font-mono text-white/30 uppercase tracking-[0.2em]">Property Identification</span>
+                    <div className="h-px flex-1 bg-white/[0.05]" />
+                  </div>
 
-                      <div className="space-y-2 relative">
-                        <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest pl-2">Property Address <span className="text-rose-400">*</span></p>
-                        <div className="relative group">
-                          <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-400/50 group-focus-within:text-indigo-400 transition-colors" />
-                          <input
-                            value={form.address}
-                            onChange={(e) => set("address", e.target.value)}
-                            onFocus={() => setIsAddressFocused(true)}
-                            onBlur={() => setTimeout(() => setIsAddressFocused(false), 200)}
-                            className={cn(
-                              "w-full bg-white/[0.04] border rounded-2xl py-5 pl-14 pr-6 text-white placeholder:text-white/20 outline-none transition-all text-lg",
-                              errors.address ? "border-rose-500/50" : "border-white/[0.1] focus:border-indigo-500/30 focus:bg-white/[0.06] focus:ring-4 focus:ring-indigo-500/5"
-                            )}
-                            placeholder="Start typing property address..."
-                          />
-                          {isSearching && <div className="absolute right-6 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />}
-                        </div>
-                        {errors.address && <p className="text-[10px] text-rose-400 pl-2">{errors.address}</p>}
-                        
-                        <AnimatePresence>
-                          {isAddressFocused && suggestions.length > 0 && (
-                            <motion.div 
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                              className="absolute z-50 left-0 right-0 top-[calc(100%+8px)] rounded-2xl bg-[#111]/90 backdrop-blur-xl border border-white/10 overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+                  <div className="space-y-2 relative">
+                    <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest pl-2">Property Address <span className="text-rose-400">*</span></p>
+                    <div className="relative group">
+                      <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-400/50 group-focus-within:text-indigo-400 transition-colors" />
+                      <input
+                        value={form.address}
+                        onChange={(e) => set("address", e.target.value)}
+                        onFocus={() => setIsAddressFocused(true)}
+                        onBlur={() => setTimeout(() => setIsAddressFocused(false), 200)}
+                        className={cn(
+                          "w-full bg-white/[0.04] border rounded-2xl py-5 pl-14 pr-6 text-white placeholder:text-white/20 outline-none transition-all text-lg",
+                          errors.address ? "border-rose-500/50" : "border-white/[0.1] focus:border-indigo-500/30 focus:bg-white/[0.06] focus:ring-4 focus:ring-indigo-500/5"
+                        )}
+                        placeholder="Start typing property address..."
+                      />
+                      {isSearching && <div className="absolute right-6 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />}
+                    </div>
+                    {errors.address && <p className="text-[10px] text-rose-400 pl-2">{errors.address}</p>}
+                    
+                    <AnimatePresence>
+                      {isAddressFocused && suggestions.length > 0 && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="absolute z-50 left-0 right-0 top-[calc(100%+8px)] rounded-2xl bg-[#111]/90 backdrop-blur-xl border border-white/10 overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+                        >
+                          {suggestions.map((s, i) => (
+                            <button 
+                              key={i} 
+                              onMouseDown={() => { set("address", s.main + (s.sub ? ", " + s.sub : "")); setSuggestions([]); }} 
+                              className="w-full px-6 py-4 text-left hover:bg-white/5 transition-colors flex items-start gap-4 border-b border-white/5 last:border-0 group/item"
                             >
-                              {suggestions.map((s, i) => (
-                                <button 
-                                  key={i} 
-                                  onMouseDown={() => { set("address", s.main + (s.sub ? ", " + s.sub : "")); setSuggestions([]); }} 
-                                  className="w-full px-6 py-4 text-left hover:bg-white/5 transition-colors flex items-start gap-4 border-b border-white/5 last:border-0 group/item"
-                                >
-                                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0 group-hover/item:bg-indigo-500/20 transition-colors">
-                                    <MapPin className="w-4 h-4 text-indigo-400" />
-                                  </div>
-                                  <div>
-                                    <p className="text-sm text-white font-medium">{s.main}</p>
-                                    <p className="text-[10px] text-white/40 font-mono uppercase tracking-wider">{s.sub}</p>
-                                  </div>
-                                </button>
-                              ))}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    </div>
+                              <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0 group-hover/item:bg-indigo-500/20 transition-colors">
+                                <MapPin className="w-4 h-4 text-indigo-400" />
+                              </div>
+                              <div>
+                                <p className="text-sm text-white font-medium">{s.main}</p>
+                                <p className="text-[10px] text-white/40 font-mono uppercase tracking-wider">{s.sub}</p>
+                              </div>
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
 
-                    {/* Ownership Details */}
-                    <div className="space-y-6 pt-4">
-                      <div className="flex items-center gap-3 px-2">
-                        <div className="h-px flex-1 bg-white/[0.05]" />
-                        <span className="text-[10px] font-mono text-white/30 uppercase tracking-[0.2em]">Ownership Details</span>
-                        <div className="h-px flex-1 bg-white/[0.05]" />
-                      </div>
+                {/* Ownership Details */}
+                <div className="space-y-6 pt-4">
+                  <div className="flex items-center gap-3 px-2">
+                    <div className="h-px flex-1 bg-white/[0.05]" />
+                    <span className="text-[10px] font-mono text-white/30 uppercase tracking-[0.2em]">Ownership Details</span>
+                    <div className="h-px flex-1 bg-white/[0.05]" />
+                  </div>
 
-                      <div className="grid grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest pl-2">Homeowner Name</p>
-                          <div className="relative group">
-                            <User className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-white/50 transition-colors" />
-                            <input value={form.homeownerName} onChange={(e) => set("homeownerName", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all" placeholder="Full Name" />
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest pl-2">Mobile Number</p>
-                          <div className="relative group">
-                            <Smartphone className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-white/50 transition-colors" />
-                            <input value={form.homeownerMobile} onChange={(e) => set("homeownerMobile", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all" placeholder="(608) 000-0000" />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest pl-2">Email Address</p>
-                        <div className="relative group max-w-sm">
-                          <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-white/50 transition-colors" />
-                          <input value={form.homeownerEmail} onChange={(e) => set("homeownerEmail", e.target.value)} type="email" className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all" placeholder="homeowner@example.com" />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="h-[1px] bg-white/[0.06]" />
-
-                    {/* Rep Identity */}
+                  <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest pl-2">Rep Identity <span className="text-rose-400">*</span></p>
-                      <input value={authRep.name} readOnly className={cn("w-full bg-white/[0.04] border rounded-2xl py-4 px-6 text-white outline-none transition-all cursor-default", errors.repName ? "border-rose-500/50" : "border-white/[0.1]")} />
-                      {authRep.email && <p className="text-[10px] text-white/30 pl-2">{authRep.email}</p>}
-                      {errors.repName && <p className="text-[10px] text-rose-400 pl-2">{errors.repName}</p>}
-                    </div>
-
-                    <div className="h-[1px] bg-white/[0.06]" />
-
-                    {/* Carrier & Storm Context */}
-                    <div className="space-y-4">
-                      <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest pl-2">Carrier & Storm Context</p>
-                      <div className="grid grid-cols-2 gap-6">
-                        <div className="space-y-1">
-                          <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest pl-2">Insurance Carrier</p>
-                          <input value={form.insurerName} onChange={(e) => set("insurerName", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="e.g. State Farm" />
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest pl-2">Claim Number (if known)</p>
-                          <input value={form.claimNumber} onChange={(e) => set("claimNumber", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="e.g. 123-456-789" />
-                        </div>
+                      <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest pl-2">Homeowner Name</p>
+                      <div className="relative group">
+                        <User className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-white/50 transition-colors" />
+                        <input value={form.homeownerName} onChange={(e) => set("homeownerName", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all" placeholder="Full Name" />
                       </div>
-                      <div className="grid grid-cols-2 gap-6">
-                        <div className="space-y-1">
-                          <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest pl-2">Date of Loss</p>
-                          <input value={form.workingDateOfLoss} onChange={(e) => set("workingDateOfLoss", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="MM/DD/YYYY" />
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest pl-2">Storm Basis</p>
-                          <input value={form.stormBasis} onChange={(e) => set("stormBasis", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="Madison metro hail event" />
-                        </div>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest pl-2">Mobile Number</p>
+                      <div className="relative group">
+                        <Smartphone className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-white/50 transition-colors" />
+                        <input value={form.homeownerMobile} onChange={(e) => set("homeownerMobile", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all" placeholder="(608) 000-0000" />
                       </div>
                     </div>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest pl-2">Email Address</p>
+                    <div className="relative group max-w-sm">
+                      <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-white/50 transition-colors" />
+                      <input value={form.homeownerEmail} onChange={(e) => set("homeownerEmail", e.target.value)} type="email" className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all" placeholder="homeowner@example.com" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="h-[1px] bg-white/[0.06]" />
+
+                {/* Rep Identity */}
+                <div className="space-y-2">
+                  <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest pl-2">Rep Identity <span className="text-rose-400">*</span></p>
+                  <input value={authRep.name} readOnly className={cn("w-full bg-white/[0.04] border rounded-2xl py-4 px-6 text-white outline-none transition-all cursor-default", errors.repName ? "border-rose-500/50" : "border-white/[0.1]")} />
+                  {authRep.email && <p className="text-[10px] text-white/30 pl-2">{authRep.email}</p>}
+                  {errors.repName && <p className="text-[10px] text-rose-400 pl-2">{errors.repName}</p>}
+                </div>
+
+                <div className="h-[1px] bg-white/[0.06]" />
+
+                {/* Carrier & Storm Context */}
+                <div className="space-y-4">
+                  <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest pl-2">Carrier & Storm Context</p>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                      <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest pl-2">Insurance Carrier</p>
+                      <input value={form.insurerName} onChange={(e) => set("insurerName", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="e.g. State Farm" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest pl-2">Claim Number (if known)</p>
+                      <input value={form.claimNumber} onChange={(e) => set("claimNumber", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="e.g. 123-456-789" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                      <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest pl-2">Date of Loss</p>
+                      <input value={form.workingDateOfLoss} onChange={(e) => set("workingDateOfLoss", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="MM/DD/YYYY" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest pl-2">Storm Basis</p>
+                      <input value={form.stormBasis} onChange={(e) => set("stormBasis", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="Madison metro hail event" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
 
             {/* Compliance Banner */}
             <div className="p-6 rounded-3xl bg-indigo-500/5 border border-indigo-500/10 flex items-start gap-4">
@@ -615,24 +567,20 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
       <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-24">
         <div className="max-w-3xl mx-auto">
           <div className="flex justify-center gap-4">
-            {authStatus === "authenticated" && (
-              <>
-                <button 
-                  onClick={() => setShowDashboard(true)}
-                  className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all"
-                >
-                  <LayoutGrid className="w-4 h-4 text-white/70" />
-                  <span className="text-sm font-display font-medium text-white">Command Center</span>
-                </button>
-                <button 
-                  onClick={handleStart}
-                  className="group flex items-center gap-4 px-12 py-6 rounded-full bg-white text-black transition-all hover:bg-neutral-200 active:scale-95 shadow-[0_20px_50px_rgba(255,255,255,0.1)]"
-                >
-                  <span className="text-lg font-display font-semibold tracking-tight">Launch Inspection</span>
-                  <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-                </button>
-              </>
-            )}
+            <button 
+              onClick={() => setShowDashboard(true)}
+              className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all"
+            >
+              <LayoutGrid className="w-4 h-4 text-white/70" />
+              <span className="text-sm font-display font-medium text-white">Command Center</span>
+            </button>
+            <button 
+              onClick={handleStart}
+              className="group flex items-center gap-4 px-12 py-6 rounded-full bg-white text-black transition-all hover:bg-neutral-200 active:scale-95 shadow-[0_20px_50px_rgba(255,255,255,0.1)]"
+            >
+              <span className="text-lg font-display font-semibold tracking-tight">Launch Inspection</span>
+              <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+            </button>
           </div>
           
           <div className="flex items-center justify-center gap-4 mt-6">
