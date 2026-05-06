@@ -21,16 +21,18 @@ import { cn } from "@/lib/utils";
 import { listDrafts } from "@/lib/session";
 import { getLiveReps, saveCustomRep, deleteCustomRep } from "@/lib/reps";
 import type { RepIdentity } from "@/config/reps";
+import type { AuthenticatedRep } from "@/lib/rep-identity";
 import { motion, AnimatePresence } from "framer-motion";
 import { CenterPointJobs } from "@/components/CenterPointJobs";
 import { HustadTickets } from "@/components/HustadTickets";
 
 interface Props {
+  currentRep: AuthenticatedRep;
   onLoadDraft: (id: string) => void;
   onNewSession: () => void;
 }
 
-export function RepCommandCenter({ onLoadDraft, onNewSession }: Props) {
+export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession }: Props) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<string>("all");
   const [view, setView] = useState<"dashboard" | "centerpoint" | "tickets" | "settings">("dashboard");
@@ -67,9 +69,9 @@ export function RepCommandCenter({ onLoadDraft, onNewSession }: Props) {
       const attr = job.attributes;
       
       const { createSession, saveSession } = require("@/lib/session");
-      const repInfo = liveReps[0] || { id: "rep_001", name: "Hustad Rep" };
+      const repInfo = currentRep;
       
-      const newSession = createSession(repInfo.id, repInfo.name);
+      const newSession = createSession(repInfo.id, repInfo.name, repInfo.email);
       
       // Map CenterPoint data to SessionState property context
       newSession.centerpointId = job.id;
@@ -86,10 +88,10 @@ export function RepCommandCenter({ onLoadDraft, onNewSession }: Props) {
 
     window.addEventListener('importCenterPointJob', handleImportJob);
     return () => window.removeEventListener('importCenterPointJob', handleImportJob);
-  }, [liveReps]);
+  }, [currentRep]);
 
   const drafts = useMemo(() => {
-    const local = listDrafts();
+    const local = listDrafts(currentRep.id);
     // Merge server sessions into local drafts if they don't exist locally
     const merged = [...local];
     serverSessions.forEach(s => {

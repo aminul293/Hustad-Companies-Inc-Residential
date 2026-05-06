@@ -15,13 +15,14 @@ const DRAFT_PREFIX = "hustad_draft_";
 // SESSION FACTORY
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function createSession(repId: string, repName: string): SessionState {
+export function createSession(repId: string, repName: string, repEmail = ""): SessionState {
   const now = new Date().toISOString();
   return {
     sessionId: `sess_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     reviewToken: undefined,
     repId,
     repName,
+    repEmail,
     createdAt: now,
     lastSavedAt: now,
     sessionStatus: "draft",
@@ -143,6 +144,8 @@ export function saveSession(session: SessionState): void {
     address: session.property.address || "Untitled Property",
     homeownerName: session.property.homeownerPrimaryName || "Unknown Owner",
     repName: session.repName,
+    repId: session.repId,
+    repEmail: session.repEmail || "",
     lastSavedAt: updated.lastSavedAt,
     sessionStatus: session.sessionStatus,
     outcomeType: session.findings.outcomeType,
@@ -174,6 +177,8 @@ interface DraftMeta {
   address: string;
   homeownerName: string;
   repName: string;
+  repId?: string;
+  repEmail?: string;
   lastSavedAt: string;
   sessionStatus: string;
   outcomeType: string | null;
@@ -192,17 +197,23 @@ function getDraftsIndex(): Record<string, DraftMeta> {
   }
 }
 
-export function listDrafts(): DraftMeta[] {
-  return Object.values(getDraftsIndex()).sort(
+export function listDrafts(repId?: string): DraftMeta[] {
+  return Object.values(getDraftsIndex()).filter((draft) => {
+    if (!repId) return true;
+    return draft.repId === repId;
+  }).sort(
     (a, b) => new Date(b.lastSavedAt).getTime() - new Date(a.lastSavedAt).getTime()
   );
 }
 
-export function loadDraftById(sessionId: string): SessionState | null {
+export function loadDraftById(sessionId: string, repId?: string): SessionState | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem(DRAFT_PREFIX + sessionId);
-    return raw ? (JSON.parse(raw) as SessionState) : null;
+    if (!raw) return null;
+    const draft = JSON.parse(raw) as SessionState;
+    if (repId && draft.repId !== repId) return null;
+    return draft;
   } catch {
     return null;
   }
@@ -222,9 +233,9 @@ export function deleteDraft(sessionId: string): void {
   localStorage.setItem(DRAFTS_INDEX_KEY, JSON.stringify(index));
 }
 
-export function hasSameDayDraft(address: string): DraftMeta | null {
+export function hasSameDayDraft(address: string, repId?: string): DraftMeta | null {
   const today = new Date().toISOString().slice(0, 10);
-  const drafts = listDrafts();
+  const drafts = listDrafts(repId);
   return drafts.find(
     (d) =>
       d.address.toLowerCase().trim() === address.toLowerCase().trim() &&
