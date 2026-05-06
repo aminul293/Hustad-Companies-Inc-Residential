@@ -87,7 +87,9 @@ export function CenterPointJobs() {
   const fetchJobs = useCallback(async (opts?: { refresh?: boolean; newPage?: number }) => {
     const isRefresh = opts?.refresh;
     const targetPage = opts?.newPage ?? page;
-    if (isRefresh) setRefreshing(true); else setLoading(true);
+    const isInitial = targetPage === 1;
+
+    if (isRefresh) setRefreshing(true); else if (isInitial) setLoading(true);
 
     try {
       const params = new URLSearchParams({ page: String(targetPage) });
@@ -95,18 +97,25 @@ export function CenterPointJobs() {
       if (statusFilter) params.set("status", statusFilter);
 
       const res = await fetch(`/api/centerpoint?${params.toString()}`);
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server responded with status ${res.status}`);
+      }
+
       const data = await res.json();
 
       if (data?.data) {
-        if (targetPage === 1) {
+        if (isInitial) {
           setJobs(data.data);
+          // Set totalJobs to the count of jobs matching the current filter
+          setTotalJobs(data.meta?.page?.total ?? 0);
         } else {
           setJobs(prev => [...prev, ...data.data]);
         }
-        setTotalJobs(data.meta?.page?.total ?? 0);
       }
-    } catch (e) {
-      console.error("CenterPoint fetch error", e);
+    } catch (e: any) {
+      console.error("CenterPoint fetch error:", e);
+      // We could set an error state here if needed
     } finally {
       setLoading(false);
       setRefreshing(false);
