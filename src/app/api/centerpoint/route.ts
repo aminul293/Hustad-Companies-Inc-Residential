@@ -4,13 +4,14 @@ import { getServiceClient } from "@/lib/supabase-server";
 const PAGE_SIZE = 25;
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = req.nextUrl;
-  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
-  const search = searchParams.get("search")?.trim() || "";
-  const status = searchParams.get("status")?.trim() || "";
+  try {
+    const { searchParams } = req.nextUrl;
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+    const search = searchParams.get("search")?.trim() || "";
+    const status = searchParams.get("status")?.trim() || "";
 
-  const supabase = getServiceClient();
-  const offset = (page - 1) * PAGE_SIZE;
+    const supabase = getServiceClient();
+    const offset = (page - 1) * PAGE_SIZE;
 
   let query = supabase
     .from("centerpoint_jobs")
@@ -56,14 +57,18 @@ export async function GET(req: NextRequest) {
     },
   }));
 
-  return NextResponse.json({
-    data: mapped,
-    meta: {
-      page: {
-        total: count ?? 0,
-        currentPage: page,
-        perPage: PAGE_SIZE,
+    return NextResponse.json({
+      data: mapped,
+      meta: {
+        page: {
+          total: count ?? 0,
+          currentPage: page,
+          perPage: PAGE_SIZE,
+        },
       },
-    },
-  });
+    });
+  } catch (error: any) {
+    console.error("[CENTERPOINT_API] GET Error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }
