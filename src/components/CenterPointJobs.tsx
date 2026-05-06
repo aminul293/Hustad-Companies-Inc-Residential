@@ -23,7 +23,7 @@ const STAGES: Record<string, { label: string; next: string | null; color: string
 const STAGE_ORDER = ["lead_opened","lead_pending","lead_quoted","lead_sold","opened","scheduled","started","completed","invoiced","closed"];
 
 const STATUS_FILTERS = [
-  { id: "", label: "All Stages" },
+  { id: "all", label: "All Stages" },
   { id: "lead_opened", label: "New Lead" },
   { id: "lead_pending", label: "Pending" },
   { id: "lead_quoted", label: "Quoted" },
@@ -70,7 +70,7 @@ export function CenterPointJobs() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [totalJobs, setTotalJobs] = useState(0);
   const [expandedId, setExpandedId] = useState<string | null>(null);

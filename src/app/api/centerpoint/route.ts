@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     .order("cp_updated_at", { ascending: false })
     .range(offset, offset + PAGE_SIZE - 1);
 
-  if (status) {
+  if (status && status !== "all") {
     query = query.eq("status", status);
   }
 
