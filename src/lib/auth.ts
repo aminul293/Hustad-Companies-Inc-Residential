@@ -5,11 +5,9 @@ import * as jwt from "jsonwebtoken";
 import * as bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 
-// Robust NEXTAUTH_URL detection for Vercel environments
-if (process.env.VERCEL_URL) {
-  const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
-  process.env.NEXTAUTH_URL = `${protocol}://${process.env.VERCEL_URL}`;
-}
+// NEXTAUTH_URL is automatically handled by Vercel's environment variables.
+// Manual overrides here are removed to prevent protocol/host mismatches 
+// when using custom domains or multiple preview branches.
 
 const nextAuthSecret = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET;
 const legacyJwtSecret = process.env.JWT_SECRET || nextAuthSecret || "hustad-dev-secret";
