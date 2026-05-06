@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/auth';
 
 /**
  * MICROSOFT GRAPH EMAIL RELAY
@@ -6,9 +7,9 @@ import { NextResponse } from 'next/server';
  */
 
 // Azure Configuration from environment variables
-const CLIENT_ID = process.env.AZURE_CLIENT_ID;
-const TENANT_ID = process.env.AZURE_TENANT_ID;
-const CLIENT_SECRET = process.env.AZURE_CLIENT_SECRET;
+const CLIENT_ID = process.env.AZURE_AD_CLIENT_ID;
+const TENANT_ID = process.env.AZURE_AD_TENANT_ID;
+const CLIENT_SECRET = process.env.AZURE_AD_CLIENT_SECRET;
 const SENDER_EMAIL = process.env.SENDER_EMAIL || 'info@hustadcompanies.com';
 
 export const dynamic = 'force-dynamic';
@@ -37,8 +38,11 @@ async function getAccessToken() {
   return data.access_token;
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    // Ensure only authenticated reps can trigger email dispatch
+    await requireAuth(request);
+
     const { 
       to, 
       cc, 

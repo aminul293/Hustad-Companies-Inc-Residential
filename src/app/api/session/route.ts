@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/auth';
 import { upsertSession, getSessionById, getSessionByToken } from '@/lib/supabase-relay';
 
 export const dynamic = 'force-dynamic';
@@ -52,8 +53,11 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    // Ensure only authenticated reps can sync sessions
+    await requireAuth(request);
+
     const session = await request.json();
     const { sessionId } = session;
 

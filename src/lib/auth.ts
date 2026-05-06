@@ -10,12 +10,12 @@ if (process.env.VERCEL_URL && (!process.env.NEXTAUTH_URL || process.env.NEXTAUTH
   process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_URL}`;
 }
 
-const nextAuthSecret =
-  process.env.NEXTAUTH_SECRET ||
-  process.env.JWT_SECRET ||
-  "hustad-fallback-secret-2026-field-secure";
+const nextAuthSecret = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET;
+const legacyJwtSecret = process.env.JWT_SECRET || nextAuthSecret || "hustad-dev-secret";
 
-const legacyJwtSecret = process.env.JWT_SECRET || nextAuthSecret;
+if (!nextAuthSecret && process.env.NODE_ENV === "production") {
+  console.warn("WARNING: NEXTAUTH_SECRET is missing. Auth will fail in production.");
+}
 
 // --- ENTERPRISE AUTH (NEXT-AUTH) ---
 export const authOptions: NextAuthOptions = {
@@ -107,15 +107,22 @@ export async function requireAuth(req: NextRequest): Promise<AuthPayload> {
   const legacyPayload = getTokenFromRequest(req);
   if (legacyPayload) return legacyPayload;
 
-  const nextAuthToken = await getToken({ req, secret: nextAuthSecret });
+  const nextAuthToken = await getToken({ 
+    req, 
+    secret: nextAuthSecret || "hustad-dev-secret" 
+  });
+
   if (nextAuthToken?.sub || nextAuthToken?.email) {
     return {
       repId: String(nextAuthToken.id || nextAuthToken.sub || nextAuthToken.email),
       email: String(nextAuthToken.email || ""),
       name: String(nextAuthToken.name || nextAuthToken.email || "Hustad Rep"),
-      role: "rep",
+      role: (nextAuthToken.role as string) || "rep",
     };
   }
 
-  throw NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  throw NextResponse.json(
+    { error: "Unauthorized", message: "Enterprise identity required." }, 
+    { status: 401 }
+  );
 }
