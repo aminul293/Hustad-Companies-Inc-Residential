@@ -34,8 +34,6 @@ import {
 import { cn } from "@/lib/utils";
 import { listDrafts, hasSameDayDraft, deleteDraft, createSession } from "@/lib/session";
 import { RepCommandCenter } from "@/components/RepCommandCenter";
-import { getLiveReps } from "@/lib/reps";
-import type { RepIdentity } from "@/config/reps";
 import { useSession as useAuthSession, signIn, signOut } from "next-auth/react";
 
 interface Props {
@@ -51,9 +49,7 @@ interface Props {
 
 export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump, isOnline }: Props) {
   const { data: authSession, status: authStatus } = useAuthSession();
-  const [selectedRep, setSelectedRep] = useState<RepIdentity | null>(null);
   const [showDashboard, setShowDashboard] = useState(false);
-  const [liveReps, setLiveReps] = useState<RepIdentity[]>([]);
   const [isAddressFocused, setIsAddressFocused] = useState(false);
   const [suggestions, setSuggestions] = useState<{ main: string; sub: string }[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -76,8 +72,8 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
   const [showRepNav, setShowRepNav] = useState(false);
 
   const handleStartNew = () => {
-    // Priority: Authenticated User > Selected Rep
-    const repName = authSession?.user?.name || selectedRep?.name;
+    // Priority: Authenticated User
+    const repName = authSession?.user?.name;
     
     if (repName) {
       set("repName", repName);
@@ -101,10 +97,6 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
     }));
   };
 
-  const handleSelectRep = (rep: RepIdentity) => {
-    setSelectedRep(rep);
-    set("repName", rep.name);
-  };
 
   // --- LIVE GEO-ENGINE (WHOLE USA) ---
   useEffect(() => {
@@ -138,7 +130,6 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
   }, [form.address]);
 
   useEffect(() => {
-    setLiveReps(getLiveReps());
     setDrafts(listDrafts().filter((d) => !d.sessionStatus.startsWith("closed_")));
   }, [showDashboard]);
 
@@ -157,7 +148,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
     }
   }, [form.address, session.sessionId]);
 
-  if (showDashboard && (selectedRep || authStatus === "authenticated")) {
+  if (showDashboard && authStatus === "authenticated") {
     return (
       <RepCommandCenter 
         onLoadDraft={(id) => {
@@ -181,7 +172,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
     if (Object.keys(e).length) { setErrors(e); return; }
 
     // CREATE A TRULY NEW SESSION
-    const repId = (authSession?.user as any)?.id || selectedRep?.id || "rep_001";
+    const repId = (authSession?.user as any)?.id || "rep_001";
     const baseNewSession = createSession(repId, form.repName);
 
     const updated: SessionState = {
@@ -371,57 +362,35 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                 <div className="space-y-6">
                   <button 
                     onClick={() => signIn("azure-ad", { callbackUrl: "/" })}
-                    className="w-full p-8 rounded-[40px] bg-white text-black flex items-center justify-between hover:bg-neutral-200 transition-all group"
+                    className="w-full p-8 rounded-[40px] bg-white text-black flex items-center justify-between hover:bg-neutral-200 transition-all group shadow-[0_20px_50px_rgba(255,255,255,0.1)]"
                   >
                     <div className="flex items-center gap-6">
                       <div className="w-12 h-12 rounded-2xl bg-black/5 flex items-center justify-center">
-                        <Mail className="w-6 h-6" />
+                        {authStatus === "loading" ? (
+                          <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                        ) : (
+                          <Mail className="w-6 h-6" />
+                        )}
                       </div>
                       <div className="text-left">
                         <h3 className="text-xl font-display font-medium">Login with Outlook</h3>
-                        <p className="text-[10px] font-mono text-black/40 uppercase tracking-widest">Enterprise Identity</p>
+                        <p className="text-[10px] font-mono text-black/40 uppercase tracking-widest">Enterprise Identity Required</p>
                       </div>
                     </div>
                     <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </button>
-
-                  <div className="flex items-center gap-4 px-4">
-                    <div className="h-[1px] flex-1 bg-white/10" />
-                    <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest">Or Select Operative</span>
-                    <div className="h-[1px] flex-1 bg-white/10" />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {liveReps.map((rep) => (
-                      <button
-                        key={rep.id}
-                        onClick={() => handleSelectRep(rep)}
-                        className={cn(
-                          "group relative p-8 rounded-[40px] border transition-all duration-500 text-left overflow-hidden",
-                          selectedRep?.id === rep.id 
-                            ? "bg-white/10 border-white/30" 
-                            : "bg-white/[0.03] border-white/[0.08] hover:border-white/20"
-                        )}
-                      >
-                        <div className="flex flex-col gap-4">
-                          <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center transition-colors", selectedRep?.id === rep.id ? "bg-indigo-500" : "bg-white/5")}>
-                            <User className="w-6 h-6 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-medium text-white">{rep.name}</h3>
-                            <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest leading-tight">{rep.role}</p>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
+                  
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-rose-500/5 border border-rose-500/10">
+                    <Lock className="w-4 h-4 text-rose-400" />
+                    <p className="text-[10px] font-mono text-rose-400/70 uppercase tracking-widest">Authentication required to access property intake</p>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Property Intake Form — Appears after rep selection or auth */}
+            {/* Property Intake Form — Appears after auth */}
             <AnimatePresence>
-              {(selectedRep || authStatus === "authenticated") && (
+              {authStatus === "authenticated" && (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-8">
                   <div className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl space-y-8">
                     {/* Property Identification */}
@@ -622,7 +591,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
       <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-24">
         <div className="max-w-3xl mx-auto">
           <div className="flex justify-center gap-4">
-            {(selectedRep || authStatus === "authenticated") && (
+            {authStatus === "authenticated" && (
               <>
                 <button 
                   onClick={() => setShowDashboard(true)}

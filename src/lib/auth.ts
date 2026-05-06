@@ -9,44 +9,7 @@ if (process.env.VERCEL_URL && (!process.env.NEXTAUTH_URL || process.env.NEXTAUTH
   process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_URL}`;
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || "hustad-secret-2024";
-
-// --- EXISTING AUTH LOGIC (RESTORED) ---
-export async function checkPassword(password: string, hash: string): Promise<boolean> {
-  return bcrypt.compare(password, hash);
-}
-
-export async function checkPin(pin: string, hash: string): Promise<boolean> {
-  return bcrypt.compare(pin, hash);
-}
-
-export function signToken(payload: any): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
-}
-
-export function verifyToken(token: string): any {
-  try {
-    return jwt.verify(token, JWT_SECRET);
-  } catch {
-    return null;
-  }
-}
-
-export function getTokenFromRequest(req: NextRequest): any {
-  const token = req.cookies.get("hustad_token")?.value;
-  if (!token) return null;
-  return verifyToken(token);
-}
-
-export async function requireAuth(req: NextRequest) {
-  const payload = getTokenFromRequest(req);
-  if (!payload) {
-    throw NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  return payload;
-}
-
-// --- NEW ENTERPRISE AUTH LOGIC (NEXT-AUTH) ---
+// --- ENTERPRISE AUTH (NEXT-AUTH) ---
 export const authOptions: NextAuthOptions = {
   providers: [
     AzureADProvider({
