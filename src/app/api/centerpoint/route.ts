@@ -18,7 +18,10 @@ export async function GET(req: NextRequest) {
 
     let query = supabase
       .from("centerpoint_jobs")
-      .select("*", { count: "exact" })
+      .select(
+        "cp_id, name, property_name, opportunity_type, work_type, domain, status, display_status, price, start_date, cp_created_at, cp_updated_at, stage_transitioned_at, description, service_type_hustad, promoted_at, promoted_ticket_id",
+        { count: "exact" }
+      )
       .order("cp_updated_at", { ascending: false, nullsFirst: false })
       .range(offset, offset + PAGE_SIZE - 1);
 
