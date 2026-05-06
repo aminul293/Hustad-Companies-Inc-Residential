@@ -1,10 +1,19 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase-server";
 
 const CP_BASE = "https://api.centerpointconnect.io/centerpoint";
-const CP_KEY = process.env.CENTERPOINT_API_KEY!;
 const HUSTAD_TYPE = "STORM INSPECTION-HAIL";
 const FETCH_SIZE = 100;
+
+function getCpKey(): string {
+  const key = process.env.CENTERPOINT_API_KEY;
+  if (!key) throw new Error("CENTERPOINT_API_KEY is not set in environment variables");
+  return key;
+}
+
+function cpHeaders() {
+  return { Accept: "application/json", Authorization: getCpKey() };
+}
 
 // ─── Fetch residential company IDs ──────────────────────────────────────────
 async function getResidentialCompanyIds(): Promise<Set<number>> {
@@ -17,7 +26,7 @@ async function getResidentialCompanyIds(): Promise<Set<number>> {
       "filter[type]": "Residential",
     });
     const res = await fetch(`${CP_BASE}/companies?${params}`, {
-      headers: { Accept: "application/json", Authorization: CP_KEY },
+      headers: cpHeaders(),
       cache: "no-store",
     });
     if (!res.ok) break;
@@ -57,11 +66,16 @@ function toRow(r: any) {
 }
 
 // ─── POST /api/centerpoint/sync ──────────────────────────────────────────────
-export async function POST(_req: NextRequest) {
+export async function POST() {
+  // Validate API key before doing anything else
+  try {
+    getCpKey();
+  } catch (e: any) {
+    return NextResponse.json({ ok: false, error: e.message }, { status: 500 });
+  }
+
   const supabase = getServiceClient();
 
-  // Get last completed sync timestamp for delta mode
-  // Use maybeSingle() so 0 rows returns null instead of an error
   const { data: lastLog } = await supabase
     .from("cp_sync_log")
     .select("completed_at")
@@ -72,7 +86,6 @@ export async function POST(_req: NextRequest) {
 
   const deltaSince: string | null = lastLog?.completed_at ?? null;
 
-  // Create a running log entry (best-effort — don't let log failure block sync)
   const { data: logRow } = await supabase
     .from("cp_sync_log")
     .insert({ status: "running", delta_since: deltaSince })
@@ -98,12 +111,12 @@ export async function POST(_req: NextRequest) {
       });
 
       const res = await fetch(`${CP_BASE}/services?${params}`, {
-        headers: { Accept: "application/json", Authorization: CP_KEY },
+        headers: cpHeaders(),
         cache: "no-store",
       });
 
       if (!res.ok) {
-        throw new Error(`CenterPoint API error: ${res.status}`);
+        throw new Error(`CenterPoint API error ${res.status}: check your API key or CenterPoint credentials`);
       }
 
       const data = await res.json();
@@ -117,7 +130,6 @@ export async function POST(_req: NextRequest) {
         scanned++;
         const a = r.attributes;
 
-        // In delta mode: stop once we reach records older than last sync
         if (deltaSince && a.updatedAt && a.updatedAt <= deltaSince) {
           reachedDelta = true;
           break;
@@ -134,41 +146,26 @@ export async function POST(_req: NextRequest) {
         const { error } = await supabase
           .from("centerpoint_jobs")
           .upsert(rowsToUpsert, { onConflict: "cp_id" });
-        if (error) throw new Error(`Supabase upsert error: ${error.message}`);
+        if (error) throw new Error(`Supabase upsert failed: ${error.message}`);
         upserted += rowsToUpsert.length;
       }
 
       cpPage++;
     }
 
-    // Mark sync completed
     if (logId) {
       await supabase
         .from("cp_sync_log")
-        .update({
-          status: "completed",
-          completed_at: new Date().toISOString(),
-          jobs_upserted: upserted,
-          jobs_scanned: scanned,
-        })
+        .update({ status: "completed", completed_at: new Date().toISOString(), jobs_upserted: upserted, jobs_scanned: scanned })
         .eq("id", logId);
     }
 
-    return NextResponse.json({
-      ok: true,
-      upserted,
-      scanned,
-      delta: deltaSince ? true : false,
-      delta_since: deltaSince,
-    });
+    return NextResponse.json({ ok: true, upserted, scanned, delta: !!deltaSince, delta_since: deltaSince });
+
   } catch (err: any) {
     if (logId) {
-      await supabase
-        .from("cp_sync_log")
-        .update({ status: "failed", error: err.message })
-        .eq("id", logId);
+      await supabase.from("cp_sync_log").update({ status: "failed", error: err.message }).eq("id", logId);
     }
-
     return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
   }
 }
