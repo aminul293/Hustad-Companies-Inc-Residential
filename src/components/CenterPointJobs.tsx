@@ -11,7 +11,7 @@ const STAGES: Record<string, { label: string; next: string | null; color: string
   lead_pending:  { label: "Pending",     next: "lead_quoted",   color: "bg-blue-500/20 text-blue-300 border-blue-500/30",    ring: "bg-blue-500" },
   lead_quoted:   { label: "Quoted",      next: "lead_sold",     color: "bg-amber-500/20 text-amber-300 border-amber-500/30", ring: "bg-amber-500" },
   lead_sold:     { label: "Sold",        next: "opened",        color: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30", ring: "bg-emerald-500" },
-  lead_dead:     { label: "Dead Lead",   next: null,            color: "bg-rose-500/20 text-rose-300 border-rose-500/30",    ring: "bg-rose-500" },
+  dead_lead:     { label: "Dead Lead",   next: null,            color: "bg-rose-500/20 text-rose-300 border-rose-500/30",    ring: "bg-rose-500" },
   opened:        { label: "Opened",      next: "scheduled",     color: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30", ring: "bg-indigo-500" },
   scheduled:     { label: "Scheduled",   next: "started",       color: "bg-violet-500/20 text-violet-300 border-violet-500/30", ring: "bg-violet-500" },
   started:       { label: "In Progress", next: "completed",     color: "bg-purple-500/20 text-purple-300 border-purple-500/30", ring: "bg-purple-500" },
@@ -20,7 +20,7 @@ const STAGES: Record<string, { label: string; next: string | null; color: string
   closed:        { label: "Closed Out",  next: null,            color: "bg-white/10 text-white/40 border-white/10",          ring: "bg-white/30" },
 };
 
-const STAGE_ORDER = ["lead_opened","lead_pending","lead_quoted","lead_sold","lead_dead","opened","scheduled","started","completed","invoiced","closed"];
+const STAGE_ORDER = ["lead_opened","lead_pending","lead_quoted","lead_sold","dead_lead","opened","scheduled","started","completed","invoiced","closed"];
 
 const STATUS_FILTERS = [
   { id: "all", label: "All Stages" },
