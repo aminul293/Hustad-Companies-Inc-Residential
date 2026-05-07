@@ -38,6 +38,7 @@ const STATUS_FILTERS = [
 
 interface CPJob {
   id: string;
+  inbox_status: string;
   promotedAt: string | null;
   promotedTicketId: string | null;
   attributes: {
@@ -473,37 +474,45 @@ export function CenterPointJobs() {
                                   <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest">Final stage</span>
                                 )}
 
-                                <button
-                                  onClick={() => {
-                                    const event = new CustomEvent('importCenterPointJob', { detail: job });
-                                    window.dispatchEvent(event);
-                                    const leadStages = ["lead_opened", "lead_pending", "lead_quoted", "lead_sold"];
-                                    if (leadStages.includes(attr.status)) {
-                                      handleStageTransition(job, "opened");
-                                    }
-                                  }}
-                                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-indigo-500 text-white text-xs font-display font-medium hover:bg-indigo-400 active:scale-95 transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)]"
-                                >
-                                  <CheckCircle2 className="w-3.5 h-3.5" />
-                                  Import to Pipeline
-                                </button>
-
-                                {job.promotedAt ? (
+                                {job.inbox_status === 'imported_to_pipeline' ? (
                                   <span className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-display text-emerald-400">
                                     <CheckCircle2 className="w-3.5 h-3.5" />
-                                    In Tickets
+                                    In Pipeline
                                   </span>
                                 ) : (
                                   <button
-                                    onClick={() => handlePromote(job)}
+                                    onClick={async () => {
+                                      setPromotingId(job.id);
+                                      try {
+                                        const res = await fetch("/api/pipeline", {
+                                          method: "POST",
+                                          headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify({ job }),
+                                        });
+                                        if (res.ok) {
+                                          // Update local state to show it's imported
+                                          setJobs(prev => prev.map(j => 
+                                            j.id === job.id ? { ...j, inbox_status: 'imported_to_pipeline' } : j
+                                          ));
+                                          // Auto-transition to Pipeline view
+                                          const event = new CustomEvent('changeView', { detail: 'pipeline' });
+                                          window.dispatchEvent(event);
+                                        }
+                                      } catch (e) {
+                                        console.error("Import to pipeline failed", e);
+                                      } finally {
+                                        setPromotingId(null);
+                                      }
+                                    }}
                                     disabled={promotingId === job.id}
-                                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 text-xs font-display text-white/60 hover:bg-white hover:text-black hover:border-white transition-all disabled:opacity-40"
+                                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-indigo-500 text-white text-xs font-display font-medium hover:bg-indigo-400 active:scale-95 transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)] disabled:opacity-50"
                                   >
-                                    {promotingId === job.id
-                                      ? <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
-                                      : <Ticket className="w-3.5 h-3.5" />
-                                    }
-                                    Push to Tickets
+                                    {promotingId === job.id ? (
+                                      <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                    ) : (
+                                      <CheckCircle2 className="w-3.5 h-3.5" />
+                                    )}
+                                    Import to Pipeline
                                   </button>
                                 )}
                               </div>

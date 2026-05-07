@@ -25,6 +25,7 @@ import type { AuthenticatedRep } from "@/lib/rep-identity";
 import { motion, AnimatePresence } from "framer-motion";
 import { CenterPointJobs } from "@/components/CenterPointJobs";
 import { HustadTickets } from "@/components/HustadTickets";
+import { PipelineLeads } from "@/components/PipelineLeads";
 
 interface Props {
   currentRep: AuthenticatedRep;
@@ -35,7 +36,7 @@ interface Props {
 export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession }: Props) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<string>("all");
-  const [view, setView] = useState<"dashboard" | "centerpoint" | "tickets" | "settings">("dashboard");
+  const [view, setView] = useState<"dashboard" | "pipeline" | "centerpoint" | "tickets" | "settings">("dashboard");
   const [liveReps, setLiveReps] = useState<RepIdentity[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [newRep, setNewRep] = useState({ name: "", role: "" });
@@ -86,8 +87,46 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession }: Prop
       setView("dashboard");
     };
 
+    const handleLaunchPipelineSession = async (e: Event) => {
+      const customEvent = e as CustomEvent<any>;
+      const lead = customEvent.detail;
+      const repInfo = currentRep;
+      
+      const newSession = createSession(repInfo.id, repInfo.name, repInfo.email);
+      newSession.centerpointId = lead.cpc_ticket_id;
+      newSession.property.address = lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name || "Unknown Address";
+      newSession.property.homeownerPrimaryName = lead.centerpoint_jobs?.owner || "Unknown Homeowner";
+      newSession.sessionStatus = "phase_a_active"; 
+      
+      saveSession(newSession);
+      
+      // Update pipeline lead status to 'inspection_in_progress'
+      try {
+        await fetch(`/api/pipeline/${lead.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pipeline_status: 'inspection_in_progress' })
+        });
+      } catch (err) {
+        console.error("Failed to update pipeline status", err);
+      }
+
+      onLoadDraft(newSession.sessionId);
+    };
+
+    const handleChangeView = (e: Event) => {
+      const customEvent = e as CustomEvent<any>;
+      setView(customEvent.detail);
+    };
+
     window.addEventListener('importCenterPointJob', handleImportJob);
-    return () => window.removeEventListener('importCenterPointJob', handleImportJob);
+    window.addEventListener('launchPipelineSession', handleLaunchPipelineSession);
+    window.addEventListener('changeView', handleChangeView);
+    return () => {
+      window.removeEventListener('importCenterPointJob', handleImportJob);
+      window.removeEventListener('launchPipelineSession', handleLaunchPipelineSession);
+      window.removeEventListener('changeView', handleChangeView);
+    };
   }, [currentRep]);
 
   const drafts = useMemo(() => {
@@ -138,10 +177,10 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession }: Prop
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <h1 className="text-3xl font-display font-medium tracking-tight">
-              {{ dashboard: "Rep Command Center", centerpoint: "CP Inbox", tickets: "Hustad Tickets", settings: "System Settings" }[view]}
+              {{ dashboard: "Rep Command Center", pipeline: "Sales Pipeline", centerpoint: "CP Inbox", tickets: "Hustad Tickets", settings: "System Settings" }[view]}
             </h1>
             <p className="text-sm text-white/50 font-light">
-              {{ dashboard: "Field intelligence and session management.", centerpoint: "Jobs synced from CenterPoint Connect.", tickets: "Your managed pipeline — stages, touches, and write-back.", settings: "Manage field identities and operational parameters." }[view]}
+              {{ dashboard: "Field intelligence and session management.", pipeline: "Manage leads from reach-out to appointment scheduling.", centerpoint: "Jobs synced from CenterPoint Connect.", tickets: "Your managed pipeline — stages, touches, and write-back.", settings: "Manage field identities and operational parameters." }[view]}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -149,6 +188,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession }: Prop
             <div className="flex items-center gap-1 p-1 bg-white/5 border border-white/10 rounded-full">
               {([
                 { id: "dashboard", label: "Inspections" },
+                { id: "pipeline", label: "Pipeline" },
                 { id: "centerpoint", label: "CP Inbox" },
                 { id: "tickets", label: "Tickets" },
                 { id: "settings", label: "Settings" },
@@ -239,6 +279,8 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession }: Prop
       <div className="flex-1 overflow-y-auto p-8">
         {view === "centerpoint" ? (
           <CenterPointJobs />
+        ) : view === "pipeline" ? (
+          <PipelineLeads />
         ) : view === "tickets" ? (
           <HustadTickets />
         ) : view === "dashboard" ? (

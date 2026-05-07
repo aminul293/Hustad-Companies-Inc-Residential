@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { upsertSession, getSessionById, getSessionByToken } from '@/lib/supabase-relay';
+import { supabase } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,9 +68,29 @@ export async function POST(request: NextRequest) {
 
     await upsertSession(session);
 
-    // If this session originated from CenterPoint, and we just hit a terminal stage, update CP
+    // If this session originated from CenterPoint, and we just hit a terminal stage, update CP and Pipeline
     if (session.centerpointId) {
       const isTerminal = session.sessionStatus === 'signed' || session.sessionStatus.startsWith('closed_');
+      
+      // 1. Update pipeline_leads
+      try {
+        let pipelineStatus = 'inspection_in_progress';
+        if (session.sessionStatus === 'signed') pipelineStatus = 'signed';
+        else if (session.sessionStatus === 'deferred') pipelineStatus = 'inspection_completed';
+        else if (isTerminal) pipelineStatus = 'closed';
+
+        if (pipelineStatus !== 'inspection_in_progress') {
+          await supabase
+            .from('pipeline_leads')
+            .update({ pipeline_status: pipelineStatus })
+            .eq('cpc_ticket_id', session.centerpointId);
+          console.log(`[PIPELINE_SYNC] Updated pipeline lead ${session.centerpointId} to ${pipelineStatus}`);
+        }
+      } catch (e) {
+        console.error('[PIPELINE_SYNC] Failed to update pipeline_leads', e);
+      }
+
+      // 2. Update CenterPoint Job Status
       if (isTerminal) {
         try {
           const cpStage = session.sessionStatus === 'signed' ? 'completed' : 'closed';

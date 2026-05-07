@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     let query = supabase
       .from("centerpoint_jobs")
       .select(
-        "id, cp_id, name, property_name, opportunity_type, work_type, domain, status, display_status, price, start_date, cp_created_at, cp_updated_at, stage_transitioned_at, description, service_type_hustad, promoted_at, promoted_ticket_id",
+        "id, cp_id, name, property_name, opportunity_type, work_type, domain, status, display_status, price, start_date, cp_created_at, cp_updated_at, stage_transitioned_at, description, service_type_hustad, promoted_at, promoted_ticket_id, inbox_status",
         { count: "exact" }
       )
       .order("cp_updated_at", { ascending: false, nullsFirst: false })
@@ -54,6 +54,7 @@ export async function GET(req: NextRequest) {
     // Map Supabase rows back to the CPJob shape the UI expects
     const mapped = deduped.map((row) => ({
       id: row.cp_id,
+      inbox_status: row.inbox_status,
       promotedAt: row.promoted_at ?? null,
       promotedTicketId: row.promoted_ticket_id ?? null,
       attributes: {
