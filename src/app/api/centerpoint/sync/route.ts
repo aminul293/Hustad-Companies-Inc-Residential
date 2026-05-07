@@ -52,6 +52,9 @@ function toRow(r: any) {
 
   return {
     cp_id: String(r.id),
+    owner: a.propertyInfo?.owner || "",
+    owner_phone: a.propertyInfo?.phone || a.billingInfo?.phone || "",
+    owner_email: a.propertyInfo?.email || a.billingInfo?.email || "",
     name: a.name ?? "",
     property_name: a.propertyName ?? null,
     opportunity_type: a.opportunityType ?? null,
