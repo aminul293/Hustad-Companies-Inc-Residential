@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase-server";
 
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+export const revalidate = 0;
 
 const CP_BASE = "https://api.centerpointconnect.io/centerpoint";
 const HUSTAD_TYPE = "STORM INSPECTION-HAIL";
