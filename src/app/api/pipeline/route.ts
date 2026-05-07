@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getServiceClient } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -13,6 +13,7 @@ export async function POST(request: Request) {
   }
 
   try {
+    const supabase = getServiceClient();
     // Look up the internal UUID for this job
     const { data: cpJob, error: cpError } = await supabase
       .from('centerpoint_jobs')
@@ -55,6 +56,7 @@ export async function POST(request: Request) {
 }
 
 export async function GET() {
+  const supabase = getServiceClient();
   const { data, error } = await supabase
     .from('pipeline_leads')
     .select(`
