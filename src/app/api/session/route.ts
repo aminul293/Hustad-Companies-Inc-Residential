@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { upsertSession, getSessionById, getSessionByToken } from '@/lib/supabase-relay';
-import { supabase } from '@/lib/supabase';
+import { getServiceClient } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
         else if (isTerminal) pipelineStatus = 'closed';
 
         if (pipelineStatus !== 'inspection_in_progress') {
+          const supabase = getServiceClient();
           await supabase
             .from('pipeline_leads')
             .update({ pipeline_status: pipelineStatus })

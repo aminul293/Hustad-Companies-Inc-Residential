@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getServiceClient } from '@/lib/supabase-server';
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   const updates = await request.json();
 
   try {
+    const supabase = getServiceClient();
     const { data, error } = await supabase
       .from('pipeline_leads')
       .update(updates)
