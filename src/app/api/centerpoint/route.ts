@@ -59,9 +59,6 @@ export async function GET(req: NextRequest) {
       attributes: {
         name: row.name,
         propertyName: row.property_name,
-        owner: row.owner,
-        owner_phone: row.owner_phone,
-        owner_email: row.owner_email,
         opportunityType: row.opportunity_type,
         workType: row.work_type,
         domain: row.domain ?? "",
