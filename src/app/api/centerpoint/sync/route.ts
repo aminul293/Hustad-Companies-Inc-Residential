@@ -178,7 +178,12 @@ export async function POST() {
 
         const isHailInspection = a?.customWithLabels?.serviceTypeHustad === HUSTAD_TYPE;
         const isResidential = residentialIds.has(Number(a?.billedCompanyId));
-        if (!isHailInspection || !isResidential) continue;
+
+        // Inclusion logic: Must be residential OR explicitly marked as a Hustad Hail Inspection
+        if (!isHailInspection && !isResidential) {
+          console.log(`[SYNC] Skipping non-target job ${a.name} (Company: ${a.billedCompanyId})`);
+          continue;
+        }
 
         rowsToUpsert.push(toRow(r));
       }
