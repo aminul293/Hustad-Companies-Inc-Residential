@@ -233,31 +233,13 @@ export async function POST() {
           await supabase.from("centerpoint_jobs").delete().in("name", names);
         }
 
-        // 3. Progression Protection: If we're replacing a record, don't allow a regression
-        const protectedRows = finalRows.map(row => {
-          const rawLocalStatus = localMap.get(row.name);
-          if (rawLocalStatus) {
-            const localStatus = rawLocalStatus.toLowerCase().replace(/\s+/g, "_");
-            const incomingStatus = row.status.toLowerCase().replace(/\s+/g, "_");
-            
-            const localIdx = STAGE_ORDER.indexOf(localStatus === "closed_out" ? "closed" : localStatus);
-            const incomingIdx = STAGE_ORDER.indexOf(incomingStatus === "closed_out" ? "closed" : incomingStatus);
-            
-            if (incomingIdx < localIdx && localIdx !== -1) {
-              console.log(`[SYNC] Regression prevented for ${row.name}: keeping ${rawLocalStatus} over ${row.status}`);
-              return { ...row, status: rawLocalStatus };
-            }
-          }
-          return row;
-        });
-
-        // 4. Fresh Insert (Clean slate for these job numbers)
+        // 3. Mirror Mode (Option A): Upsert exactly what CenterPoint says
         const { error } = await supabase
           .from("centerpoint_jobs")
-          .upsert(protectedRows, { onConflict: "cp_id" });
+          .upsert(finalRows, { onConflict: "cp_id" });
         
         if (error) throw new Error(`Supabase upsert failed: ${error.message}`);
-        upserted += protectedRows.length;
+        upserted += finalRows.length;
       }
 
       cpPage++;
