@@ -83,10 +83,10 @@ export async function POST() {
 
   const supabase = getServiceClient();
 
-  // Cleanup: remove duplicate job names, keeping the most advanced stage
+  // Cleanup: remove duplicate job names, keeping the newest one
   const { data: allJobsForCleanup } = await supabase
     .from("centerpoint_jobs")
-    .select("cp_id, name, status");
+    .select("cp_id, name, status, cp_updated_at");
 
   if (allJobsForCleanup && allJobsForCleanup.length > 0) {
     const nameToRows = new Map<string, any[]>();
@@ -100,6 +100,11 @@ export async function POST() {
     for (const rows of nameToRows.values()) {
       if (rows.length <= 1) continue;
       const best = rows.reduce((b: any, r: any) => {
+        const bDate = b.cp_updated_at ? new Date(b.cp_updated_at).getTime() : 0;
+        const rDate = r.cp_updated_at ? new Date(r.cp_updated_at).getTime() : 0;
+        if (rDate > bDate) return r;
+        if (rDate < bDate) return b;
+        
         const bIdx = STAGE_ORDER.indexOf(b.status);
         const rIdx = STAGE_ORDER.indexOf(r.status);
         return rIdx > bIdx ? r : b;
@@ -178,7 +183,7 @@ export async function POST() {
 
         const isHailInspection = a?.customWithLabels?.serviceTypeHustad === HUSTAD_TYPE;
         const isResidentialId = residentialIds.has(Number(a?.billedCompanyId));
-        const isInspectionType = a?.serviceType === "Inspection";
+        const isInspectionType = a?.workType === "Inspection";
         
         // Detection for Residential Module/Category
         const isResidentialModule = 
@@ -203,14 +208,15 @@ export async function POST() {
           return;
         }
 
-        const existingIdx = STAGE_ORDER.indexOf(existing.status === "closed_out" ? "closed" : existing.status);
-        const incomingIdx = STAGE_ORDER.indexOf(row.status === "closed_out" ? "closed" : row.status);
+        const existingDate = existing.cp_updated_at ? new Date(existing.cp_updated_at).getTime() : 0;
+        const incomingDate = row.cp_updated_at ? new Date(row.cp_updated_at).getTime() : 0;
 
-        // Keep the one that is further along, OR if same stage, pick the newest updatedAt
-        if (incomingIdx > existingIdx) {
+        if (incomingDate > existingDate) {
           uniqueRows.set(row.name, row);
-        } else if (incomingIdx === existingIdx) {
-          if (row.cp_updated_at && (!existing.cp_updated_at || row.cp_updated_at > existing.cp_updated_at)) {
+        } else if (incomingDate === existingDate) {
+          const existingIdx = STAGE_ORDER.indexOf(existing.status === "closed_out" ? "closed" : existing.status);
+          const incomingIdx = STAGE_ORDER.indexOf(row.status === "closed_out" ? "closed" : row.status);
+          if (incomingIdx > existingIdx) {
             uniqueRows.set(row.name, row);
           }
         }
@@ -218,22 +224,23 @@ export async function POST() {
       const finalRows = Array.from(uniqueRows.values());
 
       if (finalRows.length > 0) {
-        // 1. Fetch ALL current records for these job names (to catch different cp_ids)
+        // 1. Fetch ALL current records for these job names to preserve inbox_status
         const names = finalRows.map(r => r.name);
         const { data: existingJobs } = await supabase
           .from("centerpoint_jobs")
-          .select("id, name, status, cp_id")
+          .select("id, name, status, cp_id, inbox_status")
           .in("name", names);
 
-        const localMap = new Map(existingJobs?.map(j => [j.name, j.status]));
+        const localMap = new Map(existingJobs?.map(j => [j.name, j.inbox_status]));
         
-        // 2. Hard Delete ALL existing records for these names to ensure no duplicates survive
-        if (existingJobs && existingJobs.length > 0) {
-          console.log(`[SYNC] Purging ${existingJobs.length} potential duplicates for: ${names.join(", ")}`);
-          await supabase.from("centerpoint_jobs").delete().in("name", names);
-        }
+        finalRows.forEach(r => {
+          if (localMap.has(r.name)) {
+            r.inbox_status = localMap.get(r.name);
+          }
+        });
 
-        // 3. Mirror Mode (Option A): Upsert exactly what CenterPoint says
+        // 2. Upsert using Mirror Mode
+
         const { error } = await supabase
           .from("centerpoint_jobs")
           .upsert(finalRows, { onConflict: "cp_id" });

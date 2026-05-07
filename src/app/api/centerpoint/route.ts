@@ -40,14 +40,22 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Deduplicate by job name (keep most advanced stage) to guard against DB duplicates
+    // Deduplicate by job name (keep newest updated) to guard against DB duplicates
     const byName = new Map<string, any>();
     (data ?? []).forEach((row) => {
       const existing = byName.get(row.name);
       if (!existing) { byName.set(row.name, row); return; }
-      const eIdx = STAGE_ORDER.indexOf(existing.status);
-      const nIdx = STAGE_ORDER.indexOf(row.status);
-      if (nIdx > eIdx) byName.set(row.name, row);
+      
+      const eDate = existing.cp_updated_at ? new Date(existing.cp_updated_at).getTime() : 0;
+      const nDate = row.cp_updated_at ? new Date(row.cp_updated_at).getTime() : 0;
+      
+      if (nDate > eDate) {
+        byName.set(row.name, row);
+      } else if (nDate === eDate) {
+        const eIdx = STAGE_ORDER.indexOf(existing.status);
+        const nIdx = STAGE_ORDER.indexOf(row.status);
+        if (nIdx > eIdx) byName.set(row.name, row);
+      }
     });
     const deduped = Array.from(byName.values());
 
