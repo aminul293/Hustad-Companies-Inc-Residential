@@ -177,11 +177,17 @@ export async function POST() {
         */
 
         const isHailInspection = a?.customWithLabels?.serviceTypeHustad === HUSTAD_TYPE;
-        const isResidential = residentialIds.has(Number(a?.billedCompanyId));
+        const isResidentialId = residentialIds.has(Number(a?.billedCompanyId));
         const isInspectionType = a?.serviceType === "Inspection";
+        
+        // Detection for Residential Module/Category
+        const isResidentialModule = 
+          a?.module?.toLowerCase() === "residential" || 
+          a?.category?.toLowerCase() === "residential" ||
+          isResidentialId;
 
         // Triple-Lock Inclusion: MUST be Residential AND Hustad Hail AND Inspection Type
-        if (!isHailInspection || !isResidential || !isInspectionType) {
+        if (!isHailInspection || !isResidentialModule || !isInspectionType) {
           continue;
         }
 
