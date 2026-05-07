@@ -20,7 +20,7 @@ const STAGES: Record<string, { label: string; next: string | null; color: string
   closed:        { label: "Closed Out",  next: null,            color: "bg-white/10 text-white/40 border-white/10",          ring: "bg-white/30" },
 };
 
-const STAGE_ORDER = ["lead_opened","lead_pending","lead_quoted","lead_sold","opened","scheduled","started","completed","invoiced","closed"];
+const STAGE_ORDER = ["lead_opened","lead_pending","lead_quoted","lead_sold","lead_dead","opened","scheduled","started","completed","invoiced","closed"];
 
 const STATUS_FILTERS = [
   { id: "all", label: "All Stages" },
