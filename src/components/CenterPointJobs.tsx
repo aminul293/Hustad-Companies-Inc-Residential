@@ -451,21 +451,52 @@ export function CenterPointJobs() {
                             ))}
                           </div>
 
-                          {/* Stage transition CTA & Import to Pipeline */}
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 border-t border-white/[0.05]">
-                            <div>
-                              <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest mb-2">Actions</p>
+                          {/* Actions Section */}
+                          <div className="space-y-6 pt-4 border-t border-white/[0.05]">
+                            
+                            {/* Row 1: Quick Communication */}
+                            <div className="flex flex-col gap-2">
+                              <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest">Reach Out</p>
+                              <div className="flex flex-wrap items-center gap-3">
+                                {attr.owner_phone ? (
+                                  <a 
+                                    href={`tel:${attr.owner_phone}`}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition-all text-xs font-medium"
+                                  >
+                                    <Phone className="w-3.5 h-3.5 text-indigo-400" />
+                                    {attr.owner_phone}
+                                  </a>
+                                ) : (
+                                  <span className="text-[10px] text-white/10 italic">No phone synced</span>
+                                )}
+
+                                {attr.owner_email ? (
+                                  <a 
+                                    href={`mailto:${attr.owner_email}`}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition-all text-xs font-medium"
+                                  >
+                                    <Mail className="w-3.5 h-3.5 text-indigo-400" />
+                                    Email Homeowner
+                                  </a>
+                                ) : (
+                                  <span className="text-[10px] text-white/10 italic ml-2">No email synced</span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Row 2: Workflow Actions */}
+                            <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/[0.03]">
                               <div className="flex items-center gap-3">
                                 {nextStage ? (
                                   <button
                                     onClick={() => handleStageTransition(job, nextStage)}
                                     disabled={isTransitioning}
-                                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 text-white text-xs font-display font-medium hover:bg-white/20 active:scale-95 transition-all disabled:opacity-50"
+                                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 text-white text-xs font-display font-medium hover:bg-white/10 active:scale-95 transition-all disabled:opacity-50"
                                   >
                                     {isTransitioning ? (
                                       <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                                     ) : (
-                                      <ArrowRight className="w-3.5 h-3.5" />
+                                      <ArrowRight className="w-3.5 h-3.5 text-white/40" />
                                     )}
                                     Move to {STAGES[nextStage]?.label ?? nextStage}
                                   </button>
@@ -482,31 +513,31 @@ export function CenterPointJobs() {
                                       handleStageTransition(job, "opened");
                                     }
                                   }}
-                                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-indigo-500 text-white text-xs font-display font-medium hover:bg-indigo-400 active:scale-95 transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)]"
+                                  className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-indigo-500 text-white text-xs font-display font-semibold hover:bg-indigo-400 active:scale-95 transition-all shadow-[0_0_20px_rgba(99,102,241,0.2)]"
                                 >
                                   <CheckCircle2 className="w-3.5 h-3.5" />
                                   Import to Pipeline
                                 </button>
-
-                                {job.promotedAt ? (
-                                  <span className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-display text-emerald-400">
-                                    <CheckCircle2 className="w-3.5 h-3.5" />
-                                    In Tickets
-                                  </span>
-                                ) : (
-                                  <button
-                                    onClick={() => handlePromote(job)}
-                                    disabled={promotingId === job.id}
-                                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 text-xs font-display text-white/60 hover:bg-white hover:text-black hover:border-white transition-all disabled:opacity-40"
-                                  >
-                                    {promotingId === job.id
-                                      ? <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
-                                      : <Ticket className="w-3.5 h-3.5" />
-                                    }
-                                    Push to Tickets
-                                  </button>
-                                )}
                               </div>
+
+                              {job.promotedAt ? (
+                                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-mono uppercase tracking-widest text-emerald-400">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                  In Pipeline
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => handlePromote(job)}
+                                  disabled={promotingId === job.id}
+                                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono uppercase tracking-widest text-white/30 hover:bg-white/10 hover:text-white transition-all disabled:opacity-40"
+                                >
+                                  {promotingId === job.id
+                                    ? <div className="w-3 h-3 border-2 border-white/10 border-t-white/40 rounded-full animate-spin" />
+                                    : <Ticket className="w-3 h-3" />
+                                  }
+                                  Push to Tickets
+                                </button>
+                              )}
                             </div>
                           </div>
                         </div>
