@@ -178,10 +178,10 @@ export async function POST() {
 
         const isHailInspection = a?.customWithLabels?.serviceTypeHustad === HUSTAD_TYPE;
         const isResidential = residentialIds.has(Number(a?.billedCompanyId));
+        const isInspectionType = a?.serviceType === "Inspection";
 
-        // Inclusion logic: Must be residential OR explicitly marked as a Hustad Hail Inspection
-        if (!isHailInspection && !isResidential) {
-          console.log(`[SYNC] Skipping non-target job ${a.name} (Company: ${a.billedCompanyId})`);
+        // Triple-Lock Inclusion: MUST be Residential AND Hustad Hail AND Inspection Type
+        if (!isHailInspection || !isResidential || !isInspectionType) {
           continue;
         }
 
