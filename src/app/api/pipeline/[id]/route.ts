@@ -21,6 +21,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  console.log(`[API] Start removal for lead ID: ${params.id}`);
   try {
     const supabase = getServiceClient();
     
@@ -31,11 +32,22 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       .eq('id', params.id)
       .single();
 
-    if (fetchError || !lead) throw new Error("Lead not found");
+    if (fetchError) {
+      console.error(`[API] Fetch error for ID \${params.id}:`, fetchError);
+      throw new Error(`Lead not found: \${fetchError.message}`);
+    }
+    
+    if (!lead) {
+      console.error(`[API] No lead record found for ID \${params.id}`);
+      throw new Error("Lead record not found in database");
+    }
+
+    console.log(`[API] Lead found. Status: \${lead.pipeline_status}, CP Ticket: \${lead.cpc_ticket_id}`);
 
     // 2. Case 2: Inspection Started (Blocked)
     const blockedStatuses = ['inspection_in_progress', 'inspection_completed', 'signed', 'closed'];
     if (blockedStatuses.includes(lead.pipeline_status)) {
+      console.warn(`[API] Removal blocked due to status: \${lead.pipeline_status}`);
       return NextResponse.json({ 
         error: "This lead has inspection activity and cannot be removed from Pipeline." 
       }, { status: 403 });
@@ -44,23 +56,31 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     // 3. Case 1: Accidental Import (Allowed)
     // Reset CP Inbox status back to 'new'
     if (lead.cpc_ticket_id) {
-      await supabase
+      console.log(`[API] Resetting CP Inbox status for: \${lead.cpc_ticket_id}`);
+      const { error: cpError } = await supabase
         .from('centerpoint_jobs')
         .update({ inbox_status: 'new' })
         .eq('name', lead.cpc_ticket_id);
+      
+      if (cpError) console.error(`[API] CP status reset failed:`, cpError);
     }
 
     // 4. Remove from active pipeline
-    // (Doing hard delete for now to match 'reappear in CP Inbox' requirement without extra filters)
+    console.log(`[API] Executing delete for pipeline_leads ID: \${params.id}`);
     const { error: deleteError } = await supabase
       .from('pipeline_leads')
       .delete()
       .eq('id', params.id);
 
-    if (deleteError) throw deleteError;
+    if (deleteError) {
+      console.error(`[API] Database delete failed:`, deleteError);
+      throw deleteError;
+    }
 
+    console.log(`[API] Removal successful for: \${params.id}`);
     return NextResponse.json({ success: true });
   } catch (error: any) {
+    console.error(`[API] removal process exception:`, error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
