@@ -336,9 +336,13 @@ export function PipelineLeads() {
               const stageIdx = STAGE_MAP[lead.pipeline_status] ?? 0;
               const isRemoving = removing === lead.id;
               const isBlocked = BLOCKED_STATUSES.includes(lead.pipeline_status);
+              const isScheduled = lead.pipeline_status === 'scheduled';
               const idleDays = daysSince(lead.last_contacted_at);
-              const isUrgent = !isBlocked && lead.pipeline_status !== 'dead_lead' && (idleDays === null || idleDays >= 7);
-              const isWarning = !isUrgent && !isBlocked && lead.pipeline_status !== 'dead_lead' && idleDays !== null && idleDays >= 3;
+              const isUrgent  = !isBlocked && !isScheduled && lead.pipeline_status !== 'dead_lead' && (idleDays === null || idleDays >= 7);
+              const isWarning = !isUrgent && !isBlocked && !isScheduled && lead.pipeline_status !== 'dead_lead' && idleDays !== null && idleDays >= 3;
+              const apptDurationMin = lead.scheduled_start_at && lead.scheduled_end_at
+                ? Math.round((new Date(lead.scheduled_end_at).getTime() - new Date(lead.scheduled_start_at).getTime()) / 60000)
+                : null;
 
               return (
                 <motion.div
@@ -449,25 +453,34 @@ export function PipelineLeads() {
                         </p>
                       </div>
 
-                      {/* Scheduled time / follow-up / idle */}
+                      {/* Time / follow-up / idle */}
                       <div className="bg-white/[0.025] border border-white/[0.05] rounded-[18px] p-3.5">
                         <div className="flex items-center justify-between mb-1.5">
                           <p className="text-[7px] font-mono text-white/20 uppercase tracking-[0.2em]">
-                            {lead.pipeline_status === 'scheduled' ? 'Time'
+                            {isScheduled ? 'Duration'
                               : lead.pipeline_status === 'follow_up_needed' ? 'Follow Up'
                               : 'Idle'}
                           </p>
                           <CalendarDays className="w-2.5 h-2.5 text-white/10" />
                         </div>
-                        <p className={cn("text-xs font-display leading-tight", isUrgent ? "text-rose-400/80" : isWarning ? "text-amber-400/70" : "text-white/55")}>
-                          {lead.pipeline_status === 'scheduled' && lead.scheduled_start_at
-                            ? fmtTime(lead.scheduled_start_at)
-                            : lead.pipeline_status === 'follow_up_needed' && lead.next_follow_up_at
-                            ? fmtDate(lead.next_follow_up_at)
-                            : idleDays !== null
-                            ? `${idleDays}d`
-                            : "New"}
-                        </p>
+                        {isScheduled ? (
+                          <div>
+                            <p className="text-xs font-display text-emerald-400/80 leading-tight">
+                              {lead.scheduled_start_at ? fmtTime(lead.scheduled_start_at) : '—'}
+                            </p>
+                            <p className="text-[9px] font-mono text-white/25 mt-0.5">
+                              {apptDurationMin !== null
+                                ? apptDurationMin < 60 ? `${apptDurationMin} min` : `${apptDurationMin / 60} hr`
+                                : '—'}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className={cn("text-xs font-display leading-tight", isUrgent ? "text-rose-400/80" : isWarning ? "text-amber-400/70" : "text-white/55")}>
+                            {lead.pipeline_status === 'follow_up_needed' && lead.next_follow_up_at
+                              ? fmtDate(lead.next_follow_up_at)
+                              : idleDays !== null ? `${idleDays}d` : "New"}
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -521,14 +534,20 @@ export function PipelineLeads() {
                           Notes
                           {lead.lead_notes && <div className="w-1.5 h-1.5 rounded-full bg-indigo-400/60" />}
                         </button>
-                        {lead.pipeline_status !== 'scheduled' && (
+                        {isScheduled ? (
                           <button
-                            onClick={() => handleDeadLead(lead.id)}
-                            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-rose-400/30 hover:text-rose-400/70 hover:bg-rose-500/[0.06] transition-all text-[11px] font-medium"
+                            onClick={() => openSchedModal(lead)}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-emerald-400/40 hover:text-emerald-400/80 hover:bg-emerald-500/[0.06] transition-all text-[11px] font-medium"
                           >
-                            <XCircle className="w-3.5 h-3.5" /> Dead Lead
+                            <Calendar className="w-3.5 h-3.5" /> Reschedule
                           </button>
-                        )}
+                        ) : null}
+                        <button
+                          onClick={() => handleDeadLead(lead.id)}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-rose-400/30 hover:text-rose-400/70 hover:bg-rose-500/[0.06] transition-all text-[11px] font-medium"
+                        >
+                          <XCircle className="w-3.5 h-3.5" /> Dead Lead
+                        </button>
                         <button
                           onClick={(e) => handleRemoveClick(e, lead)}
                           disabled={isRemoving}
