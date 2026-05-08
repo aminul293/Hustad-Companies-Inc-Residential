@@ -113,7 +113,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
       const newSession = createSession(repInfo.id, repInfo.name, repInfo.email);
       newSession.centerpointId = lead.cpc_ticket_id;
       newSession.property.address = lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name || "Unknown Address";
-      newSession.property.homeownerPrimaryName = lead.centerpoint_jobs?.owner || "Unknown Homeowner";
+      newSession.property.homeownerPrimaryName = lead.centerpoint_jobs?.raw?._owner || "";
       newSession.sessionStatus = "phase_a_active"; 
       
       saveSession(newSession);
@@ -345,8 +345,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
                             </p>
                             <p className="text-[10px] font-mono text-white/35 uppercase tracking-wider mt-0.5">
                               {dateStr}{timeStr ? ` · ${timeStr}` : ""}
-                              {lead.centerpoint_jobs?.owner && lead.centerpoint_jobs.owner !== "Unknown Owner"
-                                ? ` · ${lead.centerpoint_jobs.owner}` : ""}
+                              {lead.centerpoint_jobs?.raw?._owner ? ` · ${lead.centerpoint_jobs.raw._owner}` : ""}
                             </p>
                           </div>
                         </div>

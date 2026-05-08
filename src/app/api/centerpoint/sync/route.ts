@@ -61,13 +61,12 @@ function toRow(r: any, companyNames?: Map<number, string>) {
   if (normalizedStatus === "new_lead") normalizedStatus = "lead_opened";
 
   const billedId = a.billedCompanyId ? Number(a.billedCompanyId) : null;
-  const owner = billedId && companyNames ? (companyNames.get(billedId) ?? null) : null;
+  const ownerName = billedId && companyNames ? (companyNames.get(billedId) ?? null) : null;
 
   return {
     cp_id: String(r.id),
     name: a.name ?? "",
     property_name: a.propertyName ?? null,
-    owner,
     opportunity_type: a.opportunityType ?? null,
     work_type: a.workType ?? null,
     domain: a.domain ?? null,
@@ -81,7 +80,7 @@ function toRow(r: any, companyNames?: Map<number, string>) {
     stage_transitioned_at: a.latestStageTransitionedAt ?? null,
     cp_created_at: a.createdAt ?? null,
     cp_updated_at: a.updatedAt ?? null,
-    raw: a,
+    raw: ownerName ? { ...a, _owner: ownerName } : a,
     synced_at: new Date().toISOString(),
   };
 }
