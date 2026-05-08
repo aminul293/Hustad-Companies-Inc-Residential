@@ -24,7 +24,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
   try {
     const supabase = getServiceClient();
     
-    // 1. Fetch the lead to check its status and get the CP ticket ID
+    // 1. Fetch lead to check workflow status
     const { data: lead, error: fetchError } = await supabase
       .from('pipeline_leads')
       .select('pipeline_status, cpc_ticket_id')
@@ -33,15 +33,16 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
     if (fetchError || !lead) throw new Error("Lead not found");
 
-    // 2. Guard: Check if lead has active inspection activity
-    const protectedStatuses = ['inspection_in_progress', 'inspection_completed', 'signed', 'closed'];
-    if (protectedStatuses.includes(lead.pipeline_status)) {
+    // 2. Case 2: Inspection Started (Blocked)
+    const blockedStatuses = ['inspection_in_progress', 'inspection_completed', 'signed', 'closed'];
+    if (blockedStatuses.includes(lead.pipeline_status)) {
       return NextResponse.json({ 
-        error: "This lead has inspection activity and cannot be removed from Pipeline without admin override." 
+        error: "This lead has inspection activity and cannot be removed from Pipeline." 
       }, { status: 403 });
     }
 
-    // 3. Reset CenterPoint job status back to 'new'
+    // 3. Case 1: Accidental Import (Allowed)
+    // Reset CP Inbox status back to 'new'
     if (lead.cpc_ticket_id) {
       await supabase
         .from('centerpoint_jobs')
@@ -49,7 +50,8 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
         .eq('name', lead.cpc_ticket_id);
     }
 
-    // 4. Delete from pipeline_leads
+    // 4. Remove from active pipeline
+    // (Doing hard delete for now to match 'reappear in CP Inbox' requirement without extra filters)
     const { error: deleteError } = await supabase
       .from('pipeline_leads')
       .delete()
