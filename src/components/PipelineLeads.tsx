@@ -114,15 +114,19 @@ export function PipelineLeads() {
     e.preventDefault();
     e.stopPropagation();
     console.log("Attempting to delete lead:", id);
-    if (!confirm("Permanently delete this lead from the pipeline?")) return;
+    if (!confirm("Remove this lead from your Pipeline and return it to the CP Inbox?")) return;
     try {
       const res = await fetch(`/api/pipeline/${id}`, { method: "DELETE" });
+      const data = await res.json();
+      
       if (res.ok) {
-        console.log("Lead deleted successfully");
+        console.log("Lead removed from pipeline");
         fetchLeads();
+      } else {
+        alert(data.error || "Failed to remove lead");
       }
     } catch (e) {
-      console.error("Delete failed:", e);
+      console.error("Removal failed:", e);
     }
   };
 
