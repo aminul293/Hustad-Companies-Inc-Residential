@@ -133,11 +133,13 @@ export function saveSession(session: SessionState): void {
   // Update drafts index
   const index = getDraftsIndex();
   
-  // Calculate missing fields for dashboard validation
+  // Calculate missing fields for dashboard validation.
+  // Photos are only required once Phase A is complete — not while actively working.
+  const inProgress = session.sessionStatus === 'draft' || session.sessionStatus === 'phase_a_active';
   let missing = 0;
   if (!session.property.address) missing++;
-  if (!session.property.homeownerPrimaryName) missing++;
-  if (session.photoAssets.length === 0) missing++;
+  if (!session.property.homeownerPrimaryName || session.property.homeownerPrimaryName === 'Unknown Homeowner') missing++;
+  if (!inProgress && session.photoAssets.length === 0) missing++;
 
   index[session.sessionId] = {
     sessionId: session.sessionId,

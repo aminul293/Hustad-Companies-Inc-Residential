@@ -181,7 +181,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
 
   const stats = useMemo(() => {
     return {
-      active: drafts.filter(d => d.sessionStatus === "draft" || d.sessionStatus.includes("active")).length,
+      active: drafts.filter(d => ["draft", "phase_a_active", "phase_a_complete", "rep_review_pending"].includes(d.sessionStatus)).length,
       pending: drafts.filter(d => d.sessionStatus === "deferred" || d.sessionStatus === "summary_locked").length,
       missing: drafts.filter(d => d.missingFieldsCount > 0).length,
       synced: drafts.filter(d => d.syncStatus === "synced").length
