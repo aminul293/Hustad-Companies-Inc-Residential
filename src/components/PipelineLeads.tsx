@@ -114,16 +114,17 @@ export function PipelineLeads() {
     e.preventDefault();
     e.stopPropagation();
     console.log("Attempting to delete lead:", id);
-    if (!confirm("Remove this lead from your Pipeline and return it to the CP Inbox?")) return;
+    if (!confirm("This will remove the lead from your pipeline but keep it in CenterPoint. You can re-import it later.")) return;
     try {
       const res = await fetch(`/api/pipeline/${id}`, { method: "DELETE" });
       const data = await res.json();
       
       if (res.ok) {
-        console.log("Lead removed from pipeline");
+        console.log("Lead removed from pipeline and returned to Inbox");
         fetchLeads();
       } else {
-        alert(data.error || "Failed to remove lead");
+        // If Case 2 (Blocked)
+        alert(data.error || "Failed to remove lead from pipeline.");
       }
     } catch (e) {
       console.error("Removal failed:", e);
