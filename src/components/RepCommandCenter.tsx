@@ -1,21 +1,23 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { 
-  Search, 
-  Filter, 
-  Clock, 
-  ChevronRight, 
-  LayoutGrid, 
+import {
+  Search,
+  Clock,
+  ChevronRight,
+  LayoutGrid,
   CheckCircle2,
   Calendar,
+  CalendarDays,
   User,
+  ArrowLeft,
   ArrowRight,
   AlertCircle,
   Settings,
   UserPlus,
   Trash,
-  Info
+  Info,
+  PlayCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createSession, saveSession, listDrafts } from "@/lib/session";
@@ -31,9 +33,10 @@ interface Props {
   currentRep: AuthenticatedRep;
   onLoadDraft: (id: string) => void;
   onNewSession: () => void;
+  onBack?: () => void;
 }
 
-export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession }: Props) {
+export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack }: Props) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<string>("all");
   const [view, setView] = useState<"dashboard" | "pipeline" | "centerpoint" | "tickets" | "settings">("dashboard");
@@ -43,10 +46,11 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession }: Prop
 
   const [serverSessions, setServerSessions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [scheduledLeads, setScheduledLeads] = useState<any[]>([]);
 
   useEffect(() => {
     setLiveReps(getLiveReps());
-    
+
     const loadServerData = async () => {
       setIsLoading(true);
       try {
@@ -59,7 +63,21 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession }: Prop
         setIsLoading(false);
       }
     };
+
+    const loadScheduledLeads = async () => {
+      try {
+        const res = await fetch(`/api/pipeline?t=${Date.now()}`);
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setScheduledLeads(data.filter((l: any) => l.pipeline_status === 'scheduled'));
+        }
+      } catch (e) {
+        console.warn("Failed to fetch scheduled leads", e);
+      }
+    };
+
     loadServerData();
+    loadScheduledLeads();
   }, [view]);
 
   // Handle importing a job from CenterPoint to the active Pipeline
@@ -175,13 +193,23 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession }: Prop
       {/* Header */}
       <div className="p-8 pb-0 space-y-8">
         <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-display font-medium tracking-tight">
-              {{ dashboard: "Rep Command Center", pipeline: "Sales Pipeline", centerpoint: "CP Inbox", tickets: "Hustad Tickets", settings: "System Settings" }[view]}
-            </h1>
-            <p className="text-sm text-white/50 font-light">
-              {{ dashboard: "Field intelligence and session management.", pipeline: "Manage leads from reach-out to appointment scheduling.", centerpoint: "Jobs synced from CenterPoint Connect.", tickets: "Your managed pipeline — stages, touches, and write-back.", settings: "Manage field identities and operational parameters." }[view]}
-            </p>
+          <div className="flex items-center gap-4">
+            {onBack && (
+              <button
+                onClick={onBack}
+                className="p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all shrink-0"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            )}
+            <div className="space-y-1">
+              <h1 className="text-3xl font-display font-medium tracking-tight">
+                {{ dashboard: "Rep Command Center", pipeline: "Sales Pipeline", centerpoint: "CP Inbox", tickets: "Hustad Tickets", settings: "System Settings" }[view]}
+              </h1>
+              <p className="text-sm text-white/50 font-light">
+                {{ dashboard: "Field intelligence and session management.", pipeline: "Manage leads from reach-out to appointment scheduling.", centerpoint: "Jobs synced from CenterPoint Connect.", tickets: "Your managed pipeline — stages, touches, and write-back.", settings: "Manage field identities and operational parameters." }[view]}
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             {/* Tab switcher */}
@@ -285,6 +313,58 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession }: Prop
           <HustadTickets />
         ) : view === "dashboard" ? (
           <div className="space-y-4">
+
+            {/* ── Upcoming Scheduled Inspections from Pipeline ── */}
+            {scheduledLeads.length > 0 && (
+              <div className="mb-2">
+                <p className="text-[9px] font-mono text-emerald-400/60 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                  <CalendarDays className="w-3 h-3" />
+                  Upcoming · {scheduledLeads.length} scheduled
+                </p>
+                <div className="space-y-2 mb-5">
+                  {scheduledLeads.map((lead: any) => {
+                    const startDt = lead.scheduled_start_at ? new Date(lead.scheduled_start_at) : null;
+                    const dateStr = startDt
+                      ? startDt.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
+                      : "Scheduled";
+                    const timeStr = startDt
+                      ? startDt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })
+                      : "";
+                    return (
+                      <div
+                        key={lead.id}
+                        className="group p-5 rounded-[24px] bg-emerald-500/[0.04] border border-emerald-500/[0.12] hover:border-emerald-500/25 transition-all flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center shrink-0">
+                            <CalendarDays className="w-4 h-4 text-emerald-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-display font-medium text-white">
+                              {lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name || lead.cpc_ticket_id}
+                            </p>
+                            <p className="text-[10px] font-mono text-white/35 uppercase tracking-wider mt-0.5">
+                              {dateStr}{timeStr ? ` · ${timeStr}` : ""}
+                              {lead.centerpoint_jobs?.owner && lead.centerpoint_jobs.owner !== "Unknown Owner"
+                                ? ` · ${lead.centerpoint_jobs.owner}` : ""}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => window.dispatchEvent(new CustomEvent("launchPipelineSession", { detail: lead }))}
+                          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/25 text-emerald-300 hover:bg-emerald-500/25 active:scale-95 transition-all text-xs font-medium shrink-0"
+                        >
+                          <PlayCircle className="w-3.5 h-3.5" />
+                          Start Inspection
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="h-px bg-white/[0.05] mb-5" />
+              </div>
+            )}
+
             {filteredDrafts.length > 0 ? (
               <div className="grid grid-cols-1 gap-4">
                 {filteredDrafts.map((d) => (

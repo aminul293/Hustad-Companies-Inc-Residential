@@ -179,13 +179,14 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
 
   if (showDashboard && authStatus === "authenticated" && authRep) {
     return (
-      <RepCommandCenter 
+      <RepCommandCenter
         currentRep={authRep}
         onLoadDraft={(id) => {
           onLoadDraft(id);
           setShowDashboard(false);
-        }} 
+        }}
         onNewSession={handleStartNew}
+        onBack={() => setShowDashboard(false)}
       />
     );
   }
