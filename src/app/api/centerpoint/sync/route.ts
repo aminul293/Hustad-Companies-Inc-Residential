@@ -20,9 +20,10 @@ function cpHeaders() {
   return { Accept: "application/json", Authorization: getCpKey() };
 }
 
-// ─── Fetch residential company IDs ──────────────────────────────────────────
-async function getResidentialCompanyIds(): Promise<Set<number>> {
+// ─── Fetch residential company IDs + names ───────────────────────────────────
+async function getResidentialCompanies(): Promise<{ ids: Set<number>; names: Map<number, string> }> {
   const ids = new Set<number>();
+  const names = new Map<number, string>();
   let page = 1;
   while (true) {
     const params = new URLSearchParams({
@@ -37,27 +38,36 @@ async function getResidentialCompanyIds(): Promise<Set<number>> {
     if (!res.ok) break;
     const data = await res.json();
     const records: any[] = data?.data ?? [];
-    records.forEach((r) => ids.add(Number(r.id)));
+    records.forEach((r) => {
+      const numId = Number(r.id);
+      ids.add(numId);
+      const companyName = r.attributes?.name ?? r.attributes?.companyName ?? null;
+      if (companyName) names.set(numId, companyName);
+    });
     const total = data?.meta?.page?.total ?? 0;
     if (ids.size >= total || records.length === 0) break;
     page++;
   }
-  return ids;
+  return { ids, names };
 }
 
 // ─── Map CenterPoint record → Supabase row ───────────────────────────────────
-function toRow(r: any) {
+function toRow(r: any, companyNames?: Map<number, string>) {
   const a = r.attributes;
-  
+
   // Normalize status for the pipeline (e.g. "Closed Out" -> "closed")
   let normalizedStatus = (a.status || "").toLowerCase().replace(/\s+/g, "_");
   if (normalizedStatus === "closed_out") normalizedStatus = "closed";
   if (normalizedStatus === "new_lead") normalizedStatus = "lead_opened";
 
+  const billedId = a.billedCompanyId ? Number(a.billedCompanyId) : null;
+  const owner = billedId && companyNames ? (companyNames.get(billedId) ?? null) : null;
+
   return {
     cp_id: String(r.id),
     name: a.name ?? "",
     property_name: a.propertyName ?? null,
+    owner,
     opportunity_type: a.opportunityType ?? null,
     work_type: a.workType ?? null,
     domain: a.domain ?? null,
@@ -65,7 +75,7 @@ function toRow(r: any) {
     display_status: a.displayStatus || a.status || "",
     price: a.price ?? 0,
     start_date: a.startDate ?? null,
-    billed_company_id: a.billedCompanyId ? String(a.billedCompanyId) : null,
+    billed_company_id: billedId ? String(billedId) : null,
     description: a.custom?.description ?? null,
     service_type_hustad: a.customWithLabels?.serviceTypeHustad ?? null,
     stage_transitioned_at: a.latestStageTransitionedAt ?? null,
@@ -142,7 +152,7 @@ export async function POST() {
   const logId: string | undefined = logRow?.id;
 
   try {
-    const residentialIds = await getResidentialCompanyIds();
+    const { ids: residentialIds, names: companyNames } = await getResidentialCompanies();
 
     let cpPage = 1;
     let cpTotal = Infinity;
@@ -200,7 +210,7 @@ export async function POST() {
           continue;
         }
 
-        rowsToUpsert.push(toRow(r));
+        rowsToUpsert.push(toRow(r, companyNames));
       }
 
       // De-duplicate in memory: pick the one that is FURTHER ALONG in the pipeline

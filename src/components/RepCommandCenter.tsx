@@ -94,8 +94,8 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
       
       // Map CenterPoint data to SessionState property context
       newSession.centerpointId = job.id;
-      newSession.property.address = attr.propertyName || attr.name || "Unknown Address";
-      newSession.property.homeownerPrimaryName = attr.name || "Unknown Homeowner";
+      newSession.property.address = attr.propertyName || "Unknown Address";
+      newSession.property.homeownerPrimaryName = "";
       newSession.sessionStatus = "phase_a_active"; 
       
       // Persist to local storage and trigger the dashboard view
