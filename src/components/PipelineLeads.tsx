@@ -40,7 +40,7 @@ export function PipelineLeads() {
 
   const fetchLeads = async () => {
     try {
-      const res = await fetch("/api/pipeline");
+      const res = await fetch(`/api/pipeline?t=${Date.now()}`);
       const data = await res.json();
       setLeads(data);
     } catch (e) {
@@ -113,17 +113,19 @@ export function PipelineLeads() {
   const handleDeleteLead = async (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("Attempting to delete lead:", id);
+    
     if (!confirm("This will remove the lead from your pipeline but keep it in CenterPoint. You can re-import it later.")) return;
+    
     try {
       const res = await fetch(`/api/pipeline/${id}`, { method: "DELETE" });
       const data = await res.json();
       
       if (res.ok) {
-        console.log("Lead removed from pipeline and returned to Inbox");
+        // Immediate local UI update
+        setLeads(prev => prev.filter(l => l.id !== id));
+        // Background refresh to ensure sync
         fetchLeads();
       } else {
-        // If Case 2 (Blocked)
         alert(data.error || "Failed to remove lead from pipeline.");
       }
     } catch (e) {
