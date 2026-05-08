@@ -168,7 +168,7 @@ export function PipelineLeads() {
                 layout
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white/[0.03] border border-white/[0.08] rounded-[32px] p-6 hover:border-white/20 transition-all flex flex-col h-full"
+                className="group bg-white/[0.03] border border-white/[0.08] rounded-[32px] p-6 hover:border-white/20 transition-all flex flex-col h-full"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className={cn("flex items-center gap-2 px-3 py-1 rounded-full border text-[10px] font-mono uppercase tracking-widest", config.color)}>
@@ -178,7 +178,7 @@ export function PipelineLeads() {
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => handleDeleteLead(lead.id)}
-                      className="p-2 rounded-xl text-white/20 hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100"
+                      className="p-2 rounded-xl text-white/30 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
