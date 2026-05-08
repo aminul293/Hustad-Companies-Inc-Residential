@@ -71,12 +71,14 @@ export async function POST(request: NextRequest) {
     // If this session originated from CenterPoint, and we just hit a terminal stage, update CP and Pipeline
     if (session.centerpointId) {
       const isTerminal = session.sessionStatus === 'signed' || session.sessionStatus.startsWith('closed_');
-      
+      const isInspectionDone = session.sessionStatus === 'phase_a_complete' || session.sessionStatus === 'rep_review_pending' || session.sessionStatus === 'deferred';
+
       // 1. Update pipeline_leads
       try {
         let pipelineStatus = 'inspection_in_progress';
         if (session.sessionStatus === 'signed') pipelineStatus = 'signed';
         else if (session.sessionStatus === 'deferred') pipelineStatus = 'inspection_completed';
+        else if (isInspectionDone) pipelineStatus = 'inspection_completed';
         else if (isTerminal) pipelineStatus = 'closed';
 
         if (pipelineStatus !== 'inspection_in_progress') {
@@ -91,20 +93,20 @@ export async function POST(request: NextRequest) {
         console.error('[PIPELINE_SYNC] Failed to update pipeline_leads', e);
       }
 
-      // 2. Update CenterPoint Job Status
-      if (isTerminal) {
+      // 2. Queue for CenterPoint write-back (Outbound Queue)
+      if (isTerminal || isInspectionDone) {
         try {
-          const cpStage = session.sessionStatus === 'signed' ? 'completed' : 'closed';
-          // We can call our own internal PATCH route for centerpoint transitions
-          const patchUrl = new URL(`/api/centerpoint/${session.centerpointId}`, request.url);
-          await fetch(patchUrl.toString(), {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: cpStage })
+          const cpStage = (session.sessionStatus === 'signed' || session.sessionStatus === 'deferred') ? 'completed' : 'closed';
+          const supabase = getServiceClient();
+          await supabase.from('outbound_queue').insert({
+            target_system: 'centerpoint',
+            target_id: session.centerpointId,
+            action: 'update_status',
+            payload: { status: cpStage }
           });
-          console.log(`[SUPABASE_RELAY] Auto-transitioned CP Job ${session.centerpointId} to ${cpStage}`);
+          console.log(`[OUTBOUND_QUEUE] Queued CP Job ${session.centerpointId} transition to ${cpStage}`);
         } catch (e) {
-          console.error('[SUPABASE_RELAY] Failed to update CenterPoint stage automatically', e);
+          console.error('[OUTBOUND_QUEUE] Failed to queue CenterPoint write-back', e);
         }
       }
     }

@@ -69,7 +69,7 @@ export async function upsertSession(session: SessionState) {
   };
 
   const { error: sessionError } = await supabase
-    .from('sessions')
+    .from('inspection_sessions')
     .upsert(sessionRow, { onConflict: 'session_id' });
 
   if (sessionError) throw sessionError;
@@ -108,7 +108,7 @@ export async function upsertSession(session: SessionState) {
 
 export async function getSessionByToken(token: string): Promise<SessionState | null> {
   const { data, error } = await supabase
-    .from('sessions')
+    .from('inspection_sessions')
     .select('payload')
     .eq('payload->>reviewToken', token) // Query JSONB for the token
     .single();
@@ -119,7 +119,7 @@ export async function getSessionByToken(token: string): Promise<SessionState | n
 
 export async function getSessionById(sessionId: string): Promise<SessionState | null> {
   const { data, error } = await supabase
-    .from('sessions')
+    .from('inspection_sessions')
     .select('payload')
     .eq('session_id', sessionId)
     .single();

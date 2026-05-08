@@ -2,12 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase-server";
 import { requireAuth } from "@/lib/auth";
 
-// MOCK GET /api/sessions — List sessions for the authenticated rep
+// GET /api/sessions — List sessions for the authenticated rep
 export async function GET(req: NextRequest) {
   try {
     const payload = await requireAuth(req);
-    // Return empty mock sessions array
-    return NextResponse.json({ sessions: [] });
+    const db = getServiceClient();
+    
+    const { data: sessions, error } = await db
+      .from("inspection_sessions")
+      .select("*")
+      .eq("rep_id", payload.repId)
+      .neq("session_status", "archived")
+      .order("updated_at", { ascending: false });
+
+    if (error) throw error;
+    
+    return NextResponse.json({ sessions: sessions || [] });
   } catch (err) {
     if (err instanceof Response) return err;
     console.error("Sessions list error:", err);
@@ -15,14 +25,24 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// MOCK POST /api/sessions — Create or sync a session from the tablet
+// POST /api/sessions — Create or sync a session from the tablet
 export async function POST(req: NextRequest) {
   try {
     const payload = await requireAuth(req);
+    const db = getServiceClient();
     const body = await req.json();
 
-    // Just pretend we synced it successfully
-    return NextResponse.json({ session: { ...body, sync_status: "synced" }, synced: true });
+    const row = mapSessionToRow(body, payload.repId);
+    
+    const { data: session, error } = await db
+      .from("inspection_sessions")
+      .upsert(row, { onConflict: "session_id" })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return NextResponse.json({ session: { ...session, sync_status: "synced" }, synced: true });
   } catch (err) {
     if (err instanceof Response) return err;
     console.error("Session create/sync error:", err);
