@@ -133,7 +133,22 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
 
   useEffect(() => {
     const scopedDrafts = authRep ? listDrafts(authRep.id) : [];
-    setDrafts(scopedDrafts.filter((d) => !d.sessionStatus.startsWith("closed_")));
+    
+    // De-duplicate by address, keeping the most recent save
+    const uniqueByAddress = Array.from(
+      scopedDrafts
+        .filter((d) => !d.sessionStatus.startsWith("closed_"))
+        .reduce((map, draft) => {
+          const key = draft.address.toLowerCase().trim();
+          if (!map.has(key) || new Date(draft.lastSavedAt) > new Date(map.get(key)!.lastSavedAt)) {
+            map.set(key, draft);
+          }
+          return map;
+        }, new Map<string, typeof scopedDrafts[0]>())
+        .values()
+    );
+
+    setDrafts(uniqueByAddress);
   }, [showDashboard, authRep?.id]);
 
   useEffect(() => {
