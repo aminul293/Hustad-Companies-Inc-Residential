@@ -28,6 +28,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CenterPointJobs } from "@/components/CenterPointJobs";
 import { HustadTickets } from "@/components/HustadTickets";
 import { PipelineLeads } from "@/components/PipelineLeads";
+import { MySchedule } from "@/components/MySchedule";
 
 interface Props {
   currentRep: AuthenticatedRep;
@@ -39,7 +40,7 @@ interface Props {
 export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack }: Props) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<string>("all");
-  const [view, setView] = useState<"dashboard" | "pipeline" | "centerpoint" | "tickets" | "settings">("dashboard");
+  const [view, setView] = useState<"dashboard" | "pipeline" | "schedule" | "centerpoint" | "tickets" | "settings">("dashboard");
   const [liveReps, setLiveReps] = useState<RepIdentity[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [newRep, setNewRep] = useState({ name: "", role: "" });
@@ -204,10 +205,10 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
             )}
             <div className="space-y-1">
               <h1 className="text-3xl font-display font-medium tracking-tight">
-                {{ dashboard: "Rep Command Center", pipeline: "Sales Pipeline", centerpoint: "CP Inbox", tickets: "Hustad Tickets", settings: "System Settings" }[view]}
+                {{ dashboard: "Rep Command Center", pipeline: "Sales Pipeline", schedule: "My Schedule", centerpoint: "CP Inbox", tickets: "Hustad Tickets", settings: "System Settings" }[view]}
               </h1>
               <p className="text-sm text-white/50 font-light">
-                {{ dashboard: "Field intelligence and session management.", pipeline: "Manage leads from reach-out to appointment scheduling.", centerpoint: "Jobs synced from CenterPoint Connect.", tickets: "Your managed pipeline — stages, touches, and write-back.", settings: "Manage field identities and operational parameters." }[view]}
+                {{ dashboard: "Field intelligence and session management.", pipeline: "Manage leads from reach-out to appointment scheduling.", schedule: "Appointments, conflicts, and daily work queue.", centerpoint: "Jobs synced from CenterPoint Connect.", tickets: "Your managed pipeline — stages, touches, and write-back.", settings: "Manage field identities and operational parameters." }[view]}
               </p>
             </div>
           </div>
@@ -217,6 +218,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
               {([
                 { id: "dashboard", label: "Inspections" },
                 { id: "pipeline", label: "Pipeline" },
+                { id: "schedule", label: "My Schedule" },
                 { id: "centerpoint", label: "CP Inbox" },
                 { id: "tickets", label: "Tickets" },
                 { id: "settings", label: "Settings" },
@@ -307,8 +309,10 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
       <div className="flex-1 overflow-y-auto p-8">
         {view === "centerpoint" ? (
           <CenterPointJobs />
+        ) : view === "schedule" ? (
+          <MySchedule currentRep={currentRep} />
         ) : view === "pipeline" ? (
-          <PipelineLeads />
+          <PipelineLeads repId={currentRep.id} />
         ) : view === "tickets" ? (
           <HustadTickets />
         ) : view === "dashboard" ? (
