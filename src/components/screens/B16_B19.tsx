@@ -28,7 +28,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { submitSession, addAuditEvent, createFollowUpTask, exportSessionJSON } from "@/lib/session";
+import { submitSession, addAuditEvent, createFollowUpTask, exportSessionJSON, saveSession } from "@/lib/session";
 import { downloadSummaryPDF } from "@/lib/pdf-export";
 import { PRODUCT_CONFIG, IMPACT_DISCLAIMER } from "@/config/products";
 import { RemoteStatusTracker } from "@/components/RemoteStatusTracker";
@@ -600,7 +600,7 @@ interface NextStepsProps {
   onFinish: () => void;
 }
 
-export function B19NextSteps({ session, onUpdate, onNext, onBack, onFinish }: NextStepsProps) {
+export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsProps) {
   const outcome = session.findings.outcomeType || "no_damage";
   const isSigned = !!session.signatureData.signedAt;
   const isDeferred = session.sessionStatus === "deferred";
@@ -608,9 +608,41 @@ export function B19NextSteps({ session, onUpdate, onNext, onBack, onFinish }: Ne
   const [exported, setExported] = useState(false);
   const [deliverySent, setDeliverySent] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [quickEmail, setQuickEmail] = useState("");
   const [quickPhone, setQuickPhone] = useState("");
+
+  const handleFinish = async () => {
+    setIsSyncing(true);
+    try {
+      // Ensure session has a closed status — no_damage/monitor_only skip B18 so submitSession is never called
+      let finalSession = session;
+      const alreadyClosed = session.sessionStatus.startsWith("closed_") || session.sessionStatus === "signed" || session.sessionStatus === "deferred";
+      if (!alreadyClosed) {
+        finalSession = submitSession(session);
+        onUpdate(finalSession);
+      }
+
+      // Mark synced before saving
+      finalSession = { ...finalSession, syncStatus: "synced" };
+      saveSession(finalSession);
+      onUpdate(finalSession);
+
+      // Push to Supabase + update pipeline + queue CenterPoint write-back
+      await fetch("/api/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(finalSession),
+      });
+    } catch (err) {
+      console.error("[FINISH_SYNC]", err);
+      // Don't block the rep from finishing even if sync fails
+    } finally {
+      setIsSyncing(false);
+      onFinish();
+    }
+  };
 
   useEffect(() => {
     if (isDeferred || (!isSigned && (outcome !== "no_damage" && outcome !== "monitor_only"))) {
@@ -1020,10 +1052,19 @@ export function B19NextSteps({ session, onUpdate, onNext, onBack, onFinish }: Ne
             <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white">Back</span>
           </button>
-          <StarButton onClick={onFinish} lightColor="#FAFAFA" backgroundColor="#060606" className="flex-1 max-w-md h-18 rounded-full active:scale-95 transition-transform">
+          <StarButton onClick={handleFinish} lightColor="#FAFAFA" backgroundColor="#060606" className="flex-1 max-w-md h-18 rounded-full active:scale-95 transition-transform disabled:opacity-50 disabled:pointer-events-none" disabled={isSyncing}>
             <div className="flex items-center gap-4">
-              <span className="text-lg font-display font-medium tracking-wide">Finish Session</span>
-              <ChevronRight className="w-5 h-5 text-white/90" />
+              {isSyncing ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span className="text-lg font-display font-medium tracking-wide">Syncing…</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-lg font-display font-medium tracking-wide">Finish Session</span>
+                  <ChevronRight className="w-5 h-5 text-white/90" />
+                </>
+              )}
             </div>
           </StarButton>
         </div>
