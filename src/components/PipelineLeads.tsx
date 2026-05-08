@@ -121,15 +121,19 @@ export function PipelineLeads() {
       const data = await res.json();
       
       if (res.ok) {
-        // Immediate local UI update
+        // 1. Immediate local UI update
         setLeads(prev => prev.filter(l => l.id !== id));
-        // Background refresh to ensure sync
-        fetchLeads();
+        
+        // 2. Brief delay then background refresh to ensure sync
+        setTimeout(() => {
+          fetchLeads();
+        }, 300);
       } else {
-        alert(data.error || "Failed to remove lead from pipeline.");
+        alert("Server Error: " + (data.error || "Failed to remove lead from pipeline."));
       }
     } catch (e) {
       console.error("Removal failed:", e);
+      alert("Network Error: Could not connect to removal service.");
     }
   };
 
