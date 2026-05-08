@@ -149,20 +149,50 @@ export function PipelineLeads() {
     }
   };
 
+  const stats = {
+    total: leads.length,
+    scheduled: leads.filter(l => l.pipeline_status === 'scheduled').length,
+    active: leads.filter(l => !['dead_lead', 'scheduled'].includes(l.pipeline_status)).length,
+    avgAttempts: leads.length ? (leads.reduce((sum, l) => sum + l.contact_attempt_count, 0) / leads.length).toFixed(1) : 0
+  };
+
+  const getProgress = (status: string) => {
+    const steps = ['new_lead', 'contact_attempted', 'contacted', 'scheduled', 'inspection_in_progress'];
+    const idx = steps.indexOf(status);
+    return ((idx + 1) / steps.length) * 100;
+  };
+
   return (
-    <div className="p-8 space-y-6 overflow-y-auto h-full">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <div className="p-8 space-y-8 overflow-y-auto h-full bg-black/20">
+      {/* Advanced Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="flex items-center gap-6">
           <button 
             onClick={() => window.dispatchEvent(new CustomEvent('changeView', { detail: 'dashboard' }))}
-            className="p-3 rounded-full bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all"
+            className="p-4 rounded-3xl bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all shadow-2xl"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-6 h-6" />
           </button>
           <div>
-            <h2 className="text-3xl font-display font-medium">Sales Pipeline</h2>
-            <p className="text-white/40 text-sm mt-1">Manage leads from reach-out to inspection</p>
+            <h2 className="text-4xl font-display font-medium tracking-tight">Sales Pipeline</h2>
+            <p className="text-white/40 text-sm mt-1 font-light tracking-wide">Lead lifecycle and field conversion intelligence</p>
           </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          {[
+            { label: "Pipeline Size", value: stats.total, icon: Clock, color: "text-indigo-400" },
+            { label: "Scheduled", value: stats.scheduled, icon: Calendar, color: "text-emerald-400" },
+            { label: "Avg Touches", value: stats.avgAttempts, icon: Phone, color: "text-sky-400" },
+          ].map((s, i) => (
+            <div key={i} className="px-6 py-4 rounded-[24px] bg-white/[0.03] border border-white/[0.08] min-w-[140px]">
+              <p className="text-[9px] font-mono text-white/20 uppercase tracking-[0.2em] mb-1">{s.label}</p>
+              <div className="flex items-center gap-2">
+                <s.icon className={cn("w-3.5 h-3.5", s.color)} />
+                <p className="text-xl font-display font-semibold">{s.value}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -178,42 +208,61 @@ export function PipelineLeads() {
                 layout
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="group bg-white/[0.03] border border-white/[0.08] rounded-[32px] p-6 hover:border-white/20 transition-all flex flex-col h-full"
+                className="group bg-white/[0.02] border border-white/[0.05] rounded-[40px] p-8 hover:bg-white/[0.04] hover:border-white/20 transition-all flex flex-col h-full relative overflow-hidden"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div className={cn("flex items-center gap-2 px-3 py-1 rounded-full border text-[10px] font-mono uppercase tracking-widest", config.color)}>
-                    <StatusIcon className="w-3 h-3" />
+                {/* Progress Bar */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-white/5">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${getProgress(lead.pipeline_status)}%` }}
+                    className="h-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]" 
+                  />
+                </div>
+
+                <div className="flex items-center justify-between mb-8">
+                  <div className={cn("flex items-center gap-2 px-4 py-1.5 rounded-full border text-[9px] font-mono uppercase tracking-widest", config.color)}>
+                    <StatusIcon className="w-3.5 h-3.5" />
                     {config.label}
                   </div>
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={(e) => handleDeleteLead(e, lead.id)}
-                      className="p-2 rounded-xl text-white/30 hover:text-rose-400 hover:bg-rose-500/10 transition-all relative z-30"
+                      className="p-2.5 rounded-2xl text-white/20 hover:text-rose-400 hover:bg-rose-500/10 transition-all relative z-30"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
-                    <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest">#{lead.cpc_ticket_id}</span>
+                    <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest bg-white/5 px-2 py-1 rounded-lg">#{lead.cpc_ticket_id}</span>
                   </div>
                 </div>
 
-                <div className="mb-6">
-                  <h3 className="text-xl font-display font-medium text-white mb-1">
+                <div className="mb-8">
+                  <h3 className="text-2xl font-display font-medium text-white mb-2 tracking-tight group-hover:text-indigo-300 transition-colors">
                     {lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name}
                   </h3>
-                  <p className="text-sm text-white/40 flex items-center gap-2">
-                    <User className="w-3.5 h-3.5" />
-                    {lead.centerpoint_jobs?.owner || "Unknown Owner"}
-                  </p>
+                  <div className="flex items-center gap-4">
+                    <p className="text-xs text-white/40 flex items-center gap-2 font-light">
+                      <User className="w-4 h-4 text-indigo-400/50" />
+                      {lead.centerpoint_jobs?.owner || "Unknown Owner"}
+                    </p>
+                    <div className="w-1 h-1 rounded-full bg-white/10" />
+                    <p className="text-[10px] font-mono text-white/25 uppercase tracking-widest">Residental</p>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-3">
-                    <p className="text-[9px] font-mono text-white/20 uppercase tracking-widest mb-1">Attempts</p>
-                    <p className="text-lg font-display text-white">{lead.contact_attempt_count}</p>
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                  <div className="bg-white/[0.02] border border-white/[0.05] rounded-[24px] p-4 group-hover:bg-white/[0.04] transition-colors">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-[8px] font-mono text-white/20 uppercase tracking-[0.2em]">Attempts</p>
+                      <Phone className="w-3 h-3 text-white/10" />
+                    </div>
+                    <p className="text-2xl font-display font-semibold text-white">{lead.contact_attempt_count}</p>
                   </div>
-                  <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-3">
-                    <p className="text-[9px] font-mono text-white/20 uppercase tracking-widest mb-1">Last Contact</p>
-                    <p className="text-xs font-display text-white/60">
+                  <div className="bg-white/[0.02] border border-white/[0.05] rounded-[24px] p-4 group-hover:bg-white/[0.04] transition-colors">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-[8px] font-mono text-white/20 uppercase tracking-[0.2em]">Last Contact</p>
+                      <Clock className="w-3 h-3 text-white/10" />
+                    </div>
+                    <p className="text-xs font-display text-white/60 mt-1.5">
                       {lead.last_contacted_at ? new Date(lead.last_contacted_at).toLocaleDateString() : "Never"}
                     </p>
                   </div>
