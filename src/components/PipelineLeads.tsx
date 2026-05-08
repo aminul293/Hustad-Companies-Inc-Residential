@@ -110,13 +110,19 @@ export function PipelineLeads() {
     }
   };
 
-  const handleDeleteLead = async (id: string) => {
+  const handleDeleteLead = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Attempting to delete lead:", id);
     if (!confirm("Permanently delete this lead from the pipeline?")) return;
     try {
       const res = await fetch(`/api/pipeline/${id}`, { method: "DELETE" });
-      if (res.ok) fetchLeads();
+      if (res.ok) {
+        console.log("Lead deleted successfully");
+        fetchLeads();
+      }
     } catch (e) {
-      console.error(e);
+      console.error("Delete failed:", e);
     }
   };
 
@@ -177,8 +183,8 @@ export function PipelineLeads() {
                   </div>
                   <div className="flex items-center gap-2">
                     <button 
-                      onClick={() => handleDeleteLead(lead.id)}
-                      className="p-2 rounded-xl text-white/30 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+                      onClick={(e) => handleDeleteLead(e, lead.id)}
+                      className="p-2 rounded-xl text-white/30 hover:text-rose-400 hover:bg-rose-500/10 transition-all relative z-30"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
