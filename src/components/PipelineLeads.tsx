@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Phone, Calendar, MessageSquare, User, Clock, CheckCircle2, XCircle, AlertCircle, PlayCircle } from "lucide-react";
+import { Phone, Calendar, MessageSquare, User, Clock, CheckCircle2, XCircle, AlertCircle, PlayCircle, ArrowLeft, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -110,6 +110,16 @@ export function PipelineLeads() {
     }
   };
 
+  const handleDeleteLead = async (id: string) => {
+    if (!confirm("Permanently delete this lead from the pipeline?")) return;
+    try {
+      const res = await fetch(`/api/pipeline/${id}`, { method: "DELETE" });
+      if (res.ok) fetchLeads();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const handleFollowUp = async (id: string) => {
     const dateStr = prompt("Enter next follow-up date (YYYY-MM-DD):", new Date(Date.now() + 86400000).toISOString().split('T')[0]);
     if (!dateStr) return;
@@ -132,9 +142,17 @@ export function PipelineLeads() {
   return (
     <div className="p-8 space-y-6 overflow-y-auto h-full">
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-display font-medium">Sales Pipeline</h2>
-          <p className="text-white/40 text-sm mt-1">Manage leads from reach-out to inspection</p>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => window.dispatchEvent(new CustomEvent('changeView', { detail: 'dashboard' }))}
+            className="p-3 rounded-full bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div>
+            <h2 className="text-3xl font-display font-medium">Sales Pipeline</h2>
+            <p className="text-white/40 text-sm mt-1">Manage leads from reach-out to inspection</p>
+          </div>
         </div>
       </div>
 
@@ -157,7 +175,15 @@ export function PipelineLeads() {
                     <StatusIcon className="w-3 h-3" />
                     {config.label}
                   </div>
-                  <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest">#{lead.cpc_ticket_id}</span>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => handleDeleteLead(lead.id)}
+                      className="p-2 rounded-xl text-white/20 hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                    <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest">#{lead.cpc_ticket_id}</span>
+                  </div>
                 </div>
 
                 <div className="mb-6">
