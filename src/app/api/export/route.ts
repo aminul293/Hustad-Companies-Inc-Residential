@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 
     // Fetch all related data
     const [sessionRes, photosRes, tasksRes, eventsRes] = await Promise.all([
-      db.from("sessions").select("*").eq("session_id", sessionId).eq("rep_id", payload.repId).single(),
+      db.from("inspection_sessions").select("*").eq("session_id", sessionId).eq("rep_id", payload.repId).single(),
       db.from("photo_assets").select("*").eq("session_id", sessionId).order("display_order"),
       db.from("follow_up_tasks").select("*").eq("session_id", sessionId),
       db.from("audit_events").select("*").eq("session_id", sessionId).order("occurred_at"),

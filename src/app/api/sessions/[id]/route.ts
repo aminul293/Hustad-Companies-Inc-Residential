@@ -12,7 +12,7 @@ export async function GET(
     const db = getServiceClient();
 
     const { data: session, error } = await db
-      .from("sessions")
+      .from("inspection_sessions")
       .select("*")
       .eq("session_id", params.id)
       .eq("rep_id", payload.repId)
@@ -52,7 +52,7 @@ export async function DELETE(
     const db = getServiceClient();
 
     const { error } = await db
-      .from("sessions")
+      .from("inspection_sessions")
       .update({ session_status: "archived" })
       .eq("session_id", params.id)
       .eq("rep_id", payload.repId);

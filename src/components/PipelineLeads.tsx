@@ -68,11 +68,18 @@ export function PipelineLeads() {
   };
 
   const handleSchedule = async (id: string) => {
+    const startStr = prompt("Enter scheduled start (YYYY-MM-DD HH:MM):", new Date().toISOString().slice(0,16).replace('T',' '));
+    if (!startStr) return;
+    
     try {
       const res = await fetch(`/api/pipeline/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pipeline_status: 'scheduled' })
+        body: JSON.stringify({ 
+          pipeline_status: 'scheduled',
+          scheduled_start_at: new Date(startStr).toISOString(),
+          scheduled_end_at: new Date(new Date(startStr).getTime() + 60*60*1000).toISOString() // default 1hr
+        })
       });
       if (res.ok) fetchLeads();
     } catch (e) {
@@ -81,6 +88,10 @@ export function PipelineLeads() {
   };
 
   const handleStartInspection = (lead: PipelineLead) => {
+    if (lead.pipeline_status !== 'scheduled') {
+      alert("Inspection can only be started for 'Scheduled' leads.");
+      return;
+    }
     const event = new CustomEvent('launchPipelineSession', { detail: lead });
     window.dispatchEvent(event);
   };
@@ -100,11 +111,17 @@ export function PipelineLeads() {
   };
 
   const handleFollowUp = async (id: string) => {
+    const dateStr = prompt("Enter next follow-up date (YYYY-MM-DD):", new Date(Date.now() + 86400000).toISOString().split('T')[0]);
+    if (!dateStr) return;
+
     try {
       const res = await fetch(`/api/pipeline/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pipeline_status: 'follow_up_needed' })
+        body: JSON.stringify({ 
+          pipeline_status: 'follow_up_needed',
+          next_follow_up_at: new Date(dateStr).toISOString()
+        })
       });
       if (res.ok) fetchLeads();
     } catch (e) {

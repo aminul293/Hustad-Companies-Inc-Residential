@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     // Verify session belongs to this rep
     const { data: session } = await db
-      .from("sessions")
+      .from("inspection_sessions")
       .select("session_id")
       .eq("session_id", sessionId)
       .eq("rep_id", payload.repId)
