@@ -1,7 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Phone, Calendar, MessageSquare, User, Clock, XCircle, AlertCircle, PlayCircle, ArrowLeft, MinusCircle } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import {
+  Phone, Calendar, MessageSquare, User, Clock, XCircle, AlertCircle,
+  PlayCircle, ArrowLeft, MinusCircle, CalendarDays, CheckCircle2,
+  Activity, Flame, ChevronRight, X
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -11,7 +15,9 @@ interface PipelineLead {
   pipeline_status: string;
   contact_attempt_count: number;
   last_contacted_at: string | null;
+  next_follow_up_at: string | null;
   scheduled_start_at: string | null;
+  scheduled_end_at: string | null;
   lead_notes: string | null;
   centerpoint_jobs: {
     name: string;
@@ -20,28 +26,85 @@ interface PipelineLead {
   };
 }
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
-  new_lead: { label: "New Lead", color: "text-sky-400 bg-sky-400/10 border-sky-400/20", icon: Clock },
-  follow_up_needed: { label: "Follow Up", color: "text-orange-400 bg-orange-400/10 border-orange-400/20", icon: Clock },
-  contact_attempted: { label: "Attempted", color: "text-amber-400 bg-amber-400/10 border-amber-400/20", icon: Phone },
-  contacted: { label: "Contacted", color: "text-indigo-400 bg-indigo-400/10 border-indigo-400/20", icon: MessageSquare },
-  scheduled: { label: "Scheduled", color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20", icon: Calendar },
-  inspection_in_progress: { label: "In Field", color: "text-purple-400 bg-purple-400/10 border-purple-400/20", icon: PlayCircle },
-  dead_lead: { label: "Dead", color: "text-rose-400 bg-rose-400/10 border-rose-400/20", icon: XCircle },
+const STATUS_CONFIG: Record<string, { label: string; color: string; bar: string; icon: any }> = {
+  new_lead:              { label: "New Lead",   color: "text-sky-400 bg-sky-400/10 border-sky-400/20",       bar: "bg-sky-500",      icon: Clock },
+  follow_up_needed:      { label: "Follow Up",  color: "text-orange-400 bg-orange-400/10 border-orange-400/20", bar: "bg-orange-500", icon: Clock },
+  contact_attempted:     { label: "Attempted",  color: "text-amber-400 bg-amber-400/10 border-amber-400/20",  bar: "bg-amber-500",    icon: Phone },
+  contacted:             { label: "Contacted",  color: "text-indigo-400 bg-indigo-400/10 border-indigo-400/20", bar: "bg-indigo-500", icon: MessageSquare },
+  scheduled:             { label: "Scheduled",  color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20", bar: "bg-emerald-500", icon: CalendarDays },
+  inspection_in_progress:{ label: "In Field",   color: "text-purple-400 bg-purple-400/10 border-purple-400/20", bar: "bg-purple-500", icon: PlayCircle },
+  inspection_completed:  { label: "Inspected",  color: "text-purple-300 bg-purple-300/10 border-purple-300/20", bar: "bg-purple-400", icon: CheckCircle2 },
+  dead_lead:             { label: "Dead Lead",  color: "text-rose-400 bg-rose-400/10 border-rose-400/20",     bar: "bg-rose-500/50",  icon: XCircle },
+  signed:                { label: "Signed",     color: "text-green-400 bg-green-400/10 border-green-400/20",  bar: "bg-green-500",    icon: CheckCircle2 },
+  closed:                { label: "Closed",     color: "text-white/30 bg-white/5 border-white/10",            bar: "bg-white/20",     icon: CheckCircle2 },
+};
+
+const STAGE_MAP: Record<string, number> = {
+  new_lead: 0, contact_attempted: 1, follow_up_needed: 1,
+  contacted: 2, scheduled: 3, inspection_in_progress: 4,
+  inspection_completed: 4, signed: 4, closed: 4,
 };
 
 const BLOCKED_STATUSES = ['inspection_in_progress', 'inspection_completed', 'signed', 'closed'];
 
+const TIME_SLOTS = [
+  { label: "7 AM",  value: "07:00" }, { label: "8 AM",  value: "08:00" },
+  { label: "9 AM",  value: "09:00" }, { label: "10 AM", value: "10:00" },
+  { label: "11 AM", value: "11:00" }, { label: "12 PM", value: "12:00" },
+  { label: "1 PM",  value: "13:00" }, { label: "2 PM",  value: "14:00" },
+  { label: "3 PM",  value: "15:00" }, { label: "4 PM",  value: "16:00" },
+  { label: "5 PM",  value: "17:00" }, { label: "6 PM",  value: "18:00" },
+];
+
+const DURATIONS = [
+  { label: "30 min", value: 30 }, { label: "1 hr", value: 60 },
+  { label: "1.5 hr", value: 90 }, { label: "2 hr", value: 120 },
+  { label: "3 hr",  value: 180 },
+];
+
+const addDays = (days: number) =>
+  new Date(Date.now() + days * 86400000).toISOString().split("T")[0];
+
+const fmtDate = (iso: string | null) =>
+  iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—";
+
+const fmtTime = (iso: string) =>
+  new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+
+const daysSince = (iso: string | null) =>
+  iso ? Math.floor((Date.now() - new Date(iso).getTime()) / 86400000) : null;
+
 export function PipelineLeads() {
   const [leads, setLeads] = useState<PipelineLead[]>([]);
   const [, setLoading] = useState(true);
+
+  // Remove from pipeline modals
   const [confirmModal, setConfirmModal] = useState<{ leadId: string; leadName: string } | null>(null);
   const [blockedModal, setBlockedModal] = useState(false);
   const [removing, setRemoving] = useState<string | null>(null);
 
+  // Schedule modal
+  const [schedModal, setSchedModal] = useState<{ leadId: string; leadName: string } | null>(null);
+  const [schedDate, setSchedDate] = useState("");
+  const [schedTime, setSchedTime] = useState("09:00");
+  const [schedDuration, setSchedDuration] = useState(60);
+
+  // Follow-up modal
+  const [followModal, setFollowModal] = useState<{ leadId: string; leadName: string } | null>(null);
+  const [followDate, setFollowDate] = useState(addDays(1));
+
+  // Notes panel
+  const [notesPanel, setNotesPanel] = useState<{ leadId: string; leadName: string; current: string } | null>(null);
+  const [notesText, setNotesText] = useState("");
+  const notesRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => { fetchLeads(); }, []);
+
   useEffect(() => {
-    fetchLeads();
-  }, []);
+    if (notesPanel && notesRef.current) {
+      setTimeout(() => notesRef.current?.focus(), 100);
+    }
+  }, [notesPanel]);
 
   const fetchLeads = async () => {
     try {
@@ -55,96 +118,95 @@ export function PipelineLeads() {
     }
   };
 
-  const handleCall = async (lead: PipelineLead) => {
-    try {
-      const res = await fetch(`/api/pipeline/${lead.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contact_attempt_count: lead.contact_attempt_count + 1,
-          last_contacted_at: new Date().toISOString(),
-          pipeline_status: 'contact_attempted'
-        })
-      });
-      if (res.ok) fetchLeads();
-    } catch (e) {
-      console.error(e);
-    }
+  // ── Actions ────────────────────────────────────────────────────────────────
+
+  const patch = async (id: string, body: Record<string, unknown>) => {
+    const res = await fetch(`/api/pipeline/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (res.ok) fetchLeads();
   };
 
-  const handleSchedule = async (id: string) => {
-    const startStr = prompt("Enter scheduled start (YYYY-MM-DD HH:MM):", new Date().toISOString().slice(0,16).replace('T',' '));
-    if (!startStr) return;
-
-    try {
-      const res = await fetch(`/api/pipeline/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pipeline_status: 'scheduled',
-          scheduled_start_at: new Date(startStr).toISOString(),
-          scheduled_end_at: new Date(new Date(startStr).getTime() + 60*60*1000).toISOString()
-        })
-      });
-      if (res.ok) fetchLeads();
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleStartInspection = (lead: PipelineLead) => {
-    if (lead.pipeline_status !== 'scheduled') {
-      alert("Inspection can only be started for 'Scheduled' leads.");
-      return;
-    }
-    const event = new CustomEvent('launchPipelineSession', { detail: lead });
-    window.dispatchEvent(event);
-  };
+  const handleCall = (lead: PipelineLead) =>
+    patch(lead.id, {
+      contact_attempt_count: lead.contact_attempt_count + 1,
+      last_contacted_at: new Date().toISOString(),
+      pipeline_status: "contact_attempted",
+    });
 
   const handleDeadLead = async (id: string) => {
     if (!confirm("Mark this lead as dead?")) return;
-    try {
-      const res = await fetch(`/api/pipeline/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pipeline_status: 'dead_lead', dead_reason: 'Manually marked as dead' })
-      });
-      if (res.ok) fetchLeads();
-    } catch (e) {
-      console.error(e);
-    }
+    patch(id, { pipeline_status: "dead_lead", dead_reason: "Manually marked as dead" });
   };
 
-  const handleFollowUp = async (id: string) => {
-    const dateStr = prompt("Enter next follow-up date (YYYY-MM-DD):", new Date(Date.now() + 86400000).toISOString().split('T')[0]);
-    if (!dateStr) return;
-
-    try {
-      const res = await fetch(`/api/pipeline/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pipeline_status: 'follow_up_needed',
-          next_follow_up_at: new Date(dateStr).toISOString()
-        })
-      });
-      if (res.ok) fetchLeads();
-    } catch (e) {
-      console.error(e);
-    }
+  const handleStartInspection = (lead: PipelineLead) => {
+    if (lead.pipeline_status !== "scheduled") return;
+    window.dispatchEvent(new CustomEvent("launchPipelineSession", { detail: lead }));
   };
 
-  const handleRemoveClick = (e: React.MouseEvent, lead: PipelineLead) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (BLOCKED_STATUSES.includes(lead.pipeline_status)) {
-      setBlockedModal(true);
-      return;
-    }
-    setConfirmModal({
-      leadId: lead.id,
-      leadName: lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name || lead.cpc_ticket_id,
+  // Schedule
+  const openSchedModal = (lead: PipelineLead) => {
+    setSchedModal({ leadId: lead.id, leadName: lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id });
+    setSchedDate(addDays(1));
+    setSchedTime("09:00");
+    setSchedDuration(60);
+  };
+
+  const confirmSchedule = async () => {
+    if (!schedModal || !schedDate) return;
+    const start = new Date(`${schedDate}T${schedTime}:00`);
+    const end = new Date(start.getTime() + schedDuration * 60000);
+    setSchedModal(null);
+    await patch(schedModal.leadId, {
+      pipeline_status: "scheduled",
+      scheduled_start_at: start.toISOString(),
+      scheduled_end_at: end.toISOString(),
     });
+  };
+
+  const schedSummary = () => {
+    if (!schedDate) return null;
+    const d = new Date(`${schedDate}T${schedTime}:00`);
+    const dateStr = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+    const timeStr = fmtTime(d.toISOString());
+    const durStr = schedDuration < 60 ? `${schedDuration} min` : `${schedDuration / 60} hr`;
+    return `${dateStr} at ${timeStr} · ${durStr}`;
+  };
+
+  // Follow-up
+  const openFollowModal = (lead: PipelineLead) => {
+    setFollowModal({ leadId: lead.id, leadName: lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id });
+    setFollowDate(addDays(1));
+  };
+
+  const confirmFollowUp = async () => {
+    if (!followModal || !followDate) return;
+    setFollowModal(null);
+    await patch(followModal.leadId, {
+      pipeline_status: "follow_up_needed",
+      next_follow_up_at: new Date(followDate + "T00:00:00").toISOString(),
+    });
+  };
+
+  // Notes
+  const openNotes = (lead: PipelineLead) => {
+    setNotesPanel({ leadId: lead.id, leadName: lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id, current: lead.lead_notes || "" });
+    setNotesText(lead.lead_notes || "");
+  };
+
+  const saveNotes = async () => {
+    if (!notesPanel) return;
+    setNotesPanel(null);
+    await patch(notesPanel.leadId, { lead_notes: notesText });
+  };
+
+  // Remove
+  const handleRemoveClick = (e: React.MouseEvent, lead: PipelineLead) => {
+    e.preventDefault(); e.stopPropagation();
+    if (BLOCKED_STATUSES.includes(lead.pipeline_status)) { setBlockedModal(true); return; }
+    setConfirmModal({ leadId: lead.id, leadName: lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id });
   };
 
   const confirmRemove = async () => {
@@ -152,46 +214,41 @@ export function PipelineLeads() {
     const { leadId } = confirmModal;
     setConfirmModal(null);
     setRemoving(leadId);
-
     try {
       const res = await fetch(`/api/pipeline/${leadId}`, { method: "DELETE" });
       const data = await res.json();
-
-      if (res.ok) {
-        setLeads(prev => prev.filter(l => l.id !== leadId));
-        setTimeout(() => fetchLeads(), 300);
-      } else if (res.status === 403) {
-        setBlockedModal(true);
-      } else {
-        console.error("Remove failed:", data.error);
-      }
-    } catch (e) {
-      console.error("Removal failed:", e);
-    } finally {
-      setRemoving(null);
-    }
+      if (res.ok) { setLeads(p => p.filter(l => l.id !== leadId)); setTimeout(fetchLeads, 300); }
+      else if (res.status === 403) setBlockedModal(true);
+      else console.error("Remove failed:", data.error);
+    } catch (e) { console.error(e); }
+    finally { setRemoving(null); }
   };
+
+  // ── Stats ──────────────────────────────────────────────────────────────────
 
   const stats = {
-    total: leads.length,
+    total: leads.filter(l => !['dead_lead','closed'].includes(l.pipeline_status)).length,
     scheduled: leads.filter(l => l.pipeline_status === 'scheduled').length,
-    active: leads.filter(l => !['dead_lead', 'scheduled'].includes(l.pipeline_status)).length,
-    avgAttempts: leads.length ? (leads.reduce((sum, l) => sum + l.contact_attempt_count, 0) / leads.length).toFixed(1) : 0
+    avgAttempts: leads.length
+      ? (leads.reduce((s, l) => s + l.contact_attempt_count, 0) / leads.length).toFixed(1)
+      : "0.0",
+    urgent: leads.filter(l => {
+      if (!['new_lead','contact_attempted','follow_up_needed','contacted'].includes(l.pipeline_status)) return false;
+      const d = daysSince(l.last_contacted_at);
+      return d === null || d >= 3;
+    }).length,
   };
 
-  const getProgress = (status: string) => {
-    const steps = ['new_lead', 'contact_attempted', 'contacted', 'scheduled', 'inspection_in_progress'];
-    const idx = steps.indexOf(status);
-    return ((idx + 1) / steps.length) * 100;
-  };
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="p-8 space-y-8 overflow-y-auto h-full bg-black/20">
-      {/* Header */}
+
+      {/* ── Header ─────────────────────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="flex items-center gap-6">
           <button
-            onClick={() => window.dispatchEvent(new CustomEvent('changeView', { detail: 'dashboard' }))}
+            onClick={() => window.dispatchEvent(new CustomEvent("changeView", { detail: "dashboard" }))}
             className="p-4 rounded-3xl bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all shadow-2xl"
           >
             <ArrowLeft className="w-6 h-6" />
@@ -202,205 +259,513 @@ export function PipelineLeads() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {[
-            { label: "Pipeline Size", value: stats.total, icon: Clock, color: "text-indigo-400" },
-            { label: "Scheduled", value: stats.scheduled, icon: Calendar, color: "text-emerald-400" },
-            { label: "Avg Touches", value: stats.avgAttempts, icon: Phone, color: "text-sky-400" },
+            { label: "Active Leads", value: stats.total,       sub: `${stats.urgent} need attention`, icon: Activity, color: "text-indigo-400" },
+            { label: "Scheduled",    value: stats.scheduled,   sub: "upcoming inspections",            icon: CalendarDays, color: "text-emerald-400" },
+            { label: "Avg Touches",  value: stats.avgAttempts, sub: "contact attempts",                icon: Phone, color: "text-sky-400" },
           ].map((s, i) => (
-            <div key={i} className="px-6 py-4 rounded-[24px] bg-white/[0.03] border border-white/[0.08] min-w-[140px]">
+            <div key={i} className="px-5 py-4 rounded-[24px] bg-white/[0.03] border border-white/[0.08] min-w-[148px]">
               <p className="text-[9px] font-mono text-white/20 uppercase tracking-[0.2em] mb-1">{s.label}</p>
-              <div className="flex items-center gap-2">
-                <s.icon className={cn("w-3.5 h-3.5", s.color)} />
+              <div className="flex items-baseline gap-2">
+                <s.icon className={cn("w-3.5 h-3.5 shrink-0", s.color)} />
                 <p className="text-xl font-display font-semibold">{s.value}</p>
               </div>
+              <p className="text-[10px] text-white/20 mt-1 font-light truncate">{s.sub}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <AnimatePresence>
-          {leads.map((lead) => {
-            const config = STATUS_CONFIG[lead.pipeline_status] || STATUS_CONFIG.new_lead;
-            const StatusIcon = config.icon;
-            const isRemoving = removing === lead.id;
-            const isBlocked = BLOCKED_STATUSES.includes(lead.pipeline_status);
+      {/* ── Cards grid ─────────────────────────────────────────────────── */}
+      {leads.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 text-center">
+          <div className="w-16 h-16 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
+            <Activity className="w-7 h-7 text-white/20" />
+          </div>
+          <p className="text-white/40 font-light text-lg">No leads in pipeline</p>
+          <p className="text-white/20 text-sm mt-2">Import tickets from CP Inbox to get started</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <AnimatePresence>
+            {leads.map((lead) => {
+              const cfg = STATUS_CONFIG[lead.pipeline_status] ?? STATUS_CONFIG.new_lead;
+              const StatusIcon = cfg.icon;
+              const stageIdx = STAGE_MAP[lead.pipeline_status] ?? 0;
+              const isRemoving = removing === lead.id;
+              const isBlocked = BLOCKED_STATUSES.includes(lead.pipeline_status);
+              const idleDays = daysSince(lead.last_contacted_at);
+              const isUrgent = !isBlocked && lead.pipeline_status !== 'dead_lead' && (idleDays === null || idleDays >= 7);
+              const isWarning = !isUrgent && !isBlocked && lead.pipeline_status !== 'dead_lead' && idleDays !== null && idleDays >= 3;
 
-            return (
-              <motion.div
-                key={lead.id}
-                layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: isRemoving ? 0.4 : 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="group bg-white/[0.02] border border-white/[0.05] rounded-[40px] p-8 hover:bg-white/[0.04] hover:border-white/20 transition-all flex flex-col h-full relative overflow-hidden"
-              >
-                {/* Progress Bar */}
-                <div className="absolute top-0 left-0 w-full h-1 bg-white/5">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${getProgress(lead.pipeline_status)}%` }}
-                    className="h-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between mb-8">
-                  <div className={cn("flex items-center gap-2 px-4 py-1.5 rounded-full border text-[9px] font-mono uppercase tracking-widest", config.color)}>
-                    <StatusIcon className="w-3.5 h-3.5" />
-                    {config.label}
+              return (
+                <motion.div
+                  key={lead.id}
+                  layout
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: isRemoving ? 0.35 : 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.94 }}
+                  transition={{ duration: 0.22 }}
+                  className="bg-[#0b0b0b] border border-white/[0.07] rounded-[36px] overflow-hidden hover:border-white/[0.14] transition-all duration-300 flex flex-col"
+                >
+                  {/* Animated status-colored progress bar */}
+                  <div className="h-[2px] bg-white/[0.04] shrink-0">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${((stageIdx + 1) / 5) * 100}%` }}
+                      transition={{ duration: 0.6, ease: "easeOut" }}
+                      className={cn("h-full", cfg.bar)}
+                    />
                   </div>
-                  <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest bg-white/5 px-2 py-1 rounded-lg">#{lead.cpc_ticket_id}</span>
-                </div>
 
-                <div className="mb-8">
-                  <h3 className="text-2xl font-display font-medium text-white mb-2 tracking-tight group-hover:text-indigo-300 transition-colors">
-                    {lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name}
-                  </h3>
-                  <div className="flex items-center gap-4">
-                    <p className="text-xs text-white/40 flex items-center gap-2 font-light">
-                      <User className="w-4 h-4 text-indigo-400/50" />
-                      {lead.centerpoint_jobs?.owner || "Unknown Owner"}
-                    </p>
-                    <div className="w-1 h-1 rounded-full bg-white/10" />
-                    <p className="text-[10px] font-mono text-white/25 uppercase tracking-widest">Residental</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-8">
-                  <div className="bg-white/[0.02] border border-white/[0.05] rounded-[24px] p-4 group-hover:bg-white/[0.04] transition-colors">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-[8px] font-mono text-white/20 uppercase tracking-[0.2em]">Attempts</p>
-                      <Phone className="w-3 h-3 text-white/10" />
+                  <div className="p-7 flex flex-col flex-1">
+                    {/* Stage dots */}
+                    <div className="flex gap-1.5 mb-5">
+                      {[0,1,2,3,4].map(i => (
+                        <div
+                          key={i}
+                          className={cn(
+                            "h-[3px] rounded-full flex-1 transition-all duration-500",
+                            i < stageIdx  ? cn(cfg.bar, "opacity-40") :
+                            i === stageIdx ? cfg.bar :
+                            "bg-white/[0.06]"
+                          )}
+                        />
+                      ))}
                     </div>
-                    <p className="text-2xl font-display font-semibold text-white">{lead.contact_attempt_count}</p>
-                  </div>
-                  <div className="bg-white/[0.02] border border-white/[0.05] rounded-[24px] p-4 group-hover:bg-white/[0.04] transition-colors">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-[8px] font-mono text-white/20 uppercase tracking-[0.2em]">Last Contact</p>
-                      <Clock className="w-3 h-3 text-white/10" />
+
+                    {/* Badge row */}
+                    <div className="flex items-center justify-between mb-5">
+                      <div className={cn("flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-[9px] font-mono uppercase tracking-widest", cfg.color)}>
+                        <StatusIcon className="w-3 h-3" />
+                        {cfg.label}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {isUrgent  && <div className="flex items-center gap-1 text-[9px] font-mono text-rose-400/80"><Flame className="w-3 h-3" /> Urgent</div>}
+                        {isWarning && <div className="flex items-center gap-1 text-[9px] font-mono text-amber-400/70"><AlertCircle className="w-3 h-3" /> Stale</div>}
+                        <span className="text-[9px] font-mono text-white/20 bg-white/[0.04] border border-white/[0.06] px-2 py-1 rounded-lg">
+                          #{lead.cpc_ticket_id}
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-xs font-display text-white/60 mt-1.5">
-                      {lead.last_contacted_at ? new Date(lead.last_contacted_at).toLocaleDateString() : "Never"}
-                    </p>
-                  </div>
-                </div>
 
-                <div className="mt-auto flex items-center gap-3">
-                  {lead.pipeline_status === 'scheduled' ? (
-                    <button
-                      onClick={() => handleStartInspection(lead)}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-indigo-500 hover:bg-indigo-400 text-white transition-all text-sm font-medium"
-                    >
-                      <PlayCircle className="w-4 h-4" />
-                      Start Inspection
-                    </button>
-                  ) : lead.pipeline_status === 'dead_lead' ? (
-                    <span className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-rose-500/10 text-rose-400 text-sm font-medium">
-                      <XCircle className="w-4 h-4" />
-                      Lead Closed
-                    </span>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => handleCall(lead)}
-                        className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all text-xs font-medium"
-                      >
-                        <Phone className="w-3.5 h-3.5" />
-                        Call
-                      </button>
-                      <button
-                        onClick={() => handleFollowUp(lead.id)}
-                        className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all text-xs font-medium"
-                      >
-                        <Clock className="w-3.5 h-3.5" />
-                        Follow-up
-                      </button>
-                      <button
-                        onClick={() => handleSchedule(lead.id)}
-                        className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30 transition-all text-xs font-medium"
-                      >
-                        <Calendar className="w-3.5 h-3.5" />
-                        Schedule
-                      </button>
-                    </>
-                  )}
-                </div>
+                    {/* Property */}
+                    <div className="mb-6">
+                      <h3 className="text-[1.4rem] font-display font-medium text-white tracking-tight leading-tight mb-2">
+                        {lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name}
+                      </h3>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-white/35 flex items-center gap-1.5 font-light">
+                          <User className="w-3.5 h-3.5 text-white/20" />
+                          {lead.centerpoint_jobs?.owner || "Unknown Owner"}
+                        </span>
+                        <div className="w-1 h-1 rounded-full bg-white/10" />
+                        <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest">Residential</span>
+                      </div>
+                    </div>
 
-                {/* Bottom action row — shown for all non-dead leads */}
-                {lead.pipeline_status !== 'dead_lead' && (
-                  <div className="mt-3 flex gap-2">
-                    {lead.pipeline_status !== 'scheduled' && (
-                      <>
-                        <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-white/30 hover:text-white transition-all text-xs font-medium">
+                    {/* Stats row */}
+                    <div className="grid grid-cols-3 gap-2.5 mb-6">
+                      {/* Attempts */}
+                      <div className="bg-white/[0.025] border border-white/[0.05] rounded-[18px] p-3.5">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <p className="text-[7px] font-mono text-white/20 uppercase tracking-[0.2em]">Attempts</p>
+                          <Phone className="w-2.5 h-2.5 text-white/10" />
+                        </div>
+                        <p className="text-[1.4rem] font-display font-semibold leading-none">{lead.contact_attempt_count}</p>
+                      </div>
+
+                      {/* Last contact / scheduled date */}
+                      <div className="bg-white/[0.025] border border-white/[0.05] rounded-[18px] p-3.5">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <p className="text-[7px] font-mono text-white/20 uppercase tracking-[0.2em]">
+                            {lead.pipeline_status === 'scheduled' ? 'Date' : 'Last Contact'}
+                          </p>
+                          <Clock className="w-2.5 h-2.5 text-white/10" />
+                        </div>
+                        <p className="text-xs font-display text-white/55 leading-tight">
+                          {lead.pipeline_status === 'scheduled' && lead.scheduled_start_at
+                            ? fmtDate(lead.scheduled_start_at)
+                            : fmtDate(lead.last_contacted_at) || "Never"}
+                        </p>
+                      </div>
+
+                      {/* Scheduled time / follow-up / idle */}
+                      <div className="bg-white/[0.025] border border-white/[0.05] rounded-[18px] p-3.5">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <p className="text-[7px] font-mono text-white/20 uppercase tracking-[0.2em]">
+                            {lead.pipeline_status === 'scheduled' ? 'Time'
+                              : lead.pipeline_status === 'follow_up_needed' ? 'Follow Up'
+                              : 'Idle'}
+                          </p>
+                          <CalendarDays className="w-2.5 h-2.5 text-white/10" />
+                        </div>
+                        <p className={cn("text-xs font-display leading-tight", isUrgent ? "text-rose-400/80" : isWarning ? "text-amber-400/70" : "text-white/55")}>
+                          {lead.pipeline_status === 'scheduled' && lead.scheduled_start_at
+                            ? fmtTime(lead.scheduled_start_at)
+                            : lead.pipeline_status === 'follow_up_needed' && lead.next_follow_up_at
+                            ? fmtDate(lead.next_follow_up_at)
+                            : idleDays !== null
+                            ? `${idleDays}d`
+                            : "New"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Primary actions */}
+                    <div className="flex gap-2.5 mt-auto">
+                      {lead.pipeline_status === 'scheduled' ? (
+                        <button
+                          onClick={() => handleStartInspection(lead)}
+                          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-indigo-500 hover:bg-indigo-400 active:scale-95 text-white transition-all text-sm font-medium shadow-lg shadow-indigo-500/20"
+                        >
+                          <PlayCircle className="w-4 h-4" />
+                          Start Inspection
+                        </button>
+                      ) : lead.pipeline_status === 'dead_lead' ? (
+                        <span className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-rose-500/10 text-rose-400/60 text-sm font-medium cursor-not-allowed">
+                          <XCircle className="w-4 h-4" />
+                          Lead Closed
+                        </span>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => handleCall(lead)}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white hover:text-black active:scale-95 transition-all text-xs font-medium"
+                          >
+                            <Phone className="w-3.5 h-3.5" /> Call
+                          </button>
+                          <button
+                            onClick={() => openFollowModal(lead)}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white hover:text-black active:scale-95 transition-all text-xs font-medium"
+                          >
+                            <Clock className="w-3.5 h-3.5" /> Follow-up
+                          </button>
+                          <button
+                            onClick={() => openSchedModal(lead)}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-indigo-500/15 border border-indigo-500/25 text-indigo-300 hover:bg-indigo-500/30 active:scale-95 transition-all text-xs font-medium"
+                          >
+                            <Calendar className="w-3.5 h-3.5" /> Schedule
+                          </button>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Secondary actions */}
+                    {lead.pipeline_status !== 'dead_lead' && (
+                      <div className="mt-2.5 pt-2.5 border-t border-white/[0.05] flex items-center gap-1">
+                        <button
+                          onClick={() => openNotes(lead)}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-white/25 hover:text-white/60 hover:bg-white/[0.04] transition-all text-[11px] font-medium"
+                        >
                           <MessageSquare className="w-3.5 h-3.5" />
                           Notes
+                          {lead.lead_notes && <div className="w-1.5 h-1.5 rounded-full bg-indigo-400/60" />}
                         </button>
+                        {lead.pipeline_status !== 'scheduled' && (
+                          <button
+                            onClick={() => handleDeadLead(lead.id)}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-rose-400/30 hover:text-rose-400/70 hover:bg-rose-500/[0.06] transition-all text-[11px] font-medium"
+                          >
+                            <XCircle className="w-3.5 h-3.5" /> Dead Lead
+                          </button>
+                        )}
                         <button
-                          onClick={() => handleDeadLead(lead.id)}
-                          className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-rose-400/50 hover:text-rose-400 hover:bg-rose-500/10 transition-all text-xs font-medium"
+                          onClick={(e) => handleRemoveClick(e, lead)}
+                          disabled={isRemoving}
+                          className={cn(
+                            "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl transition-all text-[11px] font-medium",
+                            isBlocked
+                              ? "text-white/10 cursor-not-allowed"
+                              : "text-white/20 hover:text-white/50 hover:bg-white/[0.04]"
+                          )}
                         >
-                          <XCircle className="w-3.5 h-3.5" />
-                          Dead Lead
+                          <MinusCircle className="w-3.5 h-3.5" />
+                          {isRemoving ? "Removing…" : "Remove"}
                         </button>
-                      </>
+                      </div>
                     )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SCHEDULE MODAL
+      ══════════════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {schedModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
+          >
+            <motion.div initial={{ opacity: 0, scale: 0.96, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 12 }} transition={{ type: "spring", damping: 28, stiffness: 320 }}
+              className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 w-full max-w-md shadow-2xl"
+            >
+              {/* Header */}
+              <div className="flex items-start justify-between mb-7">
+                <div>
+                  <div className="flex items-center gap-2.5 mb-1">
+                    <CalendarDays className="w-5 h-5 text-emerald-400" />
+                    <h3 className="text-xl font-display font-medium">Schedule Inspection</h3>
+                  </div>
+                  <p className="text-sm text-white/35 font-light">{schedModal.leadName}</p>
+                </div>
+                <button onClick={() => setSchedModal(null)} className="p-2 rounded-2xl text-white/30 hover:text-white hover:bg-white/5 transition-all">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Date */}
+              <div className="mb-6">
+                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">Date</label>
+                <input
+                  type="date"
+                  value={schedDate}
+                  min={new Date().toISOString().split("T")[0]}
+                  onChange={(e) => setSchedDate(e.target.value)}
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-500/50 [color-scheme:dark]"
+                />
+              </div>
+
+              {/* Time grid */}
+              <div className="mb-6">
+                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2.5">Time</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {TIME_SLOTS.map(slot => (
                     <button
-                      onClick={(e) => handleRemoveClick(e, lead)}
-                      disabled={isRemoving}
+                      key={slot.value}
+                      onClick={() => setSchedTime(slot.value)}
                       className={cn(
-                        "flex-1 flex items-center justify-center gap-2 py-2 rounded-xl transition-all text-xs font-medium",
-                        isBlocked
-                          ? "text-white/15 cursor-not-allowed"
-                          : "text-white/25 hover:text-white/60 hover:bg-white/5"
+                        "py-2.5 rounded-xl text-xs font-medium transition-all",
+                        schedTime === slot.value
+                          ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20"
+                          : "bg-white/[0.04] text-white/35 hover:bg-white/[0.08] hover:text-white/70"
                       )}
                     >
-                      <MinusCircle className="w-3.5 h-3.5" />
-                      {isRemoving ? "Removing…" : "Remove from Pipeline"}
+                      {slot.label}
                     </button>
-                  </div>
-                )}
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
-      </div>
-
-      {/* Confirm Removal Modal */}
-      <AnimatePresence>
-        {confirmModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 max-w-sm w-full mx-6 shadow-2xl"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
-                <MinusCircle className="w-6 h-6 text-white/50" />
+                  ))}
+                </div>
               </div>
-              <h3 className="text-xl font-display font-medium text-white mb-3">Remove from Pipeline?</h3>
-              <p className="text-white/40 text-sm leading-relaxed mb-8">
-                This will remove{" "}
-                <span className="text-white/70 font-medium">{confirmModal.leadName}</span>{" "}
-                from your pipeline but keep it in CenterPoint. You can re-import it from CP Inbox later.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setConfirmModal(null)}
-                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm"
+
+              {/* Duration */}
+              <div className="mb-7">
+                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2.5">Duration</label>
+                <div className="flex gap-2">
+                  {DURATIONS.map(dur => (
+                    <button
+                      key={dur.value}
+                      onClick={() => setSchedDuration(dur.value)}
+                      className={cn(
+                        "flex-1 py-2.5 rounded-xl text-xs font-medium transition-all",
+                        schedDuration === dur.value
+                          ? "bg-emerald-500/20 border border-emerald-500/40 text-emerald-300"
+                          : "bg-white/[0.04] text-white/30 hover:bg-white/[0.07] hover:text-white/60"
+                      )}
+                    >
+                      {dur.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Summary */}
+              {schedDate && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                  className="flex items-center gap-3 bg-indigo-500/[0.08] border border-indigo-500/15 rounded-2xl px-4 py-3 mb-6"
                 >
+                  <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
+                  <p className="text-sm text-indigo-300 font-medium">{schedSummary()}</p>
+                </motion.div>
+              )}
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button onClick={() => setSchedModal(null)}
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm">
                   Cancel
                 </button>
                 <button
-                  onClick={confirmRemove}
-                  className="flex-1 py-3 rounded-2xl bg-rose-500/15 border border-rose-500/25 text-rose-400 hover:bg-rose-500/25 transition-all text-sm font-medium"
+                  onClick={confirmSchedule}
+                  disabled={!schedDate}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-sm font-medium"
                 >
+                  Confirm Schedule <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          FOLLOW-UP MODAL
+      ══════════════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {followModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
+          >
+            <motion.div initial={{ opacity: 0, scale: 0.96, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 12 }} transition={{ type: "spring", damping: 28, stiffness: 320 }}
+              className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 w-full max-w-sm shadow-2xl"
+            >
+              <div className="flex items-start justify-between mb-7">
+                <div>
+                  <div className="flex items-center gap-2.5 mb-1">
+                    <Clock className="w-5 h-5 text-orange-400" />
+                    <h3 className="text-xl font-display font-medium">Schedule Follow-up</h3>
+                  </div>
+                  <p className="text-sm text-white/35 font-light">{followModal.leadName}</p>
+                </div>
+                <button onClick={() => setFollowModal(null)} className="p-2 rounded-2xl text-white/30 hover:text-white hover:bg-white/5 transition-all">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Quick picks */}
+              <div className="mb-5">
+                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2.5">Quick Select</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: "Tomorrow",   days: 1 },
+                    { label: "In 2 days",  days: 2 },
+                    { label: "In 3 days",  days: 3 },
+                    { label: "Next week",  days: 7 },
+                  ].map(opt => {
+                    const d = addDays(opt.days);
+                    return (
+                      <button
+                        key={opt.days}
+                        onClick={() => setFollowDate(d)}
+                        className={cn(
+                          "py-3 rounded-2xl text-sm font-medium transition-all",
+                          followDate === d
+                            ? "bg-orange-500/20 border border-orange-500/40 text-orange-300"
+                            : "bg-white/[0.04] text-white/40 hover:bg-white/[0.08] hover:text-white/70"
+                        )}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Custom date */}
+              <div className="mb-7">
+                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">Custom Date</label>
+                <input
+                  type="date"
+                  value={followDate}
+                  min={new Date().toISOString().split("T")[0]}
+                  onChange={(e) => setFollowDate(e.target.value)}
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-orange-500/40 [color-scheme:dark]"
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button onClick={() => setFollowModal(null)}
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm">
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmFollowUp}
+                  className="flex-1 py-3 rounded-2xl bg-orange-500/15 border border-orange-500/25 text-orange-300 hover:bg-orange-500/25 transition-all text-sm font-medium"
+                >
+                  Set Follow-up
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          NOTES SLIDE PANEL
+      ══════════════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {notesPanel && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+              onClick={() => setNotesPanel(null)}
+            />
+            <motion.div
+              initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 32, stiffness: 340 }}
+              className="fixed right-0 top-0 bottom-0 w-[420px] max-w-full bg-[#0d0d0d] border-l border-white/10 z-50 flex flex-col shadow-2xl"
+            >
+              <div className="flex items-center justify-between p-8 border-b border-white/[0.06]">
+                <div>
+                  <div className="flex items-center gap-2.5 mb-0.5">
+                    <MessageSquare className="w-4.5 h-4.5 text-indigo-400" />
+                    <h3 className="text-lg font-display font-medium">Lead Notes</h3>
+                  </div>
+                  <p className="text-xs text-white/30 font-light">{notesPanel.leadName}</p>
+                </div>
+                <button onClick={() => setNotesPanel(null)} className="p-2.5 rounded-2xl text-white/30 hover:text-white hover:bg-white/5 transition-all">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="flex-1 p-8 overflow-y-auto">
+                <textarea
+                  ref={notesRef}
+                  value={notesText}
+                  onChange={(e) => setNotesText(e.target.value)}
+                  placeholder="Add notes about this lead — contact history, objections, preferences…"
+                  className="w-full h-full min-h-[280px] bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5 text-sm text-white/80 placeholder:text-white/20 focus:outline-none focus:border-indigo-500/40 resize-none leading-relaxed"
+                />
+              </div>
+
+              <div className="p-8 border-t border-white/[0.06] flex gap-3">
+                <button onClick={() => setNotesPanel(null)}
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm">
+                  Discard
+                </button>
+                <button onClick={saveNotes}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30 transition-all text-sm font-medium">
+                  <CheckCircle2 className="w-4 h-4" /> Save Notes
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          CONFIRM REMOVE MODAL
+      ══════════════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {confirmModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
+          >
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 max-w-sm w-full shadow-2xl"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
+                <MinusCircle className="w-6 h-6 text-white/40" />
+              </div>
+              <h3 className="text-xl font-display font-medium mb-3">Remove from Pipeline?</h3>
+              <p className="text-white/40 text-sm leading-relaxed mb-8">
+                <span className="text-white/70 font-medium">{confirmModal.leadName}</span> will be removed from your pipeline but kept in CenterPoint. You can re-import it from CP Inbox later.
+              </p>
+              <div className="flex gap-3">
+                <button onClick={() => setConfirmModal(null)}
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm">
+                  Cancel
+                </button>
+                <button onClick={confirmRemove}
+                  className="flex-1 py-3 rounded-2xl bg-rose-500/15 border border-rose-500/25 text-rose-400 hover:bg-rose-500/25 transition-all text-sm font-medium">
                   Remove
                 </button>
               </div>
@@ -409,38 +774,34 @@ export function PipelineLeads() {
         )}
       </AnimatePresence>
 
-      {/* Blocked Modal */}
+      {/* ══════════════════════════════════════════════════════════════════
+          BLOCKED MODAL
+      ══════════════════════════════════════════════════════════════════ */}
       <AnimatePresence>
         {blockedModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
           >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 max-w-sm w-full mx-6 shadow-2xl"
+              className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 max-w-sm w-full shadow-2xl"
             >
               <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-6">
                 <AlertCircle className="w-6 h-6 text-amber-400" />
               </div>
-              <h3 className="text-xl font-display font-medium text-white mb-3">Cannot Remove Lead</h3>
+              <h3 className="text-xl font-display font-medium mb-3">Cannot Remove Lead</h3>
               <p className="text-white/40 text-sm leading-relaxed mb-8">
                 This lead has inspection activity and cannot be removed from Pipeline.
               </p>
-              <button
-                onClick={() => setBlockedModal(false)}
-                className="w-full py-3 rounded-2xl bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all text-sm"
-              >
+              <button onClick={() => setBlockedModal(false)}
+                className="w-full py-3 rounded-2xl bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all text-sm">
                 Understood
               </button>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
     </div>
   );
 }
