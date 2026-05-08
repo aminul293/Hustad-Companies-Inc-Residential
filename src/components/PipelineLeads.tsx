@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   Phone, Calendar, MessageSquare, User, Clock, XCircle, AlertCircle,
   PlayCircle, ArrowLeft, MinusCircle, CalendarDays, CheckCircle2,
-  Activity, Flame, ChevronRight, X
+  Activity, Flame, ChevronRight, ChevronLeft, X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -46,6 +46,9 @@ const STAGE_MAP: Record<string, number> = {
 };
 
 const BLOCKED_STATUSES = ['inspection_in_progress', 'inspection_completed', 'signed', 'closed'];
+
+const STAGE_STATUSES = ['new_lead', 'contact_attempted', 'contacted', 'scheduled', 'inspection_in_progress'];
+const STAGE_LABELS   = ['New Lead', 'Attempted', 'Contacted', 'Scheduled', 'In Field'];
 
 const TIME_SLOTS = [
   { label: "7 AM",  value: "07:00" }, { label: "8 AM",  value: "08:00" },
@@ -92,6 +95,9 @@ export function PipelineLeads() {
   // Follow-up modal
   const [followModal, setFollowModal] = useState<{ leadId: string; leadName: string } | null>(null);
   const [followDate, setFollowDate] = useState(addDays(1));
+
+  // Stage navigation
+  const [stageBackModal, setStageBackModal] = useState<{ leadId: string; leadName: string; targetIdx: number } | null>(null);
 
   // Notes panel
   const [notesPanel, setNotesPanel] = useState<{ leadId: string; leadName: string; current: string } | null>(null);
@@ -144,6 +150,41 @@ export function PipelineLeads() {
   const handleStartInspection = (lead: PipelineLead) => {
     if (lead.pipeline_status !== "scheduled") return;
     window.dispatchEvent(new CustomEvent("launchPipelineSession", { detail: lead }));
+  };
+
+  // Stage navigation
+  const handleStageClick = (lead: PipelineLead, targetIdx: number) => {
+    if (BLOCKED_STATUSES.includes(lead.pipeline_status)) return;
+    if (targetIdx === 4) return; // In Field only via Start Inspection button
+    const currentIdx = STAGE_MAP[lead.pipeline_status] ?? 0;
+    if (targetIdx === currentIdx && lead.pipeline_status === STAGE_STATUSES[targetIdx]) return;
+
+    // Clicking Scheduled → open schedule modal
+    if (targetIdx === 3) { openSchedModal(lead); return; }
+
+    // Going backward → confirm first
+    if (targetIdx < currentIdx) {
+      setStageBackModal({ leadId: lead.id, leadName: lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id, targetIdx });
+      return;
+    }
+
+    // Going forward → immediate
+    const updates: Record<string, unknown> = { pipeline_status: STAGE_STATUSES[targetIdx] };
+    if (targetIdx === 1) {
+      updates.contact_attempt_count = lead.contact_attempt_count + 1;
+      updates.last_contacted_at = new Date().toISOString();
+    }
+    patch(lead.id, updates);
+  };
+
+  const confirmStageBack = async () => {
+    if (!stageBackModal) return;
+    const { leadId, targetIdx } = stageBackModal;
+    setStageBackModal(null);
+    const updates: Record<string, unknown> = { pipeline_status: STAGE_STATUSES[targetIdx] };
+    if (targetIdx < 3) { updates.scheduled_start_at = null; updates.scheduled_end_at = null; }
+    if (targetIdx < 1) { updates.next_follow_up_at = null; }
+    await patch(leadId, updates);
   };
 
   // Schedule
@@ -320,19 +361,36 @@ export function PipelineLeads() {
                   </div>
 
                   <div className="p-7 flex flex-col flex-1">
-                    {/* Stage dots */}
+                    {/* Stage dots — clickable navigation */}
                     <div className="flex gap-1.5 mb-5">
-                      {[0,1,2,3,4].map(i => (
-                        <div
-                          key={i}
-                          className={cn(
-                            "h-[3px] rounded-full flex-1 transition-all duration-500",
-                            i < stageIdx  ? cn(cfg.bar, "opacity-40") :
-                            i === stageIdx ? cfg.bar :
-                            "bg-white/[0.06]"
-                          )}
-                        />
-                      ))}
+                      {STAGE_LABELS.map((label, i) => {
+                        const clickable = i !== 4 && !isBlocked;
+                        const isCurrent = i === stageIdx;
+                        const isPast = i < stageIdx;
+                        return (
+                          <div key={i} className="relative flex-1 group/dot">
+                            {/* Tooltip */}
+                            <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/dot:opacity-100 transition-opacity z-10 whitespace-nowrap">
+                              <span className="text-[9px] font-mono text-white/50 bg-[#111] border border-white/10 rounded-md px-2 py-1">
+                                {label}
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => handleStageClick(lead, i)}
+                              disabled={!clickable}
+                              className={cn(
+                                "w-full h-[4px] rounded-full transition-all duration-300",
+                                clickable ? "cursor-pointer" : "cursor-default",
+                                clickable && !isCurrent && "hover:brightness-150 hover:opacity-80",
+                                isPast    ? cn(cfg.bar, "opacity-50") :
+                                isCurrent ? cfg.bar :
+                                clickable ? "bg-white/[0.07] hover:bg-white/[0.13]" :
+                                "bg-white/[0.04]"
+                              )}
+                            />
+                          </div>
+                        );
+                      })}
                     </div>
 
                     {/* Badge row */}
@@ -767,6 +825,43 @@ export function PipelineLeads() {
                 <button onClick={confirmRemove}
                   className="flex-1 py-3 rounded-2xl bg-rose-500/15 border border-rose-500/25 text-rose-400 hover:bg-rose-500/25 transition-all text-sm font-medium">
                   Remove
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          STAGE BACK CONFIRMATION MODAL
+      ══════════════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {stageBackModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
+          >
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 max-w-sm w-full shadow-2xl"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
+                <ChevronLeft className="w-6 h-6 text-white/40" />
+              </div>
+              <h3 className="text-xl font-display font-medium mb-2">
+                Move back to <span className="text-white/70">{STAGE_LABELS[stageBackModal.targetIdx]}</span>?
+              </h3>
+              <p className="text-white/35 text-sm leading-relaxed mb-8">
+                {stageBackModal.leadName} will be reset to this stage.
+                {stageBackModal.targetIdx < 3 && " Any scheduled appointment will be cleared."}
+              </p>
+              <div className="flex gap-3">
+                <button onClick={() => setStageBackModal(null)}
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm">
+                  Cancel
+                </button>
+                <button onClick={confirmStageBack}
+                  className="flex-1 py-3 rounded-2xl bg-white/[0.07] border border-white/15 text-white/80 hover:bg-white/[0.12] transition-all text-sm font-medium">
+                  Confirm
                 </button>
               </div>
             </motion.div>
