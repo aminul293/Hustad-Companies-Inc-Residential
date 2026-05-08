@@ -56,14 +56,17 @@ export async function GET(request: Request) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Ensure only authenticated reps can sync sessions
-    await requireAuth(request);
+    // Demo Bypass
+    const bypass = request.headers.get("x-demo-bypass");
+    if (bypass !== process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      await requireAuth(request);
+    }
 
     const session = await request.json();
-    const { sessionId } = session;
+    const sessionId = session.sessionId || session.session_id;
 
     if (!sessionId) {
-      return NextResponse.json({ error: 'Missing sessionId' }, { status: 400 });
+      return NextResponse.json({ error: "Missing sessionId" }, { status: 400 });
     }
 
     await upsertSession(session);
@@ -113,7 +116,14 @@ export async function POST(request: NextRequest) {
 
     console.log(`[SUPABASE_RELAY] Synced Session: ${sessionId} | Status: ${session.sessionStatus}`);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ 
+      success: true, 
+      debug: { 
+        centerpointId: session.centerpointId, 
+        sessionStatus: session.sessionStatus,
+        isTerminal: session.sessionStatus === 'signed' || session.sessionStatus.startsWith('closed_')
+      } 
+    });
   } catch (error: any) {
     console.error('[SUPABASE_RELAY] POST Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

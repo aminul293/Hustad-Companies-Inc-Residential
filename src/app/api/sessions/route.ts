@@ -28,11 +28,18 @@ export async function GET(req: NextRequest) {
 // POST /api/sessions — Create or sync a session from the tablet
 export async function POST(req: NextRequest) {
   try {
-    const payload = await requireAuth(req);
+    // Demo Bypass
+    let repId = "00000000-0000-0000-0000-000000000000";
+    const bypass = req.headers.get("x-demo-bypass");
+    if (bypass !== process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      const payload = await requireAuth(req) as any;
+      repId = payload.repId;
+    }
+
     const db = getServiceClient();
     const body = await req.json();
 
-    const row = mapSessionToRow(body, payload.repId);
+    const row = mapSessionToRow(body, repId);
     
     const { data: session, error } = await db
       .from("inspection_sessions")
@@ -43,10 +50,10 @@ export async function POST(req: NextRequest) {
     if (error) throw error;
 
     return NextResponse.json({ session: { ...session, sync_status: "synced" }, synced: true });
-  } catch (err) {
+  } catch (err: any) {
     if (err instanceof Response) return err;
     console.error("Session create/sync error:", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error", details: err.message, stack: err.stack }, { status: 500 });
   }
 }
 
