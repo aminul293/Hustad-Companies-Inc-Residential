@@ -22,7 +22,7 @@ interface PipelineLead {
   centerpoint_jobs: {
     name: string;
     property_name: string;
-    owner: string;
+    raw?: Record<string, any>;
   };
 }
 
@@ -420,7 +420,7 @@ export function PipelineLeads() {
                       <div className="flex items-center gap-3">
                         <span className="text-xs text-white/35 flex items-center gap-1.5 font-light">
                           <User className="w-3.5 h-3.5 text-white/20" />
-                          {lead.centerpoint_jobs?.owner || "Unknown Owner"}
+                          {lead.centerpoint_jobs?.raw?._owner || "Unknown Owner"}
                         </span>
                         <div className="w-1 h-1 rounded-full bg-white/10" />
                         <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest">Residential</span>
