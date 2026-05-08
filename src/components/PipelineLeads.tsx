@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Phone, Calendar, MessageSquare, User, Clock, CheckCircle2, XCircle, AlertCircle, PlayCircle, ArrowLeft, Trash2 } from "lucide-react";
+import { Phone, Calendar, MessageSquare, User, Clock, XCircle, AlertCircle, PlayCircle, ArrowLeft, MinusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -30,9 +30,14 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }>
   dead_lead: { label: "Dead", color: "text-rose-400 bg-rose-400/10 border-rose-400/20", icon: XCircle },
 };
 
+const BLOCKED_STATUSES = ['inspection_in_progress', 'inspection_completed', 'signed', 'closed'];
+
 export function PipelineLeads() {
   const [leads, setLeads] = useState<PipelineLead[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
+  const [confirmModal, setConfirmModal] = useState<{ leadId: string; leadName: string } | null>(null);
+  const [blockedModal, setBlockedModal] = useState(false);
+  const [removing, setRemoving] = useState<string | null>(null);
 
   useEffect(() => {
     fetchLeads();
@@ -55,7 +60,7 @@ export function PipelineLeads() {
       const res = await fetch(`/api/pipeline/${lead.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           contact_attempt_count: lead.contact_attempt_count + 1,
           last_contacted_at: new Date().toISOString(),
           pipeline_status: 'contact_attempted'
@@ -70,15 +75,15 @@ export function PipelineLeads() {
   const handleSchedule = async (id: string) => {
     const startStr = prompt("Enter scheduled start (YYYY-MM-DD HH:MM):", new Date().toISOString().slice(0,16).replace('T',' '));
     if (!startStr) return;
-    
+
     try {
       const res = await fetch(`/api/pipeline/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           pipeline_status: 'scheduled',
           scheduled_start_at: new Date(startStr).toISOString(),
-          scheduled_end_at: new Date(new Date(startStr).getTime() + 60*60*1000).toISOString() // default 1hr
+          scheduled_end_at: new Date(new Date(startStr).getTime() + 60*60*1000).toISOString()
         })
       });
       if (res.ok) fetchLeads();
@@ -110,33 +115,6 @@ export function PipelineLeads() {
     }
   };
 
-  const handleDeleteLead = async (e: React.MouseEvent, id: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!confirm("This will remove the lead from your pipeline but keep it in CenterPoint. You can re-import it later.")) return;
-    
-    try {
-      const res = await fetch(`/api/pipeline/${id}`, { method: "DELETE" });
-      const data = await res.json();
-      
-      if (res.ok) {
-        // 1. Immediate local UI update
-        setLeads(prev => prev.filter(l => l.id !== id));
-        
-        // 2. Brief delay then background refresh to ensure sync
-        setTimeout(() => {
-          fetchLeads();
-        }, 300);
-      } else {
-        alert("Server Error: " + (data.error || "Failed to remove lead from pipeline."));
-      }
-    } catch (e) {
-      console.error("Removal failed:", e);
-      alert("Network Error: Could not connect to removal service.");
-    }
-  };
-
   const handleFollowUp = async (id: string) => {
     const dateStr = prompt("Enter next follow-up date (YYYY-MM-DD):", new Date(Date.now() + 86400000).toISOString().split('T')[0]);
     if (!dateStr) return;
@@ -145,7 +123,7 @@ export function PipelineLeads() {
       const res = await fetch(`/api/pipeline/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           pipeline_status: 'follow_up_needed',
           next_follow_up_at: new Date(dateStr).toISOString()
         })
@@ -153,6 +131,44 @@ export function PipelineLeads() {
       if (res.ok) fetchLeads();
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const handleRemoveClick = (e: React.MouseEvent, lead: PipelineLead) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (BLOCKED_STATUSES.includes(lead.pipeline_status)) {
+      setBlockedModal(true);
+      return;
+    }
+    setConfirmModal({
+      leadId: lead.id,
+      leadName: lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name || lead.cpc_ticket_id,
+    });
+  };
+
+  const confirmRemove = async () => {
+    if (!confirmModal) return;
+    const { leadId } = confirmModal;
+    setConfirmModal(null);
+    setRemoving(leadId);
+
+    try {
+      const res = await fetch(`/api/pipeline/${leadId}`, { method: "DELETE" });
+      const data = await res.json();
+
+      if (res.ok) {
+        setLeads(prev => prev.filter(l => l.id !== leadId));
+        setTimeout(() => fetchLeads(), 300);
+      } else if (res.status === 403) {
+        setBlockedModal(true);
+      } else {
+        console.error("Remove failed:", data.error);
+      }
+    } catch (e) {
+      console.error("Removal failed:", e);
+    } finally {
+      setRemoving(null);
     }
   };
 
@@ -171,10 +187,10 @@ export function PipelineLeads() {
 
   return (
     <div className="p-8 space-y-8 overflow-y-auto h-full bg-black/20">
-      {/* Advanced Header */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="flex items-center gap-6">
-          <button 
+          <button
             onClick={() => window.dispatchEvent(new CustomEvent('changeView', { detail: 'dashboard' }))}
             className="p-4 rounded-3xl bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all shadow-2xl"
           >
@@ -208,21 +224,24 @@ export function PipelineLeads() {
           {leads.map((lead) => {
             const config = STATUS_CONFIG[lead.pipeline_status] || STATUS_CONFIG.new_lead;
             const StatusIcon = config.icon;
+            const isRemoving = removing === lead.id;
+            const isBlocked = BLOCKED_STATUSES.includes(lead.pipeline_status);
 
             return (
               <motion.div
                 key={lead.id}
                 layout
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                animate={{ opacity: isRemoving ? 0.4 : 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
                 className="group bg-white/[0.02] border border-white/[0.05] rounded-[40px] p-8 hover:bg-white/[0.04] hover:border-white/20 transition-all flex flex-col h-full relative overflow-hidden"
               >
                 {/* Progress Bar */}
                 <div className="absolute top-0 left-0 w-full h-1 bg-white/5">
-                  <motion.div 
+                  <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${getProgress(lead.pipeline_status)}%` }}
-                    className="h-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]" 
+                    className="h-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
                   />
                 </div>
 
@@ -231,15 +250,7 @@ export function PipelineLeads() {
                     <StatusIcon className="w-3.5 h-3.5" />
                     {config.label}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button 
-                      onClick={(e) => handleDeleteLead(e, lead.id)}
-                      className="p-2.5 rounded-2xl text-white/20 hover:text-rose-400 hover:bg-rose-500/10 transition-all relative z-30"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                    <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest bg-white/5 px-2 py-1 rounded-lg">#{lead.cpc_ticket_id}</span>
-                  </div>
+                  <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest bg-white/5 px-2 py-1 rounded-lg">#{lead.cpc_ticket_id}</span>
                 </div>
 
                 <div className="mb-8">
@@ -277,7 +288,7 @@ export function PipelineLeads() {
 
                 <div className="mt-auto flex items-center gap-3">
                   {lead.pipeline_status === 'scheduled' ? (
-                    <button 
+                    <button
                       onClick={() => handleStartInspection(lead)}
                       className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-indigo-500 hover:bg-indigo-400 text-white transition-all text-sm font-medium"
                     >
@@ -291,21 +302,21 @@ export function PipelineLeads() {
                     </span>
                   ) : (
                     <>
-                      <button 
+                      <button
                         onClick={() => handleCall(lead)}
                         className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all text-xs font-medium"
                       >
                         <Phone className="w-3.5 h-3.5" />
                         Call
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleFollowUp(lead.id)}
                         className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all text-xs font-medium"
                       >
                         <Clock className="w-3.5 h-3.5" />
                         Follow-up
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleSchedule(lead.id)}
                         className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30 transition-all text-xs font-medium"
                       >
@@ -315,21 +326,37 @@ export function PipelineLeads() {
                     </>
                   )}
                 </div>
-                
-                {lead.pipeline_status !== 'dead_lead' && lead.pipeline_status !== 'scheduled' && (
+
+                {/* Bottom action row — shown for all non-dead leads */}
+                {lead.pipeline_status !== 'dead_lead' && (
                   <div className="mt-3 flex gap-2">
-                    <button 
-                      className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-white/30 hover:text-white transition-all text-xs font-medium"
+                    {lead.pipeline_status !== 'scheduled' && (
+                      <>
+                        <button className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-white/30 hover:text-white transition-all text-xs font-medium">
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          Notes
+                        </button>
+                        <button
+                          onClick={() => handleDeadLead(lead.id)}
+                          className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-rose-400/50 hover:text-rose-400 hover:bg-rose-500/10 transition-all text-xs font-medium"
+                        >
+                          <XCircle className="w-3.5 h-3.5" />
+                          Dead Lead
+                        </button>
+                      </>
+                    )}
+                    <button
+                      onClick={(e) => handleRemoveClick(e, lead)}
+                      disabled={isRemoving}
+                      className={cn(
+                        "flex-1 flex items-center justify-center gap-2 py-2 rounded-xl transition-all text-xs font-medium",
+                        isBlocked
+                          ? "text-white/15 cursor-not-allowed"
+                          : "text-white/25 hover:text-white/60 hover:bg-white/5"
+                      )}
                     >
-                      <MessageSquare className="w-3.5 h-3.5" />
-                      Notes
-                    </button>
-                    <button 
-                      onClick={() => handleDeadLead(lead.id)}
-                      className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-rose-400/50 hover:text-rose-400 hover:bg-rose-500/10 transition-all text-xs font-medium"
-                    >
-                      <XCircle className="w-3.5 h-3.5" />
-                      Dead Lead
+                      <MinusCircle className="w-3.5 h-3.5" />
+                      {isRemoving ? "Removing…" : "Remove from Pipeline"}
                     </button>
                   </div>
                 )}
@@ -338,6 +365,82 @@ export function PipelineLeads() {
           })}
         </AnimatePresence>
       </div>
+
+      {/* Confirm Removal Modal */}
+      <AnimatePresence>
+        {confirmModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 max-w-sm w-full mx-6 shadow-2xl"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
+                <MinusCircle className="w-6 h-6 text-white/50" />
+              </div>
+              <h3 className="text-xl font-display font-medium text-white mb-3">Remove from Pipeline?</h3>
+              <p className="text-white/40 text-sm leading-relaxed mb-8">
+                This will remove{" "}
+                <span className="text-white/70 font-medium">{confirmModal.leadName}</span>{" "}
+                from your pipeline but keep it in CenterPoint. You can re-import it from CP Inbox later.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setConfirmModal(null)}
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmRemove}
+                  className="flex-1 py-3 rounded-2xl bg-rose-500/15 border border-rose-500/25 text-rose-400 hover:bg-rose-500/25 transition-all text-sm font-medium"
+                >
+                  Remove
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Blocked Modal */}
+      <AnimatePresence>
+        {blockedModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 max-w-sm w-full mx-6 shadow-2xl"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-6">
+                <AlertCircle className="w-6 h-6 text-amber-400" />
+              </div>
+              <h3 className="text-xl font-display font-medium text-white mb-3">Cannot Remove Lead</h3>
+              <p className="text-white/40 text-sm leading-relaxed mb-8">
+                This lead has inspection activity and cannot be removed from Pipeline.
+              </p>
+              <button
+                onClick={() => setBlockedModal(false)}
+                className="w-full py-3 rounded-2xl bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all text-sm"
+              >
+                Understood
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

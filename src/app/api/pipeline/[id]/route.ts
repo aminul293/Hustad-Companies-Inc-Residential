@@ -20,7 +20,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
   console.log(`[API] Start removal for lead ID: ${params.id}`);
   try {
     const supabase = getServiceClient();
@@ -33,16 +33,16 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       .single();
 
     if (fetchError) {
-      console.error(`[API] Fetch error for ID \${params.id}:`, fetchError);
-      throw new Error(`Lead not found: \${fetchError.message}`);
+      console.error(`[API] Fetch error for ID ${params.id}:`, fetchError);
+      throw new Error(`Lead not found: ${fetchError.message}`);
     }
-    
+
     if (!lead) {
-      console.error(`[API] No lead record found for ID \${params.id}`);
+      console.error(`[API] No lead record found for ID ${params.id}`);
       throw new Error("Lead record not found in database");
     }
 
-    console.log(`[API] Lead found. Status: \${lead.pipeline_status}, CP Ticket: \${lead.cpc_ticket_id}`);
+    console.log(`[API] Lead found. Status: ${lead.pipeline_status}, CP Ticket: ${lead.cpc_ticket_id}`);
 
     // 2. Case 2: Inspection Started (Blocked)
     const blockedStatuses = ['inspection_in_progress', 'inspection_completed', 'signed', 'closed'];
