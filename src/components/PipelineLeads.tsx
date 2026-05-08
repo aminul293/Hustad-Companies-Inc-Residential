@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   Phone, Calendar, MessageSquare, User, Clock, XCircle, AlertCircle,
   PlayCircle, ArrowLeft, MinusCircle, CalendarDays, CheckCircle2,
-  Activity, Flame, ChevronRight, ChevronLeft, X
+  Activity, Flame, ChevronRight, ChevronLeft, X, AlertTriangle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -77,7 +77,11 @@ const fmtTime = (iso: string) =>
 const daysSince = (iso: string | null) =>
   iso ? Math.floor((Date.now() - new Date(iso).getTime()) / 86400000) : null;
 
-export function PipelineLeads() {
+interface PipelineLeadsProps {
+  repId?: string;
+}
+
+export function PipelineLeads({ repId }: PipelineLeadsProps) {
   const [leads, setLeads] = useState<PipelineLead[]>([]);
   const [, setLoading] = useState(true);
 
@@ -90,6 +94,8 @@ export function PipelineLeads() {
   const [schedModal, setSchedModal] = useState<{ leadId: string; leadName: string } | null>(null);
   const [schedDate, setSchedDate] = useState("");
   const [schedTime, setSchedTime] = useState("09:00");
+  const [clashWarning, setClashWarning] = useState<string | null>(null);
+  const [scheduling, setScheduling] = useState(false);
   const [schedDuration, setSchedDuration] = useState(60);
 
   // Follow-up modal
@@ -195,16 +201,50 @@ export function PipelineLeads() {
     setSchedDuration(60);
   };
 
-  const confirmSchedule = async () => {
+  const confirmSchedule = async (force = false) => {
     if (!schedModal || !schedDate) return;
     const start = new Date(`${schedDate}T${schedTime}:00`);
-    const end = new Date(start.getTime() + schedDuration * 60000);
-    setSchedModal(null);
-    await patch(schedModal.leadId, {
-      pipeline_status: "scheduled",
-      scheduled_start_at: start.toISOString(),
-      scheduled_end_at: end.toISOString(),
-    });
+    const end   = new Date(start.getTime() + schedDuration * 60000);
+
+    // If we have a repId, use the appointments API (clash detection + record creation)
+    if (repId && !force) {
+      setScheduling(true);
+      setClashWarning(null);
+      try {
+        const res = await fetch("/api/appointments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            pipeline_lead_id:    schedModal.leadId,
+            rep_id:              repId,
+            appointment_start_at: start.toISOString(),
+            appointment_end_at:   end.toISOString(),
+          }),
+        });
+        if (res.status === 409) {
+          const data = await res.json();
+          setClashWarning(data.message || "Schedule conflict detected.");
+          return; // Stay in modal — show warning
+        }
+        if (!res.ok) throw new Error("Failed to create appointment");
+        setSchedModal(null);
+        setClashWarning(null);
+        await fetchLeads();
+      } catch (e) {
+        console.error("[SCHEDULE]", e);
+      } finally {
+        setScheduling(false);
+      }
+    } else {
+      // Fallback: direct patch (no clash detection, or force override)
+      setSchedModal(null);
+      setClashWarning(null);
+      await patch(schedModal.leadId, {
+        pipeline_status:     "scheduled",
+        scheduled_start_at:  start.toISOString(),
+        scheduled_end_at:    end.toISOString(),
+      });
+    }
   };
 
   const schedSummary = () => {
@@ -654,25 +694,46 @@ export function PipelineLeads() {
               {/* Summary */}
               {schedDate && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                  className="flex items-center gap-3 bg-indigo-500/[0.08] border border-indigo-500/15 rounded-2xl px-4 py-3 mb-6"
+                  className="flex items-center gap-3 bg-indigo-500/[0.08] border border-indigo-500/15 rounded-2xl px-4 py-3 mb-4"
                 >
                   <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
                   <p className="text-sm text-indigo-300 font-medium">{schedSummary()}</p>
                 </motion.div>
               )}
 
+              {/* Clash warning */}
+              {clashWarning && (
+                <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+                  className="flex items-start gap-3 bg-rose-500/[0.08] border border-rose-500/20 rounded-2xl px-4 py-3 mb-4"
+                >
+                  <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-rose-300 font-medium">Scheduling Conflict</p>
+                    <p className="text-xs text-rose-400/70 font-light mt-0.5">{clashWarning}</p>
+                  </div>
+                  <button onClick={() => confirmSchedule(true)}
+                    className="text-[10px] font-mono text-rose-400/60 hover:text-rose-300 uppercase tracking-widest whitespace-nowrap shrink-0 transition-colors">
+                    Override
+                  </button>
+                </motion.div>
+              )}
+
               {/* Actions */}
               <div className="flex gap-3">
-                <button onClick={() => setSchedModal(null)}
+                <button onClick={() => { setSchedModal(null); setClashWarning(null); }}
                   className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm">
                   Cancel
                 </button>
                 <button
-                  onClick={confirmSchedule}
-                  disabled={!schedDate}
+                  onClick={() => confirmSchedule(false)}
+                  disabled={!schedDate || scheduling}
                   className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-sm font-medium"
                 >
-                  Confirm Schedule <ChevronRight className="w-4 h-4" />
+                  {scheduling ? (
+                    <><div className="w-3.5 h-3.5 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" /> Checking…</>
+                  ) : (
+                    <>Confirm Schedule <ChevronRight className="w-4 h-4" /></>
+                  )}
                 </button>
               </div>
             </motion.div>
