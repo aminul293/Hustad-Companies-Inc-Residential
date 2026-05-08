@@ -22,6 +22,7 @@ interface PipelineLead {
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
   new_lead: { label: "New Lead", color: "text-sky-400 bg-sky-400/10 border-sky-400/20", icon: Clock },
+  follow_up_needed: { label: "Follow Up", color: "text-orange-400 bg-orange-400/10 border-orange-400/20", icon: Clock },
   contact_attempted: { label: "Attempted", color: "text-amber-400 bg-amber-400/10 border-amber-400/20", icon: Phone },
   contacted: { label: "Contacted", color: "text-indigo-400 bg-indigo-400/10 border-indigo-400/20", icon: MessageSquare },
   scheduled: { label: "Scheduled", color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20", icon: Calendar },
