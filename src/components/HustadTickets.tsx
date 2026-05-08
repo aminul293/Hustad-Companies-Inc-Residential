@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, ChevronRight, RefreshCw, Ticket, ArrowRight, Phone, Mail, MessageSquare, User, Plus, CheckCircle2, AlertCircle } from "lucide-react";
+import { Search, ChevronRight, RefreshCw, Ticket, ArrowRight, Phone, Mail, MessageSquare, User, Plus, CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -194,13 +194,20 @@ export function HustadTickets() {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-8 pb-0 space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => window.dispatchEvent(new CustomEvent('changeView', { detail: 'dashboard' }))}
+            className="p-3 rounded-full bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
           <div>
             <h2 className="text-2xl font-display font-medium tracking-tight">Hustad Tickets</h2>
             <p className="text-sm text-white/40 mt-1">
               {total.toLocaleString()} tickets · managed pipeline
             </p>
           </div>
+        </div>
           <button
             onClick={() => fetchTickets({ refresh: true, newPage: 1 })}
             className={cn("p-3 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all", refreshing && "animate-spin")}

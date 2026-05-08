@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, ChevronRight, RefreshCw, Building2, ArrowRight, CloudDownload, CheckCircle2, Ticket } from "lucide-react";
+import { Search, ChevronRight, RefreshCw, Building2, ArrowRight, CloudDownload, CheckCircle2, Ticket, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -249,7 +249,13 @@ export function CenterPointJobs() {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-8 pb-0 space-y-6">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => window.dispatchEvent(new CustomEvent('changeView', { detail: 'dashboard' }))}
+            className="p-3 rounded-full bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
           <div className="min-w-0">
             <h2 className="text-2xl font-display font-medium tracking-tight">CenterPoint Jobs</h2>
             <div className="flex items-center gap-3 mt-1 flex-wrap">
