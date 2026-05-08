@@ -19,7 +19,8 @@ interface Props {
 }
 
 export function A01Welcome({ session, onUpdate, onNext, onBack, onSkip }: Props) {
-  const name = session.property.homeownerPrimaryName;
+  const rawName = session.property.homeownerPrimaryName;
+  const name = rawName && rawName !== "Unknown Homeowner" ? rawName : "";
 
   const [titleNumber, setTitleNumber] = useState(0);
   const titles = useMemo(
