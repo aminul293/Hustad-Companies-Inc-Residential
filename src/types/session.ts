@@ -248,6 +248,8 @@ export interface SessionState {
   // Identity
   sessionId: string;
   centerpointId?: string;
+  pipelineLeadId?: string;
+  appointmentId?: string;
   reviewToken?: string;
   repId: string;
   repName: string;

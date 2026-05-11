@@ -635,6 +635,15 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(finalSession),
       });
+
+      // Notify RepCommandCenter to update pipeline lead, appointment, and hustad ticket
+      window.dispatchEvent(new CustomEvent("sessionCompleted", {
+        detail: {
+          sessionId: finalSession.sessionId,
+          sessionStatus: finalSession.sessionStatus,
+          appointmentId: finalSession.appointmentId,
+        },
+      }));
     } catch (err) {
       console.error("[FINISH_SYNC]", err);
       // Don't block the rep from finishing even if sync fails

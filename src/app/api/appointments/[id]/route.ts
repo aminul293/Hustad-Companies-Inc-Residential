@@ -4,16 +4,17 @@ import { getServiceClient } from '@/lib/supabase-server';
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
   const body = await request.json();
-  const { appointment_status, appointment_start_at, appointment_end_at, notes, next_follow_up_at } = body;
+  const { appointment_status, appointment_start_at, appointment_end_at, notes, next_follow_up_at, assigned_rep_id } = body;
 
   try {
     const supabase = getServiceClient();
 
     const updates: Record<string, unknown> = {};
-    if (appointment_status)    updates.appointment_status    = appointment_status;
-    if (appointment_start_at)  updates.appointment_start_at  = appointment_start_at;
-    if (appointment_end_at)    updates.appointment_end_at    = appointment_end_at;
-    if (notes !== undefined)   updates.notes                 = notes;
+    if (appointment_status)          updates.appointment_status    = appointment_status;
+    if (appointment_start_at)        updates.appointment_start_at  = appointment_start_at;
+    if (appointment_end_at)          updates.appointment_end_at    = appointment_end_at;
+    if (notes !== undefined)         updates.notes                 = notes;
+    if (assigned_rep_id !== undefined) updates.assigned_rep_id     = assigned_rep_id;
 
     const { data: appt, error } = await supabase
       .from('appointments')

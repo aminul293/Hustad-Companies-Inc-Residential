@@ -79,9 +79,10 @@ export async function GET(request: Request) {
 }
 
 // POST /api/appointments — create with clash detection
+// Pass _dry_run: true to check for clashes without inserting (used by reschedule flow).
 export async function POST(request: Request) {
   const body = await request.json();
-  const { pipeline_lead_id, rep_id, appointment_start_at, appointment_end_at, location, notes } = body;
+  const { pipeline_lead_id, rep_id, appointment_start_at, appointment_end_at, location, notes, _dry_run } = body;
 
   if (!pipeline_lead_id || !rep_id || !appointment_start_at || !appointment_end_at) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -111,6 +112,11 @@ export async function POST(request: Request) {
       message: `Conflict with "${addr}" at ${clashStart}–${clashEnd}`,
       conflictId: clash.id,
     }, { status: 409 });
+  }
+
+  // Dry-run: clash check passed, no insert needed
+  if (_dry_run) {
+    return NextResponse.json({ ok: true, clash: false });
   }
 
   const { data: appt, error: apptErr } = await supabase

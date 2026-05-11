@@ -55,16 +55,38 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const repId = searchParams.get('repId');
+
   const supabase = getServiceClient();
-  const { data, error } = await supabase
+
+  let query = supabase
     .from('pipeline_leads')
     .select(`
       *,
-      centerpoint_jobs (*)
+      centerpoint_jobs (*),
+      appointments!pipeline_leads_id_fkey ( assigned_rep_id )
     `)
     .order('created_at', { ascending: false });
 
+  // When repId is provided, restrict to leads that have an appointment assigned to that rep
+  // OR leads with no appointment yet (new/unscheduled leads the rep owns via the import)
+  if (repId) {
+    const { data: repLeadIds } = await supabase
+      .from('appointments')
+      .select('pipeline_lead_id')
+      .eq('assigned_rep_id', repId);
+
+    const ids = (repLeadIds ?? []).map((r: any) => r.pipeline_lead_id).filter(Boolean);
+    if (ids.length > 0) {
+      query = query.in('id', ids);
+    } else {
+      return NextResponse.json([]);
+    }
+  }
+
+  const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);
 }

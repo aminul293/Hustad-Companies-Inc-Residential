@@ -28,10 +28,11 @@ export async function GET(req: NextRequest) {
 // POST /api/sessions — Create or sync a session from the tablet
 export async function POST(req: NextRequest) {
   try {
-    // Demo Bypass
+    // Demo bypass: checked against a dedicated low-privilege secret, never the service role key.
     let repId = "00000000-0000-0000-0000-000000000000";
     const bypass = req.headers.get("x-demo-bypass");
-    if (bypass !== process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    const demoSecret = process.env.DEMO_BYPASS_SECRET;
+    if (!demoSecret || bypass !== demoSecret) {
       const payload = await requireAuth(req) as any;
       repId = payload.repId;
     }
@@ -61,6 +62,7 @@ function mapSessionToRow(s: any, repId: string) {
   return {
     session_id: s.sessionId,
     rep_id: repId,
+    pipeline_lead_id: s.pipelineLeadId ?? null,
     session_status: s.sessionStatus,
     current_screen: s.currentScreen,
     mode: s.mode,
