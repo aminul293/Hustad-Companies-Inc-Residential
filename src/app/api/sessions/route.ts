@@ -62,7 +62,9 @@ function mapSessionToRow(s: any, repId: string) {
   return {
     session_id: s.sessionId,
     rep_id: repId,
-    pipeline_lead_id: s.pipelineLeadId ?? null,
+    pipeline_lead_id: s.pipelineLeadId ?? s.pipeline_lead_id ?? null,
+    appointment_id:   s.appointmentId  ?? s.appointment_id  ?? null,
+    cpc_ticket_id:    s.cpcTicketId    ?? s.centerpointId   ?? s.cpc_ticket_id ?? null,
     session_status: s.sessionStatus,
     current_screen: s.currentScreen,
     mode: s.mode,
