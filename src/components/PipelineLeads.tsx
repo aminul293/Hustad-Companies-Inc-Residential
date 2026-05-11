@@ -32,6 +32,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bar: string;
   contact_attempted:     { label: "Attempted",  color: "text-amber-400 bg-amber-400/10 border-amber-400/20",  bar: "bg-amber-500",    icon: Phone },
   contacted:             { label: "Contacted",  color: "text-indigo-400 bg-indigo-400/10 border-indigo-400/20", bar: "bg-indigo-500", icon: MessageSquare },
   scheduled:             { label: "Scheduled",  color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20", bar: "bg-emerald-500", icon: CalendarDays },
+  appointment_confirmed: { label: "Confirmed",  color: "text-sky-400 bg-sky-400/10 border-sky-400/20",            bar: "bg-sky-500",     icon: CheckCircle2 },
   inspection_in_progress:{ label: "In Field",   color: "text-purple-400 bg-purple-400/10 border-purple-400/20", bar: "bg-purple-500", icon: PlayCircle },
   inspection_completed:  { label: "Inspected",  color: "text-purple-300 bg-purple-300/10 border-purple-300/20", bar: "bg-purple-400", icon: CheckCircle2 },
   dead_lead:             { label: "Dead Lead",  color: "text-rose-400 bg-rose-400/10 border-rose-400/20",     bar: "bg-rose-500/50",  icon: XCircle },
@@ -41,7 +42,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bar: string;
 
 const STAGE_MAP: Record<string, number> = {
   new_lead: 0, contact_attempted: 1, follow_up_needed: 1,
-  contacted: 2, scheduled: 3, inspection_in_progress: 4,
+  contacted: 2, scheduled: 3, appointment_confirmed: 3, inspection_in_progress: 4,
   inspection_completed: 4, signed: 4, closed: 4,
 };
 
@@ -87,7 +88,7 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
 
   // Remove from pipeline modals
   const [confirmModal, setConfirmModal] = useState<{ leadId: string; leadName: string } | null>(null);
-  const [blockedModal, setBlockedModal] = useState(false);
+  const [blockedModal, setBlockedModal] = useState<{ leadId: string; leadName: string } | null>(null);
   const [removing, setRemoving] = useState<string | null>(null);
 
   // Schedule modal
@@ -154,7 +155,7 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
   };
 
   const handleStartInspection = (lead: PipelineLead) => {
-    if (lead.pipeline_status !== "scheduled") return;
+    if (!['scheduled', 'appointment_confirmed'].includes(lead.pipeline_status)) return;
     window.dispatchEvent(new CustomEvent("launchPipelineSession", { detail: lead }));
   };
 
@@ -286,7 +287,10 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
   // Remove
   const handleRemoveClick = (e: React.MouseEvent, lead: PipelineLead) => {
     e.preventDefault(); e.stopPropagation();
-    if (BLOCKED_STATUSES.includes(lead.pipeline_status)) { setBlockedModal(true); return; }
+    if (BLOCKED_STATUSES.includes(lead.pipeline_status)) { 
+      setBlockedModal({ leadId: lead.id, leadName: lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id }); 
+      return; 
+    }
     setConfirmModal({ leadId: lead.id, leadName: lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id });
   };
 
@@ -299,8 +303,20 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
       const res = await fetch(`/api/pipeline/${leadId}`, { method: "DELETE" });
       const data = await res.json();
       if (res.ok) { setLeads(p => p.filter(l => l.id !== leadId)); setTimeout(fetchLeads, 300); }
-      else if (res.status === 403) setBlockedModal(true);
+      else if (res.status === 403) setBlockedModal(confirmModal);
       else console.error("Remove failed:", data.error);
+    } catch (e) { console.error(e); }
+    finally { setRemoving(null); }
+  };
+
+  const confirmForceRemove = async () => {
+    if (!blockedModal) return;
+    const { leadId } = blockedModal;
+    setBlockedModal(null);
+    setRemoving(leadId);
+    try {
+      const res = await fetch(`/api/pipeline/${leadId}?force=true`, { method: "DELETE" });
+      if (res.ok) { setLeads(p => p.filter(l => l.id !== leadId)); setTimeout(fetchLeads, 300); }
     } catch (e) { console.error(e); }
     finally { setRemoving(null); }
   };
@@ -376,7 +392,7 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
               const stageIdx = STAGE_MAP[lead.pipeline_status] ?? 0;
               const isRemoving = removing === lead.id;
               const isBlocked = BLOCKED_STATUSES.includes(lead.pipeline_status);
-              const isScheduled = lead.pipeline_status === 'scheduled';
+              const isScheduled = ['scheduled', 'appointment_confirmed'].includes(lead.pipeline_status);
               const idleDays = daysSince(lead.last_contacted_at);
               const isUrgent  = !isBlocked && !isScheduled && lead.pipeline_status !== 'dead_lead' && (idleDays === null || idleDays >= 7);
               const isWarning = !isUrgent && !isBlocked && !isScheduled && lead.pipeline_status !== 'dead_lead' && idleDays !== null && idleDays >= 3;
@@ -482,12 +498,12 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
                       <div className="bg-white/[0.025] border border-white/[0.05] rounded-[18px] p-3.5">
                         <div className="flex items-center justify-between mb-1.5">
                           <p className="text-[7px] font-mono text-white/20 uppercase tracking-[0.2em]">
-                            {lead.pipeline_status === 'scheduled' ? 'Date' : 'Last Contact'}
+                            {isScheduled ? 'Date' : 'Last Contact'}
                           </p>
                           <Clock className="w-2.5 h-2.5 text-white/10" />
                         </div>
                         <p className="text-xs font-display text-white/55 leading-tight">
-                          {lead.pipeline_status === 'scheduled' && lead.scheduled_start_at
+                          {isScheduled && lead.scheduled_start_at
                             ? fmtDate(lead.scheduled_start_at)
                             : fmtDate(lead.last_contacted_at) || "Never"}
                         </p>
@@ -526,7 +542,7 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
 
                     {/* Primary actions */}
                     <div className="flex gap-2.5 mt-auto">
-                      {lead.pipeline_status === 'scheduled' ? (
+                      {isScheduled ? (
                         <button
                           onClick={() => handleStartInspection(lead)}
                           className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-indigo-500 hover:bg-indigo-400 active:scale-95 text-white transition-all text-sm font-medium shadow-lg shadow-indigo-500/20"
@@ -966,12 +982,23 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
               </div>
               <h3 className="text-xl font-display font-medium mb-3">Cannot Remove Lead</h3>
               <p className="text-white/40 text-sm leading-relaxed mb-8">
-                This lead has inspection activity and cannot be removed from Pipeline.
+                <span className="text-white/70 font-medium">{blockedModal.leadName}</span> has inspection activity and cannot be removed from Pipeline by standard users.
               </p>
-              <button onClick={() => setBlockedModal(false)}
-                className="w-full py-3 rounded-2xl bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all text-sm">
-                Understood
-              </button>
+              
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={confirmForceRemove}
+                  className="w-full py-3 rounded-2xl bg-rose-500/15 border border-rose-500/25 text-rose-400 hover:bg-rose-500/25 transition-all text-sm font-medium"
+                >
+                  Force Remove (Admin)
+                </button>
+                <button 
+                  onClick={() => setBlockedModal(null)}
+                  className="w-full py-3 rounded-2xl bg-white/5 border border-white/10 text-white/40 hover:text-white hover:border-white/20 transition-all text-sm"
+                >
+                  Understood
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
