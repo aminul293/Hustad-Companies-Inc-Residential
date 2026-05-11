@@ -263,7 +263,9 @@ export function ManagerDashboard({ currentRep }: Props) {
                       <Users className="w-4 h-4 text-white/30" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-display font-medium text-white/90 truncate">{repId}</p>
+                      <p className="text-sm font-display font-medium text-white/90 truncate">
+                        {getLiveReps().find(r => r.id === repId)?.name || repId}
+                      </p>
                       <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                         <Pill label={`${appts.length} total`} color="text-white/30" />
                         {repRemaining > 0 && <Pill label={`${repRemaining} remaining`} color="text-emerald-400" />}

@@ -24,6 +24,7 @@ interface PipelineLead {
     property_name: string;
     raw?: Record<string, any>;
   };
+  appointments?: { id: string; assigned_rep_id: string }[];
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bar: string; icon: any }> = {
@@ -121,7 +122,8 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
 
   const fetchLeads = async () => {
     try {
-      const res = await fetch(`/api/pipeline?t=${Date.now()}`);
+      const url = repId ? `/api/pipeline?repId=${repId}&t=${Date.now()}` : `/api/pipeline?t=${Date.now()}`;
+      const res = await fetch(url);
       const data = await res.json();
       setLeads(data);
     } catch (e) {
@@ -156,7 +158,14 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
 
   const handleStartInspection = (lead: PipelineLead) => {
     if (!['scheduled', 'appointment_confirmed'].includes(lead.pipeline_status)) return;
-    window.dispatchEvent(new CustomEvent("launchPipelineSession", { detail: lead }));
+    
+    // Find the appointment ID for this rep, or the first one available
+    const apptId = lead.appointments?.find(a => a.assigned_rep_id === repId)?.id || 
+                   lead.appointments?.[0]?.id;
+
+    window.dispatchEvent(new CustomEvent("launchPipelineSession", { 
+      detail: { ...lead, appointmentId: apptId } 
+    }));
   };
 
   // Stage navigation

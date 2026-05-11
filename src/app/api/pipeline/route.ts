@@ -66,7 +66,7 @@ export async function GET(request: Request) {
     .select(`
       *,
       centerpoint_jobs (*),
-      appointments!pipeline_leads_id_fkey ( assigned_rep_id )
+      appointments!pipeline_lead_id ( id, assigned_rep_id )
     `)
     .order('created_at', { ascending: false });
 
