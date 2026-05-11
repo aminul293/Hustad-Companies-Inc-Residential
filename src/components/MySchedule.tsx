@@ -78,6 +78,9 @@ const DURATIONS = [
   { label: "3 hr", value: 180 },
 ];
 
+const addDays = (days: number) =>
+  new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
+
 function fmtTime(iso: string) {
   return new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
 }
@@ -98,6 +101,10 @@ export function MySchedule({ currentRep }: Props) {
   const [reschedTime, setReschedTime]   = useState("09:00");
   const [reschedDur, setReschedDur]     = useState(60);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // No Show / Cancel follow-up prompt
+  const [followUpPrompt, setFollowUpPrompt] = useState<{ apptId: string; action: "no_show" | "cancelled"; label: string } | null>(null);
+  const [followUpDate, setFollowUpDate]     = useState(addDays(1));
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -160,6 +167,15 @@ export function MySchedule({ currentRep }: Props) {
     setReschedModal(null);
   };
 
+  const confirmFollowUp = async () => {
+    if (!followUpPrompt) return;
+    await patchAppt(followUpPrompt.apptId, {
+      appointment_status: followUpPrompt.action,
+      next_follow_up_at: new Date(followUpDate + "T09:00:00").toISOString(),
+    });
+    setFollowUpPrompt(null);
+  };
+
   const startInspection = (appt: Appointment) => {
     const lead = appt.pipeline_leads;
     if (!lead) return;
@@ -174,9 +190,12 @@ export function MySchedule({ currentRep }: Props) {
   const getOwner = (appt: Appointment) =>
     appt.pipeline_leads?.centerpoint_jobs?.raw?._owner || "";
 
+  const getPhone = (appt: Appointment) =>
+    appt.pipeline_leads?.centerpoint_jobs?.raw?._phone || "";
+
   const canStartInspection = (appt: Appointment) =>
-    ["scheduled", "confirmed", "rescheduled"].includes(appt.appointment_status) &&
-    appt.pipeline_leads?.pipeline_status === "scheduled";
+    ["scheduled", "confirmed"].includes(appt.appointment_status) &&
+    ["scheduled", "appointment_confirmed"].includes(appt.pipeline_leads?.pipeline_status ?? "");
 
   // ── Today stats ────────────────────────────────────────────────────────────
   const todayCount = appointments.filter(a =>
@@ -231,6 +250,7 @@ export function MySchedule({ currentRep }: Props) {
               const cfg = STATUS_CONFIG[appt.appointment_status] || STATUS_CONFIG.scheduled;
               const address = getAddress(appt);
               const owner   = getOwner(appt);
+              const phone   = getPhone(appt);
               const busy    = actionLoading === appt.id;
               const canStart = canStartInspection(appt);
 
@@ -266,10 +286,23 @@ export function MySchedule({ currentRep }: Props) {
                           {owner} · Residential
                         </p>
                       )}
+                      {phone && (
+                        <div className="flex items-center gap-1.5 pl-5">
+                          <Phone className="w-2.5 h-2.5 text-white/20 shrink-0" />
+                          <span className="text-[10px] font-mono text-white/30">{phone}</span>
+                        </div>
+                      )}
                     </div>
-                    <span className={cn("text-[10px] font-mono uppercase tracking-wider px-3 py-1.5 rounded-full border shrink-0", cfg.color)}>
-                      {cfg.label}
-                    </span>
+                    <div className="flex flex-col items-end gap-1.5 shrink-0">
+                      <span className={cn("text-[10px] font-mono uppercase tracking-wider px-3 py-1.5 rounded-full border", cfg.color)}>
+                        {cfg.label}
+                      </span>
+                      {appt.pipeline_leads?.pipeline_status && (
+                        <span className="text-[9px] font-mono text-white/20 uppercase tracking-wider">
+                          {appt.pipeline_leads.pipeline_status.replace(/_/g, " ")}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Notes */}
@@ -331,13 +364,13 @@ export function MySchedule({ currentRep }: Props) {
                       <RotateCcw className="w-3 h-3" /> Reschedule
                     </button>
                     <button
-                      onClick={() => patchAppt(appt.id, { appointment_status: "no_show" })}
+                      onClick={() => { setFollowUpPrompt({ apptId: appt.id, action: "no_show", label: address }); setFollowUpDate(addDays(1)); }}
                       className="flex items-center gap-1.5 text-[10px] font-mono text-white/25 hover:text-rose-400 uppercase tracking-widest transition-colors"
                     >
                       <UserX className="w-3 h-3" /> No Show
                     </button>
                     <button
-                      onClick={() => patchAppt(appt.id, { appointment_status: "cancelled" })}
+                      onClick={() => { setFollowUpPrompt({ apptId: appt.id, action: "cancelled", label: address }); setFollowUpDate(addDays(1)); }}
                       className="flex items-center gap-1.5 text-[10px] font-mono text-white/25 hover:text-white/60 uppercase tracking-widest transition-colors ml-auto"
                     >
                       <XCircle className="w-3 h-3" /> Cancel
@@ -349,6 +382,85 @@ export function MySchedule({ currentRep }: Props) {
           </AnimatePresence>
         </div>
       )}
+
+      {/* No Show / Cancel Follow-up Prompt */}
+      <AnimatePresence>
+        {followUpPrompt && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
+          >
+            <motion.div initial={{ opacity: 0, scale: 0.96, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96 }} transition={{ type: "spring", damping: 28, stiffness: 320 }}
+              className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 w-full max-w-sm shadow-2xl"
+            >
+              <div className="flex items-start justify-between mb-7">
+                <div>
+                  <div className="flex items-center gap-2.5 mb-1">
+                    {followUpPrompt.action === "no_show"
+                      ? <UserX className="w-5 h-5 text-rose-400" />
+                      : <XCircle className="w-5 h-5 text-white/40" />}
+                    <h3 className="text-xl font-display font-medium">
+                      {followUpPrompt.action === "no_show" ? "No Show" : "Cancel Appointment"}
+                    </h3>
+                  </div>
+                  <p className="text-sm text-white/35 font-light">{followUpPrompt.label}</p>
+                </div>
+                <button onClick={() => setFollowUpPrompt(null)} className="p-2 rounded-2xl text-white/30 hover:text-white hover:bg-white/5 transition-all">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mb-3">Set next follow-up date</p>
+
+              <div className="grid grid-cols-2 gap-2 mb-5">
+                {[
+                  { label: "Tomorrow",  days: 1 },
+                  { label: "In 2 days", days: 2 },
+                  { label: "In 3 days", days: 3 },
+                  { label: "Next week", days: 7 },
+                ].map(opt => {
+                  const d = addDays(opt.days);
+                  return (
+                    <button key={opt.days} onClick={() => setFollowUpDate(d)}
+                      className={cn("py-3 rounded-2xl text-sm font-medium transition-all",
+                        followUpDate === d
+                          ? "bg-rose-500/15 border border-rose-500/30 text-rose-300"
+                          : "bg-white/[0.04] text-white/40 hover:bg-white/[0.08] hover:text-white/70"
+                      )}
+                    >{opt.label}</button>
+                  );
+                })}
+              </div>
+
+              <div className="mb-7">
+                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">Custom Date</label>
+                <input type="date" value={followUpDate} min={new Date().toISOString().slice(0, 10)}
+                  onChange={e => setFollowUpDate(e.target.value)}
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-rose-500/40 [color-scheme:dark]"
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button onClick={() => setFollowUpPrompt(null)}
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white transition-all text-sm">
+                  Back
+                </button>
+                <button onClick={confirmFollowUp}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl transition-all text-sm font-medium",
+                    followUpPrompt.action === "no_show"
+                      ? "bg-rose-500/15 border border-rose-500/25 text-rose-300 hover:bg-rose-500/25"
+                      : "bg-white/[0.07] border border-white/15 text-white/80 hover:bg-white/[0.12]"
+                  )}
+                >
+                  <ChevronRight className="w-4 h-4" />
+                  {followUpPrompt.action === "no_show" ? "Confirm No Show" : "Confirm Cancel"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Reschedule Modal */}
       <AnimatePresence>

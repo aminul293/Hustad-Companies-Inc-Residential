@@ -44,9 +44,12 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
 
     console.log(`[API] Lead found. Status: ${lead.pipeline_status}, CP Ticket: ${lead.cpc_ticket_id}`);
 
-    // 2. Case 2: Inspection Started (Blocked)
+    // 2. Case 2: Inspection Started (Blocked unless forced)
+    const { searchParams } = new URL(_request.url);
+    const force = searchParams.get('force') === 'true';
+
     const blockedStatuses = ['inspection_in_progress', 'inspection_completed', 'signed', 'closed'];
-    if (blockedStatuses.includes(lead.pipeline_status)) {
+    if (blockedStatuses.includes(lead.pipeline_status) && !force) {
       console.warn(`[API] Removal blocked due to status: \${lead.pipeline_status}`);
       return NextResponse.json({ 
         error: "This lead has inspection activity and cannot be removed from Pipeline." 

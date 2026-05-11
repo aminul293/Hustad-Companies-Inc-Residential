@@ -4,7 +4,7 @@ import { getServiceClient } from '@/lib/supabase-server';
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
   const body = await request.json();
-  const { appointment_status, appointment_start_at, appointment_end_at, notes } = body;
+  const { appointment_status, appointment_start_at, appointment_end_at, notes, next_follow_up_at } = body;
 
   try {
     const supabase = getServiceClient();
@@ -31,17 +31,19 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       if (appointment_status === 'completed') {
         await supabase.from('pipeline_leads').update({ pipeline_status: 'inspection_in_progress' }).eq('id', leadId);
       } else if (appointment_status === 'no_show' || appointment_status === 'cancelled') {
+        const followUpAt = next_follow_up_at ?? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
         await supabase.from('pipeline_leads').update({
           pipeline_status: 'follow_up_needed',
-          next_follow_up_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          next_follow_up_at: followUpAt,
         }).eq('id', leadId);
       } else if (appointment_status === 'rescheduled' && appointment_start_at && appointment_end_at) {
         await supabase.from('pipeline_leads').update({
+          pipeline_status: 'scheduled',
           scheduled_start_at: appointment_start_at,
           scheduled_end_at:   appointment_end_at,
         }).eq('id', leadId);
       } else if (appointment_status === 'confirmed') {
-        // No pipeline status change — confirmed just means rep acknowledged it
+        await supabase.from('pipeline_leads').update({ pipeline_status: 'appointment_confirmed' }).eq('id', leadId);
       }
     }
 

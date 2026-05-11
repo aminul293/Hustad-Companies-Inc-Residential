@@ -29,6 +29,8 @@ import { CenterPointJobs } from "@/components/CenterPointJobs";
 import { HustadTickets } from "@/components/HustadTickets";
 import { PipelineLeads } from "@/components/PipelineLeads";
 import { MySchedule } from "@/components/MySchedule";
+import { CalendarView } from "@/components/CalendarView";
+import { ManagerDashboard } from "@/components/ManagerDashboard";
 
 interface Props {
   currentRep: AuthenticatedRep;
@@ -40,7 +42,7 @@ interface Props {
 export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack }: Props) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<string>("all");
-  const [view, setView] = useState<"dashboard" | "pipeline" | "schedule" | "centerpoint" | "tickets" | "settings">("dashboard");
+  const [view, setView] = useState<"dashboard" | "pipeline" | "schedule" | "calendar" | "centerpoint" | "tickets" | "manager" | "settings">("dashboard");
   const [liveReps, setLiveReps] = useState<RepIdentity[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [newRep, setNewRep] = useState({ name: "", role: "" });
@@ -70,7 +72,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
         const res = await fetch(`/api/pipeline?t=${Date.now()}`);
         const data = await res.json();
         if (Array.isArray(data)) {
-          setScheduledLeads(data.filter((l: any) => l.pipeline_status === 'scheduled'));
+          setScheduledLeads(data.filter((l: any) => ['scheduled', 'appointment_confirmed'].includes(l.pipeline_status)));
         }
       } catch (e) {
         console.warn("Failed to fetch scheduled leads", e);
@@ -205,10 +207,10 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
             )}
             <div className="space-y-1">
               <h1 className="text-3xl font-display font-medium tracking-tight">
-                {{ dashboard: "Rep Command Center", pipeline: "Sales Pipeline", schedule: "My Schedule", centerpoint: "CP Inbox", tickets: "Hustad Tickets", settings: "System Settings" }[view]}
+                {{ dashboard: "Rep Command Center", pipeline: "Sales Pipeline", schedule: "My Schedule", calendar: "Calendar", centerpoint: "CP Inbox", tickets: "Hustad Tickets", manager: "Manager Dashboard", settings: "System Settings" }[view]}
               </h1>
               <p className="text-sm text-white/50 font-light">
-                {{ dashboard: "Field intelligence and session management.", pipeline: "Manage leads from reach-out to appointment scheduling.", schedule: "Appointments, conflicts, and daily work queue.", centerpoint: "Jobs synced from CenterPoint Connect.", tickets: "Your managed pipeline — stages, touches, and write-back.", settings: "Manage field identities and operational parameters." }[view]}
+                {{ dashboard: "Field intelligence and session management.", pipeline: "Manage leads from reach-out to appointment scheduling.", schedule: "Appointments, conflicts, and daily work queue.", calendar: "Day and week view with conflict detection and route navigation.", centerpoint: "Jobs synced from CenterPoint Connect.", tickets: "Your managed pipeline — stages, touches, and write-back.", manager: "All-rep activity, no-shows, follow-ups, and queue health.", settings: "Manage field identities and operational parameters." }[view]}
               </p>
             </div>
           </div>
@@ -219,8 +221,10 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
                 { id: "dashboard", label: "Inspections" },
                 { id: "pipeline", label: "Pipeline" },
                 { id: "schedule", label: "My Schedule" },
+                { id: "calendar", label: "Calendar" },
                 { id: "centerpoint", label: "CP Inbox" },
                 { id: "tickets", label: "Tickets" },
+                { id: "manager", label: "Manager" },
                 { id: "settings", label: "Settings" },
               ] as const).map(tab => (
                 <button
@@ -306,8 +310,12 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-8">
-        {view === "centerpoint" ? (
+      <div className={cn("flex-1 min-h-0 overflow-hidden", ["calendar", "manager"].includes(view) ? "flex flex-col" : "overflow-y-auto p-8")}>
+        {view === "calendar" ? (
+          <CalendarView currentRep={currentRep} managerMode={view === "calendar"} />
+        ) : view === "manager" ? (
+          <ManagerDashboard currentRep={currentRep} />
+        ) : view === "centerpoint" ? (
           <CenterPointJobs />
         ) : view === "schedule" ? (
           <MySchedule currentRep={currentRep} />
