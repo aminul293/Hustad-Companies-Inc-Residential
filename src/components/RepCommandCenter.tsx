@@ -115,12 +115,14 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
       
       const newSession = createSession(repInfo.id, repInfo.name, repInfo.email);
       newSession.centerpointId = lead.cpc_ticket_id;
+      newSession.pipelineLeadId = lead.id;
+      newSession.appointmentId = lead.appointmentId ?? undefined;
       newSession.property.address = lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name || "Unknown Address";
       newSession.property.homeownerPrimaryName = lead.centerpoint_jobs?.raw?._owner || "";
-      newSession.sessionStatus = "phase_a_active"; 
-      
+      newSession.sessionStatus = "phase_a_active";
+
       saveSession(newSession);
-      
+
       // Update pipeline lead status to 'inspection_in_progress'
       try {
         await fetch(`/api/pipeline/${lead.id}`, {
@@ -140,13 +142,40 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
       setView(customEvent.detail);
     };
 
+    // Fired by B19 when a session reaches a terminal state.
+    // detail: { sessionId, sessionStatus, appointmentId? }
+    const handleSessionCompleted = async (e: Event) => {
+      const { sessionId, sessionStatus, appointmentId } =
+        (e as CustomEvent<{ sessionId: string; sessionStatus: string; appointmentId?: string }>).detail;
+      try {
+        // Update pipeline lead + upsert hustad ticket
+        await fetch(`/api/sessions/${sessionId}/complete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_status: sessionStatus }),
+        });
+        // Mark the originating appointment as completed now that inspection is done
+        if (appointmentId) {
+          await fetch(`/api/appointments/${appointmentId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ appointment_status: "completed" }),
+          });
+        }
+      } catch (err) {
+        console.error("[SESSION_COMPLETE] downstream update failed:", err);
+      }
+    };
+
     window.addEventListener('importCenterPointJob', handleImportJob);
     window.addEventListener('launchPipelineSession', handleLaunchPipelineSession);
     window.addEventListener('changeView', handleChangeView);
+    window.addEventListener('sessionCompleted', handleSessionCompleted);
     return () => {
       window.removeEventListener('importCenterPointJob', handleImportJob);
       window.removeEventListener('launchPipelineSession', handleLaunchPipelineSession);
       window.removeEventListener('changeView', handleChangeView);
+      window.removeEventListener('sessionCompleted', handleSessionCompleted);
     };
   }, [currentRep]);
 

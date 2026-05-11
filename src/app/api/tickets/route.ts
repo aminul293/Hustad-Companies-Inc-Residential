@@ -6,9 +6,10 @@ const PAGE_SIZE = 25;
 // ─── GET /api/tickets ─────────────────────────────────────────────────────────
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
-  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+  const page   = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
   const search = searchParams.get("search")?.trim() || "";
-  const stage = searchParams.get("stage")?.trim() || "";
+  const stage  = searchParams.get("stage")?.trim() || "";
+  const repId  = searchParams.get("repId")?.trim() || "";
 
   const supabase = getServiceClient();
   const offset = (page - 1) * PAGE_SIZE;
@@ -20,6 +21,7 @@ export async function GET(req: NextRequest) {
     .range(offset, offset + PAGE_SIZE - 1);
 
   if (stage) query = query.eq("stage", stage);
+  if (repId) query = query.eq("assigned_rep_name", repId);
 
   if (search) {
     query = query.or(

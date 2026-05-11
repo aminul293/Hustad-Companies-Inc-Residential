@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, ChevronRight, RefreshCw, Building2, ArrowRight, CloudDownload, CheckCircle2, Ticket, ArrowLeft } from "lucide-react";
+import { Search, ChevronRight, RefreshCw, Building2, ArrowRight, CloudDownload, CheckCircle2, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -199,35 +199,6 @@ export function CenterPointJobs() {
       console.error("Stage transition failed", e);
     } finally {
       setTransitioningId(null);
-    }
-  };
-
-  const handlePromote = async (job: CPJob) => {
-    setPromotingId(job.id);
-    try {
-      const attr = job.attributes;
-      const res = await fetch("/api/tickets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cp_job_id: job.id,
-          cp_job_name: attr.name,
-          property_name: attr.propertyName || attr.name || `Job #${job.id}`,
-          price: attr.price,
-        }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setJobs(prev => prev.map(j =>
-          j.id === job.id
-            ? { ...j, promotedAt: new Date().toISOString(), promotedTicketId: data.ticket.id }
-            : j
-        ));
-      }
-    } catch (e) {
-      console.error("Promote failed", e);
-    } finally {
-      setPromotingId(null);
     }
   };
 

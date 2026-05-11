@@ -65,7 +65,7 @@ export async function PATCH(
   if (stage && stage !== current.stage && current.cp_job_id && CP_WRITEBACK[stage]) {
     const cpStatus = CP_WRITEBACK[stage];
     try {
-      await fetch(`${CP_BASE}/services/${current.cp_job_id}`, {
+      const cpRes = await fetch(`${CP_BASE}/services/${current.cp_job_id}`, {
         method: "PATCH",
         headers: {
           Accept: "application/json",
@@ -77,16 +77,42 @@ export async function PATCH(
         }),
       });
 
-      // Mirror in centerpoint_jobs cache too
-      await supabase
-        .from("centerpoint_jobs")
-        .update({ status: cpStatus, synced_at: new Date().toISOString() })
-        .eq("cp_id", current.cp_job_id);
+      if (!cpRes.ok) {
+        const errText = await cpRes.text().catch(() => String(cpRes.status));
+        console.error(`[CP_WRITEBACK] stage=${stage} cp_job_id=${current.cp_job_id} status=${cpRes.status}: ${errText}`);
+        // Queue for retry so the failure is visible in the Manager outbound queue
+        await supabase.from("outbound_queue").insert({
+          target_system: "centerpoint",
+          target_id: current.cp_job_id,
+          action: "update_status",
+          payload: { status: cpStatus, ticket_id: params.id, stage },
+          status: "failed",
+          error: `HTTP ${cpRes.status}: ${errText.slice(0, 200)}`,
+        });
+      } else {
+        // Mirror in centerpoint_jobs cache
+        await supabase
+          .from("centerpoint_jobs")
+          .update({ status: cpStatus, synced_at: new Date().toISOString() })
+          .eq("cp_id", current.cp_job_id);
 
-      updates.last_cp_writeback_stage = stage;
-      updates.last_cp_writeback_at = new Date().toISOString();
-    } catch {
-      // Write-back failure doesn't block the local update
+        updates.last_cp_writeback_stage = stage;
+        updates.last_cp_writeback_at = new Date().toISOString();
+      }
+    } catch (writebackErr: any) {
+      console.error(`[CP_WRITEBACK] unexpected error for cp_job_id=${current.cp_job_id}:`, writebackErr?.message);
+      try {
+        await supabase.from("outbound_queue").insert({
+          target_system: "centerpoint",
+          target_id: current.cp_job_id,
+          action: "update_status",
+          payload: { status: cpStatus, ticket_id: params.id, stage },
+          status: "failed",
+          error: writebackErr?.message?.slice(0, 200) ?? "Unknown error",
+        });
+      } catch {
+        // Queue insert failed — error already logged above, don't block the ticket update
+      }
     }
   }
 

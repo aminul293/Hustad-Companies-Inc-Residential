@@ -6,10 +6,11 @@ import {
   CalendarDays, UserX, AlarmClock, CheckCircle2, AlertTriangle,
   RefreshCw, ChevronDown, ChevronRight, Users, Zap, XCircle,
   Clock, MapPin, Phone, Navigation2, PlayCircle, X, Database,
-  TrendingDown, Activity
+  TrendingDown, Activity, UserPlus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AuthenticatedRep } from "@/lib/rep-identity";
+import { getLiveReps } from "@/lib/reps";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface Appointment {
@@ -281,7 +282,7 @@ export function ManagerDashboard({ currentRep }: Props) {
                       transition={{ duration: 0.2 }} className="overflow-hidden">
                       <div className="border-t border-white/[0.05] divide-y divide-white/[0.04]">
                         {appts.map(appt => (
-                          <RepApptRow key={appt.id} appt={appt} hasConflict={conflictApptIds.has(appt.id)} />
+                          <RepApptRow key={appt.id} appt={appt} hasConflict={conflictApptIds.has(appt.id)} onReassigned={fetchData} />
                         ))}
                       </div>
                     </motion.div>
@@ -442,14 +443,39 @@ function Pill({ label, color, icon: Icon }: { label: string; color: string; icon
   );
 }
 
-function RepApptRow({ appt, hasConflict }: { appt: Appointment; hasConflict: boolean }) {
-  const address = getAddress(appt);
-  const owner   = getOwner(appt);
-  const phone   = getPhone(appt);
-  const dot     = STATUS_DOT[appt.appointment_status] ?? "bg-white/20";
-  const label   = STATUS_LABEL[appt.appointment_status] ?? appt.appointment_status;
+function RepApptRow({ appt, hasConflict, onReassigned }: {
+  appt: Appointment;
+  hasConflict: boolean;
+  onReassigned: () => void;
+}) {
+  const [showReassign, setShowReassign] = useState(false);
+  const [reassigning, setReassigning]   = useState(false);
+  const reps = getLiveReps().filter(r => r.active);
+
+  const address  = getAddress(appt);
+  const owner    = getOwner(appt);
+  const phone    = getPhone(appt);
+  const dot      = STATUS_DOT[appt.appointment_status] ?? "bg-white/20";
+  const label    = STATUS_LABEL[appt.appointment_status] ?? appt.appointment_status;
   const canStart = ["scheduled", "confirmed"].includes(appt.appointment_status) &&
                    ["scheduled", "appointment_confirmed"].includes(appt.pipeline_leads?.pipeline_status ?? "");
+
+  const handleReassign = async (newRepId: string) => {
+    setReassigning(true);
+    try {
+      await fetch(`/api/appointments/${appt.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assigned_rep_id: newRepId }),
+      });
+      setShowReassign(false);
+      onReassigned();
+    } catch (err) {
+      console.error("[REASSIGN]", err);
+    } finally {
+      setReassigning(false);
+    }
+  };
 
   return (
     <div className={cn(
@@ -489,7 +515,7 @@ function RepApptRow({ appt, hasConflict }: { appt: Appointment; hasConflict: boo
             onClick={() => {
               if (appt.pipeline_leads) {
                 window.dispatchEvent(new CustomEvent("launchPipelineSession", {
-                  detail: { ...appt.pipeline_leads, centerpoint_jobs: appt.pipeline_leads.centerpoint_jobs }
+                  detail: { ...appt.pipeline_leads, appointmentId: appt.id, centerpoint_jobs: appt.pipeline_leads.centerpoint_jobs }
                 }));
               }
             }}
@@ -497,6 +523,54 @@ function RepApptRow({ appt, hasConflict }: { appt: Appointment; hasConflict: boo
             <PlayCircle className="w-3 h-3" /> Start
           </button>
         )}
+
+        {/* Reassign dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setShowReassign(v => !v)}
+            disabled={reassigning}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/30 hover:text-sky-400 hover:border-sky-500/30 hover:bg-sky-500/10 transition-all text-[10px] font-mono disabled:opacity-40"
+          >
+            <UserPlus className="w-3 h-3" />
+            Reassign
+          </button>
+          <AnimatePresence>
+            {showReassign && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                transition={{ duration: 0.12 }}
+                className="absolute right-0 top-full mt-1.5 z-50 min-w-[180px] bg-[#111] border border-white/15 rounded-2xl shadow-2xl overflow-hidden"
+              >
+                <p className="px-3 pt-2.5 pb-1 text-[9px] font-mono text-white/25 uppercase tracking-widest">
+                  Assign to rep
+                </p>
+                {reps.map(rep => (
+                  <button
+                    key={rep.id}
+                    onClick={() => handleReassign(rep.id)}
+                    className={cn(
+                      "w-full text-left px-3 py-2.5 text-xs font-display transition-all hover:bg-white/10",
+                      appt.assigned_rep_id === rep.id ? "text-sky-400 bg-sky-500/10" : "text-white/70"
+                    )}
+                  >
+                    {rep.name}
+                    {appt.assigned_rep_id === rep.id && (
+                      <span className="ml-2 text-[9px] font-mono text-sky-400/60">current</span>
+                    )}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setShowReassign(false)}
+                  className="w-full text-left px-3 py-2 text-[10px] font-mono text-white/20 hover:text-white/50 transition-all border-t border-white/[0.06]"
+                >
+                  Cancel
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

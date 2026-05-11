@@ -20,6 +20,8 @@ export function createSession(repId: string, repName: string, repEmail = ""): Se
   return {
     sessionId: `sess_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     reviewToken: undefined,
+    pipelineLeadId: undefined,
+    appointmentId: undefined,
     repId,
     repName,
     repEmail,

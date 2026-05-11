@@ -96,10 +96,11 @@ export function MySchedule({ currentRep }: Props) {
   const [loading, setLoading]           = useState(false);
 
   // Reschedule modal
-  const [reschedModal, setReschedModal] = useState<{ apptId: string; label: string } | null>(null);
+  const [reschedModal, setReschedModal] = useState<{ apptId: string; label: string; leadId?: string } | null>(null);
   const [reschedDate, setReschedDate]   = useState(new Date().toISOString().slice(0, 10));
   const [reschedTime, setReschedTime]   = useState("09:00");
   const [reschedDur, setReschedDur]     = useState(60);
+  const [reschedClash, setReschedClash] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // No Show / Cancel follow-up prompt
@@ -155,10 +156,37 @@ export function MySchedule({ currentRep }: Props) {
     }
   };
 
-  const confirmReschedule = async () => {
+  const confirmReschedule = async (force = false) => {
     if (!reschedModal) return;
     const start = new Date(`${reschedDate}T${reschedTime}:00`);
     const end   = new Date(start.getTime() + reschedDur * 60000);
+
+    // Check for clashes before applying the reschedule (unless force-overriding)
+    if (!force && reschedModal.leadId) {
+      setActionLoading(reschedModal.apptId);
+      try {
+        const clashRes = await fetch("/api/appointments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            pipeline_lead_id:    reschedModal.leadId,
+            rep_id:              currentRep.id,
+            appointment_start_at: start.toISOString(),
+            appointment_end_at:   end.toISOString(),
+            _dry_run: true,
+          }),
+        });
+        if (clashRes.status === 409) {
+          const data = await clashRes.json();
+          setReschedClash(data.message || "Schedule conflict detected.");
+          return;
+        }
+      } finally {
+        setActionLoading(null);
+      }
+    }
+
+    setReschedClash(null);
     await patchAppt(reschedModal.apptId, {
       appointment_status: "rescheduled",
       appointment_start_at: start.toISOString(),
@@ -179,8 +207,11 @@ export function MySchedule({ currentRep }: Props) {
   const startInspection = (appt: Appointment) => {
     const lead = appt.pipeline_leads;
     if (!lead) return;
-    patchAppt(appt.id, { appointment_status: "completed" });
-    window.dispatchEvent(new CustomEvent("launchPipelineSession", { detail: { ...lead, centerpoint_jobs: lead.centerpoint_jobs } }));
+    // Appointment stays 'scheduled'/'confirmed' until the session finishes.
+    // The sessionCompleted event (fired by B19) will trigger the final status update.
+    window.dispatchEvent(new CustomEvent("launchPipelineSession", {
+      detail: { ...lead, appointmentId: appt.id, centerpoint_jobs: lead.centerpoint_jobs },
+    }));
   };
 
   const getAddress = (appt: Appointment) =>
@@ -358,7 +389,7 @@ export function MySchedule({ currentRep }: Props) {
                   {/* Secondary actions */}
                   <div className="flex items-center gap-4 pt-1 border-t border-white/[0.05]">
                     <button
-                      onClick={() => { setReschedModal({ apptId: appt.id, label: address }); setReschedDate(new Date().toISOString().slice(0, 10)); }}
+                      onClick={() => { setReschedModal({ apptId: appt.id, label: address, leadId: appt.pipeline_leads?.id }); setReschedDate(new Date().toISOString().slice(0, 10)); setReschedClash(null); }}
                       className="flex items-center gap-1.5 text-[10px] font-mono text-white/25 hover:text-amber-400 uppercase tracking-widest transition-colors"
                     >
                       <RotateCcw className="w-3 h-3" /> Reschedule
@@ -519,12 +550,22 @@ export function MySchedule({ currentRep }: Props) {
                 </div>
               </div>
 
+              {reschedClash && (
+                <div className="flex items-start gap-3 bg-rose-500/[0.08] border border-rose-500/20 rounded-2xl px-4 py-3 mb-4">
+                  <span className="text-sm text-rose-300 font-medium flex-1">{reschedClash}</span>
+                  <button onClick={() => confirmReschedule(true)}
+                    className="text-[10px] font-mono text-rose-400/60 hover:text-rose-300 uppercase tracking-widest whitespace-nowrap shrink-0 transition-colors">
+                    Override
+                  </button>
+                </div>
+              )}
+
               <div className="flex gap-3">
-                <button onClick={() => setReschedModal(null)}
+                <button onClick={() => { setReschedModal(null); setReschedClash(null); }}
                   className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white transition-all text-sm">
                   Cancel
                 </button>
-                <button onClick={confirmReschedule}
+                <button onClick={() => confirmReschedule(false)}
                   className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-amber-500/20 border border-amber-500/30 text-amber-300 hover:bg-amber-500/30 transition-all text-sm font-medium">
                   Confirm <ChevronRight className="w-4 h-4" />
                 </button>
