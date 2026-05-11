@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase-server";
 
-// POST /api/sessions/[sessionId]/complete
+// POST /api/sessions/[id]/complete
 // Called when a session reaches a terminal state (signed, deferred, closed_*).
 // 1. Updates the session status.
 // 2. Marks the linked pipeline_lead as 'inspection_completed'.
@@ -9,9 +9,9 @@ import { getServiceClient } from "@/lib/supabase-server";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: { id: string } }
 ) {
-  const { sessionId } = params;
+  const { id: sessionId } = params;
   const body = await req.json().catch(() => ({}));
   const { session_status } = body;
 
