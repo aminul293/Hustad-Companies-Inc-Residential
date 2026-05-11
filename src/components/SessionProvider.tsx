@@ -62,10 +62,25 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
     if (authStatus === "authenticated" && authRep) {
       const stored = loadActiveSession();
-      const next =
-        stored?.repId === authRep.id
-          ? stampSessionWithRep(stored, authRep)
-          : createSession(authRep.id, authRep.name, authRep.email);
+      let next: SessionState;
+
+      if (stored?.repId === authRep.id) {
+        // Heal malformed or old sessions
+        const fresh = createSession(authRep.id, authRep.name, authRep.email);
+        next = {
+          ...fresh,
+          ...stored,
+          property: { ...fresh.property, ...(stored.property || {}) },
+          findings: { ...fresh.findings, ...(stored.findings || {}) },
+          pathData: { ...fresh.pathData, ...(stored.pathData || {}) },
+          signatureData: { ...fresh.signatureData, ...(stored.signatureData || {}) },
+          repId: authRep.id,
+          repName: authRep.name,
+          repEmail: authRep.email,
+        };
+      } else {
+        next = createSession(authRep.id, authRep.name, authRep.email);
+      }
 
       setSession(next);
       return;

@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
   try {
     // Demo Bypass
     const bypass = request.headers.get("x-demo-bypass");
-    if (bypass !== process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    if (bypass !== process.env.DEMO_BYPASS_SECRET) {
       await requireAuth(request);
     }
 

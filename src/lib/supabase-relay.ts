@@ -19,6 +19,9 @@ export async function upsertSession(session: SessionState) {
     current_screen: session.currentScreen,
     mode: session.mode,
     phase_a_completed: session.phaseACompleted,
+    pipeline_lead_id: session.pipelineLeadId ?? null,
+    appointment_id: session.appointmentId ?? null,
+    cpc_ticket_id: session.centerpointId ?? null,
     
     // Property
     property_address: property.address,

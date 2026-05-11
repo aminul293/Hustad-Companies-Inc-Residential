@@ -202,12 +202,19 @@ function getDraftsIndex(): Record<string, DraftMeta> {
 }
 
 export function listDrafts(repId?: string): DraftMeta[] {
-  return Object.values(getDraftsIndex()).filter((draft) => {
-    if (!repId) return true;
-    return draft.repId === repId;
-  }).sort(
-    (a, b) => new Date(b.lastSavedAt).getTime() - new Date(a.lastSavedAt).getTime()
-  );
+  const index = getDraftsIndex();
+  return Object.values(index)
+    .filter((draft): draft is DraftMeta => {
+      if (!draft || typeof draft !== "object") return false;
+      if (!draft.sessionId || !draft.address) return false;
+      if (repId && draft.repId !== repId) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const timeA = new Date(a.lastSavedAt || 0).getTime();
+      const timeB = new Date(b.lastSavedAt || 0).getTime();
+      return timeB - timeA;
+    });
 }
 
 export function loadDraftById(sessionId: string, repId?: string): SessionState | null {

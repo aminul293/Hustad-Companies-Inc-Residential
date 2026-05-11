@@ -59,7 +59,11 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
       try {
         const { fetchSessionsFromServer } = await import("@/lib/sync");
         const sessions = await fetchSessionsFromServer();
-        setServerSessions(sessions);
+        if (Array.isArray(sessions)) {
+          setServerSessions(sessions);
+        } else {
+          setServerSessions([]);
+        }
       } catch (e) {
         console.warn("Failed to fetch server sessions", e);
       } finally {
@@ -69,7 +73,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
 
     const loadScheduledLeads = async () => {
       try {
-        const res = await fetch(`/api/pipeline?t=${Date.now()}`);
+        const res = await fetch(`/api/pipeline?repId=${currentRep.id}&t=${Date.now()}`);
         const data = await res.json();
         if (Array.isArray(data)) {
           setScheduledLeads(data.filter((l: any) => ['scheduled', 'appointment_confirmed'].includes(l.pipeline_status)));
@@ -391,7 +395,10 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
                           </div>
                         </div>
                         <button
-                          onClick={() => window.dispatchEvent(new CustomEvent("launchPipelineSession", { detail: lead }))}
+                          onClick={() => {
+                            const apptId = lead.appointments?.find((a: any) => a.assigned_rep_id === currentRep.id)?.id || lead.appointments?.[0]?.id;
+                            window.dispatchEvent(new CustomEvent("launchPipelineSession", { detail: { ...lead, appointmentId: apptId } }));
+                          }}
                           className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/25 text-emerald-300 hover:bg-emerald-500/25 active:scale-95 transition-all text-xs font-medium shrink-0"
                         >
                           <PlayCircle className="w-3.5 h-3.5" />
