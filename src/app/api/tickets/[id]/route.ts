@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase-server";
+import { requireAuth } from "@/lib/auth";
 
 const CP_BASE = "https://api.centerpointconnect.io/centerpoint";
 const CP_KEY = process.env.CENTERPOINT_API_KEY!;
@@ -17,10 +18,12 @@ const CP_WRITEBACK: Record<string, string> = {
 
 // ─── GET /api/tickets/[id] ────────────────────────────────────────────────────
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const supabase = getServiceClient();
+  try {
+    await requireAuth(req);
+    const supabase = getServiceClient();
   const { data, error } = await supabase
     .from("hustad_tickets")
     .select("*, ticket_touches(*)")
@@ -29,6 +32,9 @@ export async function GET(
 
   if (error) return NextResponse.json({ error: error.message }, { status: 404 });
   return NextResponse.json({ ticket: data });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || "Internal server error" }, { status: err.status || 500 });
+  }
 }
 
 // ─── PATCH /api/tickets/[id] ──────────────────────────────────────────────────
@@ -36,9 +42,11 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const body = await req.json();
-  const { stage, notes, client_name, client_email, client_phone,
-          assigned_rep_name, property_address, price } = body;
+  try {
+    await requireAuth(req);
+    const body = await req.json();
+    const { stage, notes, client_name, client_email, client_phone,
+            assigned_rep_name, property_address, price } = body;
 
   const supabase = getServiceClient();
 
@@ -125,4 +133,7 @@ export async function PATCH(
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ticket });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || "Internal server error" }, { status: err.status || 500 });
+  }
 }
