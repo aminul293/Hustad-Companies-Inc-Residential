@@ -20,8 +20,9 @@ import {
   navigateTo,
   completePhaseA,
   addAuditEvent,
+  migrateLegacyPhotos,
 } from "@/lib/session";
-import { syncSessionToServer, queueForSync, processSyncQueue, getStoredRep } from "@/lib/sync";
+import { syncSessionToServer, queueForSync, processSyncQueue, getStoredRep, syncAllPhotos } from "@/lib/sync";
 import { getAuthenticatedRep, stampSessionWithRep } from "@/lib/rep-identity";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -94,7 +95,16 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         next = createSession(authRep.id, authRep.name, authRep.email);
       }
 
-      setSession(next);
+
+      // Trigger Migration & Sync
+      migrateLegacyPhotos(next).then((migrated) => {
+        setSession(migrated);
+        // Start background sync
+        syncAllPhotos(migrated, (updated) => {
+          setSession(updated);
+          saveSession(updated);
+        });
+      });
       return;
     }
 

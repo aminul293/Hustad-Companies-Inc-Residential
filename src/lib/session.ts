@@ -1,15 +1,11 @@
-import type {
-  SessionState,
-  ScreenId,
-  AuditEvent,
-  OutcomeType,
-  SelectedPath,
-  FollowUpTask,
-} from "@/types/session";
+import type { SessionState, ScreenId, PhotoAsset, InspectionPhoto } from "@/types/session";
+import { SCREEN_FLOW } from "@/types/session";
+import { savePhotoBlob, base64ToBlob } from "@/lib/photoStorage";
 
-const STORAGE_KEY = "hustad_session_v1";
-const DRAFTS_INDEX_KEY = "hustad_drafts_v1";
+const STORAGE_KEY = "hustad_session_draft";
+const AUDIT_KEY = "hustad_audit_trail";
 const DRAFT_PREFIX = "hustad_draft_";
+const DRAFTS_INDEX_KEY = "hustad_drafts_v1";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SESSION FACTORY
@@ -115,9 +111,48 @@ export function createSession(repId: string, repName: string, repEmail = ""): Se
       recipientRelation: "",
       statusHistory: [],
     },
-    syncStatus: "local_only",
     auditEvents: [],
+    photos: [],
+    syncStatus: "local",
   };
+}
+
+/**
+ * MIGRATION (v1 to v2)
+ * Moves base64 photos from LocalStorage to IndexedDB
+ */
+export async function migrateLegacyPhotos(session: SessionState): Promise<SessionState> {
+  const photos = session.photos || [];
+  const legacy = photos.filter(p => p.localUri && p.localUri.startsWith("data:"));
+
+  if (legacy.length === 0) return session;
+
+  console.log(`[MIGRATION] Moving ${legacy.length} photos to IndexedDB...`);
+
+  const migratedPhotos = [...photos];
+
+  for (const photo of legacy) {
+    try {
+      const blob = base64ToBlob(photo.localUri!);
+      await savePhotoBlob(photo.storageKey || photo.id, blob);
+      
+      // Remove base64 from session
+      const idx = migratedPhotos.findIndex(p => p.id === photo.id);
+      if (idx !== -1) {
+        migratedPhotos[idx] = {
+          ...migratedPhotos[idx],
+          localUri: undefined,
+          storageKey: photo.storageKey || photo.id,
+        };
+      }
+    } catch (err) {
+      console.error("[MIGRATION] Failed for photo:", photo.id, err);
+    }
+  }
+
+  const updated = { ...session, photos: migratedPhotos };
+  saveSession(updated);
+  return updated;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
