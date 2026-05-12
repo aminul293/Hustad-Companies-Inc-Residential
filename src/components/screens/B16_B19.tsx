@@ -25,7 +25,8 @@ import {
   ShieldCheck,
   User,
   PenTool,
-  AlertTriangle
+  AlertTriangle,
+  RefreshCw
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { submitSession, addAuditEvent, createFollowUpTask, exportSessionJSON, saveSession } from "@/lib/session";
@@ -653,9 +654,54 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
   const [deliverySent, setDeliverySent] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isDispatching, setIsDispatching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [quickEmail, setQuickEmail] = useState("");
   const [quickPhone, setQuickPhone] = useState("");
+
+  const handleOfficeDispatch = async (s: SessionState) => {
+    setIsDispatching(true);
+    setError(null);
+    try {
+      const { getSummaryPDFBase64 } = await import("@/lib/pdf-export");
+      const pdfBase64 = await getSummaryPDFBase64(s);
+      const fileName = `Hustad_Dossier_${s.sessionId.slice(-6).toUpperCase()}.pdf`;
+
+      const res = await fetch("/api/office-dispatch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session: s,
+          pdfBase64,
+          fileName
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Office dispatch failed");
+
+      const updated: SessionState = {
+        ...s,
+        officeDispatchStatus: "sent",
+        officeDispatchedAt: data.dispatchedAt,
+        reportUrl: data.reportUrl,
+      };
+      onUpdate(addAuditEvent(updated, "office_dispatch_success", { reportUrl: data.reportUrl }));
+      return updated;
+    } catch (err: any) {
+      console.error("[OFFICE_DISPATCH_ERROR]", err);
+      const updated: SessionState = {
+        ...s,
+        officeDispatchStatus: "error",
+        officeDispatchError: err.message,
+      };
+      onUpdate(addAuditEvent(updated, "office_dispatch_error", { error: err.message }));
+      setError(`Office dispatch failed: ${err.message}. Please retry manually.`);
+      return updated;
+    } finally {
+      setIsDispatching(false);
+    }
+  };
 
   const handleFinish = async () => {
     setIsSyncing(true);
@@ -703,6 +749,11 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
           appointmentId: finalSession.appointmentId,
         },
       }));
+
+      // Trigger Office Dispatch
+      if (finalSession.officeDispatchStatus !== "sent") {
+        await handleOfficeDispatch(finalSession);
+      }
     } catch (err) {
       console.error("[FINISH_SYNC]", err);
       // Don't block the rep from finishing even if sync fails
@@ -1109,6 +1160,52 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
                   {exported ? "Summary Downloaded ✓" : "Download Summary (PDF)"}
                 </span>
               </button>
+
+              {/* Office Dispatch Status & Retry */}
+              {session.officeDispatchStatus && (
+                <div className={cn(
+                  "p-6 rounded-[32px] border transition-all duration-300 space-y-4",
+                  session.officeDispatchStatus === "sent" 
+                    ? "bg-green-500/5 border-green-500/20" 
+                    : "bg-rose-500/5 border-rose-500/20"
+                )}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "w-2 h-2 rounded-full",
+                        session.officeDispatchStatus === "sent" ? "bg-green-400" : "bg-rose-400 animate-pulse"
+                      )} />
+                      <p className="text-[10px] font-mono text-white/50 uppercase tracking-[0.2em]">Office Dispatch</p>
+                    </div>
+                    {session.officeDispatchStatus === "sent" ? (
+                      <span className="text-[10px] font-mono text-green-400 uppercase tracking-widest">Sent ✓</span>
+                    ) : (
+                      <span className="text-[10px] font-mono text-rose-400 uppercase tracking-widest">Failed</span>
+                    )}
+                  </div>
+                  
+                  {session.officeDispatchStatus === "error" && (
+                    <button
+                      disabled={isDispatching}
+                      onClick={() => handleOfficeDispatch(session)}
+                      className="w-full py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex items-center justify-center gap-2"
+                    >
+                      {isDispatching ? (
+                        <RefreshCw className="w-3 h-3 text-white/50 animate-spin" />
+                      ) : (
+                        <RefreshCw className="w-3 h-3 text-white/50" />
+                      )}
+                      <span className="text-[10px] font-mono text-white/70 uppercase tracking-[0.1em]">Retry Dispatch</span>
+                    </button>
+                  )}
+                  
+                  {session.officeDispatchedAt && (
+                    <p className="text-[9px] font-mono text-white/20 text-center uppercase tracking-tighter">
+                      Timestamp: {new Date(session.officeDispatchedAt).toLocaleString()}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
