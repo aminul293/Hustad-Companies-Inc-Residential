@@ -137,3 +137,52 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: error.status || 500 });
   }
 }
+
+// DELETE /api/pipeline?cpc_ticket_id=1329675
+// Unlinks a CP Inbox job from pipeline — finds the lead by ticket ID,
+// deletes it, and resets centerpoint_jobs.inbox_status back to null.
+export async function DELETE(request: NextRequest) {
+  try {
+    await requireAuth(request);
+    const { searchParams } = new URL(request.url);
+    const cpcTicketId = searchParams.get('cpc_ticket_id');
+
+    if (!cpcTicketId) {
+      return NextResponse.json({ error: 'Missing cpc_ticket_id' }, { status: 400 });
+    }
+
+    const supabase = getServiceClient();
+
+    // Find the pipeline lead by ticket ID
+    const { data: lead, error: fetchErr } = await supabase
+      .from('pipeline_leads')
+      .select('id, centerpoint_job_id')
+      .eq('cpc_ticket_id', cpcTicketId)
+      .maybeSingle();
+
+    if (fetchErr) throw fetchErr;
+
+    if (lead) {
+      // Reset inbox_status using the FK (same way the DELETE by ID does it)
+      if (lead.centerpoint_job_id) {
+        await supabase
+          .from('centerpoint_jobs')
+          .update({ inbox_status: null })
+          .eq('id', lead.centerpoint_job_id);
+      }
+      // Delete the pipeline lead
+      await supabase.from('pipeline_leads').delete().eq('id', lead.id);
+    } else {
+      // No pipeline lead found — just clear any stale inbox_status by looking up the job directly
+      await supabase
+        .from('centerpoint_jobs')
+        .update({ inbox_status: null })
+        .eq('name', cpcTicketId);
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('[PIPELINE_DELETE_BY_TICKET_ERROR]', error);
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+  }
+}
