@@ -85,10 +85,10 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
       </div>
 
       {/* Discreet Rep Back Button */}
-      <div className="absolute bottom-10 left-10 z-30">
+      <div className="absolute bottom-10 left-10 z-50">
         <button 
           onClick={onBack}
-          className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 border border-white/10 text-white/30 hover:text-white/60 hover:bg-white/10 transition-all text-[10px] font-mono uppercase tracking-widest"
+          className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 border border-white/10 text-white/30 hover:text-white/60 hover:bg-white/10 transition-all text-[10px] font-mono uppercase tracking-widest cursor-pointer active:scale-95"
         >
           <ArrowLeft className="w-3 h-3" />
           Rep: Return to Prep
