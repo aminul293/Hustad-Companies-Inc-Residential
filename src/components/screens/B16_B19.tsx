@@ -32,6 +32,7 @@ import { submitSession, addAuditEvent, createFollowUpTask, exportSessionJSON, sa
 import { downloadSummaryPDF } from "@/lib/pdf-export";
 import { PRODUCT_CONFIG, IMPACT_DISCLAIMER } from "@/config/products";
 import { RemoteStatusTracker } from "@/components/RemoteStatusTracker";
+import { getMissingRequiredShots } from "@/lib/inspectionShotList";
 
 interface Props {
   session: SessionState;
@@ -241,7 +242,9 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
   const [claimRelated, setClaimRelated] = useState<boolean | null>(session.pathData.claimRelatedWork);
   const [acknowledged, setAcknowledged] = useState(session.pathData.agreementAcknowledged);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showPhotoWarning, setShowPhotoWarning] = useState(false);
 
+  const missingShots = getMissingRequiredShots(session.photos || []);
   const outcome = session.findings.outcomeType;
   const isClaimPath = outcome === "claim_review_candidate" || session.pathData.selectedPath === "claim_review";
 
@@ -249,6 +252,13 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
     const e: Record<string, string> = {};
     if (isClaimPath && claimRelated === null) e.claim = "Please confirm whether this work is related to an insurance claim.";
     if (!acknowledged) e.ack = "Please acknowledge the agreement summary.";
+    
+    // Photo requirement guard
+    if (!showPhotoWarning && missingShots.length > 0) {
+      setShowPhotoWarning(true);
+      return;
+    }
+
     if (Object.keys(e).length) { setErrors(e); return; }
 
     const updated: SessionState = {
@@ -298,6 +308,39 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">here is what you are authorizing.</span>
             </h1>
           </motion.div>
+
+          <AnimatePresence>
+            {showPhotoWarning && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="max-w-xl mx-auto p-8 rounded-[40px] bg-rose-500/10 border border-rose-500/30 backdrop-blur-3xl space-y-6 text-left"
+              >
+                <div className="flex items-center gap-4 text-rose-400">
+                  <AlertTriangle className="w-6 h-6" />
+                  <h3 className="text-xl font-display font-medium">Incomplete Documentation</h3>
+                </div>
+                <p className="text-sm text-rose-200/70 font-light leading-relaxed">
+                  You are missing <span className="font-bold text-rose-300">{missingShots.length} required photos</span> for this forensic inspection. 
+                  The dossier will be flagged as "Partial Evidence" in the command center.
+                </p>
+                <div className="flex gap-4">
+                  <button 
+                    onClick={() => onBack()} // Should probably go back to the photo screen, but onBack is standard
+                    className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/10 text-white text-xs font-mono uppercase tracking-widest hover:bg-white/10"
+                  >
+                    Go Back & Capture
+                  </button>
+                  <button 
+                    onClick={() => handleContinue()} 
+                    className="flex-1 py-4 rounded-2xl bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-mono uppercase tracking-widest hover:bg-rose-500/30"
+                  >
+                    Continue Anyway
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 text-left">
             <div className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.1] backdrop-blur-3xl space-y-8">

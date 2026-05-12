@@ -28,6 +28,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { setSelectedPath, addAuditEvent, unlockSummary } from "@/lib/session";
+import { PhotoThumbnail } from "@/components/PhotoThumbnail";
+import { InspectionPhoto } from "@/types/session";
 
 interface Props {
   session: SessionState;
@@ -46,8 +48,8 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
   const outcome = findings.outcomeType!;
   const [showUnlockConfirm, setShowUnlockConfirm] = useState(false);
   const summaryPhotos = [
-    ...(session.photoAssets || []).filter((p) => p.selectedForSummary).map(p => ({ id: p.assetId, url: p.dataUrl, date: p.createdAt })),
-    ...(session.photos || []).filter((p) => p.selectedForSummary).map(p => ({ id: p.id, url: p.localUri, date: p.createdAt }))
+    ...(session.photoAssets || []).filter((p) => p.selectedForSummary).map(p => ({ id: p.assetId, url: p.dataUrl, date: p.createdAt, type: "legacy" as const })),
+    ...(session.photos || []).filter((p) => p.selectedForSummary).map(p => ({ id: p.id, date: p.createdAt, type: "structured" as const, photo: p }))
   ];
 
   const handleUnlock = () => {
@@ -185,7 +187,11 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
                 <div className="grid grid-cols-2 gap-4">
                   {summaryPhotos.length > 0 ? summaryPhotos.slice(0, 4).map((photo) => (
                     <div key={photo.id} className="group relative aspect-[4/3] rounded-3xl overflow-hidden border border-white/10 bg-white/[0.02]">
-                      <img src={photo.url} alt="Documentation" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                      {photo.type === "structured" ? (
+                        <PhotoThumbnail photo={photo.photo!} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                      ) : (
+                        <img src={(photo as any).url} alt="Documentation" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                      )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
                         <p className="text-[8px] font-mono text-white uppercase tracking-widest">Captured • {new Date(photo.date).toLocaleDateString()}</p>
                       </div>

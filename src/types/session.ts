@@ -157,8 +157,10 @@ export interface InspectionPhoto {
   category: string;
   section: string;
   label: string;
-  localUri: string;
+  storageKey: string; // IndexedDB key (typically photo.id)
+  localUri?: string; // Kept only for legacy migration (v1 base64)
   remoteUrl?: string;
+  storagePath?: string;
   description?: string;
   quantity?: number;
   selectedForSummary?: boolean;
@@ -166,6 +168,8 @@ export interface InspectionPhoto {
   syncStatus: InspectionPhotoSyncStatus;
   syncError?: string;
   retryCount?: number;
+  lastSyncAttemptAt?: string;
+  lastSyncedAt?: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

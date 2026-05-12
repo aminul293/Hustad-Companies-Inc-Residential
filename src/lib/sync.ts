@@ -1,11 +1,14 @@
-import type { SessionState } from "@/types/session";
 import {
   getUnsyncedSessions,
   markSessionSyncing,
   markSessionSynced,
   markSessionSyncError,
   loadDraftById,
+  saveSession,
 } from "@/lib/session";
+import { supabase } from "@/lib/supabase";
+import { getPhotoBlob } from "@/lib/photoStorage";
+import type { InspectionPhoto, SessionState } from "@/types/session";
 
 const API_BASE = typeof window !== "undefined"
   ? window.location.origin
@@ -261,4 +264,102 @@ export async function retryAllUnsyncedSessions(
   }
 
   return { success, failed };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLOUD PHOTO SYNC (v2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function uploadPhotoToCloud(
+  session: SessionState,
+  photo: InspectionPhoto
+): Promise<InspectionPhoto> {
+  const blob = await getPhotoBlob(photo.storageKey);
+  if (!blob) {
+    return { ...photo, syncStatus: "error", syncError: "Local file not found" };
+  }
+
+  // Path: {repId}/{sessionId}/{photoId}.jpg
+  const path = `${session.repId}/${session.sessionId}/${photo.id}.jpg`;
+  
+  try {
+    const { data, error } = await supabase.storage
+      .from("inspection-photos")
+      .upload(path, blob, {
+        contentType: "image/jpeg",
+        upsert: true
+      });
+
+    if (error) throw error;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from("inspection-photos")
+      .getPublicUrl(path);
+
+    return {
+      ...photo,
+      syncStatus: "synced",
+      remoteUrl: publicUrl,
+      storagePath: path,
+      lastSyncedAt: new Date().toISOString(),
+      syncError: undefined
+    };
+  } catch (err: any) {
+    console.error("[PHOTO_SYNC] Upload failed:", err);
+    return {
+      ...photo,
+      syncStatus: "error",
+      syncError: err.message,
+      lastSyncAttemptAt: new Date().toISOString(),
+      retryCount: (photo.retryCount || 0) + 1
+    };
+  }
+}
+
+export async function retryPhotoSync(
+  session: SessionState,
+  photoId: string,
+  onUpdate: (s: SessionState) => void
+): Promise<boolean> {
+  const photos = session.photos || [];
+  const photo = photos.find(p => p.id === photoId);
+  if (!photo || photo.syncStatus === "syncing") return false;
+
+  const syncingPhoto = { ...photo, syncStatus: "syncing" as const };
+  onUpdate({
+    ...session,
+    photos: photos.map(p => p.id === photoId ? syncingPhoto : p)
+  });
+
+  const result = await uploadPhotoToCloud(session, syncingPhoto);
+  
+  onUpdate({
+    ...session,
+    photos: (session.photos || []).map(p => p.id === photoId ? result : p)
+  });
+
+  return result.syncStatus === "synced";
+}
+
+/**
+ * Background loop to sync all local photos for a session
+ */
+export async function syncAllPhotos(
+  session: SessionState,
+  onUpdate: (s: SessionState) => void
+) {
+  const photos = session.photos || [];
+  const unsynced = photos.filter(p => p.syncStatus === "local" || p.syncStatus === "error");
+  
+  if (unsynced.length === 0) return;
+
+  for (const photo of unsynced) {
+    // Basic cooldown (60 sec) for errors
+    if (photo.syncStatus === "error" && photo.lastSyncAttemptAt) {
+      const elapsed = Date.now() - new Date(photo.lastSyncAttemptAt).getTime();
+      if (elapsed < 60000) continue;
+    }
+
+    await retryPhotoSync(session, photo.id, onUpdate);
+  }
 }

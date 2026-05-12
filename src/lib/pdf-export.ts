@@ -1,7 +1,8 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import type { SessionState } from "@/types/session";
+import type { SessionState, InspectionPhoto } from "@/types/session";
 import { compressImage } from "@/lib/images";
+import { getPhotoBlob, blobToBase64 } from "@/lib/photoStorage";
 
 /**
  * Generates and downloads a professional "Executive Storm Review" PDF package.
@@ -146,18 +147,38 @@ async function generateDossier(session: SessionState): Promise<jsPDF> {
   });
 
   const photoAssets = (session.photoAssets || []).filter(p => p.selectedForSummary && !p.isSensitive);
-  if (photoAssets.length > 0) {
+  
+  // v2: Resolve all structured photos to base64 for PDF embedding
+  const structuredPhotos: { dataUrl: string, label: string, category: string }[] = [];
+  for (const p of (session.photos || []).filter(p => p.selectedForSummary)) {
+    let dataUrl = p.remoteUrl || p.localUri;
+    if (!dataUrl) {
+      const blob = await getPhotoBlob(p.storageKey);
+      if (blob) dataUrl = await blobToBase64(blob);
+    }
+    if (dataUrl) {
+      structuredPhotos.push({ dataUrl, label: p.label, category: p.category });
+    }
+  }
+
+  // Combine for the main documentation pages
+  const allPhotos = [
+    ...photoAssets.map(p => ({ dataUrl: p.dataUrl, label: "Finding", category: p.category, annotations: p.annotations })),
+    ...structuredPhotos.map(p => ({ dataUrl: p.dataUrl, label: p.label, category: p.category, annotations: [] }))
+  ];
+
+  if (allPhotos.length > 0) {
     currentY = (doc as any).lastAutoTable.finalY + 15;
     doc.setTextColor(15, 23, 42); doc.setFont("times", "bold"); doc.setFontSize(12); doc.text("SENSORY EVIDENCE_01", 45, currentY);
     try {
-      const asset = photoAssets[0];
+      const asset = allPhotos[0];
       const compressed = await compressImage(asset.dataUrl);
       doc.addImage(compressed, "JPEG", 45, currentY + 5, contentWidth - 30, 80, undefined, "FAST");
       
-      // Draw annotations for the first large photo
-      if (asset.annotations) {
+      // Draw annotations if they exist (legacy only for now)
+      if ((asset as any).annotations) {
         doc.setLineWidth(0.5);
-        asset.annotations.forEach(ann => {
+        (asset as any).annotations.forEach((ann: any) => {
           doc.setDrawColor(ann.color === "#ef4444" ? 239 : 99, ann.color === "#ef4444" ? 68 : 102, ann.color === "#ef4444" ? 68 : 241);
           if (ann.type === "circle") {
             doc.circle(45 + (ann.x * (contentWidth - 30) / 100), (currentY + 5) + (ann.y * 80 / 100), (ann.radius || 5) * (contentWidth - 30) / 100, "S");
@@ -206,17 +227,17 @@ async function generateDossier(session: SessionState): Promise<jsPDF> {
   doc.text("EXECUTIVE DIRECTIVE: DOCUMENT // REVIEW // DECIDE", pageWidth / 2 + 15, pageHeight - 43, { align: "center" });
 
   // ===========================================================================
-  // REMAINING PAGES
+  // REMAINING PAGES: EVIDENCE GRID
   // ===========================================================================
-  if (photoAssets.length > 1) {
+  if (allPhotos.length > 1) {
     let currentPhotoIdx = 1;
-    while (currentPhotoIdx < photoAssets.length) {
+    while (currentPhotoIdx < allPhotos.length) {
       doc.addPage();
       doc.setFillColor(15, 23, 42); doc.rect(0, 0, 30, pageHeight, "F");
       doc.setTextColor(255, 255, 255); doc.setFontSize(8); doc.setFont("courier", "bold");
       doc.text("EVIDENCE_LOG", 10, 40, { angle: 90 });
       
-      const chunk = photoAssets.slice(currentPhotoIdx, currentPhotoIdx + 4);
+      const chunk = allPhotos.slice(currentPhotoIdx, currentPhotoIdx + 4);
       for (let idx = 0; idx < chunk.length; idx++) {
         const asset = chunk[idx];
         const col = idx % 2; const row = Math.floor(idx / 2);
@@ -226,11 +247,11 @@ async function generateDossier(session: SessionState): Promise<jsPDF> {
           doc.addImage(compressed, "JPEG", x, y, (contentWidth - 40) / 2, 80, undefined, "FAST"); 
           
           // --- DRAW FORENSIC ANNOTATIONS ---
-          if (asset.annotations && asset.annotations.length > 0) {
+          if ((asset as any).annotations && (asset as any).annotations.length > 0) {
             const imgWidth = (contentWidth - 40) / 2;
             const imgHeight = 80;
             doc.setLineWidth(0.5);
-            asset.annotations.forEach(ann => {
+            (asset as any).annotations.forEach((ann: any) => {
               if (ann.color === "#ef4444") doc.setDrawColor(239, 68, 68);
               else doc.setDrawColor(99, 102, 241);
               
@@ -242,8 +263,6 @@ async function generateDossier(session: SessionState): Promise<jsPDF> {
                 doc.setFillColor(ann.color === "#ef4444" ? 239 : 99, ann.color === "#ef4444" ? 68 : 102, ann.color === "#ef4444" ? 68 : 241);
                 doc.rect(x + (ann.x * imgWidth / 100) - 10, y + (ann.y * imgHeight / 100) - 3, 20, 6, "F");
                 doc.setTextColor(255, 255, 255); doc.setFontSize(5); doc.text(ann.text.toUpperCase(), x + (ann.x * imgWidth / 100), y + (ann.y * imgHeight / 100) + 1, { align: "center" });
-              } else if (ann.type === "blur") {
-                doc.setFillColor(255, 255, 255); doc.rect(x + (ann.x * imgWidth / 100), y + (ann.y * imgHeight / 100), ((ann.toX || ann.x) - ann.x) * imgWidth / 100, ((ann.toY || ann.y) - ann.y) * imgHeight / 100, "F");
               }
             });
           }
@@ -251,10 +270,10 @@ async function generateDossier(session: SessionState): Promise<jsPDF> {
           doc.setDrawColor(15, 23, 42); doc.setLineWidth(0.5); doc.rect(x, y, (contentWidth - 40) / 2, 80, "S");
           doc.setFillColor(15, 23, 42); doc.rect(x, y + 80, 40, 6, "F");
           doc.setFontSize(6); doc.setTextColor(255, 255, 255); doc.setFont("courier", "bold");
-          doc.text(`TAG_${(asset.tags?.[0] || asset.category).toUpperCase()}`, x + 3, y + 84); 
-          if (asset.severity) {
-            doc.setTextColor(asset.severity === 'critical' ? 239 : 148, asset.severity === 'critical' ? 68 : 163, asset.severity === 'critical' ? 68 : 184);
-            doc.text(`[${asset.severity.toUpperCase()}]`, x + 3, y + 88);
+          doc.text(`TAG_${( (asset as any).tags?.[0] || asset.category).toUpperCase()}`, x + 3, y + 84); 
+          if ((asset as any).severity) {
+            doc.setTextColor((asset as any).severity === 'critical' ? 239 : 148, (asset as any).severity === 'critical' ? 68 : 163, (asset as any).severity === 'critical' ? 68 : 184);
+            doc.text(`[${(asset as any).severity.toUpperCase()}]`, x + 3, y + 88);
           }
         } catch (e) {}
       }

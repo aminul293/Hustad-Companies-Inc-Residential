@@ -16,9 +16,12 @@ import {
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { StarButton } from "@/components/ui/star-button";
+import { PhotoThumbnail } from "@/components/PhotoThumbnail";
 import { INSPECTION_SHOT_LIST, ShotListItem, ShotListSection } from "@/lib/inspectionShotList";
 import { InspectionPhoto, SessionState } from "@/types/session";
 import { compressImage } from "@/lib/images";
+import { savePhotoBlob, base64ToBlob, getPhotoObjectURL, deletePhotoBlob } from "@/lib/photoStorage";
+import { retryPhotoSync } from "@/lib/sync";
 
 interface InspectionPhotoChecklistProps {
   session: SessionState;
@@ -64,25 +67,41 @@ export function InspectionPhotoChecklist({ session, onUpdate }: InspectionPhotoC
     reader.onloadend = async () => {
       const rawBase64 = reader.result as string;
       
-      // Compress before saving to session
+      // 1. Compress
       const compressedBase64 = await compressImage(rawBase64, 1200, 0.8);
 
+      // 2. Metadata
+      const photoId = `photo_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
       const newPhoto: InspectionPhoto = {
-        id: `photo_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        id: photoId,
         sessionId: session.sessionId,
         category: activeItem.id,
         section: activeItem.section,
         label: activeItem.label,
-        localUri: compressedBase64,
+        storageKey: photoId, // Local blob key
         selectedForSummary: true,
         createdAt: new Date().toISOString(),
         syncStatus: "local",
       };
 
-      onUpdate({
-        ...session,
-        photos: [...(session.photos || []), newPhoto]
-      });
+      // 3. Store in IndexedDB as Blob
+      try {
+        const blob = base64ToBlob(compressedBase64);
+        await savePhotoBlob(photoId, blob);
+        
+        // 4. Update session (no base64 in session anymore)
+        onUpdate({
+          ...session,
+          photos: [...(session.photos || []), newPhoto]
+        });
+      } catch (err) {
+        console.error("Failed to save photo to IndexedDB, falling back to base64 in session", err);
+        // Fallback for safety (though not ideal)
+        onUpdate({
+          ...session,
+          photos: [...(session.photos || []), { ...newPhoto, localUri: compressedBase64 }]
+        });
+      }
       
       // Reset input
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -91,7 +110,11 @@ export function InspectionPhotoChecklist({ session, onUpdate }: InspectionPhotoC
     reader.readAsDataURL(file);
   };
 
-  const deletePhoto = (id: string) => {
+  const deletePhoto = async (id: string) => {
+    // 1. Delete from IndexedDB
+    await deletePhotoBlob(id);
+    
+    // 2. Remove from session
     onUpdate({
       ...session,
       photos: photos.filter(p => p.id !== id)
@@ -221,11 +244,11 @@ export function InspectionPhotoChecklist({ session, onUpdate }: InspectionPhotoC
                         <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 mt-4">
                           {itemPhotos.map((photo) => (
                             <div key={photo.id} className="relative group aspect-square">
-                              <img 
-                                src={photo.localUri} 
-                                alt={photo.label} 
-                                className="w-full h-full object-cover rounded-xl border border-white/10"
+                              <PhotoThumbnail 
+                                photo={photo} 
+                                className="w-full h-full rounded-xl border border-white/10"
                               />
+                              
                               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 rounded-xl">
                                 <button 
                                   onClick={() => setEditingPhotoId(photo.id)}
@@ -240,11 +263,30 @@ export function InspectionPhotoChecklist({ session, onUpdate }: InspectionPhotoC
                                   <Trash2 size={14} />
                                 </button>
                               </div>
-                              {photo.syncStatus === "error" && (
-                                <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center border-2 border-[#0a0a0a]">
-                                  <AlertCircle size={8} className="text-white" />
-                                </div>
-                              )}
+
+                              {/* Sync Status Badge */}
+                              <div className="absolute -top-1 -right-1 flex items-center justify-center">
+                                {photo.syncStatus === "synced" ? (
+                                  <div className="w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-[#0a0a0a] shadow-lg">
+                                    <CheckCircle2 size={8} className="text-white" />
+                                  </div>
+                                ) : photo.syncStatus === "error" ? (
+                                  <button 
+                                    onClick={(e) => { e.stopPropagation(); retryPhotoSync(session, photo.id, onUpdate); }}
+                                    className="w-4 h-4 bg-rose-500 rounded-full flex items-center justify-center border-2 border-[#0a0a0a] shadow-lg animate-pulse"
+                                  >
+                                    <RefreshCw size={8} className="text-white" />
+                                  </button>
+                                ) : photo.syncStatus === "syncing" ? (
+                                  <div className="w-4 h-4 bg-indigo-500 rounded-full flex items-center justify-center border-2 border-[#0a0a0a] shadow-lg">
+                                    <RefreshCw size={8} className="text-white animate-spin" />
+                                  </div>
+                                ) : (
+                                  <div className="w-4 h-4 bg-white/20 rounded-full flex items-center justify-center border-2 border-[#0a0a0a] shadow-lg">
+                                    <Clock size={8} className="text-white/50" />
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -280,7 +322,10 @@ export function InspectionPhotoChecklist({ session, onUpdate }: InspectionPhotoC
                       </button>
                     </div>
 
-                    <img src={photo.localUri} className="w-full aspect-video object-cover rounded-2xl border border-white/10" alt="Preview" />
+                    <PhotoThumbnail 
+                      photo={photo} 
+                      className="w-full aspect-video object-cover rounded-2xl border border-white/10" 
+                    />
                     
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10">
                       <div className="flex items-center gap-3">
