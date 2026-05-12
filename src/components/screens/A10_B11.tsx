@@ -758,8 +758,9 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
       </div>
 
       {/* Control Surface (Footer) */}
-      <div className="sticky bottom-0 inset-x-0 p-10 z-50 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A] to-transparent pt-32 pointer-events-none">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-8 pointer-events-auto">
+      <div className="fixed bottom-0 inset-x-0 p-10 z-50 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/80 to-transparent pt-32" />
+        <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-8 pointer-events-auto">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
             <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white">Back</span>
