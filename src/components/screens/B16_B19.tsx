@@ -637,7 +637,22 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
         body: JSON.stringify(finalSession),
       });
 
-      // Notify RepCommandCenter to update pipeline lead, appointment, and hustad ticket
+      // Directly call complete endpoint — RepCommandCenter is unmounted during inspection flow
+      // so the sessionCompleted event below has no listener. These calls must happen here.
+      await fetch(`/api/sessions/${finalSession.sessionId}/complete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_status: finalSession.sessionStatus }),
+      });
+      if (finalSession.appointmentId) {
+        await fetch(`/api/appointments/${finalSession.appointmentId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ appointment_status: "completed" }),
+        });
+      }
+
+      // Kept for backward compatibility (e.g. if RepCommandCenter ever re-mounts in same tab)
       window.dispatchEvent(new CustomEvent("sessionCompleted", {
         detail: {
           sessionId: finalSession.sessionId,
