@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getServiceClient } from '@/lib/supabase-server';
+import { requireAuth } from '@/lib/auth';
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
-  const body = await request.json();
-  const { appointment_status, appointment_start_at, appointment_end_at, notes, next_follow_up_at, assigned_rep_id } = body;
-
   try {
+    await requireAuth(request);
+    const { id } = params;
+    const body = await request.json();
+    const { appointment_status, appointment_start_at, appointment_end_at, notes, next_follow_up_at, assigned_rep_id } = body;
+
     const supabase = getServiceClient();
 
     const updates: Record<string, unknown> = {};

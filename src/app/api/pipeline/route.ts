@@ -1,18 +1,20 @@
 import { NextResponse } from 'next/server';
 import { getServiceClient } from '@/lib/supabase-server';
+import { requireAuth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 export const revalidate = 0;
 
 export async function POST(request: Request) {
-  const { job } = await request.json();
-
-  if (!job) {
-    return NextResponse.json({ error: 'Missing job data' }, { status: 400 });
-  }
-
   try {
+    await requireAuth(request);
+    const { job } = await request.json();
+
+    if (!job) {
+      return NextResponse.json({ error: 'Missing job data' }, { status: 400 });
+    }
+
     const supabase = getServiceClient();
     // Look up the internal UUID for this job
     const { data: cpJob, error: cpError } = await supabase
@@ -50,62 +52,60 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, lead });
   } catch (error: any) {
-    console.error('[PIPELINE_IMPORT_ERROR]', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('[PIPELINE_POST_ERROR]', error);
+    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: error.status || 500 });
   }
 }
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const repId = searchParams.get('repId');
+  try {
+    await requireAuth(request);
+    const { searchParams } = new URL(request.url);
+    const repId = searchParams.get('repId');
 
-  const supabase = getServiceClient();
+    const supabase = getServiceClient();
 
-  let query = supabase
-    .from('pipeline_leads')
-    .select(`
-      *,
-      centerpoint_jobs (*),
-      appointments!pipeline_lead_id ( id, assigned_rep_id )
-    `)
-    .order('created_at', { ascending: false });
+    let query = supabase
+      .from('pipeline_leads')
+      .select(`
+        *,
+        centerpoint_jobs (*),
+        appointments!pipeline_lead_id ( id, assigned_rep_id )
+      `)
+      .order('created_at', { ascending: false });
 
-  // When repId is provided, restrict to leads that have an appointment assigned to that rep
-  // OR leads with no appointment yet (new/unscheduled leads)
-  const QA_MODE = process.env.NEXT_PUBLIC_QA_MODE === "true";
-  const isMockRep = QA_MODE && repId === 'rep_001';
+    const QA_MODE = process.env.NEXT_PUBLIC_QA_MODE === "true";
+    const isMockRep = QA_MODE && repId === 'rep_001';
 
-  if (repId && !isMockRep) {
-    const { data: repLeadIds } = await supabase
-      .from('appointments')
-      .select('pipeline_lead_id')
-      .eq('assigned_rep_id', repId);
+    if (repId && !isMockRep) {
+      const { data: repLeadIds } = await supabase
+        .from('appointments')
+        .select('pipeline_lead_id')
+        .eq('assigned_rep_id', repId);
 
-    const ids = (repLeadIds ?? []).map((r: any) => r.pipeline_lead_id).filter(Boolean);
-    
-    if (ids.length > 0) {
-      // In a real app we'd use a more complex OR filter, 
-      // but for this MVP we'll show leads with appointments for this rep 
-      // PLUS any lead that has NO appointments.
-      const { data: allApptIds } = await supabase.from('appointments').select('pipeline_lead_id');
-      const takenIds = (allApptIds ?? []).map((a: any) => a.pipeline_lead_id).filter(Boolean);
+      const ids = (repLeadIds ?? []).map((r: any) => r.pipeline_lead_id).filter(Boolean);
       
-      if (takenIds.length > 0) {
-        query = query.or(`id.in.(${ids.join(',')}),id.not.in.(${takenIds.join(',')})`);
+      if (ids.length > 0) {
+        const { data: allApptIds } = await supabase.from('appointments').select('pipeline_lead_id');
+        const takenIds = (allApptIds ?? []).map((a: any) => a.pipeline_lead_id).filter(Boolean);
+        
+        if (takenIds.length > 0) {
+          query = query.or(`id.in.(${ids.join(',')}),id.not.in.(${takenIds.join(',')})`);
+        }
       } else {
-        // No appointments at all, show everything
-      }
-    } else {
-      // If no appointments found for this rep, show leads that have NO appointments yet.
-      const { data: allApptIds } = await supabase.from('appointments').select('pipeline_lead_id');
-      const takenIds = (allApptIds ?? []).map((a: any) => a.pipeline_lead_id).filter(Boolean);
-      if (takenIds.length > 0) {
-        query = query.not('id', 'in', `(${takenIds.join(',')})`);
+        const { data: allApptIds } = await supabase.from('appointments').select('pipeline_lead_id');
+        const takenIds = (allApptIds ?? []).map((a: any) => a.pipeline_lead_id).filter(Boolean);
+        if (takenIds.length > 0) {
+          query = query.not('id', 'in', `(${takenIds.join(',')})`);
+        }
       }
     }
-  }
 
-  const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+    const { data, error } = await query;
+    if (error) throw error;
+    return NextResponse.json(data ?? []);
+  } catch (error: any) {
+    console.error('[PIPELINE_GET_ERROR]', error);
+    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: error.status || 500 });
+  }
 }

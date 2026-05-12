@@ -1,26 +1,21 @@
 import { NextResponse } from 'next/server';
 import { getServiceClient } from '@/lib/supabase-server';
+import { requireAuth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 export const revalidate = 0;
 
-// GET /api/appointments
-// Params:
-//   repId        – filter by rep (omit for all reps)
-//   filter       – today | tomorrow | week | all
-//   from         – ISO date string (overrides filter)
-//   to           – ISO date string (used with from)
-//   includeAll   – if "true", include cancelled/completed/no_show
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const repId      = searchParams.get('repId');
-  const filter     = searchParams.get('filter') || 'today';
-  const from       = searchParams.get('from');
-  const to         = searchParams.get('to');
-  const includeAll = searchParams.get('includeAll') === 'true';
-
   try {
+    await requireAuth(request);
+    const { searchParams } = new URL(request.url);
+    const repId      = searchParams.get('repId');
+    const filter     = searchParams.get('filter') || 'today';
+    const from       = searchParams.get('from');
+    const to         = searchParams.get('to');
+    const includeAll = searchParams.get('includeAll') === 'true';
+
     const supabase = getServiceClient();
     const now = new Date();
 
@@ -74,75 +69,79 @@ export async function GET(request: Request) {
     if (error) throw error;
     return NextResponse.json(data ?? []);
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.error('[APPOINTMENTS_GET_ERROR]', err);
+    return NextResponse.json({ error: err.message || "Internal Server Error" }, { status: err.status || 500 });
   }
 }
 
-// POST /api/appointments — create with clash detection
-// Pass _dry_run: true to check for clashes without inserting (used by reschedule flow).
 export async function POST(request: Request) {
-  const body = await request.json();
-  const { pipeline_lead_id, rep_id, appointment_start_at, appointment_end_at, location, notes, _dry_run } = body;
+  try {
+    await requireAuth(request);
+    const body = await request.json();
+    const { pipeline_lead_id, rep_id, appointment_start_at, appointment_end_at, location, notes, _dry_run } = body;
 
-  if (!pipeline_lead_id || !rep_id || !appointment_start_at || !appointment_end_at) {
-    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    if (!pipeline_lead_id || !rep_id || !appointment_start_at || !appointment_end_at) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    const supabase = getServiceClient();
+
+    // Clash detection
+    const { data: conflicts } = await supabase
+      .from('appointments')
+      .select(`
+        id, appointment_start_at, appointment_end_at, appointment_status,
+        pipeline_leads ( cpc_ticket_id, centerpoint_jobs ( property_name ) )
+      `)
+      .eq('assigned_rep_id', rep_id)
+      .not('appointment_status', 'in', '("cancelled","completed","no_show")')
+      .lt('appointment_start_at', appointment_end_at)
+      .gt('appointment_end_at', appointment_start_at);
+
+    if (conflicts && conflicts.length > 0) {
+      const clash = conflicts[0] as any;
+      const addr  = clash.pipeline_leads?.centerpoint_jobs?.property_name || clash.pipeline_leads?.cpc_ticket_id || 'Another appointment';
+      const clashStart = new Date(clash.appointment_start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      const clashEnd   = new Date(clash.appointment_end_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      return NextResponse.json({
+        clash: true,
+        message: `Conflict with "${addr}" at ${clashStart}–${clashEnd}`,
+        conflictId: clash.id,
+      }, { status: 409 });
+    }
+
+    if (_dry_run) {
+      return NextResponse.json({ ok: true, clash: false });
+    }
+
+    const { data: appt, error: apptErr } = await supabase
+      .from('appointments')
+      .insert({
+        pipeline_lead_id,
+        assigned_rep_id: rep_id,
+        appointment_start_at,
+        appointment_end_at,
+        appointment_status: 'scheduled',
+        location: location ?? null,
+        notes: notes ?? null,
+      })
+      .select()
+      .single();
+
+    if (apptErr) throw apptErr;
+
+    await supabase
+      .from('pipeline_leads')
+      .update({
+        pipeline_status: 'scheduled',
+        scheduled_start_at: appointment_start_at,
+        scheduled_end_at: appointment_end_at,
+      })
+      .eq('id', pipeline_lead_id);
+
+    return NextResponse.json({ success: true, appointment: appt }, { status: 201 });
+  } catch (err: any) {
+    console.error('[APPOINTMENTS_POST_ERROR]', err);
+    return NextResponse.json({ error: err.message || "Internal Server Error" }, { status: err.status || 500 });
   }
-
-  const supabase = getServiceClient();
-
-  // Clash detection
-  const { data: conflicts } = await supabase
-    .from('appointments')
-    .select(`
-      id, appointment_start_at, appointment_end_at, appointment_status,
-      pipeline_leads ( cpc_ticket_id, centerpoint_jobs ( property_name ) )
-    `)
-    .eq('assigned_rep_id', rep_id)
-    .not('appointment_status', 'in', '("cancelled","completed","no_show")')
-    .lt('appointment_start_at', appointment_end_at)
-    .gt('appointment_end_at', appointment_start_at);
-
-  if (conflicts && conflicts.length > 0) {
-    const clash = conflicts[0] as any;
-    const addr  = clash.pipeline_leads?.centerpoint_jobs?.property_name || clash.pipeline_leads?.cpc_ticket_id || 'Another appointment';
-    const clashStart = new Date(clash.appointment_start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    const clashEnd   = new Date(clash.appointment_end_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    return NextResponse.json({
-      clash: true,
-      message: `Conflict with "${addr}" at ${clashStart}–${clashEnd}`,
-      conflictId: clash.id,
-    }, { status: 409 });
-  }
-
-  // Dry-run: clash check passed, no insert needed
-  if (_dry_run) {
-    return NextResponse.json({ ok: true, clash: false });
-  }
-
-  const { data: appt, error: apptErr } = await supabase
-    .from('appointments')
-    .insert({
-      pipeline_lead_id,
-      assigned_rep_id: rep_id,
-      appointment_start_at,
-      appointment_end_at,
-      appointment_status: 'scheduled',
-      location: location ?? null,
-      notes: notes ?? null,
-    })
-    .select()
-    .single();
-
-  if (apptErr) return NextResponse.json({ error: apptErr.message }, { status: 500 });
-
-  await supabase
-    .from('pipeline_leads')
-    .update({
-      pipeline_status: 'scheduled',
-      scheduled_start_at: appointment_start_at,
-      scheduled_end_at: appointment_end_at,
-    })
-    .eq('id', pipeline_lead_id);
-
-  return NextResponse.json({ success: true, appointment: appt }, { status: 201 });
 }
