@@ -47,9 +47,10 @@ import { INSPECTION_SHOT_LIST } from "@/lib/inspectionShotList";
 interface HoldProps {
   session: SessionState;
   onRepReturn: () => void;
+  onBack: () => void;
 }
 
-export function A10InspectionHold({ session, onRepReturn }: HoldProps) {
+export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
   const [showRepReturn, setShowRepReturn] = useState(false);
   const [wakeCount, setWakeCount] = useState(0);
 
@@ -81,6 +82,17 @@ export function A10InspectionHold({ session, onRepReturn }: HoldProps) {
           <span className="font-display font-bold text-white text-2xl tracking-[0.1em]">HUSTAD</span>
           <span className="text-[10px] font-mono text-white/70 uppercase tracking-[0.3em]">Madison Residential</span>
         </div>
+      </div>
+
+      {/* Discreet Rep Back Button */}
+      <div className="absolute bottom-10 left-10 z-30">
+        <button 
+          onClick={onBack}
+          className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 border border-white/10 text-white/30 hover:text-white/60 hover:bg-white/10 transition-all text-[10px] font-mono uppercase tracking-widest"
+        >
+          <ArrowLeft className="w-3 h-3" />
+          Rep: Return to Prep
+        </button>
       </div>
 
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 text-center">
