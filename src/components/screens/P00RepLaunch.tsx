@@ -33,7 +33,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { listDrafts, hasSameDayDraft, deleteDraft, createSession } from "@/lib/session";
-import { RepCommandCenter } from "@/components/RepCommandCenter";
+import { RepCommandCenter, type IntakePrefill } from "@/components/RepCommandCenter";
 import { useSession as useAuthSession, signIn, signOut } from "next-auth/react";
 import { getAuthenticatedRep } from "@/lib/rep-identity";
 import { IS_QA_MODE } from "@/lib/qa-mode";
@@ -85,6 +85,16 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
   const [showRepNav, setShowRepNav] = useState(false);
 
+  // Stores import identifiers (leadId, centerpointId, appointmentId) when the rep
+  // arrives at the intake form via a pipeline/CenterPoint "Fix & Start" flow.
+  // Merged into the session on handleStart so the link is preserved.
+  const [pendingImportMeta, setPendingImportMeta] = useState<{
+    source: "pipeline" | "centerpoint";
+    pipelineLeadId?: string;
+    centerpointId?: string;
+    appointmentId?: string;
+  } | null>(null);
+
   const handleStartNew = () => {
     if (!authRep) {
       void signIn("azure-ad", { callbackUrl: "/" }, { prompt: "select_account" });
@@ -92,10 +102,11 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
     }
 
     set("repName", authRep.name);
-    
+    setPendingImportMeta(null); // discard any import context on a fresh start
+
     // Close dashboard to reveal the form
     setShowDashboard(false);
-    
+
     // Reset form for a fresh start if needed, but keeping repName
     setForm(f => ({
       ...f,
@@ -109,6 +120,32 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
       stormBasis: "Madison metro hail event",
       accessNotes: "",
     }));
+  };
+
+  // Called by RepCommandCenter when an import is incomplete.
+  // Closes the dashboard, prefills the intake form with available data,
+  // and stores the import identifiers so handleStart can merge them.
+  const handlePrefillAndStart = (data: IntakePrefill) => {
+    if (!authRep) {
+      void signIn("azure-ad", { callbackUrl: "/" }, { prompt: "select_account" });
+      return;
+    }
+    setShowDashboard(false);
+    setForm(f => ({
+      ...f,
+      address: data.address,
+      homeownerName: data.homeownerName,
+      homeownerEmail: data.homeownerEmail,
+      homeownerMobile: data.homeownerMobile,
+      claimNumber: data.claimNumber,
+      // preserve repName, insurerName, workingDateOfLoss, stormBasis defaults
+    }));
+    setPendingImportMeta({
+      source: data.source,
+      pipelineLeadId: data.pipelineLeadId,
+      centerpointId: data.centerpointId,
+      appointmentId: data.appointmentId,
+    });
   };
 
 
@@ -198,6 +235,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
           setShowDashboard(false);
         }}
         onNewSession={handleStartNew}
+        onPrefillAndStart={handlePrefillAndStart}
         onBack={() => setShowDashboard(false)}
       />
     );
@@ -224,6 +262,13 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
 
     const updated: SessionState = {
       ...baseNewSession,
+      // Preserve import identifiers if this session originated from a pipeline/CenterPoint
+      // "Fix & Start" flow so dedup and sync can match against the source record.
+      ...(pendingImportMeta && {
+        centerpointId: pendingImportMeta.centerpointId,
+        pipelineLeadId: pendingImportMeta.pipelineLeadId,
+        appointmentId: pendingImportMeta.appointmentId,
+      }),
       mode: "rep",
       sessionStatus: "phase_a_active",
       property: {
@@ -239,6 +284,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
         accessNotes: form.accessNotes,
       },
     };
+    setPendingImportMeta(null); // consumed — clear so it doesn't leak into subsequent sessions
     onUpdate(updated);
     onNext();
   };
