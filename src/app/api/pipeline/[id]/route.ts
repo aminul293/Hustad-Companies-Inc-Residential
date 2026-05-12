@@ -28,7 +28,7 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
     // 1. Fetch lead to check workflow status
     const { data: lead, error: fetchError } = await supabase
       .from('pipeline_leads')
-      .select('pipeline_status, cpc_ticket_id')
+      .select('pipeline_status, cpc_ticket_id, centerpoint_job_id')
       .eq('id', params.id)
       .single();
 
@@ -57,14 +57,14 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
     }
 
     // 3. Case 1: Accidental Import (Allowed)
-    // Reset CP Inbox status back to 'new'
-    if (lead.cpc_ticket_id) {
-      console.log(`[API] Resetting CP Inbox status for: \${lead.cpc_ticket_id}`);
+    // Reset CP Inbox status using the FK (same column the POST used to set it)
+    const cpResetId = lead.centerpoint_job_id;
+    if (cpResetId) {
       const { error: cpError } = await supabase
         .from('centerpoint_jobs')
-        .update({ inbox_status: 'new' })
-        .eq('name', lead.cpc_ticket_id);
-      
+        .update({ inbox_status: null })
+        .eq('id', cpResetId);
+
       if (cpError) console.error(`[API] CP status reset failed:`, cpError);
     }
 

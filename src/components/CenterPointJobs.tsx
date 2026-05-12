@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, ChevronRight, RefreshCw, Building2, ArrowRight, CloudDownload, CheckCircle2, ArrowLeft } from "lucide-react";
+import { Search, ChevronRight, RefreshCw, Building2, ArrowRight, CloudDownload, CheckCircle2, ArrowLeft, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -84,6 +84,7 @@ export function CenterPointJobs() {
     result: null,
   });
   const [promotingId, setPromotingId] = useState<string | null>(null);
+  const [unlinkingId, setUnlinkingId] = useState<string | null>(null);
 
   const fetchJobs = useCallback(async (opts?: { refresh?: boolean; newPage?: number }) => {
     const isRefresh = opts?.refresh;
@@ -452,9 +453,37 @@ export function CenterPointJobs() {
                                 )}
 
                                 {job.inbox_status === 'imported_to_pipeline' ? (
-                                  <span className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-display text-emerald-400">
-                                    <CheckCircle2 className="w-3.5 h-3.5" />
-                                    In Pipeline
+                                  <span className="flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-display text-emerald-400 overflow-hidden">
+                                    <span className="flex items-center gap-2 pl-4 pr-2 py-2.5">
+                                      <CheckCircle2 className="w-3.5 h-3.5" />
+                                      In Pipeline
+                                    </span>
+                                    <button
+                                      onClick={async (e) => {
+                                        e.stopPropagation();
+                                        setUnlinkingId(job.id);
+                                        try {
+                                          const res = await fetch(
+                                            `/api/pipeline?cpc_ticket_id=${encodeURIComponent(job.attributes.name)}`,
+                                            { method: "DELETE" }
+                                          );
+                                          if (res.ok) {
+                                            setJobs(prev => prev.map(j =>
+                                              j.id === job.id ? { ...j, inbox_status: '' } : j
+                                            ));
+                                          }
+                                        } catch (e) {
+                                          console.error("Unlink failed", e);
+                                        } finally {
+                                          setUnlinkingId(null);
+                                        }
+                                      }}
+                                      disabled={unlinkingId === job.id}
+                                      title="Remove from Pipeline"
+                                      className="pr-3 pl-1 py-2.5 text-emerald-400/50 hover:text-rose-400 hover:bg-rose-500/10 transition-all disabled:opacity-40"
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </button>
                                   </span>
                                 ) : (
                                   <button
