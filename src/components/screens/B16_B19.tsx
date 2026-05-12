@@ -212,8 +212,9 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
         </div>
       </div>
 
-      <div className="sticky bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20 pointer-events-none">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-6 pointer-events-auto">
+      <div className="fixed bottom-0 inset-x-0 p-8 z-30 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20" />
+        <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-6 pointer-events-auto">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
             <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white">Back</span>
@@ -405,8 +406,9 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
         </div>
       </div>
 
-      <div className="sticky bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20 pointer-events-none">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-6 pointer-events-auto">
+      <div className="fixed bottom-0 inset-x-0 p-8 z-30 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20" />
+        <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-6 pointer-events-auto">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
             <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white">Back</span>
@@ -608,8 +610,9 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
         </div>
       </div>
 
-      <div className="sticky bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20 pointer-events-none">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-6 pointer-events-auto">
+      <div className="fixed bottom-0 inset-x-0 p-8 z-30 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20" />
+        <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-6 pointer-events-auto">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
             <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white">Back</span>
@@ -1211,8 +1214,9 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
         </div>
       </div>
 
-      <div className="sticky bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20 pointer-events-none">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-6 pointer-events-auto">
+      <div className="fixed bottom-0 inset-x-0 p-8 z-30 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20" />
+        <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-6 pointer-events-auto">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
             <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white">Back</span>
