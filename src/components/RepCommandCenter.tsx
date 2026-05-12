@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   Search,
   Clock,
@@ -17,10 +17,12 @@ import {
   UserPlus,
   Trash,
   Info,
-  PlayCircle
+  PlayCircle,
+  RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { createSession, saveSession, listDrafts } from "@/lib/session";
+import { createSession, saveSession, listDrafts, findDraftByImportId, loadDraftById } from "@/lib/session";
+import type { SessionState } from "@/types/session";
 import { getLiveReps, saveCustomRep, deleteCustomRep } from "@/lib/reps";
 import {
   enqueueCompletion, dequeueCompletion, getAllPending,
@@ -36,14 +38,93 @@ import { MySchedule } from "@/components/MySchedule";
 import { CalendarView } from "@/components/CalendarView";
 import { ManagerDashboard } from "@/components/ManagerDashboard";
 
+function isValidAddress(addr: string | undefined | null): addr is string {
+  if (!addr) return false;
+  const t = addr.trim().toLowerCase();
+  return t.length > 0 && t !== "unknown address" && t !== "untitled property";
+}
+
+// ─── Import data normalization ────────────────────────────────────────────────
+// Deterministic field extraction from raw pipeline/CenterPoint payloads.
+// TODO: Replace individual normalizers with an AI-assisted extraction call
+// (e.g. Claude API at /api/ai/extract-intake) when that endpoint is available.
+// The function signature and IntakePrefill shape should stay stable.
+
+function normalizeAddress(raw: string | undefined | null): string {
+  return (raw ?? "").replace(/\s+/g, " ").trim();
+}
+
+function normalizeName(raw: string | undefined | null): string {
+  return (raw ?? "").trim().replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function normalizeEmail(raw: string | undefined | null): string {
+  return (raw ?? "").trim().toLowerCase();
+}
+
+function normalizePhone(raw: string | undefined | null): string {
+  if (!raw) return "";
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length === 10) return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  if (digits.length === 11 && digits[0] === "1") return `(${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
+  return raw.trim();
+}
+
+export type IntakePrefill = {
+  source: "pipeline" | "centerpoint";
+  address: string;
+  homeownerName: string;
+  homeownerEmail: string;
+  homeownerMobile: string;
+  claimNumber: string;
+  pipelineLeadId?: string;
+  centerpointId?: string;
+  appointmentId?: string;
+};
+
+function normalizeImportData(raw: {
+  source: "pipeline" | "centerpoint";
+  address?: string | null;
+  ownerName?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  claimNumber?: string | null;
+  pipelineLeadId?: string;
+  centerpointId?: string;
+  appointmentId?: string;
+}): IntakePrefill {
+  return {
+    source: raw.source,
+    address: normalizeAddress(raw.address),
+    homeownerName: normalizeName(raw.ownerName),
+    homeownerEmail: normalizeEmail(raw.email),
+    homeownerMobile: normalizePhone(raw.phone),
+    claimNumber: (raw.claimNumber ?? "").trim(),
+    pipelineLeadId: raw.pipelineLeadId,
+    centerpointId: raw.centerpointId,
+    appointmentId: raw.appointmentId,
+  };
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+type PendingImport = {
+  session: SessionState;
+  address: string;
+  homeownerName: string;
+  source: "centerpoint" | "pipeline";
+  leadId?: string;
+  appointmentId?: string;
+};
+
 interface Props {
   currentRep: AuthenticatedRep;
   onLoadDraft: (id: string) => void;
   onNewSession: () => void;
+  onPrefillAndStart: (data: IntakePrefill) => void;
   onBack?: () => void;
 }
 
-export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack }: Props) {
+export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPrefillAndStart, onBack }: Props) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<string>("all");
   const [view, setView] = useState<"dashboard" | "pipeline" | "schedule" | "calendar" | "centerpoint" | "tickets" | "manager" | "settings">("dashboard");
@@ -56,6 +137,19 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
   const [scheduledLeads, setScheduledLeads] = useState<any[]>([]);
   const [pendingCompletions, setPendingCompletions] = useState(0);
   const [syncWarning, setSyncWarning] = useState(false);
+  const [pendingImport, setPendingImport] = useState<PendingImport | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importSuccess, setImportSuccess] = useState<string | null>(null);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [pendingPrefill, setPendingPrefill] = useState<IntakePrefill | null>(null);
+  const [pendingDuplicate, setPendingDuplicate] = useState<{ sessionId: string; address: string } | null>(null);
+  const [retryingSessionId, setRetryingSessionId] = useState<string | null>(null);
+  const [draftRefreshKey, setDraftRefreshKey] = useState(0);
+
+  // Keep a ref so event handler closures always read current server sessions
+  // without needing to re-register listeners every time the async load settles.
+  const serverSessionsRef = useRef<any[]>([]);
+  const lastBulkRetryAt = useRef(0);
 
   useEffect(() => {
     setLiveReps(getLiveReps());
@@ -91,7 +185,47 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
 
     loadServerData();
     loadScheduledLeads();
-  }, [view]);
+
+    if (view === "dashboard") {
+      const triggerRetry = async () => {
+        if (Date.now() - lastBulkRetryAt.current < 30_000) return;
+        lastBulkRetryAt.current = Date.now();
+        try {
+          const { retryAllUnsyncedSessions } = await import("@/lib/sync");
+          await retryAllUnsyncedSessions(currentRep.id);
+          setDraftRefreshKey(k => k + 1);
+        } catch { /* never throw from bulk retry */ }
+      };
+      triggerRetry();
+    }
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => { serverSessionsRef.current = serverSessions; }, [serverSessions]);
+
+  // Retry unsynced sessions when the browser comes back online or the tab regains focus
+  useEffect(() => {
+    const triggerBulkRetry = async () => {
+      if (Date.now() - lastBulkRetryAt.current < 30_000) return;
+      lastBulkRetryAt.current = Date.now();
+      try {
+        const { retryAllUnsyncedSessions } = await import("@/lib/sync");
+        await retryAllUnsyncedSessions(currentRep.id);
+        setDraftRefreshKey(k => k + 1);
+      } catch { /* never throw from bulk retry */ }
+    };
+
+    const onOnline = () => triggerBulkRetry();
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") triggerBulkRetry();
+    };
+
+    window.addEventListener("online", onOnline);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      window.removeEventListener("online", onOnline);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [currentRep.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // On mount: drain the retry queue for any completions that failed in a previous session
   useEffect(() => {
@@ -129,58 +263,111 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
     process();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Dismiss the import modal on Escape (only when not mid-confirm)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && pendingImport && !isConfirming) setPendingImport(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [pendingImport, isConfirming]);
+
   // Handle importing a job from CenterPoint to the active Pipeline
   useEffect(() => {
-    const handleImportJob = (e: Event) => {
-      const customEvent = e as CustomEvent<any>;
-      const job = customEvent.detail;
-      const attr = job.attributes;
-      
-      const repInfo = currentRep;
-      
-      // Initialize a new session with the rep's identity
-      const newSession = createSession(repInfo.id, repInfo.name, repInfo.email);
-      
-      // Map CenterPoint data to SessionState property context
-      newSession.centerpointId = job.id;
-      newSession.property.address = attr.propertyName || "Unknown Address";
-      newSession.property.homeownerPrimaryName = "";
-      newSession.sessionStatus = "phase_a_active"; 
-      
-      // Persist to local storage and trigger the dashboard view
-      saveSession(newSession);
-      
-      // Auto-transition to dashboard to show the new ticket
-      setView("dashboard");
+    const showImportError = (msg: string, ttl = 6000) => {
+      setImportError(msg);
+      setTimeout(() => setImportError(null), ttl);
     };
 
-    const handleLaunchPipelineSession = async (e: Event) => {
-      const customEvent = e as CustomEvent<any>;
-      const lead = customEvent.detail;
-      const repInfo = currentRep;
-      
-      const newSession = createSession(repInfo.id, repInfo.name, repInfo.email);
-      newSession.centerpointId = lead.cpc_ticket_id;
-      newSession.pipelineLeadId = lead.id;
-      newSession.appointmentId = lead.appointmentId ?? undefined;
-      newSession.property.address = lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name || "Unknown Address";
-      newSession.property.homeownerPrimaryName = lead.centerpoint_jobs?.raw?._owner || "";
-      newSession.sessionStatus = "phase_a_active";
+    const handleImportJob = (e: Event) => {
+      const job = (e as CustomEvent<any>).detail;
 
-      saveSession(newSession);
-
-      // Update pipeline lead status to 'inspection_in_progress'
-      try {
-        await fetch(`/api/pipeline/${lead.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pipeline_status: 'inspection_in_progress' })
-        });
-      } catch (err) {
-        console.error("Failed to update pipeline status", err);
+      // Defensive: guard against null/malformed payloads before touching any field
+      if (!job || !job.id || !job.attributes || typeof job.attributes !== "object") {
+        showImportError("This CenterPoint job has missing data and cannot be imported.");
+        return;
       }
 
-      onLoadDraft(newSession.sessionId);
+      const address = job.attributes.propertyName as string | undefined;
+
+      // Dedup first — prefer routing to the existing session over blocking
+      const existingLocal = findDraftByImportId("centerpointId", job.id);
+      if (existingLocal) {
+        setPendingDuplicate({ sessionId: existingLocal, address: normalizeAddress(address) || job.id });
+        return;
+      }
+      const existingCloud = serverSessionsRef.current.some((s: any) => s.cpc_ticket_id === job.id);
+      if (existingCloud) {
+        showImportError("An inspection for this CenterPoint job already exists. Find it in the dashboard.", 8000);
+        return;
+      }
+
+      // Valid address → confirmation modal (existing flow)
+      if (isValidAddress(address)) {
+        const newSession = createSession(currentRep.id, currentRep.name, currentRep.email);
+        newSession.centerpointId = job.id;
+        newSession.property.address = address;
+        newSession.property.homeownerPrimaryName = "";
+        newSession.sessionStatus = "phase_a_active";
+        setPendingImport({ session: newSession, address, homeownerName: "", source: "centerpoint" });
+        return;
+      }
+
+      // Address missing/invalid → stage prefill so the rep can Fix & Start
+      setPendingPrefill(normalizeImportData({ source: "centerpoint", address, centerpointId: job.id }));
+    };
+
+    const handleLaunchPipelineSession = (e: Event) => {
+      const lead = (e as CustomEvent<any>).detail;
+
+      // Defensive: guard against null/malformed payloads
+      if (!lead || !lead.id) {
+        showImportError("This pipeline lead has missing data and cannot be imported.");
+        return;
+      }
+
+      const address = lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name;
+
+      // Dedup first — prefer routing to the existing session over blocking
+      const existingLocal = findDraftByImportId("pipelineLeadId", lead.id);
+      if (existingLocal) {
+        setPendingDuplicate({ sessionId: existingLocal, address: normalizeAddress(address) || lead.id });
+        return;
+      }
+      const existingCloud = serverSessionsRef.current.some((s: any) => s.pipeline_lead_id === lead.id);
+      if (existingCloud) {
+        showImportError("An inspection for this lead already exists. Find it in the dashboard.", 8000);
+        return;
+      }
+
+      const homeownerName: string = lead.centerpoint_jobs?.raw?._owner || "";
+      const appointmentId: string | undefined = lead.appointmentId ?? undefined;
+
+      // Valid address → confirmation modal (existing flow)
+      if (isValidAddress(address)) {
+        const newSession = createSession(currentRep.id, currentRep.name, currentRep.email);
+        newSession.centerpointId = lead.cpc_ticket_id;
+        newSession.pipelineLeadId = lead.id;
+        newSession.appointmentId = appointmentId;
+        newSession.property.address = address;
+        newSession.property.homeownerPrimaryName = homeownerName;
+        newSession.sessionStatus = "phase_a_active";
+        setPendingImport({ session: newSession, address, homeownerName, source: "pipeline", leadId: lead.id, appointmentId });
+        return;
+      }
+
+      // Address missing/invalid → stage prefill so the rep can Fix & Start
+      setPendingPrefill(normalizeImportData({
+        source: "pipeline",
+        address,
+        ownerName: homeownerName,
+        email: lead.centerpoint_jobs?.raw?._email,
+        phone: lead.centerpoint_jobs?.raw?._phone,
+        claimNumber: lead.cpc_ticket_id,
+        pipelineLeadId: lead.id,
+        centerpointId: lead.cpc_ticket_id,
+        appointmentId,
+      }));
     };
 
     const handleChangeView = (e: Event) => {
@@ -272,6 +459,75 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
     };
   }, [currentRep]);
 
+  const handleConfirmImport = async () => {
+    if (!pendingImport || isConfirming) return;
+    setIsConfirming(true);
+    const { session, source, leadId } = pendingImport;
+    saveSession(session);
+    setPendingImport(null);
+    try {
+      if (source === "pipeline" && leadId) {
+        let patchOk = true;
+        try {
+          const res = await fetch(`/api/pipeline/${leadId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ pipeline_status: "inspection_in_progress" }),
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        } catch (err) {
+          console.error("Failed to update pipeline status", err);
+          patchOk = false;
+          // Re-save with error syncStatus so the dashboard badge reflects it
+          saveSession({ ...session, syncStatus: "error", syncError: (err instanceof Error ? err.message : "Pipeline sync failed") });
+          setImportError("Saved locally. Sync will retry when connection is restored.");
+          setTimeout(() => setImportError(null), 8000);
+        }
+        if (patchOk) {
+          setImportSuccess("Inspection started");
+          setTimeout(() => setImportSuccess(null), 4000);
+        }
+        onLoadDraft(session.sessionId);
+      } else {
+        setImportSuccess("Inspection started");
+        setTimeout(() => setImportSuccess(null), 4000);
+        setView("dashboard");
+      }
+    } finally {
+      setIsConfirming(false);
+    }
+  };
+
+  const handleDismissImport = () => { if (!isConfirming) setPendingImport(null); };
+
+  const handleManualRetry = async (sessionId: string) => {
+    if (retryingSessionId) return;
+    setRetryingSessionId(sessionId);
+    try {
+      const { retrySyncSession } = await import("@/lib/sync");
+      const session = loadDraftById(sessionId);
+      if (!session) {
+        setImportError("Session not found in local storage.");
+        setTimeout(() => setImportError(null), 4000);
+        return;
+      }
+      const ok = await retrySyncSession(session, true /* force — bypass cooldown for manual retry */);
+      if (ok) {
+        setImportSuccess("Sync successful — session is now Cloud Synced.");
+        setTimeout(() => setImportSuccess(null), 4000);
+      } else {
+        setImportError("Saved locally. Sync will retry when connection is restored.");
+        setTimeout(() => setImportError(null), 6000);
+      }
+      setDraftRefreshKey(k => k + 1);
+    } catch {
+      setImportError("Saved locally. Sync will retry when connection is restored.");
+      setTimeout(() => setImportError(null), 6000);
+    } finally {
+      setRetryingSessionId(null);
+    }
+  };
+
   const drafts = useMemo(() => {
     const local = listDrafts(currentRep.id);
     // Merge server sessions into local drafts if they don't exist locally
@@ -293,7 +549,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
       }
     });
     return merged.sort((a, b) => new Date(b.lastSavedAt).getTime() - new Date(a.lastSavedAt).getTime());
-  }, [serverSessions]);
+  }, [serverSessions, draftRefreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filteredDrafts = useMemo(() => {
     return drafts.filter(d => {
@@ -315,6 +571,106 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
 
   return (
     <div className="flex flex-col h-full bg-[#060606] text-white">
+      {/* Import error banner */}
+      <AnimatePresence>
+        {importError && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="flex items-center justify-between gap-3 px-6 py-3 bg-rose-500/10 border-b border-rose-500/20 text-rose-300 text-xs font-mono"
+          >
+            <span className="flex items-center gap-2">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              {importError}
+            </span>
+            <button onClick={() => setImportError(null)} className="text-rose-400/50 hover:text-rose-300 transition-colors shrink-0">
+              <Info className="w-3.5 h-3.5" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Import success banner */}
+      <AnimatePresence>
+        {importSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="flex items-center justify-between gap-3 px-6 py-3 bg-emerald-500/10 border-b border-emerald-500/20 text-emerald-300 text-xs font-mono"
+          >
+            <span className="flex items-center gap-2">
+              <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+              {importSuccess}
+            </span>
+            <button onClick={() => setImportSuccess(null)} className="text-emerald-400/50 hover:text-emerald-300 transition-colors shrink-0">
+              <Info className="w-3.5 h-3.5" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Incomplete import banner — offers "Fix & Start" when import data is partial */}
+      <AnimatePresence>
+        {pendingPrefill && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="flex items-center justify-between gap-3 px-6 py-3 bg-amber-500/10 border-b border-amber-500/20 text-amber-300 text-xs font-mono"
+          >
+            <span className="flex items-center gap-2">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              This import is missing required information.
+            </span>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => { onPrefillAndStart(pendingPrefill); setPendingPrefill(null); }}
+                className="px-3 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-200 hover:bg-amber-500/30 transition-colors font-display text-[10px] font-medium"
+              >
+                Fix &amp; Start Inspection
+              </button>
+              <button onClick={() => setPendingPrefill(null)} className="text-amber-400/50 hover:text-amber-300 transition-colors">
+                <Info className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Duplicate import banner — routes rep to the existing session */}
+      <AnimatePresence>
+        {pendingDuplicate && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="flex items-center justify-between gap-3 px-6 py-3 bg-sky-500/10 border-b border-sky-500/20 text-sky-300 text-xs font-mono"
+          >
+            <span className="flex items-center gap-2">
+              <Info className="w-3.5 h-3.5 shrink-0" />
+              Inspection already exists. Opening existing draft.
+            </span>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => { onLoadDraft(pendingDuplicate.sessionId); setPendingDuplicate(null); }}
+                className="px-3 py-1.5 rounded-xl bg-sky-500/20 border border-sky-500/30 text-sky-200 hover:bg-sky-500/30 transition-colors font-display text-[10px] font-medium"
+              >
+                Open Inspection
+              </button>
+              <button onClick={() => setPendingDuplicate(null)} className="text-sky-400/50 hover:text-sky-300 transition-colors">
+                <Info className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Sync warning banner */}
       <AnimatePresence>
         {syncWarning && (
@@ -546,12 +902,32 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
                         <div className="flex items-center gap-3">
                           <div className={cn(
                             "px-3 py-1 rounded-full font-mono text-[9px] uppercase tracking-widest border",
-                            d.syncStatus === "synced" 
-                              ? "bg-emerald-500/5 text-emerald-400 border-emerald-500/20" 
+                            d.syncStatus === "synced"
+                              ? "bg-emerald-500/5 text-emerald-400 border-emerald-500/20"
+                              : d.syncStatus === "syncing"
+                              ? "bg-sky-500/5 text-sky-400 border-sky-500/20"
+                              : d.syncStatus === "error"
+                              ? "bg-rose-500/5 text-rose-400 border-rose-500/20"
                               : "bg-amber-500/5 text-amber-400 border-amber-500/20"
                           )}>
-                            {d.syncStatus === "synced" ? "Cloud Synced" : "Local Storage"}
+                            {d.syncStatus === "synced"
+                              ? "Cloud Synced"
+                              : d.syncStatus === "syncing"
+                              ? "Syncing…"
+                              : d.syncStatus === "error"
+                              ? "Sync Pending"
+                              : "Local Storage"}
                           </div>
+                          {d.syncStatus === "error" && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleManualRetry(d.sessionId); }}
+                              disabled={retryingSessionId === d.sessionId}
+                              className="flex items-center gap-1.5 px-3 py-1 rounded-full font-mono text-[9px] uppercase tracking-widest border bg-rose-500/10 text-rose-300 border-rose-500/25 hover:bg-rose-500/20 transition-all disabled:opacity-50 disabled:pointer-events-none"
+                            >
+                              <RefreshCw className={cn("w-2.5 h-2.5", retryingSessionId === d.sessionId && "animate-spin")} />
+                              {retryingSessionId === d.sessionId ? "Retrying…" : "Retry Sync"}
+                            </button>
+                          )}
                           {d.missingFieldsCount > 0 && (
                             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/5 border border-rose-500/20 text-[9px] font-mono text-rose-400 uppercase tracking-widest">
                               <AlertCircle className="w-3 h-3" />
@@ -664,6 +1040,63 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
           </div>
         )}
       </div>
+
+      {/* Import confirmation modal */}
+      <AnimatePresence>
+        {pendingImport && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            <motion.div
+              className="bg-[#111] border border-white/10 rounded-[32px] p-8 max-w-sm w-full mx-6 space-y-6"
+              initial={{ scale: 0.96, opacity: 0, y: 8 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.96, opacity: 0, y: 8 }}
+              transition={{ duration: 0.18 }}
+            >
+              <div className="space-y-1">
+                <p className="text-[9px] font-mono text-white/30 uppercase tracking-[0.2em]">Confirm</p>
+                <h2 className="text-xl font-display font-medium tracking-tight">Start Inspection?</h2>
+                <p className="text-sm text-white/50 font-light">
+                  Save this session locally and begin the inspection flow.
+                </p>
+              </div>
+              <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.08] space-y-2">
+                <div className="flex items-center gap-2 text-xs font-mono text-white/60 uppercase tracking-wider">
+                  <LayoutGrid className="w-3.5 h-3.5 text-indigo-400/50 shrink-0" />
+                  {pendingImport.address}
+                </div>
+                {pendingImport.homeownerName && (
+                  <div className="flex items-center gap-2 text-xs font-mono text-white/40 uppercase tracking-wider">
+                    <User className="w-3.5 h-3.5 text-indigo-400/50 shrink-0" />
+                    {pendingImport.homeownerName}
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleDismissImport}
+                  disabled={isConfirming}
+                  className="flex-1 py-3 rounded-2xl border border-white/10 text-sm text-white/50 hover:text-white hover:border-white/20 font-display transition-all disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmImport}
+                  disabled={isConfirming}
+                  className="flex-1 py-3 rounded-2xl bg-white text-black text-sm font-display font-medium hover:bg-white/90 transition-all disabled:opacity-60 disabled:pointer-events-none"
+                >
+                  {isConfirming ? "Starting…" : "Start Inspection"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

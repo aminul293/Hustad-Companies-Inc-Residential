@@ -156,6 +156,10 @@ export function saveSession(session: SessionState): void {
     syncStatus: session.syncStatus,
     hasFollowUp: session.followUpTasks.length > 0,
     missingFieldsCount: missing,
+    lastSyncAttemptAt: session.lastSyncAttemptAt,
+    lastSyncedAt: session.lastSyncedAt,
+    syncError: session.syncError,
+    syncRetryCount: session.syncRetryCount,
   };
   localStorage.setItem(DRAFTS_INDEX_KEY, JSON.stringify(index));
 }
@@ -189,6 +193,10 @@ interface DraftMeta {
   syncStatus: string;
   hasFollowUp: boolean;
   missingFieldsCount: number;
+  lastSyncAttemptAt?: string;
+  lastSyncedAt?: string;
+  syncError?: string;
+  syncRetryCount?: number;
 }
 
 function getDraftsIndex(): Record<string, DraftMeta> {
@@ -215,6 +223,27 @@ export function listDrafts(repId?: string): DraftMeta[] {
       const timeB = new Date(b.lastSavedAt || 0).getTime();
       return timeB - timeA;
     });
+}
+
+// Returns the sessionId of any existing draft that was created from the given
+// CenterPoint job or pipeline lead, or null if no match exists.
+export function findDraftByImportId(
+  field: "centerpointId" | "pipelineLeadId",
+  value: string
+): string | null {
+  if (typeof window === "undefined" || !value) return null;
+  const index = getDraftsIndex();
+  for (const sessionId of Object.keys(index)) {
+    try {
+      const raw = localStorage.getItem(DRAFT_PREFIX + sessionId);
+      if (!raw) continue;
+      const session = JSON.parse(raw) as SessionState;
+      if (session[field] === value) return sessionId;
+    } catch {
+      // skip corrupt entries
+    }
+  }
+  return null;
 }
 
 export function loadDraftById(sessionId: string, repId?: string): SessionState | null {
@@ -453,4 +482,87 @@ export function generateReviewToken(session: SessionState): SessionState {
   const token = `rt_${Math.random().toString(36).slice(2, 10)}_${Date.now().toString(36)}`;
   const updated = { ...session, reviewToken: token };
   return addAuditEvent(updated, "review_token_generated", { token });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SYNC QUEUE HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Updates sync tracking fields in both the draft slot and the index without
+// touching STORAGE_KEY (the active session slot) unless this session is active.
+function updateDraftSyncFields(
+  sessionId: string,
+  updates: Partial<Pick<SessionState, "syncStatus" | "lastSyncAttemptAt" | "lastSyncedAt" | "syncError" | "syncRetryCount">>
+): void {
+  if (typeof window === "undefined") return;
+  try {
+    const draftRaw = localStorage.getItem(DRAFT_PREFIX + sessionId);
+    if (draftRaw) {
+      const session = JSON.parse(draftRaw) as SessionState;
+      localStorage.setItem(DRAFT_PREFIX + sessionId, JSON.stringify({ ...session, ...updates }));
+      // Mirror to active session slot when it's the same session
+      const activeRaw = localStorage.getItem(STORAGE_KEY);
+      if (activeRaw) {
+        const active = JSON.parse(activeRaw) as SessionState;
+        if (active.sessionId === sessionId) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...active, ...updates }));
+        }
+      }
+    }
+    const index = getDraftsIndex();
+    if (index[sessionId]) {
+      index[sessionId] = { ...index[sessionId], ...updates };
+      localStorage.setItem(DRAFTS_INDEX_KEY, JSON.stringify(index));
+    }
+  } catch {
+    // skip corrupt state
+  }
+}
+
+export function getUnsyncedSessions(repId?: string): SessionState[] {
+  const index = getDraftsIndex();
+  const result: SessionState[] = [];
+  for (const meta of Object.values(index)) {
+    if (!meta || typeof meta !== "object") continue;
+    if (repId && meta.repId !== repId) continue;
+    if (!["local_only", "queued", "error"].includes(meta.syncStatus)) continue;
+    try {
+      const raw = localStorage.getItem(DRAFT_PREFIX + meta.sessionId);
+      if (!raw) continue;
+      result.push(JSON.parse(raw) as SessionState);
+    } catch {
+      // skip corrupt entries
+    }
+  }
+  return result;
+}
+
+export function markSessionSyncing(sessionId: string): void {
+  updateDraftSyncFields(sessionId, {
+    syncStatus: "syncing",
+    lastSyncAttemptAt: new Date().toISOString(),
+  });
+}
+
+export function markSessionSynced(sessionId: string): void {
+  updateDraftSyncFields(sessionId, {
+    syncStatus: "synced",
+    lastSyncedAt: new Date().toISOString(),
+    syncError: undefined,
+    syncRetryCount: 0,
+  });
+}
+
+export function markSessionSyncError(sessionId: string, errorMessage: string): void {
+  if (typeof window === "undefined") return;
+  let currentCount = 0;
+  try {
+    const raw = localStorage.getItem(DRAFT_PREFIX + sessionId);
+    if (raw) currentCount = (JSON.parse(raw) as SessionState).syncRetryCount ?? 0;
+  } catch { /* ignore */ }
+  updateDraftSyncFields(sessionId, {
+    syncStatus: "error",
+    syncError: errorMessage,
+    syncRetryCount: currentCount + 1,
+  });
 }

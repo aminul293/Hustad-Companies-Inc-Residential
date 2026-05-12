@@ -1,4 +1,11 @@
 import type { SessionState } from "@/types/session";
+import {
+  getUnsyncedSessions,
+  markSessionSyncing,
+  markSessionSynced,
+  markSessionSyncError,
+  loadDraftById,
+} from "@/lib/session";
 
 const API_BASE = typeof window !== "undefined"
   ? window.location.origin
@@ -174,4 +181,84 @@ export async function processSyncQueue(): Promise<number> {
   }
 
   return synced;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SESSION RETRY HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+
+const SYNC_COOLDOWN_MS = 30_000;
+
+// Retry syncing a single session. Pass force=true to bypass the 30-second
+// cooldown (used for manual "Retry Sync" button clicks).
+export async function retrySyncSession(
+  session: SessionState,
+  force = false
+): Promise<boolean> {
+  if (session.syncStatus === "syncing") return false;
+
+  if (!force && session.lastSyncAttemptAt) {
+    const elapsed = Date.now() - new Date(session.lastSyncAttemptAt).getTime();
+    if (elapsed < SYNC_COOLDOWN_MS) return false;
+  }
+
+  // Always work off the freshest locally-stored copy
+  const current = loadDraftById(session.sessionId) ?? session;
+  if (!force && current.syncStatus === "syncing") return false;
+
+  markSessionSyncing(current.sessionId);
+
+  try {
+    const ok = await syncSessionToServer({ ...current, syncStatus: "syncing" });
+    if (!ok) {
+      markSessionSyncError(current.sessionId, "Server sync failed");
+      return false;
+    }
+
+    // Pipeline sessions also require a status patch on the lead record
+    if (current.pipelineLeadId) {
+      const patchRes = await fetch(`/api/pipeline/${current.pipelineLeadId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pipeline_status: "inspection_in_progress" }),
+      });
+      if (!patchRes.ok) {
+        markSessionSyncError(
+          current.sessionId,
+          `Pipeline PATCH failed: HTTP ${patchRes.status}`
+        );
+        return false;
+      }
+    }
+
+    markSessionSynced(current.sessionId);
+    return true;
+  } catch (err) {
+    markSessionSyncError(
+      current.sessionId,
+      err instanceof Error ? err.message : "Sync failed"
+    );
+    return false;
+  }
+}
+
+// Retry all unsynced/error sessions for a rep. Never throws — returns counts.
+export async function retryAllUnsyncedSessions(
+  repId: string
+): Promise<{ success: number; failed: number }> {
+  const sessions = getUnsyncedSessions(repId);
+  let success = 0;
+  let failed = 0;
+
+  for (const session of sessions) {
+    try {
+      const ok = await retrySyncSession(session);
+      if (ok) success++;
+      else failed++;
+    } catch {
+      failed++;
+    }
+  }
+
+  return { success, failed };
 }
