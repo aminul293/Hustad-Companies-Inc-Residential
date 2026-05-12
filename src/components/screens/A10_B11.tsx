@@ -5,7 +5,7 @@ import type { SessionState, OutcomeType } from "@/types/session";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { StarButton } from "@/components/ui/star-button";
 import { SplineScene } from "@/components/ui/splite";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { 
   Activity, 
   Camera, 
