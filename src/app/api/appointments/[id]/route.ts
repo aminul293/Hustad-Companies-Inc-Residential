@@ -30,7 +30,16 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     // ── Side effects based on new status ──────────────────────────────────────
     if (leadId) {
       if (appointment_status === 'completed') {
-        await supabase.from('pipeline_leads').update({ pipeline_status: 'inspection_in_progress' }).eq('id', leadId);
+        // Only advance to inspection_completed if the lead hasn't already passed that stage.
+        // Never overwrite inspection_completed (or later) with inspection_in_progress.
+        const { data: lead } = await supabase
+          .from('pipeline_leads')
+          .select('pipeline_status')
+          .eq('id', leadId)
+          .single();
+        if (lead?.pipeline_status === 'inspection_in_progress') {
+          await supabase.from('pipeline_leads').update({ pipeline_status: 'inspection_completed' }).eq('id', leadId);
+        }
       } else if (appointment_status === 'no_show' || appointment_status === 'cancelled') {
         const followUpAt = next_follow_up_at ?? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
         await supabase.from('pipeline_leads').update({

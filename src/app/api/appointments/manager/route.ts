@@ -42,7 +42,8 @@ export async function GET() {
       supabase
         .from('outbound_queue')
         .select('id, target_system, action, status, error, retry_count, created_at, updated_at, target_id')
-        .eq('status', 'failed')
+        .in('status', ['failed', 'pending'])
+        .not('error', 'is', null)
         .order('updated_at', { ascending: false })
         .limit(20),
     ]);

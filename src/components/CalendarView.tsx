@@ -244,17 +244,30 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
 
   useEffect(() => { fetchAppointments(); }, [fetchAppointments]);
 
-  // Extract unique reps from loaded data (for manager mode rep filter)
+  // Fetch DB reps once for manager mode; supplement with any unseen IDs from appointments
   useEffect(() => {
     if (!managerMode) return;
-    const seen = new Map<string, string>();
-    for (const a of appointments) {
-      if (a.assigned_rep_id && !seen.has(a.assigned_rep_id)) {
-        seen.set(a.assigned_rep_id, a.assigned_rep_id);
+    fetch("/api/reps")
+      .then(r => r.json())
+      .then(({ reps: dbReps }: { reps: { id: string; name: string }[] }) => {
+        setAvailableReps(dbReps ?? []);
+      })
+      .catch(() => {/* non-fatal */});
+  }, [managerMode]);
+
+  useEffect(() => {
+    if (!managerMode) return;
+    setAvailableReps(prev => {
+      const known = new Set(prev.map(r => r.id));
+      const extras: { id: string; name: string }[] = [];
+      for (const a of appointments) {
+        if (a.assigned_rep_id && !known.has(a.assigned_rep_id)) {
+          known.add(a.assigned_rep_id);
+          extras.push({ id: a.assigned_rep_id, name: a.assigned_rep_id });
+        }
       }
-    }
-    const reps = Array.from(seen.entries()).map(([id]) => ({ id, name: id }));
-    setAvailableReps(reps);
+      return extras.length > 0 ? [...prev, ...extras] : prev;
+    });
   }, [appointments, managerMode]);
 
   const patchAppt = async (id: string, updates: Record<string, unknown>) => {
@@ -360,7 +373,11 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
                 <button onClick={() => setRepMenuOpen(o => !o)}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-white/60 hover:text-white transition-all">
                   <User className="w-3.5 h-3.5" />
-                  {repFilter === "all" ? "All Reps" : repFilter.slice(0, 16)}
+                  {repFilter === "all"
+                    ? "All Reps"
+                    : repFilter === currentRep.id
+                      ? currentRep.name
+                      : (availableReps.find(r => r.id === repFilter)?.name ?? repFilter.slice(0, 16))}
                   <ChevronDown className="w-3 h-3" />
                 </button>
                 <AnimatePresence>
@@ -423,9 +440,10 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
               onCancel={a => { setFollowUpPrompt({ apptId: a.id, action: "cancelled", label: getAddress(a) }); setFollowUpDate(addDaysNum(1)); }}
               onConfirm={a => patchAppt(a.id, { appointment_status: "confirmed" })}
               onStartInspection={a => {
-                patchAppt(a.id, { appointment_status: "completed" });
                 if (a.pipeline_leads) {
-                  window.dispatchEvent(new CustomEvent("launchPipelineSession", { detail: { ...a.pipeline_leads, centerpoint_jobs: a.pipeline_leads.centerpoint_jobs } }));
+                  window.dispatchEvent(new CustomEvent("launchPipelineSession", {
+                    detail: { ...a.pipeline_leads, appointmentId: a.id, centerpoint_jobs: a.pipeline_leads.centerpoint_jobs },
+                  }));
                 }
               }}
               actionLoading={actionLoading}
@@ -481,10 +499,9 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
                   setFollowUpDate(addDaysNum(1));
                 }}
                 onStartInspection={() => {
-                  patchAppt(selectedAppt.id, { appointment_status: "completed" });
                   if (selectedAppt.pipeline_leads) {
                     window.dispatchEvent(new CustomEvent("launchPipelineSession", {
-                      detail: { ...selectedAppt.pipeline_leads, centerpoint_jobs: selectedAppt.pipeline_leads.centerpoint_jobs }
+                      detail: { ...selectedAppt.pipeline_leads, appointmentId: selectedAppt.id, centerpoint_jobs: selectedAppt.pipeline_leads.centerpoint_jobs },
                     }));
                   }
                 }}
@@ -700,7 +717,7 @@ function DayGrid({ appts, conflictIds, currentTimeTop, selectedId, actionLoading
           const isSelected = selectedId === appt.id;
           const address  = appt.pipeline_leads?.centerpoint_jobs?.property_name || appt.pipeline_leads?.cpc_ticket_id || "Appointment";
           const owner    = appt.pipeline_leads?.centerpoint_jobs?.raw?._owner || "";
-          const canStart = ["scheduled", "confirmed"].includes(appt.appointment_status) &&
+          const canStart = ["scheduled", "confirmed", "rescheduled"].includes(appt.appointment_status) &&
                            ["scheduled", "appointment_confirmed"].includes(appt.pipeline_leads?.pipeline_status ?? "");
 
           return (
@@ -857,7 +874,7 @@ function AppointmentDetailPanel({
   const address = appt.pipeline_leads?.centerpoint_jobs?.property_name || appt.pipeline_leads?.cpc_ticket_id || appt.location || "Unknown";
   const owner   = appt.pipeline_leads?.centerpoint_jobs?.raw?._owner || "";
   const phone   = appt.pipeline_leads?.centerpoint_jobs?.raw?._phone || "";
-  const canStart = ["scheduled", "confirmed"].includes(appt.appointment_status) &&
+  const canStart = ["scheduled", "confirmed", "rescheduled"].includes(appt.appointment_status) &&
                    ["scheduled", "appointment_confirmed"].includes(appt.pipeline_leads?.pipeline_status ?? "");
 
   return (

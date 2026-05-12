@@ -225,7 +225,7 @@ export function MySchedule({ currentRep }: Props) {
     appt.pipeline_leads?.centerpoint_jobs?.raw?._phone || "";
 
   const canStartInspection = (appt: Appointment) =>
-    ["scheduled", "confirmed"].includes(appt.appointment_status) &&
+    ["scheduled", "confirmed", "rescheduled"].includes(appt.appointment_status) &&
     ["scheduled", "appointment_confirmed"].includes(appt.pipeline_leads?.pipeline_status ?? "");
 
   // ── Today stats ────────────────────────────────────────────────────────────

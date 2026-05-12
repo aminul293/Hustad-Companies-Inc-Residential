@@ -86,7 +86,7 @@ export async function PATCH(
           target_id: current.cp_job_id,
           action: "update_status",
           payload: { status: cpStatus, ticket_id: params.id, stage },
-          status: "failed",
+          status: "pending",
           error: `HTTP ${cpRes.status}: ${errText.slice(0, 200)}`,
         });
       } else {
@@ -107,7 +107,7 @@ export async function PATCH(
           target_id: current.cp_job_id,
           action: "update_status",
           payload: { status: cpStatus, ticket_id: params.id, stage },
-          status: "failed",
+          status: "pending",
           error: writebackErr?.message?.slice(0, 200) ?? "Unknown error",
         });
       } catch {

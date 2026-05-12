@@ -30,7 +30,7 @@ export async function POST() {
         const CP_BASE = "https://api.centerpointconnect.io/centerpoint";
         const CP_KEY = process.env.CENTERPOINT_API_KEY;
 
-        const res = await fetch(`${CP_BASE}/productions/${item.target_id}`, {
+        const res = await fetch(`${CP_BASE}/services/${item.target_id}`, {
           method: "PATCH",
           headers: {
             Accept: "application/json",
@@ -38,7 +38,7 @@ export async function POST() {
             Authorization: CP_KEY!,
           },
           body: JSON.stringify({
-            data: { type: "productions", id: item.target_id, attributes: { ...item.payload } },
+            data: { type: "productions", id: item.target_id, attributes: { status: item.payload.status } },
           }),
         });
 

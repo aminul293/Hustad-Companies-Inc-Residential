@@ -7,23 +7,31 @@ export interface AuthenticatedRep {
   email: string;
 }
 
+const QA_MODE = process.env.NEXT_PUBLIC_QA_MODE === "true";
+
 export function getAuthenticatedRep(
-  authSession: Session | null | undefined
+  authSession: Session | null | undefined,
+  mockRepId?: string | null
 ): AuthenticatedRep | null {
   const user = authSession?.user;
-  if (!user) return null;
+  
+  if (user) {
+    const email = (user.email || "").trim();
+    const name = (user.name || email || "Hustad Rep").trim();
+    const id = String((user as any).id || email || name).trim();
+    if (id) return { id, name, email };
+  }
 
-  const email = (user.email || "").trim();
-  const name = (user.name || email || "Hustad Rep").trim();
-  const id = String((user as any).id || email || name).trim();
+  // QA/TESTING BYPASS
+  if (QA_MODE && mockRepId) {
+    return {
+      id: mockRepId,
+      name: "QA Tester (Mock)",
+      email: "qa@hustadcompanies.com",
+    };
+  }
 
-  if (!id) return null;
-
-  return {
-    id,
-    name,
-    email,
-  };
+  return null;
 }
 
 export function stampSessionWithRep(

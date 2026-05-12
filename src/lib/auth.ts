@@ -4,6 +4,7 @@ import { getToken } from "next-auth/jwt";
 import * as jwt from "jsonwebtoken";
 import * as bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
+import { getServiceClient } from "@/lib/supabase-server";
 
 // NEXTAUTH_URL is automatically handled by Vercel's environment variables.
 // Manual overrides here are removed to prevent protocol/host mismatches 
@@ -52,6 +53,24 @@ export const authOptions: NextAuthOptions = {
           (azureProfile.email as string | undefined) ||
           (azureProfile.preferred_username as string | undefined) ||
           token.email;
+
+        // Upsert rep identity on every Azure AD sign-in so names stay current
+        const repId = String(token.id || token.sub || "");
+        if (repId) {
+          try {
+            await getServiceClient().from("reps").upsert(
+              {
+                id: repId,
+                name: String(token.name || token.email || repId),
+                email: String(token.email || ""),
+                last_seen_at: new Date().toISOString(),
+              },
+              { onConflict: "id" }
+            );
+          } catch {
+            // Non-fatal — auth still succeeds if upsert fails
+          }
+        }
       }
       return token;
     },
@@ -125,6 +144,21 @@ export async function requireAuth(req: NextRequest): Promise<AuthPayload> {
       name: String(nextAuthToken.name || nextAuthToken.email || "Hustad Rep"),
       role: (nextAuthToken.role as string) || "rep",
     };
+  }
+
+  // QA/TESTING BYPASS
+  const QA_MODE = process.env.NEXT_PUBLIC_QA_MODE === "true";
+  if (QA_MODE || process.env.NODE_ENV === "development") {
+    const url = new URL(req.url);
+    const repId = url.searchParams.get("repId");
+    if (repId) {
+      return {
+        repId,
+        name: "QA Tester (Mock)",
+        email: "qa@hustadcompanies.com",
+        role: "rep"
+      };
+    }
   }
 
   throw NextResponse.json(

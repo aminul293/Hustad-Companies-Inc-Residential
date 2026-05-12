@@ -22,6 +22,10 @@ import {
 import { cn } from "@/lib/utils";
 import { createSession, saveSession, listDrafts } from "@/lib/session";
 import { getLiveReps, saveCustomRep, deleteCustomRep } from "@/lib/reps";
+import {
+  enqueueCompletion, dequeueCompletion, getAllPending,
+  recordRetryAttempt, isReadyForRetry,
+} from "@/lib/sessionRetryQueue";
 import type { RepIdentity } from "@/config/reps";
 import type { AuthenticatedRep } from "@/lib/rep-identity";
 import { motion, AnimatePresence } from "framer-motion";
@@ -50,6 +54,8 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
   const [serverSessions, setServerSessions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [scheduledLeads, setScheduledLeads] = useState<any[]>([]);
+  const [pendingCompletions, setPendingCompletions] = useState(0);
+  const [syncWarning, setSyncWarning] = useState(false);
 
   useEffect(() => {
     setLiveReps(getLiveReps());
@@ -86,6 +92,42 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
     loadServerData();
     loadScheduledLeads();
   }, [view]);
+
+  // On mount: drain the retry queue for any completions that failed in a previous session
+  useEffect(() => {
+    const pending = getAllPending();
+    setPendingCompletions(pending.length);
+    if (pending.length === 0) return;
+
+    const process = async () => {
+      for (const item of pending) {
+        if (!isReadyForRetry(item)) continue;
+        try {
+          const res = await fetch(`/api/sessions/${item.sessionId}/complete`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ session_status: item.sessionStatus }),
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+          if (item.appointmentId) {
+            await fetch(`/api/appointments/${item.appointmentId}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ appointment_status: "completed" }),
+            });
+          }
+
+          dequeueCompletion(item.sessionId);
+        } catch {
+          recordRetryAttempt(item.sessionId);
+        }
+      }
+      setPendingCompletions(getAllPending().length);
+    };
+
+    process();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle importing a job from CenterPoint to the active Pipeline
   useEffect(() => {
@@ -152,13 +194,13 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
       const { sessionId, sessionStatus, appointmentId } =
         (e as CustomEvent<{ sessionId: string; sessionStatus: string; appointmentId?: string }>).detail;
       try {
-        // Update pipeline lead + upsert hustad ticket
-        await fetch(`/api/sessions/${sessionId}/complete`, {
+        const res = await fetch(`/api/sessions/${sessionId}/complete`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ session_status: sessionStatus }),
         });
-        // Mark the originating appointment as completed now that inspection is done
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
         if (appointmentId) {
           await fetch(`/api/appointments/${appointmentId}`, {
             method: "PATCH",
@@ -166,8 +208,17 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
             body: JSON.stringify({ appointment_status: "completed" }),
           });
         }
+
+        // Ensure any previously queued entry for this session is cleared on success
+        dequeueCompletion(sessionId);
+        setPendingCompletions(getAllPending().length);
       } catch (err) {
-        console.error("[SESSION_COMPLETE] downstream update failed:", err);
+        console.error("[SESSION_COMPLETE] downstream update failed — queuing for retry:", err);
+        enqueueCompletion({ sessionId, sessionStatus, appointmentId });
+        setPendingCompletions(getAllPending().length);
+        setSyncWarning(true);
+        // Auto-dismiss the warning banner after 8 seconds
+        setTimeout(() => setSyncWarning(false), 8000);
       }
     };
 
@@ -226,6 +277,27 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
 
   return (
     <div className="flex flex-col h-full bg-[#060606] text-white">
+      {/* Sync warning banner */}
+      <AnimatePresence>
+        {syncWarning && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="flex items-center justify-between gap-3 px-6 py-3 bg-amber-500/10 border-b border-amber-500/20 text-amber-300 text-xs font-mono"
+          >
+            <span className="flex items-center gap-2">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              Sync failed — inspection data saved locally and will retry automatically
+            </span>
+            <button onClick={() => setSyncWarning(false)} className="text-amber-400/50 hover:text-amber-300 transition-colors shrink-0">
+              <Info className="w-3.5 h-3.5" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <div className="p-8 pb-0 space-y-8">
         <div className="flex items-center justify-between">
@@ -239,9 +311,17 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
               </button>
             )}
             <div className="space-y-1">
-              <h1 className="text-3xl font-display font-medium tracking-tight">
-                {{ dashboard: "Rep Command Center", pipeline: "Sales Pipeline", schedule: "My Schedule", calendar: "Calendar", centerpoint: "CP Inbox", tickets: "Hustad Tickets", manager: "Manager Dashboard", settings: "System Settings" }[view]}
-              </h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-display font-medium tracking-tight">
+                  {{ dashboard: "Rep Command Center", pipeline: "Sales Pipeline", schedule: "My Schedule", calendar: "Calendar", centerpoint: "CP Inbox", tickets: "Hustad Tickets", manager: "Manager Dashboard", settings: "System Settings" }[view]}
+                </h1>
+                {pendingCompletions > 0 && (
+                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/25 text-[9px] font-mono text-amber-400 uppercase tracking-widest">
+                    <AlertCircle className="w-3 h-3" />
+                    {pendingCompletions} pending sync
+                  </span>
+                )}
+              </div>
               <p className="text-sm text-white/50 font-light">
                 {{ dashboard: "Field intelligence and session management.", pipeline: "Manage leads from reach-out to appointment scheduling.", schedule: "Appointments, conflicts, and daily work queue.", calendar: "Day and week view with conflict detection and route navigation.", centerpoint: "Jobs synced from CenterPoint Connect.", tickets: "Your managed pipeline — stages, touches, and write-back.", manager: "All-rep activity, no-shows, follow-ups, and queue health.", settings: "Manage field identities and operational parameters." }[view]}
               </p>

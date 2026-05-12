@@ -50,7 +50,19 @@ interface Props {
 
 export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump, isOnline }: Props) {
   const { data: authSession, status: authStatus } = useAuthSession();
-  const authRep = getAuthenticatedRep(authSession);
+  
+  // Support mock rep for QA/Dev
+  const [mockId, setMockId] = useState<string | null>(null);
+  useEffect(() => {
+    const QA_MODE = process.env.NEXT_PUBLIC_QA_MODE === "true";
+    if (QA_MODE && typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("repId");
+      if (id) setMockId(id);
+    }
+  }, []);
+
+  const authRep = getAuthenticatedRep(authSession, mockId);
   const [showDashboard, setShowDashboard] = useState(false);
   const [isAddressFocused, setIsAddressFocused] = useState(false);
   const [suggestions, setSuggestions] = useState<{ main: string; sub: string }[]>([]);
@@ -177,7 +189,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
     }
   }, [form.address, session.sessionId, authRep?.id]);
 
-  if (showDashboard && authStatus === "authenticated" && authRep) {
+  if (showDashboard && (authStatus === "authenticated" || !!mockId) && authRep) {
     return (
       <RepCommandCenter
         currentRep={authRep}
@@ -377,7 +389,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                 )}
               </div>
 
-              {authStatus === "authenticated" && authRep ? (
+              {(authStatus === "authenticated" || !!mockId) && authRep ? (
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-8 rounded-[40px] bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-between group">
                   <div className="flex items-center gap-6">
                     <div className="w-16 h-16 rounded-3xl bg-indigo-500 flex items-center justify-center text-white shadow-[0_0_30px_rgba(99,102,241,0.4)]">
@@ -425,7 +437,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
 
             {/* Property Intake Form — Appears after auth */}
             <AnimatePresence>
-              {authStatus === "authenticated" && authRep && (
+              {(authStatus === "authenticated" || !!mockId) && authRep && (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-8">
                   <div className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl space-y-8">
                     {/* Property Identification */}
@@ -631,7 +643,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
       <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-24">
         <div className="max-w-3xl mx-auto">
           <div className="flex justify-center gap-4">
-            {authStatus === "authenticated" && (
+            {(authStatus === "authenticated" || !!mockId) && (
               <>
                 <button 
                   onClick={() => setShowDashboard(true)}
