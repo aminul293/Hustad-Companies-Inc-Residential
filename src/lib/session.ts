@@ -113,7 +113,7 @@ export function createSession(repId: string, repName: string, repEmail = ""): Se
     },
     auditEvents: [],
     photos: [],
-    syncStatus: "local",
+    syncStatus: "local_only",
   };
 }
 
