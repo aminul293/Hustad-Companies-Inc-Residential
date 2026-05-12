@@ -21,7 +21,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { createSession, saveSession, listDrafts, findDraftByImportId, loadDraftById } from "@/lib/session";
+import { createSession, saveSession, listDrafts, findDraftByImportId, loadDraftById, deleteDraft } from "@/lib/session";
 import type { SessionState } from "@/types/session";
 import { getLiveReps, saveCustomRep, deleteCustomRep } from "@/lib/reps";
 import {
@@ -145,6 +145,13 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
   const [pendingDuplicate, setPendingDuplicate] = useState<{ sessionId: string; address: string } | null>(null);
   const [retryingSessionId, setRetryingSessionId] = useState<string | null>(null);
   const [draftRefreshKey, setDraftRefreshKey] = useState(0);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!confirmDeleteId) return;
+    const t = setTimeout(() => setConfirmDeleteId(null), 3000);
+    return () => clearTimeout(t);
+  }, [confirmDeleteId]);
 
   // Keep a ref so event handler closures always read current server sessions
   // without needing to re-register listeners every time the async load settles.
@@ -889,10 +896,10 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
             {filteredDrafts.length > 0 ? (
               <div className="grid grid-cols-1 gap-4">
                 {filteredDrafts.map((d) => (
-                  <button
+                  <div
                     key={d.sessionId}
                     onClick={() => onLoadDraft(d.sessionId)}
-                    className="w-full group p-6 rounded-[32px] bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/20 transition-all text-left relative overflow-hidden"
+                    className="w-full group p-6 rounded-[32px] bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/20 transition-all text-left relative overflow-hidden cursor-pointer"
                   >
                     {/* Subtle hover gradient */}
                     <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-indigo-500/0 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -950,12 +957,33 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                             {d.sessionStatus.replace(/_/g, " ").toUpperCase()}
                           </p>
                         </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirmDeleteId === d.sessionId) {
+                              deleteDraft(d.sessionId);
+                              setDraftRefreshKey(k => k + 1);
+                              setConfirmDeleteId(null);
+                            } else {
+                              setConfirmDeleteId(d.sessionId);
+                            }
+                          }}
+                          className={cn(
+                            "flex items-center gap-1.5 rounded-xl transition-all shrink-0",
+                            confirmDeleteId === d.sessionId
+                              ? "px-3 py-2 bg-rose-500/20 border border-rose-500/40 text-rose-300 text-[9px] font-mono uppercase tracking-widest"
+                              : "p-2 text-white/20 hover:text-rose-400 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100"
+                          )}
+                        >
+                          <Trash className="w-4 h-4 shrink-0" />
+                          {confirmDeleteId === d.sessionId && <span>Confirm</span>}
+                        </button>
                         <div className="h-14 w-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:scale-105 transition-all">
                           <ChevronRight className="w-6 h-6 text-white group-hover:text-black transition-colors" />
                         </div>
                       </div>
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
             ) : (
