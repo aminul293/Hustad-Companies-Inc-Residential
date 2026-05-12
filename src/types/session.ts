@@ -149,6 +149,25 @@ export interface PhotoAsset {
   createdAt: string;
 }
 
+export type InspectionPhotoSyncStatus = "local" | "syncing" | "synced" | "error";
+
+export interface InspectionPhoto {
+  id: string;
+  sessionId: string;
+  category: string;
+  section: string;
+  label: string;
+  localUri: string;
+  remoteUrl?: string;
+  description?: string;
+  quantity?: number;
+  selectedForSummary?: boolean;
+  createdAt: string;
+  syncStatus: InspectionPhotoSyncStatus;
+  syncError?: string;
+  retryCount?: number;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // FOLLOW-UP TASK
 // ─────────────────────────────────────────────────────────────────────────────
@@ -272,6 +291,7 @@ export interface SessionState {
 
   // Photo assets
   photoAssets: PhotoAsset[];
+  photos?: InspectionPhoto[];
 
   // Follow-up tasks
   followUpTasks: FollowUpTask[];
