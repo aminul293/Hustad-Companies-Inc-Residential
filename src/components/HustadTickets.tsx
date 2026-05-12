@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, ChevronRight, RefreshCw, Ticket, ArrowRight, Phone, Mail, MessageSquare, User, Plus, CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react";
+import { Search, ChevronRight, RefreshCw, Ticket, ArrowRight, Phone, Mail, MessageSquare, User, Plus, CheckCircle2, AlertCircle, ArrowLeft, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -94,6 +94,8 @@ export function HustadTickets() {
   const [savingTouch, setSavingTouch] = useState(false);
   const [editingNotes, setEditingNotes] = useState<string | null>(null);
   const [notesValue, setNotesValue] = useState("");
+  const [deleteModal, setDeleteModal] = useState<{ id: string; name: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchTickets = useCallback(async (opts?: { refresh?: boolean; newPage?: number }) => {
     const isRefresh = opts?.refresh;
@@ -185,6 +187,24 @@ export function HustadTickets() {
       console.error("Notes save failed", e);
     } finally {
       setEditingNotes(null);
+    }
+  };
+
+  const handleDeleteTicket = async () => {
+    if (!deleteModal) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/tickets/${deleteModal.id}`, { method: "DELETE" });
+      if (res.ok) {
+        setTickets(prev => prev.filter(t => t.id !== deleteModal.id));
+        setTotal(prev => prev - 1);
+        setExpandedId(null);
+      }
+    } catch (e) {
+      console.error("Delete failed", e);
+    } finally {
+      setDeleting(false);
+      setDeleteModal(null);
     }
   };
 
@@ -528,9 +548,9 @@ export function HustadTickets() {
                             )}
                           </div>
 
-                          {/* Stage advance + close lost */}
+                          {/* Stage advance + close lost + delete */}
                           <div className="flex items-center justify-between pt-2 border-t border-white/[0.05]">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               {nextStage && (
                                 <button
                                   onClick={() => handleAdvanceStage(ticket, nextStage)}
@@ -555,6 +575,13 @@ export function HustadTickets() {
                                   Close Lost
                                 </button>
                               )}
+                              <button
+                                onClick={() => setDeleteModal({ id: ticket.id, name: ticket.property_name })}
+                                className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-white/[0.03] border border-white/10 text-xs font-display text-white/30 hover:text-rose-400 hover:border-rose-500/30 hover:bg-rose-500/[0.06] transition-all"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                Delete
+                              </button>
                             </div>
                             {STAGES[ticket.stage]?.cpWriteback && (
                               <div className="flex items-center gap-1.5">
@@ -582,6 +609,54 @@ export function HustadTickets() {
           </>
         )}
       </div>
+
+      {/* ── Delete confirmation modal ─────────────────────────────────────── */}
+      <AnimatePresence>
+        {deleteModal && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 max-w-sm w-full shadow-2xl"
+            >
+              <div className="flex items-start justify-between mb-6">
+                <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
+                  <Trash2 className="w-5 h-5 text-rose-400" />
+                </div>
+                <button onClick={() => setDeleteModal(null)} className="p-2 rounded-xl text-white/30 hover:text-white hover:bg-white/5 transition-all">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <h3 className="text-xl font-display font-medium mb-3">Delete Ticket?</h3>
+              <p className="text-white/40 text-sm leading-relaxed mb-8">
+                <span className="text-white/70 font-medium">{deleteModal.name}</span> and all its touch history will be permanently deleted. This cannot be undone.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeleteModal(null)}
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteTicket}
+                  disabled={deleting}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-rose-500/15 border border-rose-500/25 text-rose-400 hover:bg-rose-500/25 disabled:opacity-50 transition-all text-sm font-medium"
+                >
+                  {deleting
+                    ? <><div className="w-3.5 h-3.5 border-2 border-rose-400/30 border-t-rose-400 rounded-full animate-spin" /> Deleting…</>
+                    : <><Trash2 className="w-3.5 h-3.5" /> Delete</>
+                  }
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

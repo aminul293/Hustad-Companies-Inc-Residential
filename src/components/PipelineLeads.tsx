@@ -114,6 +114,15 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
 
   useEffect(() => { fetchLeads(); }, []);
 
+  // Re-fetch whenever the pipeline view becomes active (e.g. after CP Inbox import)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      if ((e as CustomEvent).detail === "pipeline") fetchLeads();
+    };
+    window.addEventListener("changeView", handler);
+    return () => window.removeEventListener("changeView", handler);
+  }, []);
+
   useEffect(() => {
     if (notesPanel && notesRef.current) {
       setTimeout(() => notesRef.current?.focus(), 100);
@@ -125,9 +134,10 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
       const url = repId ? `/api/pipeline?repId=${repId}&t=${Date.now()}` : `/api/pipeline?t=${Date.now()}`;
       const res = await fetch(url);
       const data = await res.json();
-      setLeads(data);
+      setLeads(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error("Failed to fetch leads", e);
+      setLeads([]);
     } finally {
       setLoading(false);
     }

@@ -253,6 +253,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
 
     const updated: SessionState = {
       ...session,
+      sessionStatus: "authorization_pending",
       pathData: {
         ...session.pathData,
         claimRelatedWork: claimRelated,
