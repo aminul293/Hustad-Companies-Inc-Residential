@@ -281,6 +281,10 @@ export interface SessionState {
 
   // Offline / sync
   syncStatus: SyncStatus;
+  lastSyncAttemptAt?: string;
+  lastSyncedAt?: string;
+  syncError?: string;
+  syncRetryCount?: number;
 
   // Audit log
   auditEvents: AuditEvent[];
