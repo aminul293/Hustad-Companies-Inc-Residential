@@ -150,3 +150,27 @@ export async function PATCH(
     return NextResponse.json({ error: err.message || "Internal server error" }, { status: err.status || 500 });
   }
 }
+
+// ─── DELETE /api/tickets/[id] ─────────────────────────────────────────────────
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    await requireAuth(req);
+    const supabase = getServiceClient();
+
+    // Delete touches first (in case there's no cascade)
+    await supabase.from("ticket_touches").delete().eq("hustad_ticket_id", params.id);
+
+    const { error } = await supabase
+      .from("hustad_tickets")
+      .delete()
+      .eq("id", params.id);
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || "Internal server error" }, { status: err.status || 500 });
+  }
+}

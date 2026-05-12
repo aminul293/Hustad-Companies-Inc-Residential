@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useSession } from "@/components/SessionProvider";
+import { navigateTo } from "@/lib/session";
 import { P00RepLaunch } from "@/components/screens/P00RepLaunch";
 import { A01Welcome } from "@/components/screens/A01Welcome";
 import { A02WhyInspection } from "@/components/screens/A02WhyInspection";
@@ -116,7 +117,13 @@ export function ScreenRouter() {
       return (
         <A10InspectionHold
           session={session}
-          onRepReturn={() => jumpTo("B11_rep_findings_prep")}
+          onRepReturn={() => {
+            // Set rep_review_pending status as the rep takes over for findings prep
+            updateSession(navigateTo(
+              { ...session, sessionStatus: "rep_review_pending" },
+              "B11_rep_findings_prep"
+            ));
+          }}
         />
       );
 
