@@ -124,6 +124,7 @@ export function ScreenRouter() {
               "B11_rep_findings_prep"
             ));
           }}
+          onBack={goBack}
         />
       );
 
