@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AuthenticatedRep } from "@/lib/rep-identity";
-import { getLiveReps } from "@/lib/reps";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface Appointment {
@@ -110,6 +109,17 @@ export function ManagerDashboard({ currentRep }: Props) {
   const [error, setError]     = useState<string | null>(null);
   const [expandedRep, setExpandedRep] = useState<string | null>(null);
   const [retryCooldown, setRetryCooldown] = useState(false);
+  const [dbReps, setDbReps]   = useState<{ id: string; name: string; role: string; active: boolean }[]>([]);
+
+  useEffect(() => {
+    fetch("/api/reps")
+      .then(r => r.json())
+      .then(({ reps }) => { if (reps) setDbReps(reps); })
+      .catch(() => {/* non-fatal */});
+  }, []);
+
+  const resolveRepName = (id: string) =>
+    dbReps.find(r => r.id === id)?.name ?? id;
 
   const fetchData = useCallback(async () => {
     setLoading(true); setError(null);
@@ -264,7 +274,7 @@ export function ManagerDashboard({ currentRep }: Props) {
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-display font-medium text-white/90 truncate">
-                        {getLiveReps().find(r => r.id === repId)?.name || repId}
+                        {resolveRepName(repId)}
                       </p>
                       <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                         <Pill label={`${appts.length} total`} color="text-white/30" />
@@ -284,7 +294,7 @@ export function ManagerDashboard({ currentRep }: Props) {
                       transition={{ duration: 0.2 }} className="overflow-hidden">
                       <div className="border-t border-white/[0.05] divide-y divide-white/[0.04]">
                         {appts.map(appt => (
-                          <RepApptRow key={appt.id} appt={appt} hasConflict={conflictApptIds.has(appt.id)} onReassigned={fetchData} />
+                          <RepApptRow key={appt.id} appt={appt} hasConflict={conflictApptIds.has(appt.id)} onReassigned={fetchData} reps={dbReps} />
                         ))}
                       </div>
                     </motion.div>
@@ -314,7 +324,7 @@ export function ManagerDashboard({ currentRep }: Props) {
                 <div className="min-w-0">
                   <p className="text-sm font-display font-medium text-white/90 truncate">{getAddress(appt)}</p>
                   <p className="text-[10px] font-mono text-white/30 mt-0.5">
-                    {fmtTime(appt.appointment_start_at)} · {appt.assigned_rep_id ?? "Unassigned"}
+                    {fmtTime(appt.appointment_start_at)} · {appt.assigned_rep_id ? resolveRepName(appt.assigned_rep_id) : "Unassigned"}
                   </p>
                 </div>
                 <div className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
@@ -445,21 +455,21 @@ function Pill({ label, color, icon: Icon }: { label: string; color: string; icon
   );
 }
 
-function RepApptRow({ appt, hasConflict, onReassigned }: {
+function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
   appt: Appointment;
   hasConflict: boolean;
   onReassigned: () => void;
+  reps: { id: string; name: string; role: string; active: boolean }[];
 }) {
   const [showReassign, setShowReassign] = useState(false);
   const [reassigning, setReassigning]   = useState(false);
-  const reps = getLiveReps().filter(r => r.active);
 
   const address  = getAddress(appt);
   const owner    = getOwner(appt);
   const phone    = getPhone(appt);
   const dot      = STATUS_DOT[appt.appointment_status] ?? "bg-white/20";
   const label    = STATUS_LABEL[appt.appointment_status] ?? appt.appointment_status;
-  const canStart = ["scheduled", "confirmed"].includes(appt.appointment_status) &&
+  const canStart = ["scheduled", "confirmed", "rescheduled"].includes(appt.appointment_status) &&
                    ["scheduled", "appointment_confirmed"].includes(appt.pipeline_leads?.pipeline_status ?? "");
 
   const handleReassign = async (newRepId: string) => {

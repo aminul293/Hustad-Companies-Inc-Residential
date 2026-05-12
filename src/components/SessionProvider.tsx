@@ -53,7 +53,19 @@ export function useSession() {
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const { data: authSession, status: authStatus } = useAuthSession();
-  const authRep = getAuthenticatedRep(authSession);
+  
+  // Support mock rep for QA/Dev
+  const [mockId, setMockId] = useState<string | null>(null);
+  useEffect(() => {
+    const QA_MODE = process.env.NEXT_PUBLIC_QA_MODE === "true";
+    if (QA_MODE && typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("repId");
+      if (id) setMockId(id);
+    }
+  }, []);
+
+  const authRep = getAuthenticatedRep(authSession, mockId);
   const [session, setSession] = useState<SessionState | null>(null);
   const [isOnline, setIsOnline] = useState(true);
 
@@ -92,7 +104,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   // Autosave locally + sync to server (debounced)
   useEffect(() => {
     if (!session) return;
-    if (authStatus !== "authenticated") return;
+    if (authStatus !== "authenticated" && !authRep) return;
     saveSession(session);
 
     // Debounced server sync
@@ -125,7 +137,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
     const handleOnline = () => {
       setIsOnline(true);
-      if (authStatus !== "authenticated") return;
+      if (authStatus !== "authenticated" && !authRep) return;
       // Process offline sync queue when we come back online
       processSyncQueue().then((count) => {
         if (count > 0) console.log(`Synced ${count} queued session(s)`);

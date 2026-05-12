@@ -71,18 +71,37 @@ export async function GET(request: Request) {
     .order('created_at', { ascending: false });
 
   // When repId is provided, restrict to leads that have an appointment assigned to that rep
-  // OR leads with no appointment yet (new/unscheduled leads the rep owns via the import)
-  if (repId) {
+  // OR leads with no appointment yet (new/unscheduled leads)
+  const QA_MODE = process.env.NEXT_PUBLIC_QA_MODE === "true";
+  const isMockRep = QA_MODE && repId === 'rep_001';
+
+  if (repId && !isMockRep) {
     const { data: repLeadIds } = await supabase
       .from('appointments')
       .select('pipeline_lead_id')
       .eq('assigned_rep_id', repId);
 
     const ids = (repLeadIds ?? []).map((r: any) => r.pipeline_lead_id).filter(Boolean);
+    
     if (ids.length > 0) {
-      query = query.in('id', ids);
+      // In a real app we'd use a more complex OR filter, 
+      // but for this MVP we'll show leads with appointments for this rep 
+      // PLUS any lead that has NO appointments.
+      const { data: allApptIds } = await supabase.from('appointments').select('pipeline_lead_id');
+      const takenIds = (allApptIds ?? []).map((a: any) => a.pipeline_lead_id).filter(Boolean);
+      
+      if (takenIds.length > 0) {
+        query = query.or(`id.in.(${ids.join(',')}),id.not.in.(${takenIds.join(',')})`);
+      } else {
+        // No appointments at all, show everything
+      }
     } else {
-      return NextResponse.json([]);
+      // If no appointments found for this rep, show leads that have NO appointments yet.
+      const { data: allApptIds } = await supabase.from('appointments').select('pipeline_lead_id');
+      const takenIds = (allApptIds ?? []).map((a: any) => a.pipeline_lead_id).filter(Boolean);
+      if (takenIds.length > 0) {
+        query = query.not('id', 'in', `(${takenIds.join(',')})`);
+      }
     }
   }
 
