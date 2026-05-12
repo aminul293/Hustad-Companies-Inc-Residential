@@ -1,4 +1,13 @@
-import type { SessionState, ScreenId, PhotoAsset, InspectionPhoto } from "@/types/session";
+import type { 
+  SessionState, 
+  ScreenId, 
+  PhotoAsset, 
+  InspectionPhoto,
+  FollowUpTask,
+  AuditEvent,
+  OutcomeType,
+  SelectedPath
+} from "@/types/session";
 import { SCREEN_FLOW } from "@/types/session";
 import { savePhotoBlob, base64ToBlob } from "@/lib/photoStorage";
 
