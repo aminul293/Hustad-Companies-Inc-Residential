@@ -1,17 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase-server";
-
-// POST /api/sessions/[id]/complete
-// Called when a session reaches a terminal state (signed, deferred, closed_*).
-// 1. Updates the session status.
-// 2. Marks the linked pipeline_lead as 'inspection_completed'.
-// 3. Upserts the hustad_ticket to stage 'inspection_done' (creates one if missing).
+import { requireAuth } from "@/lib/auth";
 
 export async function POST(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { id: sessionId } = params;
+  try {
+    await requireAuth(req);
+    const { id: sessionId } = params;
   const body = await req.json().catch(() => ({}));
   const { session_status } = body;
 
@@ -121,10 +118,14 @@ export async function POST(
     }
   }
 
-  return NextResponse.json({
-    ok: true,
-    session_status: finalStatus,
-    pipeline_lead_id: leadId,
-    ticket_stage: "inspection_done",
-  });
+    return NextResponse.json({
+      ok: true,
+      session_status: finalStatus,
+      pipeline_lead_id: leadId,
+      ticket_stage: "inspection_done",
+    });
+  } catch (error: any) {
+    console.error("[SESSION_COMPLETE_ERROR]", error);
+    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: error.status || 500 });
+  }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceClient } from '@/lib/supabase-server';
 import { requireAuth } from '@/lib/auth';
+import { IS_QA_MODE } from '@/lib/qa-mode';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -27,20 +28,43 @@ export async function POST(request: NextRequest) {
       throw new Error("Could not find internal centerpoint_job record.");
     }
 
-    // 1. Create the Pipeline Lead
-    const { data: lead, error: leadError } = await supabase
+    // 1. Create the Pipeline Lead — check for existing to avoid resetting status
+    const { data: existingLead } = await supabase
       .from('pipeline_leads')
-      .upsert({
-        centerpoint_job_id: cpJob.id,
-        cpc_ticket_id: job.attributes.name,
-        pipeline_status: 'new_lead',
-        imported_at: new Date().toISOString(),
-        lead_notes: `Imported from CenterPoint Inbox. Original Status: ${job.attributes.status}`
-      }, { onConflict: 'cpc_ticket_id' })
-      .select()
-      .single();
+      .select('id, pipeline_status')
+      .eq('cpc_ticket_id', job.attributes.name)
+      .maybeSingle();
 
-    if (leadError) throw leadError;
+    let lead;
+    if (existingLead) {
+      // Already exists — just return it or update notes/imported_at if needed, 
+      // but PRESERVE the pipeline_status.
+      const { data: updated, error: updateErr } = await supabase
+        .from('pipeline_leads')
+        .update({
+          lead_notes: `${existingLead.pipeline_status !== 'new_lead' ? '(Re-imported) ' : ''}${existingLead.pipeline_status === 'new_lead' ? `Imported from CenterPoint Inbox. Original Status: ${job.attributes.status}` : `Update attempted from Inbox.`}`
+        })
+        .eq('id', existingLead.id)
+        .select()
+        .single();
+      if (updateErr) throw updateErr;
+      lead = updated;
+    } else {
+      // New lead — create it
+      const { data: created, error: createErr } = await supabase
+        .from('pipeline_leads')
+        .insert({
+          centerpoint_job_id: cpJob.id,
+          cpc_ticket_id: job.attributes.name,
+          pipeline_status: 'new_lead',
+          imported_at: new Date().toISOString(),
+          lead_notes: `Imported from CenterPoint Inbox. Original Status: ${job.attributes.status}`
+        })
+        .select()
+        .single();
+      if (createErr) throw createErr;
+      lead = created;
+    }
 
     // 2. Update the Inbox Status to prevent re-import
     const { error: inboxError } = await supabase
@@ -74,8 +98,7 @@ export async function GET(request: NextRequest) {
       `)
       .order('created_at', { ascending: false });
 
-    const QA_MODE = process.env.NEXT_PUBLIC_QA_MODE === "true";
-    const isMockRep = QA_MODE && repId === 'rep_001';
+    const isMockRep = IS_QA_MODE && repId === 'rep_001';
 
     if (repId && !isMockRep) {
       const { data: repLeadIds } = await supabase

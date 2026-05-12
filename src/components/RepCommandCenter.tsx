@@ -226,11 +226,49 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onBack
     window.addEventListener('launchPipelineSession', handleLaunchPipelineSession);
     window.addEventListener('changeView', handleChangeView);
     window.addEventListener('sessionCompleted', handleSessionCompleted);
+
+    // Background retry loop for pending completions
+    const retryInterval = setInterval(async () => {
+      const pending = getAllPending();
+      if (pending.length === 0) return;
+
+      for (const item of pending) {
+        if (!isReadyForRetry(item)) continue;
+
+        console.log(`[RETRY] Attempting completion for session ${item.sessionId}...`);
+        try {
+          const res = await fetch(`/api/sessions/${item.sessionId}/complete`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ session_status: item.sessionStatus }),
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+          if (item.appointmentId) {
+            await fetch(`/api/appointments/${item.appointmentId}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ appointment_status: "completed" }),
+            });
+          }
+
+          dequeueCompletion(item.sessionId);
+          console.log(`[RETRY] Successfully completed session ${item.sessionId}`);
+          setPendingCompletions(getAllPending().length);
+        } catch (err) {
+          console.error(`[RETRY] Failed for session ${item.sessionId}:`, err);
+          recordRetryAttempt(item.sessionId);
+          setPendingCompletions(getAllPending().length);
+        }
+      }
+    }, 15000); // Check every 15 seconds
+
     return () => {
       window.removeEventListener('importCenterPointJob', handleImportJob);
       window.removeEventListener('launchPipelineSession', handleLaunchPipelineSession);
       window.removeEventListener('changeView', handleChangeView);
       window.removeEventListener('sessionCompleted', handleSessionCompleted);
+      clearInterval(retryInterval);
     };
   }, [currentRep]);
 

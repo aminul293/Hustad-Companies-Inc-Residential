@@ -36,6 +36,7 @@ import { listDrafts, hasSameDayDraft, deleteDraft, createSession } from "@/lib/s
 import { RepCommandCenter } from "@/components/RepCommandCenter";
 import { useSession as useAuthSession, signIn, signOut } from "next-auth/react";
 import { getAuthenticatedRep } from "@/lib/rep-identity";
+import { IS_QA_MODE } from "@/lib/qa-mode";
 
 interface Props {
   session: SessionState;
@@ -54,11 +55,10 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
   // Support mock rep for QA/Dev
   const [mockId, setMockId] = useState<string | null>(null);
   useEffect(() => {
-    const QA_MODE = process.env.NEXT_PUBLIC_QA_MODE === "true";
-    if (QA_MODE && typeof window !== "undefined") {
+    if (IS_QA_MODE && typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const id = params.get("repId");
-      if (id) setMockId(id);
+      if (id === 'rep_001') setMockId(id);
     }
   }, []);
 
@@ -384,7 +384,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
             <div className="space-y-8">
               <div className="flex items-center justify-between px-2">
                 <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest">Production Identity Layer</p>
-                {authStatus === "authenticated" && (
+                {(authStatus === "authenticated" || !!mockId) && (
                   <button onClick={() => signOut({ callbackUrl: "/login" })} className="text-[9px] font-mono text-white/30 hover:text-white uppercase tracking-widest">Switch Account</button>
                 )}
               </div>

@@ -1,5 +1,5 @@
-import type { Session } from "next-auth";
-import type { SessionState } from "@/types/session";
+import { Session } from "next-auth";
+import { IS_QA_MODE } from "./qa-mode";
 
 export interface AuthenticatedRep {
   id: string;
@@ -7,14 +7,18 @@ export interface AuthenticatedRep {
   email: string;
 }
 
-const QA_MODE = process.env.NEXT_PUBLIC_QA_MODE === "true";
-
+/**
+ * Resolves the current user's representative identity from either:
+ * 1. An active NextAuth session (Production)
+ * 2. A mock repId bypass (QA/Staging Mode Only)
+ */
 export function getAuthenticatedRep(
   authSession: Session | null | undefined,
   mockRepId?: string | null
 ): AuthenticatedRep | null {
   const user = authSession?.user;
   
+  // 1. Production Path: Authenticated Azure AD User
   if (user) {
     const email = (user.email || "").trim();
     const name = (user.name || email || "Hustad Rep").trim();
@@ -22,10 +26,10 @@ export function getAuthenticatedRep(
     if (id) return { id, name, email };
   }
 
-  // QA/TESTING BYPASS
-  if (QA_MODE && mockRepId) {
+  // 2. QA/Staging Path: URL-based mock identity (rep_001 only)
+  if (IS_QA_MODE && mockRepId === 'rep_001') {
     return {
-      id: mockRepId,
+      id: 'rep_001',
       name: "QA Tester (Mock)",
       email: "qa@hustadcompanies.com",
     };
@@ -34,14 +38,15 @@ export function getAuthenticatedRep(
   return null;
 }
 
-export function stampSessionWithRep(
-  session: SessionState,
-  rep: AuthenticatedRep
-): SessionState {
-  return {
-    ...session,
-    repId: rep.id,
-    repName: rep.name,
-    repEmail: rep.email,
-  };
+/**
+ * Legacy support for manual selection (not used in enterprise auth flow)
+ */
+export function getStoredRep(): AuthenticatedRep | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const data = localStorage.getItem("hustad_rep");
+    return data ? JSON.parse(data) : null;
+  } catch {
+    return null;
+  }
 }
