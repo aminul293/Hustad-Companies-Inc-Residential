@@ -11,7 +11,8 @@ import {
   ChevronDown, 
   ChevronUp,
   RefreshCw,
-  Info
+  Info,
+  Clock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
