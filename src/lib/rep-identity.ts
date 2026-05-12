@@ -39,6 +39,21 @@ export function getAuthenticatedRep(
 }
 
 /**
+ * Stamps a session state with the current representative's identity.
+ */
+export function stampSessionWithRep(
+  session: any,
+  rep: AuthenticatedRep
+) {
+  return {
+    ...session,
+    repId: rep.id,
+    repName: rep.name,
+    repEmail: rep.email,
+  };
+}
+
+/**
  * Legacy support for manual selection (not used in enterprise auth flow)
  */
 export function getStoredRep(): AuthenticatedRep | null {
