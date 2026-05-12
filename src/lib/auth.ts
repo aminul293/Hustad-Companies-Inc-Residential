@@ -5,6 +5,7 @@ import * as jwt from "jsonwebtoken";
 import * as bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase-server";
+import { IS_QA_MODE } from "./qa-mode";
 
 // NEXTAUTH_URL is automatically handled by Vercel's environment variables.
 // Manual overrides here are removed to prevent protocol/host mismatches 
@@ -147,11 +148,10 @@ export async function requireAuth(req: NextRequest): Promise<AuthPayload> {
   }
 
   // QA/TESTING BYPASS
-  const QA_MODE = process.env.NEXT_PUBLIC_QA_MODE === "true";
-  if (QA_MODE || process.env.NODE_ENV === "development") {
+  if (IS_QA_MODE) {
     const url = new URL(req.url);
     const repId = url.searchParams.get("repId");
-    if (repId) {
+    if (repId === "rep_001") {
       return {
         repId,
         name: "QA Tester (Mock)",

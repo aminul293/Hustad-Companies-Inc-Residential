@@ -8,6 +8,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
+import { IS_QA_MODE } from "@/lib/qa-mode";
 import { useSession as useAuthSession } from "next-auth/react";
 import type { SessionState, ScreenId } from "@/types/session";
 import { getNextScreen, shouldShowScreen, SCREEN_FLOW } from "@/types/session";
@@ -57,11 +58,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   // Support mock rep for QA/Dev
   const [mockId, setMockId] = useState<string | null>(null);
   useEffect(() => {
-    const QA_MODE = process.env.NEXT_PUBLIC_QA_MODE === "true";
-    if (QA_MODE && typeof window !== "undefined") {
+    if (IS_QA_MODE && typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const id = params.get("repId");
-      if (id) setMockId(id);
+      if (id === 'rep_001') setMockId(id);
     }
   }, []);
 

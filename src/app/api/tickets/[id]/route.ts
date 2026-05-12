@@ -60,7 +60,20 @@ export async function PATCH(
   if (fetchError) return NextResponse.json({ error: fetchError.message }, { status: 404 });
 
   const updates: Record<string, any> = {};
-  if (stage !== undefined)              updates.stage = stage;
+  if (stage !== undefined) {
+    const STAGE_ORDER = [
+      "new", "contacted", "appointment_set", "inspection_done",
+      "estimate_sent", "follow_up", "signed", "job_scheduled",
+      "job_started", "job_completed", "invoiced", "closed_won", "closed_lost"
+    ];
+    const currentIdx = STAGE_ORDER.indexOf(current.stage);
+    const targetIdx = STAGE_ORDER.indexOf(stage);
+
+    if (targetIdx >= 0 && targetIdx < currentIdx) {
+      return NextResponse.json({ error: `Cannot regress ticket from ${current.stage} to ${stage}` }, { status: 400 });
+    }
+    updates.stage = stage;
+  }
   if (notes !== undefined)              updates.notes = notes;
   if (client_name !== undefined)        updates.client_name = client_name;
   if (client_email !== undefined)       updates.client_email = client_email;
