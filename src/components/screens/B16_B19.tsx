@@ -71,7 +71,7 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
     : [];
 
   return (
-    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
+    <div className="relative flex flex-col min-h-screen w-full bg-[#060606]">
       {/* Background Assets: Forensic Rapid Deployment Cloud */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Ambient Gradient Lift */}
@@ -212,8 +212,8 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
         </div>
       </div>
 
-      <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-6">
+      <div className="sticky bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20 pointer-events-none">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-6 pointer-events-auto">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
             <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white">Back</span>
@@ -276,7 +276,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
   };
 
   return (
-    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
+    <div className="relative flex flex-col min-h-screen w-full bg-[#060606]">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Forensic Inspection Drone - Hovering Background */}
         <motion.div 
@@ -405,8 +405,8 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
         </div>
       </div>
 
-      <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-6">
+      <div className="sticky bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20 pointer-events-none">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-6 pointer-events-auto">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
             <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white">Back</span>
@@ -508,7 +508,7 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
   };
 
   return (
-    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
+    <div className="relative flex flex-col min-h-screen w-full bg-[#060606]">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <ElegantShape delay={0.2} width={600} height={140} rotate={12} gradient="from-indigo-500/[0.12]" className="left-[-5%] top-[10%]" />
       </div>
@@ -608,8 +608,8 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
         </div>
       </div>
 
-      <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-6">
+      <div className="sticky bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20 pointer-events-none">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-6 pointer-events-auto">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
             <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white">Back</span>
@@ -977,7 +977,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
   };
 
   return (
-    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
+    <div className="relative flex flex-col min-h-screen w-full bg-[#060606]">
       {/* Background Assets: Rapid Deployment Cloud */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Forensic Inspection Drone - Hovering Top Left */}
@@ -1008,8 +1008,8 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
         </div>
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto px-10 pt-20 pb-40 text-center">
-        <div className="max-w-5xl mx-auto space-y-16">
+      <div className="relative z-10 flex-1 px-6 md:px-10 pt-20 pb-64 text-center">
+        <div className="max-w-[1400px] mx-auto space-y-16">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-md w-fit mx-auto">
               <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400" />
@@ -1211,8 +1211,8 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
         </div>
       </div>
 
-      <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-6">
+      <div className="sticky bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20 pointer-events-none">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-6 pointer-events-auto">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
             <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-white">Back</span>

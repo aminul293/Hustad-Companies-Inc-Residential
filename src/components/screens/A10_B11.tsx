@@ -327,7 +327,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
   const annotatingAsset = (session.photoAssets || []).find(p => p.assetId === annotatingAssetId);
 
   return (
-    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#0A0A0A]">
+    <div className="relative flex flex-col min-h-screen w-full bg-[#0A0A0A]">
       <AnimatePresence>
         {annotatingAsset && (
           <PhotoAnnotationLayer 
@@ -388,8 +388,8 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
         </div>
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto px-12 pt-10 pb-48 custom-scrollbar">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <div className="relative z-10 flex-1 px-6 md:px-12 pt-10 pb-64">
+        <div className="max-w-[1600px] mx-auto grid grid-cols-1 xl:grid-cols-12 gap-12">
           
           {/* Left Column: Outcome & Quantitative */}
           <div className="lg:col-span-8 space-y-12">
@@ -567,11 +567,36 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                   </div>
                 </div>
               </section>
+
+              {/* Guided Forensic Photo Checklist - MOVED TO MAIN COLUMN */}
+              <section className="space-y-8 mt-12 pt-12 border-t border-white/5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+                      <Camera className="w-4 h-4 text-amber-400" />
+                    </div>
+                    <h2 className="text-xs font-mono font-bold text-white/80 uppercase tracking-[0.3em]">Forensic Dossier Capture</h2>
+                  </div>
+                  <div className="flex items-center gap-4">
+                     <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.05]">
+                      {session.photos?.length || 0} Forensic Shots
+                    </span>
+                    <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.05]">
+                      {session.photoAssets?.length || 0} Supplemental Assets
+                    </span>
+                  </div>
+                </div>
+
+                <InspectionPhotoChecklist 
+                  session={session}
+                  onUpdate={onUpdate}
+                />
+              </section>
             </section>
           </div>
 
           {/* Right Column: Documentation & Summary */}
-          <div className="lg:col-span-4 space-y-12">
+          <div className="xl:col-span-4 space-y-12">
             
             {/* AI Findings Intelligence */}
             <section className="space-y-6">
@@ -654,28 +679,6 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
               </div>
             </section>
 
-            {/* Guided Forensic Photo Checklist */}
-            <section className="space-y-8">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
-                    <Camera className="w-4 h-4 text-amber-400" />
-                  </div>
-                  <h2 className="text-xs font-mono font-bold text-white/80 uppercase tracking-[0.3em]">Forensic Dossier Capture</h2>
-                </div>
-                <div className="flex items-center gap-4">
-                   <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.05]">
-                    {session.photos?.length || 0} Forensic Shots
-                  </span>
-                  <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.05]">
-                    {session.photoAssets?.length || 0} Supplemental Assets
-                  </span>
-                </div>
-              </div>
-
-              <InspectionPhotoChecklist 
-                session={session}
-                onUpdate={onUpdate}
               />
             </section>
 
@@ -758,7 +761,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
       </div>
 
       {/* Control Surface (Footer) */}
-      <div className="absolute bottom-0 inset-x-0 p-10 z-50 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A] to-transparent pt-32 pointer-events-none">
+      <div className="sticky bottom-0 inset-x-0 p-10 z-50 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A] to-transparent pt-32 pointer-events-none">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-8 pointer-events-auto">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
             <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
