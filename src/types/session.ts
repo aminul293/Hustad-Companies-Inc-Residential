@@ -309,6 +309,12 @@ export interface SessionState {
   lastSyncedAt?: string;
   syncError?: string;
   syncRetryCount?: number;
+  
+  // Office Dispatch
+  officeDispatchStatus?: "pending" | "sent" | "error";
+  officeDispatchedAt?: string;
+  officeDispatchError?: string;
+  reportUrl?: string;
 
   // Audit log
   auditEvents: AuditEvent[];
