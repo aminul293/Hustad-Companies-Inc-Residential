@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { StarButton } from "@/components/ui/star-button";
 import { INSPECTION_SHOT_LIST, ShotListItem, ShotListSection } from "@/lib/inspectionShotList";
 import { InspectionPhoto, SessionState } from "@/types/session";
 import { compressImage } from "@/lib/images";
