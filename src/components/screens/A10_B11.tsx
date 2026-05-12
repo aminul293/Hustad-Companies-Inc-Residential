@@ -36,8 +36,9 @@ import { lockSummary, setOutcomeType } from "@/lib/session";
 import { AIAssistSummary } from "@/components/AIAssistSummary";
 import { PhotoAnnotationLayer } from "@/components/PhotoAnnotationLayer";
 import { ProofRefinementModal } from "@/components/ProofRefinementModal";
-import { Reorder } from "framer-motion";
-import type { Annotation, PhotoAsset } from "@/types/session";
+import type { Annotation, PhotoAsset, InspectionPhoto } from "@/types/session";
+import { InspectionPhotoChecklist } from "@/components/InspectionPhotoChecklist";
+import { INSPECTION_SHOT_LIST } from "@/lib/inspectionShotList";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // A10 – Inspection In Progress Hold Screen
@@ -653,77 +654,103 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
               </div>
             </section>
 
-            {/* Asset Library */}
+            {/* Guided Forensic Photo Checklist */}
             <section className="space-y-8">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
                     <Camera className="w-4 h-4 text-amber-400" />
                   </div>
-                  <h2 className="text-xs font-mono font-bold text-white/80 uppercase tracking-[0.3em]">Evidence Log</h2>
+                  <h2 className="text-xs font-mono font-bold text-white/80 uppercase tracking-[0.3em]">Forensic Dossier Capture</h2>
                 </div>
-                <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.05]">{photoAssets.length} Assets Attached</span>
+                <div className="flex items-center gap-4">
+                   <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.05]">
+                    {session.photos?.length || 0} Forensic Shots
+                  </span>
+                  <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.05]">
+                    {session.photoAssets?.length || 0} Supplemental Assets
+                  </span>
+                </div>
+              </div>
+
+              <InspectionPhotoChecklist 
+                session={session}
+                onUpdate={onUpdate}
+              />
+            </section>
+
+            {/* Supplemental Evidence Log (Legacy/General) */}
+            <section className="space-y-8 mt-12 pt-12 border-t border-white/5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/10">
+                    <Upload className="w-4 h-4 text-white/40" />
+                  </div>
+                  <h2 className="text-xs font-mono font-bold text-white/40 uppercase tracking-[0.3em]">Supplemental Evidence</h2>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 gap-4">
                 <label className="h-24 rounded-3xl border border-dashed border-white/10 bg-white/[0.01] hover:bg-white/[0.03] hover:border-indigo-500/30 flex items-center justify-center gap-3 cursor-pointer transition-all duration-500 group overflow-hidden">
                   <Upload className="w-5 h-5 text-white/20 group-hover:text-indigo-400" />
-                  <span className="text-[9px] font-mono text-white/20 uppercase tracking-[0.3em] font-bold">Upload Forensic Data</span>
+                  <span className="text-[9px] font-mono text-white/20 uppercase tracking-[0.3em] font-bold">Add Supplemental Assets</span>
                   <input type="file" accept="image/*" multiple capture="environment" className="hidden" onChange={handleFileChange} />
                 </label>
 
-                <Reorder.Group axis="y" values={photoAssets} onReorder={setPhotoAssets} className="space-y-3">
-                  {photoAssets.map((photo) => (
-                    <Reorder.Item 
-                      key={photo.assetId} 
-                      value={photo}
-                      className={cn(
-                        "group relative h-24 rounded-[28px] overflow-hidden border border-white/[0.05] bg-white/[0.03] flex items-center gap-6 p-3 cursor-grab active:cursor-grabbing",
-                        photo.isSensitive && "opacity-50 grayscale"
-                      )}
-                    >
-                      <div className="w-20 h-full rounded-2xl overflow-hidden bg-black flex-shrink-0">
-                        <img src={photo.dataUrl} alt="" className="w-full h-full object-cover" />
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          {photo.tags?.map(t => (
-                            <span key={t} className="px-1.5 py-0.5 rounded-md bg-white/5 text-[7px] font-mono text-white/40 uppercase tracking-widest">{t}</span>
-                          ))}
-                          {photo.isSensitive && <EyeOff className="w-3 h-3 text-rose-500" />}
+                {photoAssets.length > 0 && (
+                  <Reorder.Group axis="y" values={photoAssets} onReorder={setPhotoAssets} className="space-y-3">
+                    {photoAssets.map((photo) => (
+                      <Reorder.Item 
+                        key={photo.assetId} 
+                        value={photo}
+                        className={cn(
+                          "group relative h-24 rounded-[28px] overflow-hidden border border-white/[0.05] bg-white/[0.03] flex items-center gap-6 p-3 cursor-grab active:cursor-grabbing",
+                          photo.isSensitive && "opacity-50 grayscale"
+                        )}
+                      >
+                        <div className="w-20 h-full rounded-2xl overflow-hidden bg-black flex-shrink-0">
+                          <img src={photo.dataUrl} alt="" className="w-full h-full object-cover" />
                         </div>
-                        <p className="text-[10px] font-display font-medium text-white/70 truncate">{photo.caption}</p>
-                        <div className="flex items-center gap-3 mt-1">
-                          {photo.severity && (
-                            <div className="flex items-center gap-1">
-                              <div className={cn("w-1 h-1 rounded-full", 
-                                photo.severity === 'critical' ? 'bg-rose-500' : 
-                                photo.severity === 'high' ? 'bg-amber-500' : 'bg-emerald-500'
-                              )} />
-                              <span className="text-[7px] font-mono text-white/20 uppercase tracking-widest">{photo.severity}</span>
-                            </div>
-                          )}
-                          <span className="text-[7px] font-mono text-white/20 uppercase tracking-widest">
-                            {photo.annotations?.length || 0} Markups
-                          </span>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            {photo.tags?.map(t => (
+                              <span key={t} className="px-1.5 py-0.5 rounded-md bg-white/5 text-[7px] font-mono text-white/40 uppercase tracking-widest">{t}</span>
+                            ))}
+                            {photo.isSensitive && <EyeOff className="w-3 h-3 text-rose-500" />}
+                          </div>
+                          <p className="text-[10px] font-display font-medium text-white/70 truncate">{photo.caption}</p>
+                          <div className="flex items-center gap-3 mt-1">
+                            {photo.severity && (
+                              <div className="flex items-center gap-1">
+                                <div className={cn("w-1 h-1 rounded-full", 
+                                  photo.severity === 'critical' ? 'bg-rose-500' : 
+                                  photo.severity === 'high' ? 'bg-amber-500' : 'bg-emerald-500'
+                                )} />
+                                <span className="text-[7px] font-mono text-white/20 uppercase tracking-widest">{photo.severity}</span>
+                              </div>
+                            )}
+                            <span className="text-[7px] font-mono text-white/20 uppercase tracking-widest">
+                              {photo.annotations?.length || 0} Markups
+                            </span>
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="flex items-center gap-2 pr-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => setAnnotatingAssetId(photo.assetId)} className="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-indigo-400">
-                          <Scan className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => setRefiningAssetId(photo.assetId)} className="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-emerald-400">
-                          <Database className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => setPhotoAssets(photoAssets.filter(p => p.assetId !== photo.assetId))} className="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-rose-500">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </Reorder.Item>
-                  ))}
-                </Reorder.Group>
+                        <div className="flex items-center gap-2 pr-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => setAnnotatingAssetId(photo.assetId)} className="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-indigo-400">
+                            <Scan className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => setRefiningAssetId(photo.assetId)} className="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-emerald-400">
+                            <Database className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => setPhotoAssets(photoAssets.filter(p => p.assetId !== photo.assetId))} className="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-rose-500">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </Reorder.Item>
+                    ))}
+                  </Reorder.Group>
+                )}
               </div>
             </section>
           </div>

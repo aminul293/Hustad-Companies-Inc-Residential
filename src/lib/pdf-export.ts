@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { SessionState } from "@/types/session";
+import { compressImage } from "@/lib/images";
 
 /**
  * Generates and downloads a professional "Executive Storm Review" PDF package.
@@ -21,32 +22,6 @@ export async function getSummaryPDFBase64(session: SessionState): Promise<string
 export async function downloadSummaryPDF(session: SessionState) {
   const doc = await generateDossier(session);
   doc.save(`HUSTAD_FORENSIC_DOSSIER_${session.sessionId.slice(-6).toUpperCase()}.pdf`);
-}
-
-/**
- * Helper to downscale and compress images to keep PDF size manageable for email payloads.
- */
-async function compressImage(dataUrl: string, maxWidth = 1000): Promise<string> {
-  if (typeof window === "undefined") return dataUrl;
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      let width = img.width;
-      let height = img.height;
-      if (width > maxWidth) {
-        height = (maxWidth / width) * height;
-        width = maxWidth;
-      }
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      ctx?.drawImage(img, 0, 0, width, height);
-      resolve(canvas.toDataURL("image/jpeg", 0.7)); // 0.7 quality is sweet spot
-    };
-    img.onerror = () => resolve(dataUrl);
-    img.src = dataUrl;
-  });
 }
 
 /**

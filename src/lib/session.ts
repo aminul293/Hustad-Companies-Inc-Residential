@@ -348,6 +348,8 @@ export function exportSessionJSON(session: SessionState): string {
     sessionStatus: session.sessionStatus,
     followUpTasks: session.followUpTasks,
     photoCount: session.photoAssets.length,
+    forensicPhotoCount: (session.photos || []).length,
+    photos: session.photos || [],
     auditEvents: session.auditEvents,
     repName: session.repName,
     repId: session.repId,
