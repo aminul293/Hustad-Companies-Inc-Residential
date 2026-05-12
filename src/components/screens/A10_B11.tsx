@@ -679,9 +679,6 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
               </div>
             </section>
 
-              />
-            </section>
-
             {/* Supplemental Evidence Log (Legacy/General) */}
             <section className="space-y-8 mt-12 pt-12 border-t border-white/5">
               <div className="flex items-center justify-between">
