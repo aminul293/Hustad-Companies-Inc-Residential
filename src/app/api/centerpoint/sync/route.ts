@@ -20,10 +20,19 @@ function cpHeaders() {
   return { Accept: "application/json", Authorization: getCpKey() };
 }
 
-// ─── Fetch residential company IDs + names ───────────────────────────────────
-async function getResidentialCompanies(): Promise<{ ids: Set<number>; names: Map<number, string> }> {
+// ─── Fetch residential company IDs + contact details ─────────────────────────
+interface CompanyContacts {
+  ids: Set<number>;
+  names: Map<number, string>;
+  phones: Map<number, string>;
+  emails: Map<number, string>;
+}
+
+async function getResidentialCompanies(): Promise<CompanyContacts> {
   const ids = new Set<number>();
   const names = new Map<number, string>();
+  const phones = new Map<number, string>();
+  const emails = new Map<number, string>();
   let page = 1;
   while (true) {
     const params = new URLSearchParams({
@@ -40,19 +49,32 @@ async function getResidentialCompanies(): Promise<{ ids: Set<number>; names: Map
     const records: any[] = data?.data ?? [];
     records.forEach((r) => {
       const numId = Number(r.id);
+      const a = r.attributes ?? {};
       ids.add(numId);
-      const companyName = r.attributes?.name ?? r.attributes?.companyName ?? null;
+
+      const companyName = a.name ?? a.companyName ?? null;
       if (companyName) names.set(numId, companyName);
+
+      // Phone — CenterPoint may expose it under several field names
+      const phone =
+        a.phone ?? a.phoneNumber ?? a.mobilePhone ?? a.cellPhone ??
+        a.primaryPhone ?? a.contactPhone ?? null;
+      if (phone) phones.set(numId, String(phone));
+
+      // Email
+      const email =
+        a.email ?? a.emailAddress ?? a.primaryEmail ?? a.contactEmail ?? null;
+      if (email) emails.set(numId, String(email));
     });
     const total = data?.meta?.page?.total ?? 0;
     if (ids.size >= total || records.length === 0) break;
     page++;
   }
-  return { ids, names };
+  return { ids, names, phones, emails };
 }
 
 // ─── Map CenterPoint record → Supabase row ───────────────────────────────────
-function toRow(r: any, companyNames?: Map<number, string>) {
+function toRow(r: any, contacts?: CompanyContacts) {
   const a = r.attributes;
 
   // Normalize status for the pipeline (e.g. "Closed Out" -> "closed")
@@ -61,7 +83,21 @@ function toRow(r: any, companyNames?: Map<number, string>) {
   if (normalizedStatus === "new_lead") normalizedStatus = "lead_opened";
 
   const billedId = a.billedCompanyId ? Number(a.billedCompanyId) : null;
-  const ownerName = billedId && companyNames ? (companyNames.get(billedId) ?? null) : null;
+  const ownerName  = billedId && contacts ? (contacts.names.get(billedId) ?? null) : null;
+  const ownerPhone = billedId && contacts ? (contacts.phones.get(billedId) ?? null) : null;
+  const ownerEmail = billedId && contacts ? (contacts.emails.get(billedId) ?? null) : null;
+
+  // Also check if CenterPoint embeds contact fields directly on the service record
+  const servicePhone =
+    a.phone ?? a.phoneNumber ?? a.mobilePhone ?? a.cellPhone ??
+    a.primaryPhone ?? a.contactPhone ?? null;
+  const serviceEmail =
+    a.email ?? a.emailAddress ?? a.primaryEmail ?? a.contactEmail ?? null;
+
+  const rawExtras: Record<string, string> = {};
+  if (ownerName)              rawExtras._owner = ownerName;
+  if (ownerPhone ?? servicePhone) rawExtras._phone = String(ownerPhone ?? servicePhone);
+  if (ownerEmail ?? serviceEmail) rawExtras._email = String(ownerEmail ?? serviceEmail);
 
   return {
     cp_id: String(r.id),
@@ -80,7 +116,7 @@ function toRow(r: any, companyNames?: Map<number, string>) {
     stage_transitioned_at: a.latestStageTransitionedAt ?? null,
     cp_created_at: a.createdAt ?? null,
     cp_updated_at: a.updatedAt ?? null,
-    raw: ownerName ? { ...a, _owner: ownerName } : a,
+    raw: { ...a, ...rawExtras },
     synced_at: new Date().toISOString(),
   };
 }
@@ -151,7 +187,8 @@ export async function POST() {
   const logId: string | undefined = logRow?.id;
 
   try {
-    const { ids: residentialIds, names: companyNames } = await getResidentialCompanies();
+    const contacts = await getResidentialCompanies();
+    const { ids: residentialIds } = contacts;
 
     let cpPage = 1;
     let cpTotal = Infinity;
@@ -209,7 +246,7 @@ export async function POST() {
           continue;
         }
 
-        rowsToUpsert.push(toRow(r, companyNames));
+        rowsToUpsert.push(toRow(r, contacts));
       }
 
       // De-duplicate in memory: pick the one that is FURTHER ALONG in the pipeline
