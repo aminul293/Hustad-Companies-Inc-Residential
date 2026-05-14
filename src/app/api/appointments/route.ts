@@ -145,3 +145,40 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: err.message || "Internal Server Error" }, { status: err.status || 500 });
   }
 }
+
+// DELETE /api/appointments — cleanup: for each lead keep only the newest appointment, delete the rest
+export async function DELETE(request: NextRequest) {
+  try {
+    await requireAuth(request);
+    const supabase = getServiceClient();
+
+    const { data: all, error } = await supabase
+      .from('appointments')
+      .select('id, pipeline_lead_id, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    // Group by lead — keep the first (newest), collect the rest for deletion
+    const seen = new Set<string>();
+    const toDelete: string[] = [];
+    for (const appt of all ?? []) {
+      const leadKey = appt.pipeline_lead_id;
+      if (!leadKey) { toDelete.push(appt.id); continue; }
+      if (seen.has(leadKey)) {
+        toDelete.push(appt.id);
+      } else {
+        seen.add(leadKey);
+      }
+    }
+
+    if (toDelete.length > 0) {
+      const { error: delErr } = await supabase.from('appointments').delete().in('id', toDelete);
+      if (delErr) throw delErr;
+    }
+
+    return NextResponse.json({ deleted: toDelete.length, kept: seen.size });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
