@@ -125,9 +125,10 @@ const callTimestamp = () => {
 
 interface PipelineLeadsProps {
   repId?: string;
+  repEmail?: string;
 }
 
-export function PipelineLeads({ repId }: PipelineLeadsProps) {
+export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
   const [leads, setLeads] = useState<PipelineLead[]>([]);
   const [isLoading, setLoading] = useState(true);
 
@@ -387,6 +388,24 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
     }).catch(e => console.error("[SCHED_EMAIL]", e));
   };
 
+  const fireCalendarEvent = (leadId: string, start: Date, end: Date) => {
+    if (!repEmail) return;
+    const lead = leads.find(l => l.id === leadId);
+    const address = lead?.centerpoint_jobs?.property_name || lead?.centerpoint_jobs?.name || leadId;
+    const homeownerName = (lead?.centerpoint_jobs?.raw?._owner as string) || "";
+    fetch("/api/calendar-event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        subject: `Storm Inspection — ${address}`,
+        startAt: start.toISOString(),
+        endAt: end.toISOString(),
+        address,
+        homeownerName,
+      }),
+    }).catch(e => console.error("[CALENDAR_EVENT]", e));
+  };
+
   // Schedule
   const openSchedModal = (lead: PipelineLead) => {
     setSchedModal({ leadId: lead.id, leadName: lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id });
@@ -424,6 +443,7 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
         setSchedModal(null);
         setClashWarning(null);
         fireScheduleEmail(schedModal.leadId, start, schedDuration);
+        fireCalendarEvent(schedModal.leadId, start, end);
         await fetchLeads();
       } catch (e) {
         console.error("[SCHEDULE]", e);
@@ -435,6 +455,7 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
       setSchedModal(null);
       setClashWarning(null);
       fireScheduleEmail(schedModal.leadId, start, schedDuration);
+      fireCalendarEvent(schedModal.leadId, start, end);
       await patch(schedModal.leadId, {
         pipeline_status:     "scheduled",
         scheduled_start_at:  start.toISOString(),
