@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useCallback, Suspense } from "react
 import { useSearchParams } from "next/navigation";
 import {
   Camera, CheckCircle2, RotateCcw, ChevronRight,
-  ArrowLeft, Home, Zap, Wind, Loader2, AlertCircle, Upload
+  ArrowLeft, Home, Zap, Wind, Loader2, AlertCircle, Upload, Tablet
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { INSPECTION_SHOT_LIST, ShotListItem } from "@/lib/inspectionShotList";
@@ -69,6 +69,7 @@ function RepCaptureInner() {
   const [sessionAddress, setSessionAddress] = useState<string>("");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [done, setDone] = useState(false);
   const overlayRef = useRef<CaptureOverlay | null>(null);
   overlayRef.current = overlay;
 
@@ -233,12 +234,12 @@ function RepCaptureInner() {
 
                 {section.items.map(item => {
                   const mine = capturedForCategory(item.id);
-                  const done = mine.filter(c => c.status === "done").length;
+                  const itemDone = mine.filter(c => c.status === "done").length;
                   const uploading = mine.some(c => c.status === "uploading");
                   const hasError = mine.some(c => c.status === "error");
-                  const isComplete = item.requiredCount > 0 && done >= item.requiredCount;
+                  const isComplete = item.requiredCount > 0 && itemDone >= item.requiredCount;
                   const isOptional = item.requiredCount === 0;
-                  const needed = Math.max(0, item.requiredCount - done);
+                  const needed = Math.max(0, item.requiredCount - itemDone);
 
                   return (
                     <div key={item.id} className={cn(
@@ -325,15 +326,71 @@ function RepCaptureInner() {
           })}
         </div>
 
-        {/* All done banner */}
-        {pct === 100 && (
-          <div className="mx-4 mt-8 p-6 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 text-center">
-            <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
-            <p className="text-white font-display font-medium text-lg">All required photos captured!</p>
-            <p className="text-white/40 text-sm mt-1">The tablet will show them automatically.</p>
+        {/* Sticky done button — always visible at bottom once any photos taken */}
+        {doneCount > 0 && (
+          <div className="mx-4 mt-6 mb-2">
+            <button
+              onClick={() => setDone(true)}
+              className={cn(
+                "w-full h-14 rounded-2xl font-display font-semibold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
+                pct === 100
+                  ? "bg-emerald-500 text-white shadow-[0_0_24px_rgba(16,185,129,0.35)]"
+                  : "bg-white/[0.08] border border-white/[0.12] text-white/60"
+              )}
+            >
+              <CheckCircle2 className="w-5 h-5" />
+              {pct === 100 ? "Done — All Photos Captured" : `Done for Now (${doneCount}/${totalRequired})`}
+            </button>
           </div>
         )}
       </div>
+
+      {/* ── Full-screen done state ── */}
+      {done && (
+        <div className="fixed inset-0 z-[300] bg-[#060606] flex flex-col items-center justify-center px-8 text-center">
+          <div className={cn(
+            "w-24 h-24 rounded-full flex items-center justify-center mb-8",
+            pct === 100 ? "bg-emerald-500/15 border border-emerald-500/25" : "bg-indigo-500/15 border border-indigo-500/25"
+          )}>
+            {pct === 100
+              ? <CheckCircle2 className="w-10 h-10 text-emerald-400" />
+              : <Tablet className="w-10 h-10 text-indigo-400" />
+            }
+          </div>
+
+          <p className={cn(
+            "text-[11px] font-mono uppercase tracking-[0.3em] mb-3",
+            pct === 100 ? "text-emerald-400/70" : "text-indigo-400/70"
+          )}>
+            {pct === 100 ? "Capture complete" : "Photos uploaded"}
+          </p>
+
+          <h2 className="text-2xl font-display font-medium text-white mb-3">
+            {pct === 100 ? "All shots captured." : `${doneCount} of ${totalRequired} shots done.`}
+          </h2>
+
+          <p className="text-sm text-white/40 font-light leading-relaxed max-w-xs mb-10">
+            {pct === 100
+              ? "Every required photo has synced to the tablet. Hand it back to the rep to continue."
+              : "Your photos have synced to the tablet. The rep can continue — or you can go back and capture more."}
+          </p>
+
+          <div className="w-full max-w-xs space-y-3">
+            <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center gap-3">
+              <Tablet className="w-5 h-5 text-white/30 shrink-0" />
+              <p className="text-xs text-white/50 font-light text-left">Return the tablet to the rep to review findings and continue.</p>
+            </div>
+            {pct < 100 && (
+              <button
+                onClick={() => setDone(false)}
+                className="w-full h-12 rounded-2xl bg-white/[0.06] border border-white/[0.1] text-white/50 text-sm font-display active:scale-[0.98]"
+              >
+                ← Go back and add more photos
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── Guided capture overlay ── */}
       {overlay && (
