@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   Phone, Calendar, MessageSquare, User, Clock, XCircle, AlertCircle,
   PlayCircle, ArrowLeft, MinusCircle, CalendarDays, CheckCircle2,
-  Activity, Flame, ChevronRight, ChevronLeft, X, AlertTriangle
+  Activity, Flame, ChevronRight, ChevronLeft, X, AlertTriangle, PenLine
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,6 +19,7 @@ interface PipelineLead {
   scheduled_start_at: string | null;
   scheduled_end_at: string | null;
   lead_notes: string | null;
+  owner_phone: string | null;
   centerpoint_jobs: {
     name: string;
     property_name: string;
@@ -87,6 +88,16 @@ const normalizePhone = (raw: unknown): string | null => {
   return raw.trim() || null;
 };
 
+const resolvePhone = (lead: PipelineLead): string | null =>
+  normalizePhone(
+    lead.owner_phone ||
+    lead.centerpoint_jobs?.raw?._phone ||
+    lead.centerpoint_jobs?.raw?.phone ||
+    lead.centerpoint_jobs?.raw?.["Phone Number"] ||
+    lead.centerpoint_jobs?.raw?.phone_number ||
+    null
+  );
+
 const callTimestamp = () => {
   const now = new Date();
   return now.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + ", " +
@@ -122,6 +133,10 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
     leadId: string; leadName: string; phone: string | null;
     ownerName: string; currentNotes: string; currentAttempts: number;
   } | null>(null);
+
+  // Edit phone modal
+  const [editPhoneModal, setEditPhoneModal] = useState<{ leadId: string; leadName: string; current: string } | null>(null);
+  const [editPhoneValue, setEditPhoneValue] = useState("");
   const [callOutcome, setCallOutcome] = useState<"reached" | "no_answer" | "voicemail" | "wrong_number" | null>(null);
   const [callNote, setCallNote] = useState("");
 
@@ -182,16 +197,10 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
   };
 
   const handleCall = (lead: PipelineLead) => {
-    const rawPhone =
-      lead.centerpoint_jobs?.raw?._phone ||
-      lead.centerpoint_jobs?.raw?.phone ||
-      lead.centerpoint_jobs?.raw?.["Phone Number"] ||
-      lead.centerpoint_jobs?.raw?.phone_number ||
-      null;
     setCallModal({
       leadId: lead.id,
       leadName: lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id,
-      phone: normalizePhone(rawPhone),
+      phone: resolvePhone(lead),
       ownerName: (lead.centerpoint_jobs?.raw?._owner as string) || "Unknown Owner",
       currentNotes: lead.lead_notes || "",
       currentAttempts: lead.contact_attempt_count,
@@ -378,6 +387,18 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
     if (!notesPanel) return;
     setNotesPanel(null);
     await patch(notesPanel.leadId, { lead_notes: notesText });
+  };
+
+  // Phone edit
+  const openEditPhone = (lead: PipelineLead) => {
+    setEditPhoneModal({ leadId: lead.id, leadName: lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id, current: lead.owner_phone || "" });
+    setEditPhoneValue(lead.owner_phone || "");
+  };
+
+  const savePhone = async () => {
+    if (!editPhoneModal) return;
+    setEditPhoneModal(null);
+    await patch(editPhoneModal.leadId, { owner_phone: editPhoneValue.trim() || null });
   };
 
   // Remove
@@ -587,21 +608,32 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
                         <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest">Residential</span>
                       </div>
                       {(() => {
-                        const ph = normalizePhone(
-                          lead.centerpoint_jobs?.raw?._phone ||
-                          lead.centerpoint_jobs?.raw?.phone ||
-                          lead.centerpoint_jobs?.raw?.["Phone Number"] ||
-                          lead.centerpoint_jobs?.raw?.phone_number || null
-                        );
+                        const ph = resolvePhone(lead);
                         return ph ? (
-                          <a href={`tel:${ph.replace(/\D/g,"")}`}
-                            className="flex items-center gap-1.5 text-[11px] text-sky-400/60 hover:text-sky-300 transition-colors font-light"
-                            onClick={e => e.stopPropagation()}
+                          <div className="flex items-center gap-2">
+                            <a href={`tel:${ph.replace(/\D/g,"")}`}
+                              className="flex items-center gap-1.5 text-[11px] text-sky-400/60 hover:text-sky-300 transition-colors font-light"
+                              onClick={e => e.stopPropagation()}
+                            >
+                              <Phone className="w-3 h-3 shrink-0" />
+                              {ph}
+                            </a>
+                            <button
+                              onClick={e => { e.stopPropagation(); openEditPhone(lead); }}
+                              className="text-white/15 hover:text-white/50 transition-colors"
+                            >
+                              <PenLine className="w-2.5 h-2.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={e => { e.stopPropagation(); openEditPhone(lead); }}
+                            className="flex items-center gap-1.5 text-[11px] text-white/20 hover:text-sky-400/70 transition-colors font-light"
                           >
                             <Phone className="w-3 h-3 shrink-0" />
-                            {ph}
-                          </a>
-                        ) : null;
+                            Add phone number
+                          </button>
+                        );
                       })()}
                     </div>
 
@@ -1046,6 +1078,66 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
               </div>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          EDIT PHONE MODAL
+      ══════════════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {editPhoneModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
+          >
+            <motion.div initial={{ opacity: 0, scale: 0.96, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 12 }} transition={{ type: "spring", damping: 28, stiffness: 320 }}
+              className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 w-full max-w-sm shadow-2xl"
+            >
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <div className="flex items-center gap-2.5 mb-1">
+                    <Phone className="w-5 h-5 text-sky-400" />
+                    <h3 className="text-xl font-display font-medium">
+                      {editPhoneModal.current ? "Edit Phone Number" : "Add Phone Number"}
+                    </h3>
+                  </div>
+                  <p className="text-sm text-white/35 font-light">{editPhoneModal.leadName}</p>
+                </div>
+                <button onClick={() => setEditPhoneModal(null)} className="p-2 rounded-2xl text-white/30 hover:text-white hover:bg-white/5 transition-all">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="mb-7">
+                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">
+                  Homeowner Phone
+                </label>
+                <input
+                  type="tel"
+                  value={editPhoneValue}
+                  onChange={e => setEditPhoneValue(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter") savePhone(); }}
+                  placeholder="(555) 867-5309"
+                  autoFocus
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-base placeholder:text-white/20 focus:outline-none focus:border-sky-500/40 tracking-wide"
+                />
+                <p className="text-[10px] text-white/20 mt-2 font-light">
+                  Saved to this lead. Tap the number on the card to dial directly.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button onClick={() => setEditPhoneModal(null)}
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm">
+                  Cancel
+                </button>
+                <button onClick={savePhone}
+                  className="flex-1 py-3 rounded-2xl bg-sky-500/15 border border-sky-500/25 text-sky-300 hover:bg-sky-500/25 transition-all text-sm font-medium">
+                  Save Number
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
 
