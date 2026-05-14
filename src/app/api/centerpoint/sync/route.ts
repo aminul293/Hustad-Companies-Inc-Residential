@@ -20,7 +20,7 @@ function cpHeaders() {
   return { Accept: "application/json", Authorization: getCpKey() };
 }
 
-// ─── Fetch residential company IDs + contact details ─────────────────────────
+// ─── Shared contact shape ─────────────────────────────────────────────────────
 interface CompanyContacts {
   ids: Set<number>;
   names: Map<number, string>;
@@ -28,6 +28,7 @@ interface CompanyContacts {
   emails: Map<number, string>;
 }
 
+// ─── Fetch residential company IDs + names ───────────────────────────────────
 async function getResidentialCompanies(): Promise<CompanyContacts> {
   const ids = new Set<number>();
   const names = new Map<number, string>();
@@ -51,19 +52,12 @@ async function getResidentialCompanies(): Promise<CompanyContacts> {
       const numId = Number(r.id);
       const a = r.attributes ?? {};
       ids.add(numId);
-
       const companyName = a.name ?? a.companyName ?? null;
       if (companyName) names.set(numId, companyName);
-
-      // Phone — CenterPoint may expose it under several field names
-      const phone =
-        a.phone ?? a.phoneNumber ?? a.mobilePhone ?? a.cellPhone ??
-        a.primaryPhone ?? a.contactPhone ?? null;
+      // Some CPs embed phone/email directly on the company record too — capture as fallback
+      const phone = a.phone ?? a.phoneNumber ?? a.mobilePhone ?? a.cellPhone ?? null;
       if (phone) phones.set(numId, String(phone));
-
-      // Email
-      const email =
-        a.email ?? a.emailAddress ?? a.primaryEmail ?? a.contactEmail ?? null;
+      const email = a.email ?? a.emailAddress ?? null;
       if (email) emails.set(numId, String(email));
     });
     const total = data?.meta?.page?.total ?? 0;
@@ -71,6 +65,62 @@ async function getResidentialCompanies(): Promise<CompanyContacts> {
     page++;
   }
   return { ids, names, phones, emails };
+}
+
+// ─── Fetch contact records for the given company IDs ─────────────────────────
+// CenterPoint stores phone + email on /contacts, not on /companies.
+// Each contact has a companyId linking it back to the homeowner company.
+async function enrichWithContacts(companyIds: Set<number>, contacts: CompanyContacts): Promise<void> {
+  let page = 1;
+  while (true) {
+    const params = new URLSearchParams({
+      "page[size]": "200",
+      "page[number]": String(page),
+    });
+    const res = await fetch(`${CP_BASE}/contacts?${params}`, {
+      headers: cpHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) break;
+    const data = await res.json();
+    const records: any[] = data?.data ?? [];
+    if (records.length === 0) break;
+
+    records.forEach((r) => {
+      const a = r.attributes ?? {};
+      // Link the contact back to its company
+      const companyId =
+        Number(a.companyId ?? a.company_id ?? a.billedCompanyId ?? 0);
+      if (!companyId || !companyIds.has(companyId)) return;
+
+      // Phone — try every field CenterPoint uses
+      const phone =
+        a.phone ?? a.phoneNumber ?? a.mobilePhone ?? a.cellPhone ??
+        a.primaryPhone ?? a.officePhone ?? null;
+      if (phone && !contacts.phones.has(companyId)) {
+        contacts.phones.set(companyId, String(phone));
+      }
+
+      // Email
+      const email = a.email ?? a.emailAddress ?? a.primaryEmail ?? null;
+      if (email && !contacts.emails.has(companyId)) {
+        contacts.emails.set(companyId, String(email));
+      }
+
+      // Use contact name as owner name if the company record had none
+      if (!contacts.names.has(companyId)) {
+        const contactName =
+          a.name ?? (a.firstName && a.lastName ? `${a.firstName} ${a.lastName}` : null) ??
+          a.firstName ?? null;
+        if (contactName) contacts.names.set(companyId, contactName);
+      }
+    });
+
+    const total = data?.meta?.page?.total ?? 0;
+    const fetched = page * 200;
+    if (fetched >= total || records.length < 200) break;
+    page++;
+  }
 }
 
 // ─── Map CenterPoint record → Supabase row ───────────────────────────────────
@@ -189,6 +239,9 @@ export async function POST() {
   try {
     const contacts = await getResidentialCompanies();
     const { ids: residentialIds } = contacts;
+
+    // Enrich with phone + email from the /contacts endpoint (where CenterPoint stores them)
+    await enrichWithContacts(residentialIds, contacts);
 
     let cpPage = 1;
     let cpTotal = Infinity;
