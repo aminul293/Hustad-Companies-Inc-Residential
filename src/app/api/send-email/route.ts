@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     const accessToken = await getAccessToken();
 
-    const mailPayload = {
+    const mailPayload: any = {
       message: {
         subject: subject || 'Hustad Forensic Dossier // Audit Complete',
         body: {
@@ -70,14 +70,16 @@ export async function POST(request: NextRequest) {
         ccRecipients: cc ? [
           { emailAddress: { address: cc } },
         ] : [],
-        attachments: [
-          {
-            '@odata.type': '#microsoft.graph.fileAttachment',
-            name: fileName || 'Hustad_Forensic_Dossier.pdf',
-            contentType: 'application/pdf',
-            contentBytes: pdfBase64,
-          },
-        ],
+        ...(pdfBase64 ? {
+          attachments: [
+            {
+              '@odata.type': '#microsoft.graph.fileAttachment',
+              name: fileName || 'Hustad_Forensic_Dossier.pdf',
+              contentType: 'application/pdf',
+              contentBytes: pdfBase64,
+            },
+          ],
+        } : {}),
       },
       saveToSentItems: 'true',
     };
