@@ -474,13 +474,14 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
   const handleConfirmImport = async () => {
     if (!pendingImport || isConfirming) return;
     setIsConfirming(true);
-    const { session, source, leadId } = pendingImport;
+    const { session, source, leadId, appointmentId: importApptId } = pendingImport;
     saveSession(session);
     setPendingImport(null);
 
-    // Fire capture-link email to the rep the moment the session is confirmed
+    // Fire capture-link email + patch Outlook calendar event with the camera link
     if (currentRep.email) {
       const captureUrl = `${window.location.origin}/rep-capture?s=${session.sessionId}`;
+
       fetch("/api/send-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -497,6 +498,27 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
           }),
         }),
       }).catch(() => {});
+
+      // Patch the Outlook calendar event (created at scheduling time) with the camera link
+      const appointmentId = importApptId ?? session.appointmentId;
+      if (appointmentId) {
+        try {
+          const stored = JSON.parse(localStorage.getItem("hustad_outlook_events") || "{}");
+          const eventId: string | undefined = stored[appointmentId];
+          if (eventId) {
+            fetch("/api/calendar-event", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                eventId,
+                captureUrl,
+                address: session.property.address,
+                homeownerName: session.property.homeownerPrimaryName || "",
+              }),
+            }).catch(() => {});
+          }
+        } catch { /* localStorage unavailable */ }
+      }
     }
 
     try {
