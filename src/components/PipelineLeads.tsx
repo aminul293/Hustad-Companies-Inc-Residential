@@ -388,22 +388,34 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
     }).catch(e => console.error("[SCHED_EMAIL]", e));
   };
 
-  const fireCalendarEvent = (leadId: string, start: Date, end: Date) => {
+  const fireCalendarEvent = async (leadId: string, start: Date, end: Date, appointmentId?: string) => {
     if (!repEmail) return;
     const lead = leads.find(l => l.id === leadId);
     const address = lead?.centerpoint_jobs?.property_name || lead?.centerpoint_jobs?.name || leadId;
     const homeownerName = (lead?.centerpoint_jobs?.raw?._owner as string) || "";
-    fetch("/api/calendar-event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        subject: `Storm Inspection — ${address}`,
-        startAt: start.toISOString(),
-        endAt: end.toISOString(),
-        address,
-        homeownerName,
-      }),
-    }).catch(e => console.error("[CALENDAR_EVENT]", e));
+    try {
+      const res = await fetch("/api/calendar-event", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject: `Storm Inspection — ${address}`,
+          startAt: start.toISOString(),
+          endAt: end.toISOString(),
+          address,
+          homeownerName,
+        }),
+      });
+      if (res.ok && appointmentId) {
+        const { eventId } = await res.json();
+        if (eventId) {
+          const stored = JSON.parse(localStorage.getItem("hustad_outlook_events") || "{}");
+          stored[appointmentId] = eventId;
+          localStorage.setItem("hustad_outlook_events", JSON.stringify(stored));
+        }
+      }
+    } catch (e) {
+      console.error("[CALENDAR_EVENT]", e);
+    }
   };
 
   // Schedule
@@ -440,10 +452,12 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
           return; // Stay in modal — show warning
         }
         if (!res.ok) throw new Error("Failed to create appointment");
+        const apptData = await res.json();
+        const appointmentId: string | undefined = apptData.appointment?.id;
         setSchedModal(null);
         setClashWarning(null);
         fireScheduleEmail(schedModal.leadId, start, schedDuration);
-        fireCalendarEvent(schedModal.leadId, start, end);
+        fireCalendarEvent(schedModal.leadId, start, end, appointmentId);
         await fetchLeads();
       } catch (e) {
         console.error("[SCHEDULE]", e);

@@ -86,3 +86,67 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
+
+// PATCH /api/calendar-event
+// Updates an existing Outlook event's body to embed the rep camera link + QR code.
+export async function PATCH(request: NextRequest) {
+  try {
+    const authPayload = await requireAuth(request);
+    const repEmail = authPayload?.email?.trim();
+    if (!repEmail) {
+      return NextResponse.json({ error: 'Rep email not available from auth token' }, { status: 400 });
+    }
+
+    const { eventId, captureUrl, address, homeownerName } = await request.json();
+    if (!eventId || !captureUrl) {
+      return NextResponse.json({ error: 'eventId and captureUrl are required' }, { status: 400 });
+    }
+
+    const accessToken = await getAccessToken();
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(captureUrl)}&bgcolor=ffffff&color=1a1a2e&qzone=2&format=png`;
+
+    const bodyHtml = `
+<table cellpadding="0" cellspacing="0" style="font-family:Arial,sans-serif;font-size:14px;color:#1a1a1a;width:100%;">
+  <tr><td style="padding-bottom:12px;">
+    ${address ? `<b>Address:</b> ${address}<br>` : ''}
+    ${homeownerName ? `<b>Homeowner:</b> ${homeownerName}<br>` : ''}
+  </td></tr>
+  <tr><td style="padding:16px;background:#f4f4f8;border-radius:12px;">
+    <p style="margin:0 0 10px;font-size:13px;color:#555;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;">Rep Camera Link</p>
+    <table cellpadding="0" cellspacing="0">
+      <tr>
+        <td style="vertical-align:middle;padding-right:16px;">
+          <img src="${qrUrl}" width="100" height="100" alt="QR Code" style="display:block;border-radius:6px;" />
+        </td>
+        <td style="vertical-align:middle;">
+          <a href="${captureUrl}" style="display:inline-block;background:#6366f1;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">📷 Open Rep Camera</a>
+          <p style="margin:8px 0 0;font-size:11px;color:#6366f1;word-break:break-all;font-family:monospace;">${captureUrl}</p>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+</table>`;
+
+    const res = await fetch(`https://graph.microsoft.com/v1.0/users/${repEmail}/events/${eventId}`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ body: { contentType: 'HTML', content: bodyHtml } }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      let message = `Graph Error: ${res.status}`;
+      try { message = JSON.parse(text).error?.message || message; } catch { message = text || message; }
+      throw new Error(message);
+    }
+
+    return NextResponse.json({ success: true });
+
+  } catch (err: any) {
+    console.error('[CALENDAR_EVENT_PATCH_ERROR]', err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
