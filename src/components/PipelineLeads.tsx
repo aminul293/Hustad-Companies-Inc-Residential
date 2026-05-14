@@ -149,6 +149,10 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
   // Edit phone modal
   const [editPhoneModal, setEditPhoneModal] = useState<{ leadId: string; leadName: string; current: string } | null>(null);
   const [editPhoneValue, setEditPhoneValue] = useState("");
+
+  // Edit email modal
+  const [editEmailModal, setEditEmailModal] = useState<{ leadId: string; leadName: string; current: string } | null>(null);
+  const [editEmailValue, setEditEmailValue] = useState("");
   const [callOutcome, setCallOutcome] = useState<"reached" | "no_answer" | "voicemail" | "wrong_number" | null>(null);
   const [callNote, setCallNote] = useState("");
 
@@ -414,6 +418,18 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
     await patch(editPhoneModal.leadId, { owner_phone: editPhoneValue.trim() || null });
   };
 
+  // Email edit
+  const openEditEmail = (lead: PipelineLead) => {
+    setEditEmailModal({ leadId: lead.id, leadName: lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id, current: lead.owner_email || "" });
+    setEditEmailValue(lead.owner_email || "");
+  };
+
+  const saveEmail = async () => {
+    if (!editEmailModal) return;
+    setEditEmailModal(null);
+    await patch(editEmailModal.leadId, { owner_email: editEmailValue.trim() || null });
+  };
+
   // Remove
   const handleRemoveClick = (e: React.MouseEvent, lead: PipelineLead) => {
     e.preventDefault(); e.stopPropagation();
@@ -652,14 +668,30 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
                       {(() => {
                         const em = resolveEmail(lead);
                         return em ? (
-                          <a href={`mailto:${em}`}
-                            className="flex items-center gap-1.5 text-[11px] text-indigo-400/50 hover:text-indigo-300 transition-colors font-light mt-1"
-                            onClick={e => e.stopPropagation()}
+                          <div className="flex items-center gap-2 mt-1">
+                            <a href={`mailto:${em}`}
+                              className="flex items-center gap-1.5 text-[11px] text-indigo-400/50 hover:text-indigo-300 transition-colors font-light"
+                              onClick={e => e.stopPropagation()}
+                            >
+                              <Mail className="w-3 h-3 shrink-0" />
+                              <span className="truncate">{em}</span>
+                            </a>
+                            <button
+                              onClick={e => { e.stopPropagation(); openEditEmail(lead); }}
+                              className="text-white/15 hover:text-white/50 transition-colors"
+                            >
+                              <PenLine className="w-2.5 h-2.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={e => { e.stopPropagation(); openEditEmail(lead); }}
+                            className="flex items-center gap-1.5 text-[11px] text-white/20 hover:text-indigo-400/70 transition-colors font-light mt-1"
                           >
                             <Mail className="w-3 h-3 shrink-0" />
-                            <span className="truncate">{em}</span>
-                          </a>
-                        ) : null;
+                            Add email address
+                          </button>
+                        );
                       })()}
                     </div>
 
@@ -1160,6 +1192,66 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
                 <button onClick={savePhone}
                   className="flex-1 py-3 rounded-2xl bg-sky-500/15 border border-sky-500/25 text-sky-300 hover:bg-sky-500/25 transition-all text-sm font-medium">
                   Save Number
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          EDIT EMAIL MODAL
+      ══════════════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {editEmailModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
+          >
+            <motion.div initial={{ opacity: 0, scale: 0.96, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 12 }} transition={{ type: "spring", damping: 28, stiffness: 320 }}
+              className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 w-full max-w-sm shadow-2xl"
+            >
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <div className="flex items-center gap-2.5 mb-1">
+                    <Mail className="w-5 h-5 text-indigo-400" />
+                    <h3 className="text-xl font-display font-medium">
+                      {editEmailModal.current ? "Edit Email Address" : "Add Email Address"}
+                    </h3>
+                  </div>
+                  <p className="text-sm text-white/35 font-light">{editEmailModal.leadName}</p>
+                </div>
+                <button onClick={() => setEditEmailModal(null)} className="p-2 rounded-2xl text-white/30 hover:text-white hover:bg-white/5 transition-all">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="mb-7">
+                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">
+                  Homeowner Email
+                </label>
+                <input
+                  type="email"
+                  value={editEmailValue}
+                  onChange={e => setEditEmailValue(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter") saveEmail(); }}
+                  placeholder="homeowner@example.com"
+                  autoFocus
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-base placeholder:text-white/20 focus:outline-none focus:border-indigo-500/40 tracking-wide"
+                />
+                <p className="text-[10px] text-white/20 mt-2 font-light">
+                  Saved to this lead. Tap the address on the card to open your mail app.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button onClick={() => setEditEmailModal(null)}
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm">
+                  Cancel
+                </button>
+                <button onClick={saveEmail}
+                  className="flex-1 py-3 rounded-2xl bg-indigo-500/15 border border-indigo-500/25 text-indigo-300 hover:bg-indigo-500/25 transition-all text-sm font-medium">
+                  Save Email
                 </button>
               </div>
             </motion.div>
