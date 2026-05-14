@@ -481,7 +481,16 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
       const lead = leads.find(l => l.id === draftEmailModal.leadId);
       const currentNotes = lead?.lead_notes || "";
       const entry = `[${callTimestamp()}] Email sent to ${draftEmailModal.to} — "${draftEmailModal.subject}"`;
-      await patch(draftEmailModal.leadId, { lead_notes: currentNotes ? `${currentNotes}\n${entry}` : entry });
+      const updatedNotes = currentNotes ? `${currentNotes}\n${entry}` : entry;
+      const nowIso = new Date().toISOString();
+      await patch(draftEmailModal.leadId, {
+        lead_notes: updatedNotes,
+        last_contacted_at: nowIso,
+        contact_attempt_count: (lead?.contact_attempt_count ?? 0) + 1,
+        pipeline_status: lead && !["contacted","scheduled","appointment_confirmed","inspection_in_progress","inspection_completed","signed","closed"].includes(lead.pipeline_status)
+          ? "contacted"
+          : lead?.pipeline_status,
+      });
       setTimeout(() => setDraftEmailModal(null), 1800);
     } catch (e: any) {
       console.error("[EMAIL]", e);
@@ -867,7 +876,9 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
                           onClick={() => openDraftEmail(lead)}
                           className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-indigo-400/30 hover:text-indigo-400/80 hover:bg-indigo-500/[0.06] transition-all text-[11px] font-medium"
                         >
-                          <Mail className="w-3.5 h-3.5" /> Email
+                          <Mail className="w-3.5 h-3.5" />
+                          Email
+                          {lead.lead_notes?.includes("Email sent") && <div className="w-1.5 h-1.5 rounded-full bg-indigo-400/60" />}
                         </button>
                         {isScheduled ? (
                           <button
