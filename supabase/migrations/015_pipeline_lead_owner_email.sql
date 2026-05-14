@@ -1,0 +1,3 @@
+-- Add owner_email to pipeline_leads so reps can store a homeowner email
+-- when CenterPoint's raw data doesn't include one.
+ALTER TABLE pipeline_leads ADD COLUMN IF NOT EXISTS owner_email TEXT;
