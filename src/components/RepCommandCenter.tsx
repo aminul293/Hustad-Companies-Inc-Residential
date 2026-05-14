@@ -869,7 +869,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
         ) : view === "schedule" ? (
           <MySchedule currentRep={currentRep} />
         ) : view === "pipeline" ? (
-          <PipelineLeads repId={currentRep.id} />
+          <PipelineLeads repId={currentRep.id} repEmail={currentRep.email} />
         ) : view === "tickets" ? (
           <HustadTickets />
         ) : view === "dashboard" ? (
