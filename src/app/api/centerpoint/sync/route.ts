@@ -54,11 +54,9 @@ async function getResidentialCompanies(): Promise<CompanyContacts> {
       ids.add(numId);
       const companyName = a.name ?? a.companyName ?? null;
       if (companyName) names.set(numId, companyName);
-      // Some CPs embed phone/email directly on the company record too — capture as fallback
-      const phone = a.phone ?? a.phoneNumber ?? a.mobilePhone ?? a.cellPhone ?? null;
+      // Company-level phone lives in attributes.custom.phone (confirmed from API)
+      const phone = a.custom?.phone ?? null;
       if (phone) phones.set(numId, String(phone));
-      const email = a.email ?? a.emailAddress ?? null;
-      if (email) emails.set(numId, String(email));
     });
     const total = data?.meta?.page?.total ?? 0;
     if (ids.size >= total || records.length === 0) break;
@@ -67,9 +65,10 @@ async function getResidentialCompanies(): Promise<CompanyContacts> {
   return { ids, names, phones, emails };
 }
 
-// ─── Fetch contact records for the given company IDs ─────────────────────────
-// CenterPoint stores phone + email on /contacts, not on /companies.
-// Each contact has a companyId linking it back to the homeowner company.
+// ─── Fetch client profiles for the given company IDs ─────────────────────────
+// CenterPoint stores contact phone + email on /profiles (type: client_profiles).
+// Each profile has attributes.companyId linking it back to the company.
+// Phone is in attributes.mobile (or attributes.office, or attributes.custom.phone).
 async function enrichWithContacts(companyIds: Set<number>, contacts: CompanyContacts): Promise<void> {
   let page = 1;
   while (true) {
@@ -77,7 +76,7 @@ async function enrichWithContacts(companyIds: Set<number>, contacts: CompanyCont
       "page[size]": "200",
       "page[number]": String(page),
     });
-    const res = await fetch(`${CP_BASE}/contacts?${params}`, {
+    const res = await fetch(`${CP_BASE}/profiles?${params}`, {
       headers: cpHeaders(),
       cache: "no-store",
     });
@@ -87,32 +86,28 @@ async function enrichWithContacts(companyIds: Set<number>, contacts: CompanyCont
     if (records.length === 0) break;
 
     records.forEach((r) => {
+      // Only process client contacts — skip internal Hustad employees
+      if (r.type !== "client_profiles") return;
+
       const a = r.attributes ?? {};
-      // Link the contact back to its company
-      const companyId =
-        Number(a.companyId ?? a.company_id ?? a.billedCompanyId ?? 0);
+      const companyId = Number(a.companyId ?? 0);
       if (!companyId || !companyIds.has(companyId)) return;
 
-      // Phone — try every field CenterPoint uses
-      const phone =
-        a.phone ?? a.phoneNumber ?? a.mobilePhone ?? a.cellPhone ??
-        a.primaryPhone ?? a.officePhone ?? null;
+      // Phone: primary source is mobile, fallback to office, then custom.phone
+      const phone = a.mobile ?? a.office ?? a.custom?.phone ?? null;
       if (phone && !contacts.phones.has(companyId)) {
         contacts.phones.set(companyId, String(phone));
       }
 
       // Email
-      const email = a.email ?? a.emailAddress ?? a.primaryEmail ?? null;
+      const email = a.email ?? null;
       if (email && !contacts.emails.has(companyId)) {
         contacts.emails.set(companyId, String(email));
       }
 
-      // Use contact name as owner name if the company record had none
-      if (!contacts.names.has(companyId)) {
-        const contactName =
-          a.name ?? (a.firstName && a.lastName ? `${a.firstName} ${a.lastName}` : null) ??
-          a.firstName ?? null;
-        if (contactName) contacts.names.set(companyId, contactName);
+      // Use contact person name as owner if the company had none
+      if (!contacts.names.has(companyId) && a.name) {
+        contacts.names.set(companyId, String(a.name));
       }
     });
 
@@ -137,17 +132,10 @@ function toRow(r: any, contacts?: CompanyContacts) {
   const ownerPhone = billedId && contacts ? (contacts.phones.get(billedId) ?? null) : null;
   const ownerEmail = billedId && contacts ? (contacts.emails.get(billedId) ?? null) : null;
 
-  // Also check if CenterPoint embeds contact fields directly on the service record
-  const servicePhone =
-    a.phone ?? a.phoneNumber ?? a.mobilePhone ?? a.cellPhone ??
-    a.primaryPhone ?? a.contactPhone ?? null;
-  const serviceEmail =
-    a.email ?? a.emailAddress ?? a.primaryEmail ?? a.contactEmail ?? null;
-
   const rawExtras: Record<string, string> = {};
-  if (ownerName)              rawExtras._owner = ownerName;
-  if (ownerPhone ?? servicePhone) rawExtras._phone = String(ownerPhone ?? servicePhone);
-  if (ownerEmail ?? serviceEmail) rawExtras._email = String(ownerEmail ?? serviceEmail);
+  if (ownerName)  rawExtras._owner = ownerName;
+  if (ownerPhone) rawExtras._phone = String(ownerPhone);
+  if (ownerEmail) rawExtras._email = String(ownerEmail);
 
   return {
     cp_id: String(r.id),
