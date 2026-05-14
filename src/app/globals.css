@@ -25,7 +25,7 @@
 html, body {
   min-height: 100%;
   width: 100%;
-  background-color: var(--cream);
+  background-color: #0A0A0A;
 }
 
 #__next {
