@@ -1,59 +1,47 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { 
-  Camera, 
-  Trash2, 
-  CheckCircle2, 
-  AlertCircle, 
-  Plus, 
-  X, 
-  ChevronDown, 
-  ChevronUp,
-  RefreshCw,
-  Info,
-  Clock
-} from "lucide-react";
+import { Camera, CheckCircle2, Trash2, RefreshCw, Clock, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { StarButton } from "@/components/ui/star-button";
 import { PhotoThumbnail } from "@/components/PhotoThumbnail";
-import { INSPECTION_SHOT_LIST, ShotListItem, ShotListSection } from "@/lib/inspectionShotList";
+import { INSPECTION_SHOT_LIST, ShotListItem } from "@/lib/inspectionShotList";
 import { InspectionPhoto, SessionState } from "@/types/session";
 import { compressImage } from "@/lib/images";
-import { savePhotoBlob, base64ToBlob, getPhotoObjectURL, deletePhotoBlob } from "@/lib/photoStorage";
+import { savePhotoBlob, base64ToBlob, deletePhotoBlob } from "@/lib/photoStorage";
 import { retryPhotoSync } from "@/lib/sync";
 
-interface InspectionPhotoChecklistProps {
+interface Props {
   session: SessionState;
   onUpdate: (updated: SessionState) => void;
 }
 
-export function InspectionPhotoChecklist({ session, onUpdate }: InspectionPhotoChecklistProps) {
-  const [expandedSections, setExpandedSections] = useState<string[]>(INSPECTION_SHOT_LIST.map(s => s.title));
-  const [editingPhotoId, setEditingPhotoId] = useState<string | null>(null);
+const SECTION_LABELS: Record<string, string> = {
+  "Roof Inspection Photos": "Roof",
+  "Storm Inspection": "Storm Damage",
+  "Hail/Wind Shot List": "Hail & Wind",
+};
+
+export function InspectionPhotoChecklist({ session, onUpdate }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeItem, setActiveItem] = useState<ShotListItem | null>(null);
-
+  const [expandedPhotoItem, setExpandedPhotoItem] = useState<string | null>(null);
   const photos = session.photos || [];
 
-  // Summary calculation
-  const totalRequired = INSPECTION_SHOT_LIST.reduce((sum, section) => 
-    sum + section.items.reduce((iSum, item) => iSum + item.requiredCount, 0), 0);
-  
-  const completedRequired = INSPECTION_SHOT_LIST.reduce((sum, section) => 
-    sum + section.items.reduce((iSum, item) => {
-      const count = photos.filter(p => p.category === item.id).length;
-      return iSum + Math.min(count, item.requiredCount);
-    }, 0), 0);
-
-  const percentage = Math.round((completedRequired / totalRequired) * 100) || 0;
-
-  const toggleSection = (title: string) => {
-    setExpandedSections(prev => 
-      prev.includes(title) ? prev.filter(t => t !== title) : [...prev, title]
-    );
-  };
+  const totalRequired = INSPECTION_SHOT_LIST.reduce(
+    (sum, s) => sum + s.items.reduce((is, i) => is + i.requiredCount, 0), 0
+  );
+  const completedRequired = INSPECTION_SHOT_LIST.reduce(
+    (sum, s) =>
+      sum +
+      s.items.reduce((is, i) => {
+        const count = photos.filter((p) => p.category === i.id).length;
+        return is + Math.min(count, i.requiredCount);
+      }, 0),
+    0
+  );
+  const percentage = totalRequired > 0 ? Math.round((completedRequired / totalRequired) * 100) : 0;
+  const remaining = totalRequired - completedRequired;
 
   const handleCapture = (item: ShotListItem) => {
     setActiveItem(item);
@@ -66,12 +54,8 @@ export function InspectionPhotoChecklist({ session, onUpdate }: InspectionPhotoC
 
     const reader = new FileReader();
     reader.onloadend = async () => {
-      const rawBase64 = reader.result as string;
-      
-      // 1. Compress
-      const compressedBase64 = await compressImage(rawBase64, 1200, 0.8);
-
-      // 2. Metadata
+      const raw = reader.result as string;
+      const compressed = await compressImage(raw, 1200, 0.8);
       const photoId = `photo_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
       const newPhoto: InspectionPhoto = {
         id: photoId,
@@ -79,32 +63,20 @@ export function InspectionPhotoChecklist({ session, onUpdate }: InspectionPhotoC
         category: activeItem.id,
         section: activeItem.section,
         label: activeItem.label,
-        storageKey: photoId, // Local blob key
+        storageKey: photoId,
         selectedForSummary: true,
         createdAt: new Date().toISOString(),
         syncStatus: "local",
       };
 
-      // 3. Store in IndexedDB as Blob
       try {
-        const blob = base64ToBlob(compressedBase64);
+        const blob = base64ToBlob(compressed);
         await savePhotoBlob(photoId, blob);
-        
-        // 4. Update session (no base64 in session anymore)
-        onUpdate({
-          ...session,
-          photos: [...(session.photos || []), newPhoto]
-        });
-      } catch (err) {
-        console.error("Failed to save photo to IndexedDB, falling back to base64 in session", err);
-        // Fallback for safety (though not ideal)
-        onUpdate({
-          ...session,
-          photos: [...(session.photos || []), { ...newPhoto, localUri: compressedBase64 }]
-        });
+        onUpdate({ ...session, photos: [...photos, newPhoto] });
+      } catch {
+        onUpdate({ ...session, photos: [...photos, { ...newPhoto, localUri: compressed }] });
       }
-      
-      // Reset input
+
       if (fileInputRef.current) fileInputRef.current.value = "";
       setActiveItem(null);
     };
@@ -112,262 +84,232 @@ export function InspectionPhotoChecklist({ session, onUpdate }: InspectionPhotoC
   };
 
   const deletePhoto = async (id: string) => {
-    // 1. Delete from IndexedDB
     await deletePhotoBlob(id);
-    
-    // 2. Remove from session
-    onUpdate({
-      ...session,
-      photos: photos.filter(p => p.id !== id)
-    });
-  };
-
-  const updatePhotoDescription = (id: string, description: string) => {
-    onUpdate({
-      ...session,
-      photos: photos.map(p => p.id === id ? { ...p, description } : p)
-    });
-  };
-
-  const toggleSummarySelection = (id: string) => {
-    onUpdate({
-      ...session,
-      photos: photos.map(p => p.id === id ? { ...p, selectedForSummary: !p.selectedForSummary } : p)
-    });
+    onUpdate({ ...session, photos: photos.filter((p) => p.id !== id) });
   };
 
   return (
-    <div className="space-y-6">
-      {/* Hidden File Input */}
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        onChange={onFileChange} 
-        accept="image/*" 
+    <div className="space-y-8">
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={onFileChange}
+        accept="image/*"
         capture="environment"
-        className="hidden" 
+        className="hidden"
       />
 
-      {/* Summary Header */}
-      <div className="p-6 rounded-[32px] bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl overflow-hidden relative">
-        <div className="absolute top-0 right-0 p-8 opacity-10">
-          <Camera size={80} className="text-indigo-400" />
+      {/* ── Progress Banner ── */}
+      <div className="p-6 rounded-3xl bg-white/[0.03] border border-white/[0.07]">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-base font-display font-medium text-white">
+              {completedRequired === totalRequired ? "All photos captured" : `${remaining} photo${remaining !== 1 ? "s" : ""} still needed`}
+            </p>
+            <p className="text-xs text-white/40 mt-0.5">{completedRequired} of {totalRequired} required shots done</p>
+          </div>
+          <span className={cn(
+            "text-3xl font-display font-bold",
+            percentage === 100 ? "text-emerald-400" : percentage > 50 ? "text-indigo-400" : "text-white/60"
+          )}>
+            {percentage}%
+          </span>
         </div>
-        
-        <div className="relative z-10 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-medium text-white">Forensic Photo Dossier</h3>
-              <p className="text-sm text-white/50 mt-1">
-                Captured: {completedRequired} / {totalRequired} required shots complete
-              </p>
-            </div>
-            <div className="text-right">
-              <span className="text-3xl font-bold text-indigo-400">{percentage}%</span>
-            </div>
-          </div>
-
-          <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-            <motion.div 
-              initial={{ width: 0 }}
-              animate={{ width: `${percentage}%` }}
-              className="h-full bg-gradient-to-r from-indigo-500 to-purple-500"
-            />
-          </div>
+        <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${percentage}%` }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className={cn(
+              "h-full rounded-full",
+              percentage === 100
+                ? "bg-emerald-500"
+                : "bg-gradient-to-r from-indigo-500 to-violet-500"
+            )}
+          />
         </div>
       </div>
 
-      {/* Shot List Sections */}
-      {INSPECTION_SHOT_LIST.map((section) => (
-        <div key={section.title} className="space-y-3">
-          <button 
-            onClick={() => toggleSection(section.title)}
-            className="w-full flex items-center justify-between px-6 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
-          >
-            <h4 className="text-sm font-bold uppercase tracking-wider text-white/70">{section.title}</h4>
-            {expandedSections.includes(section.title) ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-          </button>
+      {/* ── Shot Sections ── */}
+      {INSPECTION_SHOT_LIST.map((section) => {
+        const sectionRequired = section.items.reduce((sum, i) => sum + i.requiredCount, 0);
+        const sectionDone = section.items.reduce((sum, i) => {
+          const c = photos.filter((p) => p.category === i.id).length;
+          return sum + Math.min(c, i.requiredCount);
+        }, 0);
+        const sectionComplete = sectionDone >= sectionRequired;
 
-          <AnimatePresence>
-            {expandedSections.includes(section.title) && (
-              <motion.div 
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="overflow-hidden space-y-3"
-              >
-                {section.items.map((item) => {
-                  const itemPhotos = photos.filter(p => p.category === item.id);
-                  const isComplete = itemPhotos.length >= item.requiredCount;
-                  
-                  return (
-                    <div 
-                      key={item.id} 
+        return (
+          <div key={section.title} className="space-y-2">
+            {/* Section label */}
+            <div className="flex items-center justify-between px-1 mb-3">
+              <div className="flex items-center gap-2">
+                <div className={cn(
+                  "w-2 h-2 rounded-full",
+                  sectionComplete ? "bg-emerald-500" : "bg-indigo-500/60"
+                )} />
+                <span className="text-xs font-mono text-white/50 uppercase tracking-[0.25em]">
+                  {SECTION_LABELS[section.title] ?? section.title}
+                </span>
+              </div>
+              <span className="text-[10px] font-mono text-white/25">
+                {sectionDone}/{sectionRequired}
+              </span>
+            </div>
+
+            {/* Items */}
+            {section.items.map((item) => {
+              const itemPhotos = photos.filter((p) => p.category === item.id);
+              const captured = itemPhotos.length;
+              const needed = Math.max(0, item.requiredCount - captured);
+              const isComplete = item.requiredCount > 0 && needed === 0;
+              const isOptional = item.requiredCount === 0;
+              const isExpanded = expandedPhotoItem === item.id && captured > 0;
+
+              return (
+                <div key={item.id} className={cn(
+                  "rounded-2xl border transition-all duration-300 overflow-hidden",
+                  isComplete
+                    ? "bg-emerald-500/[0.05] border-emerald-500/20"
+                    : isOptional
+                    ? "bg-white/[0.015] border-white/[0.04]"
+                    : "bg-white/[0.03] border-white/[0.08]"
+                )}>
+                  {/* Main row */}
+                  <div className="flex items-center gap-4 p-4">
+                    {/* Status indicator */}
+                    <div className={cn(
+                      "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                      isComplete ? "bg-emerald-500/20" : isOptional ? "bg-white/[0.04]" : "bg-white/[0.06]"
+                    )}>
+                      {isComplete ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      ) : (
+                        <Camera className={cn("w-4 h-4", isOptional ? "text-white/20" : "text-white/50")} />
+                      )}
+                    </div>
+
+                    {/* Text */}
+                    <div className="flex-1 min-w-0">
+                      <p className={cn(
+                        "text-sm font-medium leading-snug",
+                        isComplete ? "text-white/70 line-through decoration-white/20" : isOptional ? "text-white/40" : "text-white/90"
+                      )}>
+                        {item.label}
+                      </p>
+                      <p className="text-[11px] text-white/30 mt-0.5 leading-relaxed">{item.description}</p>
+                    </div>
+
+                    {/* Thumbnail strip (up to 2) */}
+                    {captured > 0 && (
+                      <button
+                        onClick={() => setExpandedPhotoItem(isExpanded ? null : item.id)}
+                        className="flex items-center gap-1 shrink-0"
+                      >
+                        {itemPhotos.slice(0, 2).map((photo) => (
+                          <PhotoThumbnail
+                            key={photo.id}
+                            photo={photo}
+                            className="w-10 h-10 rounded-xl object-cover border border-white/10"
+                          />
+                        ))}
+                        {captured > 2 && (
+                          <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center">
+                            <span className="text-[10px] font-bold text-white/60">+{captured - 2}</span>
+                          </div>
+                        )}
+                      </button>
+                    )}
+
+                    {/* Capture / Add button */}
+                    <button
+                      onClick={() => handleCapture(item)}
                       className={cn(
-                        "p-5 rounded-3xl border transition-all duration-300",
-                        isComplete ? "bg-emerald-500/5 border-emerald-500/20" : "bg-white/[0.02] border-white/10"
+                        "flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all active:scale-95 shrink-0",
+                        isComplete
+                          ? "bg-white/[0.05] text-white/35 hover:bg-white/10 hover:text-white/60"
+                          : isOptional
+                          ? "bg-white/[0.04] text-white/25 hover:bg-white/[0.08] hover:text-white/50"
+                          : "bg-indigo-500 text-white shadow-[0_0_20px_rgba(99,102,241,0.2)] hover:bg-indigo-600"
                       )}
                     >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 space-y-1">
-                          <div className="flex items-center gap-2">
-                            <h5 className="text-white font-medium">{item.label}</h5>
-                            {isComplete && <CheckCircle2 size={16} className="text-emerald-400" />}
-                            {item.requiredCount > 0 && !isComplete && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-orange-500/20 text-orange-400 font-bold uppercase tracking-tighter">
-                                Missing
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-white/40 leading-relaxed">{item.description}</p>
-                          <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest mt-2">
-                            Status: {itemPhotos.length} / {item.requiredCount} required
-                          </p>
-                        </div>
-
-                        <button 
-                          onClick={() => handleCapture(item)}
-                          disabled={!item.allowMultiple && isComplete}
-                          className={cn(
-                            "flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all active:scale-95",
-                            isComplete 
-                              ? "bg-white/10 text-white/70 hover:bg-white/20" 
-                              : "bg-indigo-500 text-white shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:bg-indigo-600"
-                          )}
-                        >
-                          <Camera size={16} />
-                          Capture
-                        </button>
-                      </div>
-
-                      {/* Thumbnails */}
-                      {itemPhotos.length > 0 && (
-                        <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 mt-4">
-                          {itemPhotos.map((photo) => (
-                            <div key={photo.id} className="relative group aspect-square">
-                              <PhotoThumbnail 
-                                photo={photo} 
-                                className="w-full h-full rounded-xl border border-white/10"
-                              />
-                              
-                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 rounded-xl">
-                                <button 
-                                  onClick={() => setEditingPhotoId(photo.id)}
-                                  className="p-1.5 bg-white/20 rounded-lg hover:bg-white/30 text-white"
-                                >
-                                  <Info size={14} />
-                                </button>
-                                <button 
-                                  onClick={() => deletePhoto(photo.id)}
-                                  className="p-1.5 bg-red-500/20 rounded-lg hover:bg-red-500/40 text-red-400"
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </div>
-
-                              {/* Sync Status Badge */}
-                              <div className="absolute -top-1 -right-1 flex items-center justify-center">
-                                {photo.syncStatus === "synced" ? (
-                                  <div className="w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-[#0a0a0a] shadow-lg">
-                                    <CheckCircle2 size={8} className="text-white" />
-                                  </div>
-                                ) : photo.syncStatus === "error" ? (
-                                  <button 
-                                    onClick={(e) => { e.stopPropagation(); retryPhotoSync(session, photo.id, onUpdate); }}
-                                    className="w-4 h-4 bg-rose-500 rounded-full flex items-center justify-center border-2 border-[#0a0a0a] shadow-lg animate-pulse"
-                                  >
-                                    <RefreshCw size={8} className="text-white" />
-                                  </button>
-                                ) : photo.syncStatus === "syncing" ? (
-                                  <div className="w-4 h-4 bg-indigo-500 rounded-full flex items-center justify-center border-2 border-[#0a0a0a] shadow-lg">
-                                    <RefreshCw size={8} className="text-white animate-spin" />
-                                  </div>
-                                ) : (
-                                  <div className="w-4 h-4 bg-white/20 rounded-full flex items-center justify-center border-2 border-[#0a0a0a] shadow-lg">
-                                    <Clock size={8} className="text-white/50" />
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                      {isComplete ? (
+                        <><Plus className="w-3.5 h-3.5" /> Add</>
+                      ) : (
+                        <><Camera className="w-3.5 h-3.5" /> Capture{item.requiredCount > 1 && needed > 0 ? ` (${needed})` : ""}</>
                       )}
-                    </div>
-                  );
-                })}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      ))}
-
-      {/* Photo Edit Overlay */}
-      <AnimatePresence>
-        {editingPhotoId && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm">
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="w-full max-w-lg bg-[#111] border border-white/10 rounded-[40px] overflow-hidden shadow-2xl"
-            >
-              {(() => {
-                const photo = photos.find(p => p.id === editingPhotoId);
-                if (!photo) return null;
-                return (
-                  <div className="p-8 space-y-6">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-medium text-white">Edit Photo Note</h3>
-                      <button onClick={() => setEditingPhotoId(null)} className="p-2 hover:bg-white/5 rounded-full transition-colors text-white/40">
-                        <X size={24} />
-                      </button>
-                    </div>
-
-                    <PhotoThumbnail 
-                      photo={photo} 
-                      className="w-full aspect-video object-cover rounded-2xl border border-white/10" 
-                    />
-                    
-                    <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10">
-                      <div className="flex items-center gap-3">
-                        <StarButton 
-                          onClick={() => toggleSummarySelection(photo.id)}
-                          className={cn("w-10 h-10 rounded-xl", photo.selectedForSummary ? "bg-indigo-500" : "bg-white/10")}
-                        >
-                          <CheckCircle2 size={18} className={photo.selectedForSummary ? "text-white" : "text-white/20"} />
-                        </StarButton>
-                        <div>
-                          <p className="text-sm font-medium text-white">Include in Briefing</p>
-                          <p className="text-[10px] text-white/40 uppercase tracking-widest">Show this finding to the buyer</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest px-2">Description / Note</label>
-                      <textarea
-                        value={photo.description || ""}
-                        onChange={(e) => updatePhotoDescription(photo.id, e.target.value)}
-                        placeholder="Add specific details about this finding..."
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 h-32 resize-none"
-                      />
-                    </div>
-
-                    <div className="flex gap-3">
-                      <button 
-                        onClick={() => setEditingPhotoId(null)}
-                        className="flex-1 py-4 rounded-2xl bg-indigo-500 text-white font-bold hover:bg-indigo-600 transition-colors"
-                      >
-                        Done
-                      </button>
-                    </div>
+                    </button>
                   </div>
-                );
-              })()}
-            </motion.div>
+
+                  {/* Expanded photo management */}
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-4 pb-4 pt-1 border-t border-white/[0.06]">
+                          <div className="flex flex-wrap gap-3 mt-3">
+                            {itemPhotos.map((photo) => (
+                              <div key={photo.id} className="relative group">
+                                <PhotoThumbnail
+                                  photo={photo}
+                                  className="w-20 h-20 rounded-2xl object-cover border border-white/10"
+                                />
+                                {/* Sync badge */}
+                                <div className="absolute top-1 left-1">
+                                  {photo.syncStatus === "synced" ? (
+                                    <div className="w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center shadow">
+                                      <CheckCircle2 size={8} className="text-white" />
+                                    </div>
+                                  ) : photo.syncStatus === "error" ? (
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); retryPhotoSync(session, photo.id, onUpdate); }}
+                                      className="w-4 h-4 bg-rose-500 rounded-full flex items-center justify-center shadow animate-pulse"
+                                    >
+                                      <RefreshCw size={8} className="text-white" />
+                                    </button>
+                                  ) : photo.syncStatus === "syncing" ? (
+                                    <div className="w-4 h-4 bg-indigo-500 rounded-full flex items-center justify-center shadow">
+                                      <RefreshCw size={8} className="text-white animate-spin" />
+                                    </div>
+                                  ) : (
+                                    <div className="w-4 h-4 bg-black/40 rounded-full flex items-center justify-center shadow">
+                                      <Clock size={8} className="text-white/50" />
+                                    </div>
+                                  )}
+                                </div>
+                                {/* Delete */}
+                                <button
+                                  onClick={() => deletePhoto(photo.id)}
+                                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-rose-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow active:scale-90"
+                                >
+                                  <Trash2 size={10} className="text-white" />
+                                </button>
+                              </div>
+                            ))}
+                            {/* Quick-add tile */}
+                            <button
+                              onClick={() => handleCapture(item)}
+                              className="w-20 h-20 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] flex flex-col items-center justify-center gap-1 hover:bg-white/[0.05] hover:border-indigo-500/40 transition-all active:scale-95"
+                            >
+                              <Plus className="w-4 h-4 text-white/30" />
+                              <span className="text-[9px] font-mono text-white/20 uppercase tracking-wider">Add</span>
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
           </div>
-        )}
-      </AnimatePresence>
+        );
+      })}
     </div>
   );
 }
