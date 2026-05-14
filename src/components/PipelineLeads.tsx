@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   Phone, Calendar, MessageSquare, User, Clock, XCircle, AlertCircle,
   PlayCircle, ArrowLeft, MinusCircle, CalendarDays, CheckCircle2,
-  Activity, Flame, ChevronRight, ChevronLeft, X, AlertTriangle, PenLine
+  Activity, Flame, ChevronRight, ChevronLeft, X, AlertTriangle, PenLine, Mail
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,6 +20,7 @@ interface PipelineLead {
   scheduled_end_at: string | null;
   lead_notes: string | null;
   owner_phone: string | null;
+  owner_email: string | null;
   centerpoint_jobs: {
     name: string;
     property_name: string;
@@ -98,6 +99,17 @@ const resolvePhone = (lead: PipelineLead): string | null =>
     null
   );
 
+const resolveEmail = (lead: PipelineLead): string | null => {
+  const raw =
+    lead.owner_email ||
+    lead.centerpoint_jobs?.raw?._email ||
+    lead.centerpoint_jobs?.raw?.email ||
+    lead.centerpoint_jobs?.raw?.emailAddress ||
+    lead.centerpoint_jobs?.raw?.["Email Address"] ||
+    null;
+  return typeof raw === "string" && raw.includes("@") ? raw.trim() : null;
+};
+
 const callTimestamp = () => {
   const now = new Date();
   return now.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + ", " +
@@ -130,7 +142,7 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
 
   // Call modal
   const [callModal, setCallModal] = useState<{
-    leadId: string; leadName: string; phone: string | null;
+    leadId: string; leadName: string; phone: string | null; email: string | null;
     ownerName: string; currentNotes: string; currentAttempts: number;
   } | null>(null);
 
@@ -201,6 +213,7 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
       leadId: lead.id,
       leadName: lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id,
       phone: resolvePhone(lead),
+      email: resolveEmail(lead),
       ownerName: (lead.centerpoint_jobs?.raw?._owner as string) || "Unknown Owner",
       currentNotes: lead.lead_notes || "",
       currentAttempts: lead.contact_attempt_count,
@@ -634,6 +647,19 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
                             Add phone number
                           </button>
                         );
+                      })()}
+                      {/* Email row */}
+                      {(() => {
+                        const em = resolveEmail(lead);
+                        return em ? (
+                          <a href={`mailto:${em}`}
+                            className="flex items-center gap-1.5 text-[11px] text-indigo-400/50 hover:text-indigo-300 transition-colors font-light mt-1"
+                            onClick={e => e.stopPropagation()}
+                          >
+                            <Mail className="w-3 h-3 shrink-0" />
+                            <span className="truncate">{em}</span>
+                          </a>
+                        ) : null;
                       })()}
                     </div>
 
@@ -1177,7 +1203,7 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
                 </div>
                 {callModal.phone ? (
                   <a href={`tel:${callModal.phone.replace(/\D/g, "")}`}
-                    className="flex items-center gap-3 group"
+                    className="flex items-center gap-3 group mb-2"
                   >
                     <Phone className="w-4 h-4 text-sky-400 shrink-0" />
                     <span className="text-lg font-display font-medium text-sky-300 group-hover:text-sky-200 transition-colors">
@@ -1188,10 +1214,23 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
                     </span>
                   </a>
                 ) : (
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 mb-2">
                     <Phone className="w-4 h-4 text-white/15 shrink-0" />
                     <span className="text-sm text-white/25 font-light italic">No phone number on file</span>
                   </div>
+                )}
+                {callModal.email && (
+                  <a href={`mailto:${callModal.email}`}
+                    className="flex items-center gap-3 group"
+                  >
+                    <Mail className="w-4 h-4 text-indigo-400/60 shrink-0" />
+                    <span className="text-sm text-indigo-300/70 group-hover:text-indigo-200 transition-colors truncate">
+                      {callModal.email}
+                    </span>
+                    <span className="ml-auto text-[9px] font-mono text-indigo-400/30 group-hover:text-indigo-400/60 uppercase tracking-widest transition-colors shrink-0">
+                      Email
+                    </span>
+                  </a>
                 )}
               </div>
 
