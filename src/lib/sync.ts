@@ -6,7 +6,6 @@ import {
   loadDraftById,
   saveSession,
 } from "@/lib/session";
-import { supabase } from "@/lib/supabase";
 import { getPhotoBlob } from "@/lib/photoStorage";
 import type { InspectionPhoto, SessionState } from "@/types/session";
 
@@ -274,35 +273,55 @@ export async function uploadPhotoToCloud(
   session: SessionState,
   photo: InspectionPhoto
 ): Promise<InspectionPhoto> {
+  // Try to get blob from IndexedDB first; fall back to localUri base64
+  let base64: string | null = null;
+
   const blob = await getPhotoBlob(photo.storageKey);
-  if (!blob) {
+  if (blob) {
+    base64 = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } else if (photo.localUri) {
+    base64 = photo.localUri;
+  }
+
+  if (!base64) {
     return { ...photo, syncStatus: "error", syncError: "Local file not found" };
   }
 
-  // Path: {repId}/{sessionId}/{photoId}.jpg
-  const path = `${session.repId}/${session.sessionId}/${photo.id}.jpg`;
-  
   try {
-    const { data, error } = await supabase.storage
-      .from("inspection-photos")
-      .upload(path, blob, {
-        contentType: "image/jpeg",
-        upsert: true
-      });
+    // Route through the authenticated server-side endpoint so the service key
+    // is used for the storage upload — bypasses all storage RLS policies.
+    const res = await fetch("/api/photo-upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionId: session.sessionId,
+        photoId: photo.id,
+        base64,
+        category: photo.category,
+        label: photo.label,
+        section: photo.section,
+      }),
+    });
 
-    if (error) throw error;
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+      throw new Error(err.error || `Upload failed (${res.status})`);
+    }
 
-    const { data: { publicUrl } } = supabase.storage
-      .from("inspection-photos")
-      .getPublicUrl(path);
+    const { publicUrl, storagePath } = await res.json();
 
     return {
       ...photo,
       syncStatus: "synced",
       remoteUrl: publicUrl,
-      storagePath: path,
+      storagePath,
       lastSyncedAt: new Date().toISOString(),
-      syncError: undefined
+      syncError: undefined,
     };
   } catch (err: any) {
     console.error("[PHOTO_SYNC] Upload failed:", err);
@@ -311,7 +330,7 @@ export async function uploadPhotoToCloud(
       syncStatus: "error",
       syncError: err.message,
       lastSyncAttemptAt: new Date().toISOString(),
-      retryCount: (photo.retryCount || 0) + 1
+      retryCount: (photo.retryCount || 0) + 1,
     };
   }
 }
