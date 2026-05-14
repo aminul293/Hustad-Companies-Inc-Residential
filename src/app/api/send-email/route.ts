@@ -41,19 +41,23 @@ async function getAccessToken() {
 export async function POST(request: NextRequest) {
   try {
     // Ensure only authenticated reps can trigger email dispatch
-    await requireAuth(request);
+    const authPayload = await requireAuth(request);
 
-    const { 
-      to, 
-      cc, 
-      subject, 
-      html, 
-      pdfBase64, 
+    // Use the logged-in rep's email as the sender so replies go back to them.
+    // Falls back to the shared info@ mailbox if auth email isn't available.
+    const senderEmail = authPayload?.email?.trim() || SENDER_EMAIL;
+
+    const {
+      to,
+      cc,
+      subject,
+      html,
+      pdfBase64,
       fileName,
-      sessionId 
+      sessionId
     } = await request.json();
 
-    console.log(`[OUTLOOK_SYSTEM] Initiating delivery for Session: ${sessionId}`);
+    console.log(`[OUTLOOK_SYSTEM] Initiating delivery for Session: ${sessionId} from ${senderEmail}`);
 
     const accessToken = await getAccessToken();
 
@@ -84,7 +88,7 @@ export async function POST(request: NextRequest) {
       saveToSentItems: 'true',
     };
 
-    const response = await fetch(`https://graph.microsoft.com/v1.0/users/${SENDER_EMAIL}/sendMail`, {
+    const response = await fetch(`https://graph.microsoft.com/v1.0/users/${senderEmail}/sendMail`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -106,7 +110,7 @@ export async function POST(request: NextRequest) {
       throw new Error(message);
     }
 
-    console.log(`[OUTLOOK_SYSTEM] Success: Email dispatched via ${SENDER_EMAIL}`);
+    console.log(`[OUTLOOK_SYSTEM] Success: Email dispatched via ${senderEmail}`);
 
     return NextResponse.json({ 
       success: true, 
