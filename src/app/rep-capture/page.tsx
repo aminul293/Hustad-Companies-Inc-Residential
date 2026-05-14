@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useCallback, Suspense } from "react
 import { useSearchParams } from "next/navigation";
 import {
   Camera, CheckCircle2, RotateCcw, ChevronRight,
-  ArrowLeft, Home, Zap, Wind, Loader2, AlertCircle, Upload, Tablet
+  ArrowLeft, Home, Zap, Wind, Loader2, AlertCircle, Upload, Tablet, Ban, Undo2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { INSPECTION_SHOT_LIST, ShotListItem } from "@/lib/inspectionShotList";
@@ -66,6 +66,7 @@ function RepCaptureInner() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [overlay, setOverlay] = useState<CaptureOverlay | null>(null);
   const [captured, setCaptured] = useState<CapturedLocal[]>([]);
+  const [naCategories, setNaCategories] = useState<Set<string>>(new Set());
   const [sessionAddress, setSessionAddress] = useState<string>("");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -89,8 +90,17 @@ function RepCaptureInner() {
   const totalRequired = INSPECTION_SHOT_LIST.reduce(
     (s, sec) => s + sec.items.reduce((is, i) => is + i.requiredCount, 0), 0
   );
-  const doneCount = captured.filter(c => c.status === "done").length;
+  const doneCount = captured.filter(c => c.status === "done").length + naCategories.size;
   const pct = totalRequired > 0 ? Math.round((doneCount / totalRequired) * 100) : 0;
+
+  const toggleNa = useCallback((categoryId: string) => {
+    setNaCategories(prev => {
+      const next = new Set(prev);
+      if (next.has(categoryId)) next.delete(categoryId);
+      else next.add(categoryId);
+      return next;
+    });
+  }, []);
 
   const capturedForCategory = useCallback((categoryId: string) =>
     captured.filter(c => c.category === categoryId), [captured]);
@@ -237,6 +247,7 @@ function RepCaptureInner() {
                   const itemDone = mine.filter(c => c.status === "done").length;
                   const uploading = mine.some(c => c.status === "uploading");
                   const hasError = mine.some(c => c.status === "error");
+                  const isNa = naCategories.has(item.id);
                   const isComplete = item.requiredCount > 0 && itemDone >= item.requiredCount;
                   const isOptional = item.requiredCount === 0;
                   const needed = Math.max(0, item.requiredCount - itemDone);
@@ -244,7 +255,8 @@ function RepCaptureInner() {
                   return (
                     <div key={item.id} className={cn(
                       "rounded-2xl border p-4 transition-all",
-                      isComplete ? "bg-emerald-500/[0.05] border-emerald-500/20"
+                      isNa ? "bg-white/[0.015] border-white/[0.04] opacity-50"
+                        : isComplete ? "bg-emerald-500/[0.05] border-emerald-500/20"
                         : hasError ? "bg-rose-500/[0.05] border-rose-500/20"
                         : isOptional ? "bg-white/[0.015] border-white/[0.04]"
                         : "bg-white/[0.025] border-white/[0.08]"
@@ -253,12 +265,14 @@ function RepCaptureInner() {
                         {/* Status icon */}
                         <div className={cn(
                           "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5",
-                          isComplete ? "bg-emerald-500/20"
+                          isNa ? "bg-white/[0.04]"
+                            : isComplete ? "bg-emerald-500/20"
                             : uploading ? "bg-indigo-500/20"
                             : hasError ? "bg-rose-500/20"
                             : "bg-white/[0.06]"
                         )}>
-                          {isComplete ? <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                          {isNa ? <Ban className="w-4 h-4 text-white/20" />
+                            : isComplete ? <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                             : uploading ? <Loader2 className="w-4 h-4 text-indigo-400 animate-spin" />
                             : hasError ? <AlertCircle className="w-4 h-4 text-rose-400" />
                             : <Camera className={cn("w-4 h-4", isOptional ? "text-white/20" : "text-white/40")} />
@@ -269,14 +283,22 @@ function RepCaptureInner() {
                         <div className="flex-1 min-w-0">
                           <p className={cn(
                             "text-sm font-medium leading-snug",
-                            isComplete ? "text-white/60" : isOptional ? "text-white/30" : "text-white/90"
+                            isNa ? "text-white/25 line-through"
+                              : isComplete ? "text-white/60"
+                              : isOptional ? "text-white/30"
+                              : "text-white/90"
                           )}>
                             {item.label}
                           </p>
-                          <p className="text-[11px] text-white/25 mt-0.5 leading-relaxed">{item.description}</p>
+                          {!isNa && (
+                            <p className="text-[11px] text-white/25 mt-0.5 leading-relaxed">{item.description}</p>
+                          )}
+                          {isNa && (
+                            <p className="text-[10px] font-mono text-white/20 mt-0.5 uppercase tracking-widest">Not on this roof</p>
+                          )}
 
                           {/* Thumbnails */}
-                          {mine.length > 0 && (
+                          {!isNa && mine.length > 0 && (
                             <div className="flex gap-2 mt-3 flex-wrap">
                               {mine.map((c, i) => (
                                 <div key={i} className="relative w-14 h-14">
@@ -300,23 +322,39 @@ function RepCaptureInner() {
                           )}
                         </div>
 
-                        {/* Capture button */}
-                        {!uploading && (
-                          <button
-                            onClick={() => openCapture(item, meta?.label ?? section.title)}
-                            className={cn(
-                              "flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-semibold transition-all active:scale-95 shrink-0",
-                              isComplete
-                                ? "bg-white/[0.05] text-white/30 hover:bg-white/10"
-                                : isOptional
-                                ? "bg-white/[0.04] text-white/20 hover:bg-white/[0.08]"
-                                : "bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.3)] hover:bg-indigo-600"
-                            )}
-                          >
-                            <Camera className="w-4 h-4" />
-                            {isComplete ? "Add" : hasError ? "Retry" : needed > 1 ? `Photo (${needed})` : "Capture"}
-                          </button>
-                        )}
+                        {/* Action buttons */}
+                        <div className="flex flex-col items-end gap-2 shrink-0">
+                          {/* Capture / Add button */}
+                          {!uploading && !isNa && (
+                            <button
+                              onClick={() => openCapture(item, meta?.label ?? section.title)}
+                              className={cn(
+                                "flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-semibold transition-all active:scale-95",
+                                isComplete
+                                  ? "bg-white/[0.05] text-white/30 hover:bg-white/10"
+                                  : isOptional
+                                  ? "bg-white/[0.04] text-white/20 hover:bg-white/[0.08]"
+                                  : "bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.3)] hover:bg-indigo-600"
+                              )}
+                            >
+                              <Camera className="w-4 h-4" />
+                              {isComplete ? "Add" : hasError ? "Retry" : needed > 1 ? `Photo (${needed})` : "Capture"}
+                            </button>
+                          )}
+
+                          {/* N/A toggle — only on required items that aren't complete */}
+                          {!isOptional && !isComplete && !uploading && (
+                            <button
+                              onClick={() => toggleNa(item.id)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-widest transition-all active:scale-95 text-white/20 hover:text-white/50"
+                            >
+                              {isNa
+                                ? <><Undo2 className="w-3 h-3" /> Undo</>
+                                : <><Ban className="w-3 h-3" /> N/A</>
+                              }
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
