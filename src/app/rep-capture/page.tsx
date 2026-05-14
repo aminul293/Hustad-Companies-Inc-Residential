@@ -90,8 +90,11 @@ function RepCaptureInner() {
   const totalRequired = INSPECTION_SHOT_LIST.reduce(
     (s, sec) => s + sec.items.reduce((is, i) => is + i.requiredCount, 0), 0
   );
-  const doneCount = captured.filter(c => c.status === "done").length + naCategories.size;
-  const pct = totalRequired > 0 ? Math.round((doneCount / totalRequired) * 100) : 0;
+  const photosUploaded = captured.filter(c => c.status === "done").length;
+  const naCount = naCategories.size;
+  const effectiveRequired = Math.max(0, totalRequired - naCount);
+  const doneCount = photosUploaded; // only real photos, used for display
+  const pct = effectiveRequired > 0 ? Math.min(100, Math.round((photosUploaded / effectiveRequired) * 100)) : 100;
 
   const toggleNa = useCallback((categoryId: string) => {
     setNaCategories(prev => {
@@ -215,7 +218,8 @@ function RepCaptureInner() {
                 pct === 100 ? "text-emerald-400" : "text-indigo-400"
               )}>{pct}%</span>
               <p className="text-[9px] font-mono text-white/25 uppercase tracking-widest mt-0.5">
-                {doneCount}/{totalRequired}
+                {photosUploaded}/{effectiveRequired}
+                {naCount > 0 && <span className="text-white/15"> +{naCount}n/a</span>}
               </p>
             </div>
           </div>
@@ -377,7 +381,7 @@ function RepCaptureInner() {
               )}
             >
               <CheckCircle2 className="w-5 h-5" />
-              {pct === 100 ? "Done — All Photos Captured" : `Done for Now (${doneCount}/${totalRequired})`}
+              {pct === 100 ? "Done — All Photos Captured" : `Done for Now (${photosUploaded}/${effectiveRequired} photos)`}
             </button>
           </div>
         )}
@@ -404,13 +408,15 @@ function RepCaptureInner() {
           </p>
 
           <h2 className="text-2xl font-display font-medium text-white mb-3">
-            {pct === 100 ? "All shots captured." : `${doneCount} of ${totalRequired} shots done.`}
+            {pct === 100
+              ? "All shots captured."
+              : `${photosUploaded} of ${effectiveRequired} photos uploaded.`}
           </h2>
 
           <p className="text-sm text-white/40 font-light leading-relaxed max-w-xs mb-10">
             {pct === 100
-              ? "Every required photo has synced to the tablet. Hand it back to the rep to continue."
-              : "Your photos have synced to the tablet. The rep can continue — or you can go back and capture more."}
+              ? `${photosUploaded} photo${photosUploaded !== 1 ? "s" : ""} uploaded successfully.${naCount > 0 ? ` ${naCount} item${naCount !== 1 ? "s" : ""} marked N/A.` : ""} Hand the tablet back to continue the inspection.`
+              : `${photosUploaded} photo${photosUploaded !== 1 ? "s" : ""} uploaded so far.${naCount > 0 ? ` ${naCount} item${naCount !== 1 ? "s" : ""} marked N/A.` : ""} Go back to capture the remaining shots, or hand the tablet back to continue.`}
           </p>
 
           <div className="w-full max-w-xs space-y-3">
