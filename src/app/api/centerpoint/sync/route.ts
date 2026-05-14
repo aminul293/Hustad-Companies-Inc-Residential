@@ -65,56 +65,65 @@ async function getResidentialCompanies(): Promise<CompanyContacts> {
   return { ids, names, phones, emails };
 }
 
-// ─── Fetch client profiles for the given company IDs ─────────────────────────
-// CenterPoint stores contact phone + email on /profiles (type: client_profiles).
-// Each profile has attributes.companyId linking it back to the company.
-// Phone is in attributes.mobile (or attributes.office, or attributes.custom.phone).
+// ─── Fetch profiles targeted per company ID ──────────────────────────────────
+// Fetches /profiles?filter[companyId]=X for each company that has jobs.
+// This is far more reliable and efficient than scanning all 7000+ profiles.
+// Accepts ALL profile types (employees + client_profiles) so we catch every
+// phone/email regardless of how CenterPoint categorises the contact.
 async function enrichWithContacts(companyIds: Set<number>, contacts: CompanyContacts): Promise<void> {
-  let page = 1;
-  while (true) {
-    const params = new URLSearchParams({
-      "page[size]": "200",
-      "page[number]": String(page),
-    });
-    const res = await fetch(`${CP_BASE}/profiles?${params}`, {
-      headers: cpHeaders(),
-      cache: "no-store",
-    });
-    if (!res.ok) break;
-    const data = await res.json();
-    const records: any[] = data?.data ?? [];
-    if (records.length === 0) break;
+  for (const companyId of companyIds) {
+    // Skip companies where we already have both phone and email
+    if (contacts.phones.has(companyId) && contacts.emails.has(companyId)) continue;
 
-    records.forEach((r) => {
-      // Only process client contacts — skip internal Hustad employees
-      if (r.type !== "client_profiles") return;
+    let page = 1;
+    let found = false;
+    while (true) {
+      const params = new URLSearchParams({
+        "page[size]": "50",
+        "page[number]": String(page),
+        "filter[companyId]": String(companyId),
+      });
+      const res = await fetch(`${CP_BASE}/profiles?${params}`, {
+        headers: cpHeaders(),
+        cache: "no-store",
+      });
+      if (!res.ok) break;
+      const data = await res.json();
+      const records: any[] = data?.data ?? [];
+      if (records.length === 0) break;
 
-      const a = r.attributes ?? {};
-      const companyId = Number(a.companyId ?? 0);
-      if (!companyId || !companyIds.has(companyId)) return;
+      for (const r of records) {
+        const a = r.attributes ?? {};
 
-      // Phone: primary source is mobile, fallback to office, then custom.phone
-      const phone = a.mobile ?? a.office ?? a.custom?.phone ?? null;
-      if (phone && !contacts.phones.has(companyId)) {
-        contacts.phones.set(companyId, String(phone));
+        // Phone: mobile first, then office, then custom.phone
+        const phone = a.mobile ?? a.office ?? a.custom?.phone ?? null;
+        if (phone && !contacts.phones.has(companyId)) {
+          contacts.phones.set(companyId, String(phone));
+          found = true;
+        }
+
+        // Email
+        const email = a.email ?? null;
+        if (email && !contacts.emails.has(companyId)) {
+          contacts.emails.set(companyId, String(email));
+          found = true;
+        }
+
+        // Name fallback
+        if (!contacts.names.has(companyId) && a.name) {
+          contacts.names.set(companyId, String(a.name));
+        }
+
+        // Stop scanning this company's profiles once we have both
+        if (contacts.phones.has(companyId) && contacts.emails.has(companyId)) break;
       }
 
-      // Email
-      const email = a.email ?? null;
-      if (email && !contacts.emails.has(companyId)) {
-        contacts.emails.set(companyId, String(email));
-      }
+      const total = data?.meta?.page?.total ?? 0;
+      if (page * 50 >= total || records.length < 50) break;
+      page++;
+    }
 
-      // Use contact person name as owner if the company had none
-      if (!contacts.names.has(companyId) && a.name) {
-        contacts.names.set(companyId, String(a.name));
-      }
-    });
-
-    const total = data?.meta?.page?.total ?? 0;
-    const fetched = page * 200;
-    if (fetched >= total || records.length < 200) break;
-    page++;
+    void found; // suppress unused warning
   }
 }
 
@@ -228,14 +237,12 @@ export async function POST() {
     const contacts = await getResidentialCompanies();
     const { ids: residentialIds } = contacts;
 
-    // Enrich with phone + email from the /contacts endpoint (where CenterPoint stores them)
-    await enrichWithContacts(residentialIds, contacts);
-
+    // ── Pass 1: Scan all services to collect qualifying rows + billedCompanyIds ──
     let cpPage = 1;
     let cpTotal = Infinity;
     let scanned = 0;
-    let upserted = 0;
     let reachedDelta = false;
+    const allRawRecords: any[] = []; // keep original CenterPoint records for re-processing
 
     while (scanned < cpTotal && !reachedDelta) {
       const params = new URLSearchParams({
@@ -259,88 +266,72 @@ export async function POST() {
       const records: any[] = data?.data ?? [];
       if (records.length === 0) break;
 
-      const rowsToUpsert: any[] = [];
-
       for (const r of records) {
         scanned++;
         const a = r.attributes;
-
-        /* 
-        if (deltaSince && a.updatedAt && a.updatedAt <= deltaSince) {
-          reachedDelta = true;
-          break;
-        }
-        */
-
         const isHailInspection = a?.customWithLabels?.serviceTypeHustad === HUSTAD_TYPE;
         const isResidentialId = residentialIds.has(Number(a?.billedCompanyId));
         const isInspectionType = a?.workType === "Inspection";
-        
-        // Detection for Residential Module/Category
-        const isResidentialModule = 
-          a?.module?.toLowerCase() === "residential" || 
+        const isResidentialModule =
+          a?.module?.toLowerCase() === "residential" ||
           a?.category?.toLowerCase() === "residential" ||
           isResidentialId;
 
-        // Triple-Lock Inclusion: MUST be Residential AND Hustad Hail AND Inspection Type
-        if (!isHailInspection || !isResidentialModule || !isInspectionType) {
-          continue;
-        }
-
-        rowsToUpsert.push(toRow(r, contacts));
-      }
-
-      // De-duplicate in memory: pick the one that is FURTHER ALONG in the pipeline
-      const uniqueRows = new Map();
-      rowsToUpsert.forEach(row => {
-        const existing = uniqueRows.get(row.name);
-        if (!existing) {
-          uniqueRows.set(row.name, row);
-          return;
-        }
-
-        const existingDate = existing.cp_updated_at ? new Date(existing.cp_updated_at).getTime() : 0;
-        const incomingDate = row.cp_updated_at ? new Date(row.cp_updated_at).getTime() : 0;
-
-        if (incomingDate > existingDate) {
-          uniqueRows.set(row.name, row);
-        } else if (incomingDate === existingDate) {
-          const existingIdx = STAGE_ORDER.indexOf(existing.status === "closed_out" ? "closed" : existing.status);
-          const incomingIdx = STAGE_ORDER.indexOf(row.status === "closed_out" ? "closed" : row.status);
-          if (incomingIdx > existingIdx) {
-            uniqueRows.set(row.name, row);
-          }
-        }
-      });
-      const finalRows = Array.from(uniqueRows.values());
-
-      if (finalRows.length > 0) {
-        // 1. Fetch ALL current records for these job names to preserve inbox_status
-        const names = finalRows.map(r => r.name);
-        const { data: existingJobs } = await supabase
-          .from("centerpoint_jobs")
-          .select("id, name, status, cp_id, inbox_status")
-          .in("name", names);
-
-        const localMap = new Map(existingJobs?.map(j => [j.name, j.inbox_status]));
-        
-        finalRows.forEach(r => {
-          if (localMap.has(r.name)) {
-            r.inbox_status = localMap.get(r.name);
-          }
-        });
-
-        // 2. Upsert using Mirror Mode
-
-        const { error } = await supabase
-          .from("centerpoint_jobs")
-          .upsert(finalRows, { onConflict: "cp_id" });
-        
-        if (error) throw new Error(`Supabase upsert failed: ${error.message}`);
-        upserted += finalRows.length;
+        if (!isHailInspection || !isResidentialModule || !isInspectionType) continue;
+        allRawRecords.push(r);
       }
 
       cpPage++;
+    }
+
+    // ── Enrich contacts for ONLY the companies that have actual jobs ─────────
+    const jobCompanyIds = new Set<number>(
+      allRawRecords
+        .map(r => Number(r.attributes?.billedCompanyId ?? 0))
+        .filter(id => id > 0)
+    );
+    await enrichWithContacts(jobCompanyIds, contacts);
+
+    // ── Pass 2: Build final rows with enriched contact data ─────────────────
+    const uniqueRows = new Map<string, any>();
+    for (const r of allRawRecords) {
+      const row = toRow(r, contacts);
+      const existing = uniqueRows.get(row.name);
+      if (!existing) { uniqueRows.set(row.name, row); continue; }
+
+      const existingDate = existing.cp_updated_at ? new Date(existing.cp_updated_at).getTime() : 0;
+      const incomingDate = row.cp_updated_at ? new Date(row.cp_updated_at).getTime() : 0;
+      if (incomingDate > existingDate) {
+        uniqueRows.set(row.name, row);
+      } else if (incomingDate === existingDate) {
+        const ei = STAGE_ORDER.indexOf(existing.status === "closed_out" ? "closed" : existing.status);
+        const ii = STAGE_ORDER.indexOf(row.status === "closed_out" ? "closed" : row.status);
+        if (ii > ei) uniqueRows.set(row.name, row);
+      }
+    }
+
+    const finalRows = Array.from(uniqueRows.values());
+    let upserted = 0;
+
+    if (finalRows.length > 0) {
+      // Preserve inbox_status from existing records
+      const names = finalRows.map(r => r.name);
+      const { data: existingJobs } = await supabase
+        .from("centerpoint_jobs")
+        .select("id, name, cp_id, inbox_status")
+        .in("name", names);
+
+      const localMap = new Map(existingJobs?.map(j => [j.name, j.inbox_status]));
+      finalRows.forEach(r => {
+        if (localMap.has(r.name)) r.inbox_status = localMap.get(r.name);
+      });
+
+      const { error } = await supabase
+        .from("centerpoint_jobs")
+        .upsert(finalRows, { onConflict: "cp_id" });
+
+      if (error) throw new Error(`Supabase upsert failed: ${error.message}`);
+      upserted = finalRows.length;
     }
 
     if (logId) {
