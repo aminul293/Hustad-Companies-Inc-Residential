@@ -2,6 +2,42 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase-server";
 
 /**
+ * GET /api/rep-upload?session_id=…
+ * Returns all photo_assets rows for a session (service-key, no RLS).
+ * Used by the tablet checklist to poll for newly uploaded phone photos.
+ */
+export async function GET(req: NextRequest) {
+  const sessionId = req.nextUrl.searchParams.get("session_id");
+  if (!sessionId) {
+    return NextResponse.json({ error: "session_id required" }, { status: 400 });
+  }
+
+  const db = getServiceClient();
+
+  const { data: session } = await db
+    .from("inspection_sessions")
+    .select("session_id")
+    .eq("session_id", sessionId)
+    .single();
+
+  if (!session) {
+    return NextResponse.json({ error: "Session not found" }, { status: 404 });
+  }
+
+  const { data: photos, error } = await db
+    .from("photo_assets")
+    .select("*")
+    .eq("session_id", sessionId)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ photos: photos || [] });
+}
+
+/**
  * POST /api/rep-upload
  * Token-free upload endpoint used by the rep's phone camera page.
  * The session_id itself is the access credential — it is unguessable
