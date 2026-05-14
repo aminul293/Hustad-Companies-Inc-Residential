@@ -415,14 +415,14 @@ function RepCaptureInner() {
 
           <p className="text-sm text-white/40 font-light leading-relaxed max-w-xs mb-10">
             {pct === 100
-              ? `${photosUploaded} photo${photosUploaded !== 1 ? "s" : ""} uploaded successfully.${naCount > 0 ? ` ${naCount} item${naCount !== 1 ? "s" : ""} marked N/A.` : ""} Hand the tablet back to continue the inspection.`
-              : `${photosUploaded} photo${photosUploaded !== 1 ? "s" : ""} uploaded so far.${naCount > 0 ? ` ${naCount} item${naCount !== 1 ? "s" : ""} marked N/A.` : ""} Go back to capture the remaining shots, or hand the tablet back to continue.`}
+              ? `All ${photosUploaded} photo${photosUploaded !== 1 ? "s" : ""} uploaded successfully.${naCount > 0 ? ` ${naCount} item${naCount !== 1 ? "s" : ""} marked N/A.` : ""} Switch to the tablet to continue the inspection.`
+              : `${photosUploaded} photo${photosUploaded !== 1 ? "s" : ""} uploaded so far.${naCount > 0 ? ` ${naCount} item${naCount !== 1 ? "s" : ""} marked N/A.` : ""} Go back to capture more, or switch to the tablet to continue.`}
           </p>
 
           <div className="w-full max-w-xs space-y-3">
             <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center gap-3">
               <Tablet className="w-5 h-5 text-white/30 shrink-0" />
-              <p className="text-xs text-white/50 font-light text-left">Return the tablet to the rep to review findings and continue.</p>
+              <p className="text-xs text-white/50 font-light text-left">Switch to the tablet to review your findings and continue the inspection.</p>
             </div>
             {pct < 100 && (
               <button
