@@ -84,6 +84,35 @@ export function InspectionPhotoChecklist({ session, onUpdate }: Props) {
   const sessionRef = useRef(session);
   sessionRef.current = session;
 
+  // Shared helper: build an InspectionPhoto from a photo_assets DB row
+  const rowToPhoto = (row: any): InspectionPhoto => {
+    const shotItem = INSPECTION_SHOT_LIST.flatMap(s => s.items).find(i => i.id === row.category);
+    return {
+      id: row.asset_id,
+      sessionId: row.session_id,
+      category: row.category,
+      section: row.shot_section || shotItem?.section || "",
+      label: row.shot_label || shotItem?.label || row.caption || row.category,
+      storageKey: row.asset_id,
+      remoteUrl: row.storage_url,
+      storagePath: row.storage_path,
+      selectedForSummary: row.selected_for_summary ?? true,
+      createdAt: row.created_at ?? new Date().toISOString(),
+      syncStatus: "synced",
+    };
+  };
+
+  // Merge any DB rows not yet in session.photos
+  const mergeNewPhotos = (rows: any[]) => {
+    const current = sessionRef.current;
+    const existing = new Set((current.photos || []).map(p => p.id));
+    const newPhotos = rows.filter(r => !existing.has(r.asset_id)).map(rowToPhoto);
+    if (newPhotos.length > 0) {
+      onUpdate({ ...current, photos: [...(current.photos || []), ...newPhotos] });
+    }
+  };
+
+  // Primary: Supabase realtime (requires table in publication + REPLICA IDENTITY FULL)
   useEffect(() => {
     const channel = supabase
       .channel(`rep_photos_${session.sessionId}`)
@@ -95,35 +124,27 @@ export function InspectionPhotoChecklist({ session, onUpdate }: Props) {
           table: "photo_assets",
           filter: `session_id=eq.${session.sessionId}`,
         },
-        (payload: any) => {
-          const row = payload.new;
-          const current = sessionRef.current;
-          // Deduplicate — the same photo might arrive twice on reconnect
-          if ((current.photos || []).some(p => p.id === row.asset_id)) return;
-
-          const shotItem = INSPECTION_SHOT_LIST.flatMap(s => s.items)
-            .find(i => i.id === row.category);
-
-          const newPhoto: InspectionPhoto = {
-            id: row.asset_id,
-            sessionId: row.session_id,
-            category: row.category,
-            section: row.shot_section || shotItem?.section || "",
-            label: row.shot_label || shotItem?.label || row.caption || row.category,
-            storageKey: row.asset_id,
-            remoteUrl: row.storage_url,
-            storagePath: row.storage_path,
-            selectedForSummary: row.selected_for_summary ?? true,
-            createdAt: row.created_at ?? new Date().toISOString(),
-            syncStatus: "synced",
-          };
-
-          onUpdate({ ...current, photos: [...(current.photos || []), newPhoto] });
-        }
+        (payload: any) => mergeNewPhotos([payload.new])
       )
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
+  }, [session.sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fallback: poll every 5 s via service-key API (works even if realtime isn't configured)
+  useEffect(() => {
+    const poll = async () => {
+      try {
+        const res = await fetch(`/api/rep-upload?session_id=${session.sessionId}`);
+        if (!res.ok) return;
+        const { photos: rows } = await res.json();
+        if (rows?.length) mergeNewPhotos(rows);
+      } catch {}
+    };
+
+    poll(); // immediate load on mount — picks up photos added before this tab opened
+    const id = setInterval(poll, 5000);
+    return () => clearInterval(id);
   }, [session.sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Progress ───────────────────────────────────────────────────────────────
