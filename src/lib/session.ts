@@ -103,7 +103,7 @@ export function createSession(repId: string, repName: string, repEmail = ""): Se
     photoAssets: [],
     followUpTasks: [],
     remoteReview: {
-      status: "sent",
+      status: "not_sent",
       sentAt: null,
       openedAt: null,
       viewedAt: null,

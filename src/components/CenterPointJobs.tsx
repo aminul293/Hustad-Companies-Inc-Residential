@@ -85,6 +85,7 @@ export function CenterPointJobs() {
   });
   const [promotingId, setPromotingId] = useState<string | null>(null);
   const [unlinkingId, setUnlinkingId] = useState<string | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
 
   const fetchJobs = useCallback(async (opts?: { refresh?: boolean; newPage?: number }) => {
     const isRefresh = opts?.refresh;
@@ -219,6 +220,25 @@ export function CenterPointJobs() {
 
   return (
     <div className="flex flex-col h-full">
+      {/* Import error banner */}
+      <AnimatePresence>
+        {importError && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="flex items-center justify-between gap-3 px-6 py-3 bg-rose-500/10 border-b border-rose-500/20 text-rose-300 text-xs font-mono"
+          >
+            <span className="flex items-center gap-2">
+              <X className="w-3.5 h-3.5 shrink-0" />
+              {importError}
+            </span>
+            <button onClick={() => setImportError(null)} className="text-rose-400/50 hover:text-rose-300 transition-colors shrink-0">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <div className="p-8 pb-0 space-y-6">
         <div className="flex items-center gap-4">
@@ -487,8 +507,11 @@ export function CenterPointJobs() {
                                   </span>
                                 ) : (
                                   <button
+                                    disabled={promotingId === job.id}
+                                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-indigo-500 text-white text-xs font-display font-medium hover:bg-indigo-400 active:scale-95 transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)] disabled:opacity-50"
                                     onClick={async () => {
                                       setPromotingId(job.id);
+                                      setImportError(null);
                                       try {
                                         const res = await fetch("/api/pipeline", {
                                           method: "POST",
@@ -496,22 +519,22 @@ export function CenterPointJobs() {
                                           body: JSON.stringify({ job }),
                                         });
                                         if (res.ok) {
-                                          // Update local state to show it's imported
-                                          setJobs(prev => prev.map(j => 
+                                          setJobs(prev => prev.map(j =>
                                             j.id === job.id ? { ...j, inbox_status: 'imported_to_pipeline' } : j
                                           ));
-                                          // Auto-transition to Pipeline view
-                                          const event = new CustomEvent('changeView', { detail: 'pipeline' });
-                                          window.dispatchEvent(event);
+                                          window.dispatchEvent(new CustomEvent('changeView', { detail: 'pipeline' }));
+                                        } else {
+                                          const err = await res.json().catch(() => ({}));
+                                          setImportError(err.error || "Import failed. Please try again.");
+                                          setTimeout(() => setImportError(null), 6000);
                                         }
-                                      } catch (e) {
-                                        console.error("Import to pipeline failed", e);
+                                      } catch {
+                                        setImportError("Network error — check your connection and try again.");
+                                        setTimeout(() => setImportError(null), 6000);
                                       } finally {
                                         setPromotingId(null);
                                       }
                                     }}
-                                    disabled={promotingId === job.id}
-                                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-indigo-500 text-white text-xs font-display font-medium hover:bg-indigo-400 active:scale-95 transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)] disabled:opacity-50"
                                   >
                                     {promotingId === job.id ? (
                                       <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />

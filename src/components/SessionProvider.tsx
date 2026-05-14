@@ -117,8 +117,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     if (authStatus !== "authenticated" && !authRep) return;
     saveSession(session);
 
-    // Debounced server sync
+    // Debounced server sync — skip empty setup sessions to avoid orphan DB rows
     const timer = setTimeout(() => {
+      if (session.currentScreen === "P00_rep_launch" && !session.property.address) return;
       if (navigator.onLine) {
         syncSessionToServer(session).catch(() => {
           queueForSync(session);
@@ -236,10 +237,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const draft = loadDraftById(sessionId, authRep.id);
     if (draft) {
       const ownedDraft = stampSessionWithRep(draft, authRep);
-      // If we are resuming from the launch screen, move to the first real screen
       if (ownedDraft.currentScreen === "P00_rep_launch") {
-        const next = navigateTo(ownedDraft, "A01_welcome");
-        setSession(next);
+        // Only advance to the presentation if the intake form is complete;
+        // otherwise stay at P00 so the rep can fill in the missing address.
+        if (ownedDraft.property.address) {
+          setSession(navigateTo(ownedDraft, "A01_welcome"));
+        } else {
+          setSession(ownedDraft);
+        }
       } else {
         setSession(ownedDraft);
       }

@@ -79,13 +79,30 @@ const fmtTime = (iso: string) =>
 const daysSince = (iso: string | null) =>
   iso ? Math.floor((Date.now() - new Date(iso).getTime()) / 86400000) : null;
 
+const normalizePhone = (raw: unknown): string | null => {
+  if (!raw || typeof raw !== "string") return null;
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length === 10) return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
+  if (digits.length === 11 && digits[0] === "1") return `(${digits.slice(1,4)}) ${digits.slice(4,7)}-${digits.slice(7)}`;
+  return raw.trim() || null;
+};
+
+const callTimestamp = () => {
+  const now = new Date();
+  return now.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + ", " +
+    now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+};
+
 interface PipelineLeadsProps {
   repId?: string;
 }
 
 export function PipelineLeads({ repId }: PipelineLeadsProps) {
   const [leads, setLeads] = useState<PipelineLead[]>([]);
-  const [, setLoading] = useState(true);
+  const [isLoading, setLoading] = useState(true);
+
+  // Dead lead confirmation modal
+  const [deadLeadModal, setDeadLeadModal] = useState<{ leadId: string; leadName: string } | null>(null);
 
   // Remove from pipeline modals
   const [confirmModal, setConfirmModal] = useState<{ leadId: string; leadName: string } | null>(null);
@@ -100,9 +117,19 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
   const [scheduling, setScheduling] = useState(false);
   const [schedDuration, setSchedDuration] = useState(60);
 
+  // Call modal
+  const [callModal, setCallModal] = useState<{
+    leadId: string; leadName: string; phone: string | null;
+    ownerName: string; currentNotes: string; currentAttempts: number;
+  } | null>(null);
+  const [callOutcome, setCallOutcome] = useState<"reached" | "no_answer" | "voicemail" | "wrong_number" | null>(null);
+  const [callNote, setCallNote] = useState("");
+
   // Follow-up modal
   const [followModal, setFollowModal] = useState<{ leadId: string; leadName: string } | null>(null);
   const [followDate, setFollowDate] = useState(addDays(1));
+  const [followReason, setFollowReason] = useState("");
+  const [followNote, setFollowNote] = useState("");
 
   // Stage navigation
   const [stageBackModal, setStageBackModal] = useState<{ leadId: string; leadName: string; targetIdx: number } | null>(null);
@@ -154,16 +181,56 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
     if (res.ok) fetchLeads();
   };
 
-  const handleCall = (lead: PipelineLead) =>
-    patch(lead.id, {
-      contact_attempt_count: lead.contact_attempt_count + 1,
-      last_contacted_at: new Date().toISOString(),
-      pipeline_status: "contact_attempted",
+  const handleCall = (lead: PipelineLead) => {
+    const rawPhone =
+      lead.centerpoint_jobs?.raw?._phone ||
+      lead.centerpoint_jobs?.raw?.phone ||
+      lead.centerpoint_jobs?.raw?.["Phone Number"] ||
+      lead.centerpoint_jobs?.raw?.phone_number ||
+      null;
+    setCallModal({
+      leadId: lead.id,
+      leadName: lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id,
+      phone: normalizePhone(rawPhone),
+      ownerName: (lead.centerpoint_jobs?.raw?._owner as string) || "Unknown Owner",
+      currentNotes: lead.lead_notes || "",
+      currentAttempts: lead.contact_attempt_count,
     });
+    setCallOutcome(null);
+    setCallNote("");
+  };
 
-  const handleDeadLead = async (id: string) => {
-    if (!confirm("Mark this lead as dead?")) return;
-    patch(id, { pipeline_status: "dead_lead", dead_reason: "Manually marked as dead" });
+  const confirmCall = async () => {
+    if (!callModal || !callOutcome) return;
+    const { leadId, currentNotes, currentAttempts } = callModal;
+    const OUTCOME_LABELS: Record<string, string> = {
+      reached: "Reached",
+      no_answer: "No Answer",
+      voicemail: "Voicemail",
+      wrong_number: "Wrong Number",
+    };
+    const entry = callNote.trim()
+      ? `[${callTimestamp()}] ${OUTCOME_LABELS[callOutcome]} — ${callNote.trim()}`
+      : `[${callTimestamp()}] ${OUTCOME_LABELS[callOutcome]}`;
+    const updatedNotes = currentNotes ? `${currentNotes}\n${entry}` : entry;
+    setCallModal(null);
+    await patch(leadId, {
+      contact_attempt_count: currentAttempts + 1,
+      last_contacted_at: new Date().toISOString(),
+      pipeline_status: callOutcome === "reached" ? "contacted" : "contact_attempted",
+      lead_notes: updatedNotes,
+    });
+  };
+
+  const handleDeadLead = (lead: PipelineLead) => {
+    setDeadLeadModal({ leadId: lead.id, leadName: lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id });
+  };
+
+  const confirmDeadLead = async () => {
+    if (!deadLeadModal) return;
+    const { leadId } = deadLeadModal;
+    setDeadLeadModal(null);
+    await patch(leadId, { pipeline_status: "dead_lead", dead_reason: "Manually marked as dead" });
   };
 
   const handleStartInspection = (lead: PipelineLead) => {
@@ -280,15 +347,25 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
   const openFollowModal = (lead: PipelineLead) => {
     setFollowModal({ leadId: lead.id, leadName: lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id });
     setFollowDate(addDays(1));
+    setFollowReason("");
+    setFollowNote("");
   };
 
   const confirmFollowUp = async () => {
     if (!followModal || !followDate) return;
-    setFollowModal(null);
-    await patch(followModal.leadId, {
+    const lead = leads.find(l => l.id === followModal.leadId);
+    const currentNotes = lead?.lead_notes || "";
+    const updates: Record<string, unknown> = {
       pipeline_status: "follow_up_needed",
       next_follow_up_at: new Date(followDate + "T00:00:00").toISOString(),
-    });
+    };
+    const parts = [followReason, followNote.trim()].filter(Boolean);
+    if (parts.length > 0) {
+      const entry = `[${callTimestamp()}] Follow-up set: ${parts.join(" · ")}`;
+      updates.lead_notes = currentNotes ? `${currentNotes}\n${entry}` : entry;
+    }
+    setFollowModal(null);
+    await patch(followModal.leadId, updates);
   };
 
   // Notes
@@ -344,14 +421,15 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
 
   const stats = {
     total: leads.filter(l => !['dead_lead','closed'].includes(l.pipeline_status)).length,
-    scheduled: leads.filter(l => l.pipeline_status === 'scheduled').length,
+    scheduled: leads.filter(l => ['scheduled', 'appointment_confirmed'].includes(l.pipeline_status)).length,
     avgAttempts: leads.length
       ? (leads.reduce((s, l) => s + l.contact_attempt_count, 0) / leads.length).toFixed(1)
       : "0.0",
+    // Use the same 7-day threshold as the card "Urgent" badge so the stat matches visible labels
     urgent: leads.filter(l => {
       if (!['new_lead','contact_attempted','follow_up_needed','contacted'].includes(l.pipeline_status)) return false;
       const d = daysSince(l.last_contacted_at);
-      return d === null || d >= 3;
+      return d !== null && d >= 7;
     }).length,
   };
 
@@ -394,7 +472,13 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
       </div>
 
       {/* ── Cards grid ─────────────────────────────────────────────────── */}
-      {leads.length === 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="bg-[#0b0b0b] border border-white/[0.07] rounded-[36px] h-64 animate-pulse" />
+          ))}
+        </div>
+      ) : leads.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <div className="w-16 h-16 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
             <Activity className="w-7 h-7 text-white/20" />
@@ -492,14 +576,33 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
                       <h3 className="text-[1.4rem] font-display font-medium text-white tracking-tight leading-tight mb-2">
                         {lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name}
                       </h3>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 mb-1.5">
                         <span className="text-xs text-white/35 flex items-center gap-1.5 font-light">
                           <User className="w-3.5 h-3.5 text-white/20" />
-                          {lead.centerpoint_jobs?.raw?._owner || "Unknown Owner"}
+                          {lead.centerpoint_jobs?.raw?._owner
+                            ? (lead.centerpoint_jobs.raw._owner as string).replace(/\b\w/g, (c: string) => c.toUpperCase())
+                            : "Unknown Owner"}
                         </span>
                         <div className="w-1 h-1 rounded-full bg-white/10" />
                         <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest">Residential</span>
                       </div>
+                      {(() => {
+                        const ph = normalizePhone(
+                          lead.centerpoint_jobs?.raw?._phone ||
+                          lead.centerpoint_jobs?.raw?.phone ||
+                          lead.centerpoint_jobs?.raw?.["Phone Number"] ||
+                          lead.centerpoint_jobs?.raw?.phone_number || null
+                        );
+                        return ph ? (
+                          <a href={`tel:${ph.replace(/\D/g,"")}`}
+                            className="flex items-center gap-1.5 text-[11px] text-sky-400/60 hover:text-sky-300 transition-colors font-light"
+                            onClick={e => e.stopPropagation()}
+                          >
+                            <Phone className="w-3 h-3 shrink-0" />
+                            {ph}
+                          </a>
+                        ) : null;
+                      })()}
                     </div>
 
                     {/* Stats row */}
@@ -618,7 +721,7 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
                           </button>
                         ) : null}
                         <button
-                          onClick={() => handleDeadLead(lead.id)}
+                          onClick={() => handleDeadLead(lead)}
                           className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-rose-400/30 hover:text-rose-400/70 hover:bg-rose-500/[0.06] transition-all text-[11px] font-medium"
                         >
                           <XCircle className="w-3.5 h-3.5" /> Dead Lead
@@ -801,9 +904,30 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
                 </button>
               </div>
 
+              {/* Reason pills */}
+              <div className="mb-5">
+                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2.5">Reason</label>
+                <div className="flex flex-wrap gap-2">
+                  {["No answer", "Requested callback", "Not ready yet", "Price check", "Reviewing options"].map(r => (
+                    <button
+                      key={r}
+                      onClick={() => setFollowReason(prev => prev === r ? "" : r)}
+                      className={cn(
+                        "px-3.5 py-2 rounded-xl text-xs font-medium border transition-all",
+                        followReason === r
+                          ? "bg-orange-500/20 border-orange-500/40 text-orange-300"
+                          : "bg-white/[0.03] border-white/[0.07] text-white/30 hover:bg-white/[0.07] hover:text-white/60"
+                      )}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Quick picks */}
               <div className="mb-5">
-                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2.5">Quick Select</label>
+                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2.5">Follow-up Date</label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { label: "Tomorrow",   days: 1 },
@@ -831,7 +955,7 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
               </div>
 
               {/* Custom date */}
-              <div className="mb-7">
+              <div className="mb-5">
                 <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">Custom Date</label>
                 <input
                   type="date"
@@ -839,6 +963,18 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
                   min={new Date().toISOString().split("T")[0]}
                   onChange={(e) => setFollowDate(e.target.value)}
                   className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-orange-500/40 [color-scheme:dark]"
+                />
+              </div>
+
+              {/* Note */}
+              <div className="mb-7">
+                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">Note (optional)</label>
+                <input
+                  type="text"
+                  value={followNote}
+                  onChange={e => setFollowNote(e.target.value)}
+                  placeholder="e.g. 'Prefers mornings', 'Waiting on insurance adjuster'"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-orange-500/40"
                 />
               </div>
 
@@ -910,6 +1046,152 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
               </div>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          CALL MODAL
+      ══════════════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {callModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
+          >
+            <motion.div initial={{ opacity: 0, scale: 0.96, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 12 }} transition={{ type: "spring", damping: 28, stiffness: 320 }}
+              className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 w-full max-w-sm shadow-2xl"
+            >
+              {/* Header */}
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <div className="flex items-center gap-2.5 mb-1">
+                    <Phone className="w-5 h-5 text-sky-400" />
+                    <h3 className="text-xl font-display font-medium">Log Call</h3>
+                  </div>
+                  <p className="text-sm text-white/35 font-light">{callModal.leadName}</p>
+                </div>
+                <button onClick={() => setCallModal(null)} className="p-2 rounded-2xl text-white/30 hover:text-white hover:bg-white/5 transition-all">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Contact info */}
+              <div className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-5 mb-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <User className="w-4 h-4 text-white/20 shrink-0" />
+                  <span className="text-sm text-white/60 font-light">
+                    {callModal.ownerName.replace(/\b\w/g, c => c.toUpperCase())}
+                  </span>
+                </div>
+                {callModal.phone ? (
+                  <a href={`tel:${callModal.phone.replace(/\D/g, "")}`}
+                    className="flex items-center gap-3 group"
+                  >
+                    <Phone className="w-4 h-4 text-sky-400 shrink-0" />
+                    <span className="text-lg font-display font-medium text-sky-300 group-hover:text-sky-200 transition-colors">
+                      {callModal.phone}
+                    </span>
+                    <span className="ml-auto text-[9px] font-mono text-sky-400/40 group-hover:text-sky-400/70 uppercase tracking-widest transition-colors">
+                      Tap to call
+                    </span>
+                  </a>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <Phone className="w-4 h-4 text-white/15 shrink-0" />
+                    <span className="text-sm text-white/25 font-light italic">No phone number on file</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Outcome pills */}
+              <div className="mb-6">
+                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2.5">Call Outcome</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    { value: "reached",      label: "✓ Reached",    active: "bg-emerald-500/20 border-emerald-500/40 text-emerald-300" },
+                    { value: "no_answer",    label: "No Answer",    active: "bg-amber-500/20 border-amber-500/40 text-amber-300" },
+                    { value: "voicemail",    label: "Voicemail",    active: "bg-sky-500/20 border-sky-500/40 text-sky-300" },
+                    { value: "wrong_number", label: "Wrong Number", active: "bg-rose-500/20 border-rose-500/40 text-rose-300" },
+                  ] as const).map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setCallOutcome(opt.value)}
+                      className={cn(
+                        "py-3 rounded-2xl text-sm font-medium border transition-all",
+                        callOutcome === opt.value
+                          ? opt.active
+                          : "bg-white/[0.03] border-white/[0.07] text-white/30 hover:bg-white/[0.07] hover:text-white/60"
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick note */}
+              <div className="mb-7">
+                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">Quick Note (optional)</label>
+                <input
+                  type="text"
+                  value={callNote}
+                  onChange={e => setCallNote(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter" && callOutcome) confirmCall(); }}
+                  placeholder="e.g. 'Interested — send quote', 'Call back Friday'"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-sky-500/40"
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button onClick={() => setCallModal(null)}
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm">
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmCall}
+                  disabled={!callOutcome}
+                  className="flex-1 py-3 rounded-2xl bg-sky-500/15 border border-sky-500/25 text-sky-300 hover:bg-sky-500/25 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-sm font-medium"
+                >
+                  Log Call
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          DEAD LEAD CONFIRMATION MODAL
+      ══════════════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {deadLeadModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
+          >
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 max-w-sm w-full shadow-2xl"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mb-6">
+                <XCircle className="w-6 h-6 text-rose-400" />
+              </div>
+              <h3 className="text-xl font-display font-medium mb-3">Mark as Dead Lead?</h3>
+              <p className="text-white/40 text-sm leading-relaxed mb-8">
+                <span className="text-white/70 font-medium">{deadLeadModal.leadName}</span> will be marked as dead and removed from your active pipeline. This can be undone by moving it back to New Lead.
+              </p>
+              <div className="flex gap-3">
+                <button onClick={() => setDeadLeadModal(null)}
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm">
+                  Cancel
+                </button>
+                <button onClick={confirmDeadLead}
+                  className="flex-1 py-3 rounded-2xl bg-rose-500/15 border border-rose-500/25 text-rose-400 hover:bg-rose-500/25 transition-all text-sm font-medium">
+                  Mark Dead
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
 

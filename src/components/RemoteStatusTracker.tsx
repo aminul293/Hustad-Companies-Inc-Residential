@@ -16,6 +16,7 @@ interface Props {
 }
 
 const STATUS_CONFIG: Record<RemoteReviewStatus, { label: string; icon: any; color: string }> = {
+  not_sent: { label: "Not Sent", icon: Clock, color: "text-white/20" },
   sent: { label: "Link Sent", icon: Send, color: "text-white/40" },
   opened: { label: "Opened", icon: Eye, color: "text-sky-400" },
   viewed: { label: "Reviewed Findings", icon: Eye, color: "text-indigo-400" },
