@@ -153,6 +153,13 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
   // Edit email modal
   const [editEmailModal, setEditEmailModal] = useState<{ leadId: string; leadName: string; current: string } | null>(null);
   const [editEmailValue, setEditEmailValue] = useState("");
+
+  // Draft email modal
+  const [draftEmailModal, setDraftEmailModal] = useState<{
+    leadId: string; leadName: string; to: string; subject: string; body: string;
+  } | null>(null);
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const [callOutcome, setCallOutcome] = useState<"reached" | "no_answer" | "voicemail" | "wrong_number" | null>(null);
   const [callNote, setCallNote] = useState("");
 
@@ -430,6 +437,53 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
     await patch(editEmailModal.leadId, { owner_email: editEmailValue.trim() || null });
   };
 
+  // Draft & send email
+  const openDraftEmail = (lead: PipelineLead) => {
+    const em = resolveEmail(lead);
+    if (!em) { openEditEmail(lead); return; }
+    const ownerFirst = ((lead.centerpoint_jobs?.raw?._owner as string) || "there").split(" ")[0];
+    const propertyName = lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name || lead.cpc_ticket_id;
+    setDraftEmailModal({
+      leadId: lead.id,
+      leadName: propertyName,
+      to: em,
+      subject: `Storm Inspection Follow-up — ${propertyName}`,
+      body: `Hi ${ownerFirst},\n\nI'm reaching out regarding the storm inspection for your property at ${propertyName}.\n\nBased on our assessment, we'd like to schedule a time to walk you through our findings and recommend next steps for your roof.\n\nPlease let me know when you're available, or feel free to call us at your convenience — we'd love to help you get this taken care of quickly.\n\nBest regards,\nHustad Companies\n(608) 846-2222`,
+    });
+    setEmailSending(false);
+    setEmailSent(false);
+  };
+
+  const sendDraftEmail = async () => {
+    if (!draftEmailModal) return;
+    setEmailSending(true);
+    try {
+      const htmlBody = draftEmailModal.body
+        .split("\n")
+        .map(line => line.trim()
+          ? `<p style="margin:0 0 14px;font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a;">${line}</p>`
+          : `<br/>`)
+        .join("");
+      const html = `<div style="max-width:580px;margin:0 auto;padding:36px 32px;background:#ffffff;">${htmlBody}</div>`;
+      const res = await fetch("/api/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to: draftEmailModal.to, subject: draftEmailModal.subject, html }),
+      });
+      if (!res.ok) throw new Error("Send failed");
+      setEmailSent(true);
+      const lead = leads.find(l => l.id === draftEmailModal.leadId);
+      const currentNotes = lead?.lead_notes || "";
+      const entry = `[${callTimestamp()}] Email sent to ${draftEmailModal.to} — "${draftEmailModal.subject}"`;
+      await patch(draftEmailModal.leadId, { lead_notes: currentNotes ? `${currentNotes}\n${entry}` : entry });
+      setTimeout(() => setDraftEmailModal(null), 1800);
+    } catch (e) {
+      console.error("[EMAIL]", e);
+    } finally {
+      setEmailSending(false);
+    }
+  };
+
   // Remove
   const handleRemoveClick = (e: React.MouseEvent, lead: PipelineLead) => {
     e.preventDefault(); e.stopPropagation();
@@ -669,13 +723,13 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
                         const em = resolveEmail(lead);
                         return em ? (
                           <div className="flex items-center gap-2 mt-1">
-                            <a href={`mailto:${em}`}
+                            <button
+                              onClick={e => { e.stopPropagation(); openDraftEmail(lead); }}
                               className="flex items-center gap-1.5 text-[11px] text-indigo-400/50 hover:text-indigo-300 transition-colors font-light"
-                              onClick={e => e.stopPropagation()}
                             >
                               <Mail className="w-3 h-3 shrink-0" />
                               <span className="truncate">{em}</span>
-                            </a>
+                            </button>
                             <button
                               onClick={e => { e.stopPropagation(); openEditEmail(lead); }}
                               className="text-white/15 hover:text-white/50 transition-colors"
@@ -801,6 +855,12 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
                           <MessageSquare className="w-3.5 h-3.5" />
                           Notes
                           {lead.lead_notes && <div className="w-1.5 h-1.5 rounded-full bg-indigo-400/60" />}
+                        </button>
+                        <button
+                          onClick={() => openDraftEmail(lead)}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-indigo-400/30 hover:text-indigo-400/80 hover:bg-indigo-500/[0.06] transition-all text-[11px] font-medium"
+                        >
+                          <Mail className="w-3.5 h-3.5" /> Email
                         </button>
                         {isScheduled ? (
                           <button
@@ -1252,6 +1312,102 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
                 <button onClick={saveEmail}
                   className="flex-1 py-3 rounded-2xl bg-indigo-500/15 border border-indigo-500/25 text-indigo-300 hover:bg-indigo-500/25 transition-all text-sm font-medium">
                   Save Email
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          DRAFT EMAIL MODAL
+      ══════════════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {draftEmailModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
+          >
+            <motion.div initial={{ opacity: 0, scale: 0.96, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 12 }} transition={{ type: "spring", damping: 28, stiffness: 320 }}
+              className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 w-full max-w-lg shadow-2xl"
+            >
+              {/* Header */}
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <div className="flex items-center gap-2.5 mb-1">
+                    <Mail className="w-5 h-5 text-indigo-400" />
+                    <h3 className="text-xl font-display font-medium">Draft Email</h3>
+                  </div>
+                  <p className="text-sm text-white/35 font-light">{draftEmailModal.leadName}</p>
+                </div>
+                <button onClick={() => setDraftEmailModal(null)} className="p-2 rounded-2xl text-white/30 hover:text-white hover:bg-white/5 transition-all">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* To */}
+              <div className="mb-4">
+                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">To</label>
+                <input
+                  type="email"
+                  value={draftEmailModal.to}
+                  onChange={e => setDraftEmailModal(prev => prev ? { ...prev, to: e.target.value } : prev)}
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-indigo-500/40"
+                />
+              </div>
+
+              {/* Subject */}
+              <div className="mb-4">
+                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">Subject</label>
+                <input
+                  type="text"
+                  value={draftEmailModal.subject}
+                  onChange={e => setDraftEmailModal(prev => prev ? { ...prev, subject: e.target.value } : prev)}
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-indigo-500/40"
+                />
+              </div>
+
+              {/* Body */}
+              <div className="mb-7">
+                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">Message</label>
+                <textarea
+                  value={draftEmailModal.body}
+                  onChange={e => setDraftEmailModal(prev => prev ? { ...prev, body: e.target.value } : prev)}
+                  rows={9}
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-indigo-500/40 resize-none leading-relaxed"
+                />
+              </div>
+
+              {/* Sent confirmation */}
+              <AnimatePresence>
+                {emailSent && (
+                  <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                    className="flex items-center gap-3 bg-emerald-500/[0.08] border border-emerald-500/20 rounded-2xl px-4 py-3 mb-4"
+                  >
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <p className="text-sm text-emerald-300 font-medium">Email sent successfully via Outlook</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button onClick={() => setDraftEmailModal(null)}
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm">
+                  Cancel
+                </button>
+                <button
+                  onClick={sendDraftEmail}
+                  disabled={emailSending || emailSent || !draftEmailModal.to.includes("@")}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm font-medium"
+                >
+                  {emailSending ? (
+                    <><div className="w-3.5 h-3.5 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin" /> Sending…</>
+                  ) : emailSent ? (
+                    <><CheckCircle2 className="w-4 h-4" /> Sent</>
+                  ) : (
+                    <><Mail className="w-4 h-4" /> Send via Outlook</>
+                  )}
                 </button>
               </div>
             </motion.div>
