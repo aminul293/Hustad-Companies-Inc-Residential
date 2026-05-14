@@ -6,7 +6,7 @@ import {
   ChevronLeft, ChevronRight, MapPin, Phone, Clock, RefreshCw,
   Navigation2, RotateCcw, UserX, XCircle, CheckCircle2,
   PlayCircle, ChevronDown, AlertTriangle, X, Calendar,
-  CalendarDays, User, FileText, AlarmClock
+  CalendarDays, User, FileText, AlarmClock, Trash2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AuthenticatedRep } from "@/lib/rep-identity";
@@ -505,6 +505,13 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
                     }));
                   }
                 }}
+                onRemove={async () => {
+                  setActionLoading(selectedAppt.id);
+                  await fetch(`/api/appointments/${selectedAppt.id}`, { method: "DELETE" });
+                  setActionLoading(null);
+                  setSelectedAppt(null);
+                  fetchAppointments();
+                }}
               />
             </motion.div>
           )}
@@ -863,11 +870,12 @@ interface DetailPanelProps {
   onNoShow: () => void;
   onCancel: () => void;
   onStartInspection: () => void;
+  onRemove: () => void;
 }
 
 function AppointmentDetailPanel({
   appt, conflicted, actionLoading, onClose, onNavigate, onCall, onConfirm,
-  onReschedule, onNoShow, onCancel, onStartInspection
+  onReschedule, onNoShow, onCancel, onStartInspection, onRemove
 }: DetailPanelProps) {
   const cfg     = STATUS_CFG[appt.appointment_status] ?? STATUS_CFG.scheduled;
   const busy    = actionLoading === appt.id;
@@ -995,6 +1003,14 @@ function AppointmentDetailPanel({
           <button onClick={onCancel}
             className="flex items-center gap-1.5 text-[10px] font-mono text-white/25 hover:text-white/60 uppercase tracking-widest transition-colors ml-auto">
             <XCircle className="w-3 h-3" /> Cancel
+          </button>
+        </div>
+      )}
+      {appt.appointment_status === "cancelled" && (
+        <div className="p-5 border-t border-white/[0.05] flex items-center justify-end">
+          <button onClick={onRemove} disabled={busy}
+            className="flex items-center gap-1.5 text-[10px] font-mono text-white/25 hover:text-rose-400 uppercase tracking-widest transition-colors disabled:opacity-40">
+            <Trash2 className="w-3 h-3" /> Remove
           </button>
         </div>
       )}
