@@ -160,6 +160,7 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
   } | null>(null);
   const [emailSending, setEmailSending] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [callOutcome, setCallOutcome] = useState<"reached" | "no_answer" | "voicemail" | "wrong_number" | null>(null);
   const [callNote, setCallNote] = useState("");
 
@@ -452,11 +453,13 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
     });
     setEmailSending(false);
     setEmailSent(false);
+    setEmailError(null);
   };
 
   const sendDraftEmail = async () => {
     if (!draftEmailModal) return;
     setEmailSending(true);
+    setEmailError(null);
     try {
       const htmlBody = draftEmailModal.body
         .split("\n")
@@ -470,15 +473,19 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ to: draftEmailModal.to, subject: draftEmailModal.subject, html }),
       });
-      if (!res.ok) throw new Error("Send failed");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || data.message || `Server error ${res.status}`);
+      }
       setEmailSent(true);
       const lead = leads.find(l => l.id === draftEmailModal.leadId);
       const currentNotes = lead?.lead_notes || "";
       const entry = `[${callTimestamp()}] Email sent to ${draftEmailModal.to} — "${draftEmailModal.subject}"`;
       await patch(draftEmailModal.leadId, { lead_notes: currentNotes ? `${currentNotes}\n${entry}` : entry });
       setTimeout(() => setDraftEmailModal(null), 1800);
-    } catch (e) {
+    } catch (e: any) {
       console.error("[EMAIL]", e);
+      setEmailError(e.message || "Failed to send email. Please try again.");
     } finally {
       setEmailSending(false);
     }
@@ -1377,6 +1384,21 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
                   className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-indigo-500/40 resize-none leading-relaxed"
                 />
               </div>
+
+              {/* Error banner */}
+              <AnimatePresence>
+                {emailError && (
+                  <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                    className="flex items-start gap-3 bg-rose-500/[0.08] border border-rose-500/20 rounded-2xl px-4 py-3 mb-4"
+                  >
+                    <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <p className="text-sm text-rose-300 font-medium">Failed to send</p>
+                      <p className="text-xs text-rose-400/70 font-light mt-0.5 break-words">{emailError}</p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Sent confirmation */}
               <AnimatePresence>
