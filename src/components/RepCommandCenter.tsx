@@ -40,6 +40,7 @@ import { PipelineLeads } from "@/components/PipelineLeads";
 import { MySchedule } from "@/components/MySchedule";
 import { CalendarView } from "@/components/CalendarView";
 import { ManagerDashboard } from "@/components/ManagerDashboard";
+import { buildRepCaptureEmail } from "@/lib/rep-capture-email";
 
 function isValidAddress(addr: string | undefined | null): addr is string {
   if (!addr) return false;
@@ -476,6 +477,28 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
     const { session, source, leadId } = pendingImport;
     saveSession(session);
     setPendingImport(null);
+
+    // Fire capture-link email to the rep the moment the session is confirmed
+    if (currentRep.email) {
+      const captureUrl = `${window.location.origin}/rep-capture?s=${session.sessionId}`;
+      fetch("/api/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: currentRep.email,
+          subject: `📸 Your inspection camera link — ${session.property.address}`,
+          sessionId: session.sessionId,
+          html: buildRepCaptureEmail({
+            captureUrl,
+            address: session.property.address,
+            homeownerName: session.property.homeownerPrimaryName || "",
+            repName: currentRep.name,
+            sessionId: session.sessionId,
+          }),
+        }),
+      }).catch(() => {});
+    }
+
     try {
       if (source === "pipeline" && leadId) {
         let patchOk = true;
