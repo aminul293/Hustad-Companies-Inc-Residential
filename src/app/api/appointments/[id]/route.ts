@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServiceClient } from '@/lib/supabase-server';
 import { requireAuth } from '@/lib/auth';
 
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    await requireAuth(request);
+    const supabase = getServiceClient();
+    const { error } = await supabase.from('appointments').delete().eq('id', params.id);
+    if (error) throw error;
+    return NextResponse.json({ success: true });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     await requireAuth(request);

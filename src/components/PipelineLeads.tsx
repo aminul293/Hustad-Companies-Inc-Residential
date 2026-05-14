@@ -316,7 +316,19 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
     const { leadId, targetIdx } = stageBackModal;
     setStageBackModal(null);
     const updates: Record<string, unknown> = { pipeline_status: STAGE_STATUSES[targetIdx] };
-    if (targetIdx < 3) { updates.scheduled_start_at = null; updates.scheduled_end_at = null; }
+    if (targetIdx < 3) {
+      updates.scheduled_start_at = null;
+      updates.scheduled_end_at = null;
+      // Delete any appointment records so My Schedule and Calendar clear immediately
+      const lead = leads.find(l => l.id === leadId);
+      if (lead?.appointments?.length) {
+        await Promise.all(
+          lead.appointments.map(a =>
+            fetch(`/api/appointments/${a.id}`, { method: "DELETE" }).catch(() => {})
+          )
+        );
+      }
+    }
     if (targetIdx < 1) { updates.next_follow_up_at = null; }
     await patch(leadId, updates);
   };
