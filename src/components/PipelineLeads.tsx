@@ -321,6 +321,60 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
     await patch(leadId, updates);
   };
 
+  // Schedule confirmation email — fire and forget
+  const fireScheduleEmail = (leadId: string, start: Date, durationMin: number) => {
+    const lead = leads.find(l => l.id === leadId);
+    if (!lead) return;
+    const em = resolveEmail(lead);
+    if (!em) return;
+
+    const ownerFirst = ((lead.centerpoint_jobs?.raw?._owner as string) || "there").split(" ")[0];
+    const propertyName = lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name || leadId;
+    const dateStr = start.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+    const timeStr = start.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+    const durStr = durationMin < 60 ? `${durationMin} minutes` : `${durationMin / 60} hour${durationMin > 60 ? "s" : ""}`;
+
+    const html = `
+      <div style="max-width:580px;margin:0 auto;padding:40px 32px;background:#ffffff;font-family:Arial,sans-serif;">
+        <div style="background:#0f0f0f;border-radius:16px;padding:28px 32px;margin-bottom:28px;">
+          <p style="margin:0 0 4px;font-size:11px;color:#666;text-transform:uppercase;letter-spacing:0.15em;">Hustad Companies</p>
+          <h1 style="margin:0;font-size:22px;color:#ffffff;font-weight:600;">Inspection Confirmed</h1>
+        </div>
+        <p style="font-size:16px;color:#1a1a1a;margin:0 0 20px;">Hi ${ownerFirst},</p>
+        <p style="font-size:15px;color:#333;line-height:1.6;margin:0 0 24px;">
+          Your storm inspection at <strong>${propertyName}</strong> has been scheduled. Here are the details:
+        </p>
+        <div style="background:#f7f7f7;border-radius:12px;padding:20px 24px;margin:0 0 24px;">
+          <table style="width:100%;border-collapse:collapse;">
+            <tr><td style="padding:6px 0;font-size:13px;color:#888;width:90px;">Date</td><td style="font-size:14px;color:#1a1a1a;font-weight:600;">${dateStr}</td></tr>
+            <tr><td style="padding:6px 0;font-size:13px;color:#888;">Time</td><td style="font-size:14px;color:#1a1a1a;font-weight:600;">${timeStr}</td></tr>
+            <tr><td style="padding:6px 0;font-size:13px;color:#888;">Duration</td><td style="font-size:14px;color:#1a1a1a;font-weight:600;">Approx. ${durStr}</td></tr>
+            <tr><td style="padding:6px 0;font-size:13px;color:#888;">Address</td><td style="font-size:14px;color:#1a1a1a;font-weight:600;">${propertyName}</td></tr>
+          </table>
+        </div>
+        <p style="font-size:15px;color:#333;line-height:1.6;margin:0 0 24px;">
+          Our inspector will arrive at your property at the scheduled time. If you need to reschedule or have any questions, please don't hesitate to reach out.
+        </p>
+        <p style="font-size:15px;color:#333;margin:0 0 4px;">Best regards,</p>
+        <p style="font-size:15px;color:#1a1a1a;font-weight:600;margin:0 0 4px;">Hustad Companies</p>
+        <p style="font-size:14px;color:#666;margin:0;">(608) 846-2222</p>
+      </div>`;
+
+    const subject = `Inspection Confirmed — ${dateStr} at ${timeStr} · ${propertyName}`;
+
+    // Fire and forget
+    fetch("/api/send-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ to: em, subject, html }),
+    }).then(async () => {
+      // Log to activity
+      const currentNotes = lead.lead_notes || "";
+      const entry = `[${callTimestamp()}] Confirmation email sent to ${em} — ${dateStr} at ${timeStr}`;
+      await patch(leadId, { lead_notes: currentNotes ? `${currentNotes}\n${entry}` : entry });
+    }).catch(e => console.error("[SCHED_EMAIL]", e));
+  };
+
   // Schedule
   const openSchedModal = (lead: PipelineLead) => {
     setSchedModal({ leadId: lead.id, leadName: lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id });
@@ -357,6 +411,7 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
         if (!res.ok) throw new Error("Failed to create appointment");
         setSchedModal(null);
         setClashWarning(null);
+        fireScheduleEmail(schedModal.leadId, start, schedDuration);
         await fetchLeads();
       } catch (e) {
         console.error("[SCHEDULE]", e);
@@ -367,6 +422,7 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
       // Fallback: direct patch (no clash detection, or force override)
       setSchedModal(null);
       setClashWarning(null);
+      fireScheduleEmail(schedModal.leadId, start, schedDuration);
       await patch(schedModal.leadId, {
         pipeline_status:     "scheduled",
         scheduled_start_at:  start.toISOString(),
