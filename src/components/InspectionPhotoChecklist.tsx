@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   Camera, CheckCircle2, Trash2, RefreshCw,
   Plus, X, RotateCcw, ChevronRight, ArrowLeft,
-  Home, Zap, Wind
+  Home, Zap, Wind, Smartphone, Copy, Check as CheckIcon, Wifi
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,6 +14,7 @@ import { InspectionPhoto, SessionState } from "@/types/session";
 import { compressImage } from "@/lib/images";
 import { savePhotoBlob, base64ToBlob, deletePhotoBlob } from "@/lib/photoStorage";
 import { retryPhotoSync } from "@/lib/sync";
+import { supabase } from "@/lib/supabase";
 
 interface Props {
   session: SessionState;
@@ -65,7 +66,65 @@ export function InspectionPhotoChecklist({ session, onUpdate }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [captureState, setCaptureState] = useState<CaptureState | null>(null);
   const [viewingPhoto, setViewingPhoto] = useState<{ photo: InspectionPhoto; item: ShotListItem } | null>(null);
+  const [copied, setCopied] = useState(false);
   const photos = session.photos || [];
+
+  // Rep camera link (shown on tablet for the rep to open on their phone)
+  const repCaptureUrl = typeof window !== "undefined"
+    ? `${window.location.origin}/rep-capture?s=${session.sessionId}`
+    : `/rep-capture?s=${session.sessionId}`;
+
+  const copyLink = useCallback(() => {
+    navigator.clipboard?.writeText(repCaptureUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  }, [repCaptureUrl]);
+
+  // ── Real-time: auto-receive photos uploaded by rep's phone ─────────────────
+  const sessionRef = useRef(session);
+  sessionRef.current = session;
+
+  useEffect(() => {
+    const channel = supabase
+      .channel(`rep_photos_${session.sessionId}`)
+      .on(
+        "postgres_changes" as any,
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "photo_assets",
+          filter: `session_id=eq.${session.sessionId}`,
+        },
+        (payload: any) => {
+          const row = payload.new;
+          const current = sessionRef.current;
+          // Deduplicate — the same photo might arrive twice on reconnect
+          if ((current.photos || []).some(p => p.id === row.asset_id)) return;
+
+          const shotItem = INSPECTION_SHOT_LIST.flatMap(s => s.items)
+            .find(i => i.id === row.category);
+
+          const newPhoto: InspectionPhoto = {
+            id: row.asset_id,
+            sessionId: row.session_id,
+            category: row.category,
+            section: row.shot_section || shotItem?.section || "",
+            label: row.shot_label || shotItem?.label || row.caption || row.category,
+            storageKey: row.asset_id,
+            remoteUrl: row.storage_url,
+            storagePath: row.storage_path,
+            selectedForSummary: row.selected_for_summary ?? true,
+            createdAt: row.created_at ?? new Date().toISOString(),
+            syncStatus: "synced",
+          };
+
+          onUpdate({ ...current, photos: [...(current.photos || []), newPhoto] });
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [session.sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Progress ───────────────────────────────────────────────────────────────
   const totalRequired = INSPECTION_SHOT_LIST.reduce(
@@ -191,6 +250,52 @@ export function InspectionPhotoChecklist({ session, onUpdate }: Props) {
               transition={{ duration: 0.6, ease: "easeOut" }}
               className={cn("h-full rounded-full", pct === 100 ? "bg-emerald-500" : "bg-gradient-to-r from-indigo-500 to-violet-500")}
             />
+          </div>
+        </div>
+
+        {/* ── Rep Camera Panel ── */}
+        <div className="p-5 rounded-3xl bg-indigo-500/[0.05] border border-indigo-500/[0.15]">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-9 h-9 rounded-xl bg-indigo-500/20 flex items-center justify-center shrink-0">
+              <Smartphone className="w-4 h-4 text-indigo-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-display font-medium text-white">Rep takes photos on their phone</p>
+              <p className="text-[11px] text-white/35 mt-0.5">Share this link — photos appear here automatically</p>
+            </div>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 shrink-0">
+              <Wifi className="w-3 h-3 text-emerald-400" />
+              <span className="text-[9px] font-mono text-emerald-400 uppercase tracking-wider">Live</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            {/* QR code — rep scans this with phone camera */}
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(repCaptureUrl)}&bgcolor=0d0d1a&color=a5b4fc&qzone=1&format=png`}
+              alt="QR code for rep camera"
+              className="w-[88px] h-[88px] rounded-2xl border border-white/10 shrink-0"
+            />
+            <div className="flex-1 min-w-0 space-y-2.5">
+              <div>
+                <p className="text-[9px] font-mono text-white/25 uppercase tracking-widest mb-1">Rep opens this URL</p>
+                <p className="text-[11px] text-indigo-300/60 font-mono truncate">{repCaptureUrl}</p>
+              </div>
+              <button
+                onClick={copyLink}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all active:scale-95",
+                  copied
+                    ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
+                    : "bg-indigo-500/20 text-indigo-300 border border-indigo-500/25 hover:bg-indigo-500/30"
+                )}
+              >
+                {copied
+                  ? <><CheckIcon className="w-3.5 h-3.5" /> Copied!</>
+                  : <><Copy className="w-3.5 h-3.5" /> Copy Link</>
+                }
+              </button>
+            </div>
           </div>
         </div>
 
