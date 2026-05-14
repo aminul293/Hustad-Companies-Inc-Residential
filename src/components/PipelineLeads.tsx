@@ -719,10 +719,10 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
                   animate={{ opacity: isRemoving ? 0.35 : 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.94 }}
                   transition={{ duration: 0.22 }}
-                  className="bg-[#0b0b0b] border border-white/[0.07] rounded-[36px] overflow-hidden hover:border-white/[0.14] transition-all duration-300 flex flex-col"
+                  className="bg-[#0b0b0b] border border-white/[0.07] rounded-[36px] hover:border-white/[0.14] transition-all duration-300 flex flex-col"
                 >
-                  {/* Animated status-colored progress bar */}
-                  <div className="h-[2px] bg-white/[0.04] shrink-0">
+                  {/* Animated status-colored progress bar — own overflow clip so card tooltips can escape */}
+                  <div className="h-[2px] bg-white/[0.04] shrink-0 rounded-t-[36px] overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${((stageIdx + 1) / 5) * 100}%` }}
