@@ -405,13 +405,37 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
   // Notes
   const openNotes = (lead: PipelineLead) => {
     setNotesPanel({ leadId: lead.id, leadName: lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id, current: lead.lead_notes || "" });
-    setNotesText(lead.lead_notes || "");
+    setNotesText("");
   };
 
   const saveNotes = async () => {
     if (!notesPanel) return;
+    const trimmed = notesText.trim();
     setNotesPanel(null);
-    await patch(notesPanel.leadId, { lead_notes: notesText });
+    if (!trimmed) return;
+    const entry = `[${callTimestamp()}] ${trimmed}`;
+    const updated = notesPanel.current ? `${notesPanel.current}\n${entry}` : entry;
+    await patch(notesPanel.leadId, { lead_notes: updated });
+  };
+
+  const parseNoteEntries = (notes: string) => {
+    if (!notes) return [];
+    return notes.split("\n").filter(Boolean).map(line => {
+      const m = line.match(/^\[([^\]]+)\]\s*(.+)/);
+      if (m) return { timestamp: m[1], content: m[2], isActivity: true };
+      return { timestamp: null, content: line, isActivity: false };
+    });
+  };
+
+  const noteEntryIcon = (content: string) => {
+    if (content.startsWith("Email sent")) return { icon: Mail, color: "text-indigo-400 bg-indigo-400/10" };
+    if (content.startsWith("Reached")) return { icon: Phone, color: "text-emerald-400 bg-emerald-400/10" };
+    if (content.startsWith("No Answer")) return { icon: Phone, color: "text-amber-400 bg-amber-400/10" };
+    if (content.startsWith("Voicemail")) return { icon: Phone, color: "text-sky-400 bg-sky-400/10" };
+    if (content.startsWith("Wrong Number")) return { icon: Phone, color: "text-rose-400 bg-rose-400/10" };
+    if (content.startsWith("Follow-up set")) return { icon: Clock, color: "text-orange-400 bg-orange-400/10" };
+    if (content.startsWith("Imported")) return { icon: CheckCircle2, color: "text-white/30 bg-white/5" };
+    return { icon: MessageSquare, color: "text-white/25 bg-white/5" };
   };
 
   // Phone edit
@@ -1177,13 +1201,14 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
             <motion.div
               initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 32, stiffness: 340 }}
-              className="fixed right-0 top-0 bottom-0 w-[420px] max-w-full bg-[#0d0d0d] border-l border-white/10 z-50 flex flex-col shadow-2xl"
+              className="fixed right-0 top-0 bottom-0 w-[440px] max-w-full bg-[#0d0d0d] border-l border-white/10 z-50 flex flex-col shadow-2xl"
             >
-              <div className="flex items-center justify-between p-8 border-b border-white/[0.06]">
+              {/* Header */}
+              <div className="flex items-center justify-between px-8 py-6 border-b border-white/[0.06]">
                 <div>
                   <div className="flex items-center gap-2.5 mb-0.5">
-                    <MessageSquare className="w-4.5 h-4.5 text-indigo-400" />
-                    <h3 className="text-lg font-display font-medium">Lead Notes</h3>
+                    <MessageSquare className="w-4 h-4 text-indigo-400" />
+                    <h3 className="text-lg font-display font-medium">Activity Log</h3>
                   </div>
                   <p className="text-xs text-white/30 font-light">{notesPanel.leadName}</p>
                 </div>
@@ -1192,25 +1217,63 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
                 </button>
               </div>
 
-              <div className="flex-1 p-8 overflow-y-auto">
+              {/* Timeline */}
+              <div className="flex-1 overflow-y-auto px-8 py-6 space-y-3">
+                {parseNoteEntries(notesPanel.current).length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center mb-4">
+                      <MessageSquare className="w-5 h-5 text-white/15" />
+                    </div>
+                    <p className="text-white/25 text-sm font-light">No activity yet</p>
+                    <p className="text-white/15 text-xs mt-1">Add a note below to get started</p>
+                  </div>
+                ) : (
+                  [...parseNoteEntries(notesPanel.current)].reverse().map((entry, i) => {
+                    const { icon: EntryIcon, color } = noteEntryIcon(entry.content);
+                    return (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.03 }}
+                        className="flex gap-3"
+                      >
+                        <div className={cn("w-7 h-7 rounded-xl flex items-center justify-center shrink-0 mt-0.5", color)}>
+                          <EntryIcon className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="flex-1 bg-white/[0.025] border border-white/[0.06] rounded-2xl px-4 py-3 min-w-0">
+                          {entry.timestamp && (
+                            <p className="text-[9px] font-mono text-white/25 uppercase tracking-widest mb-1.5">{entry.timestamp}</p>
+                          )}
+                          <p className="text-sm text-white/70 font-light leading-relaxed break-words">{entry.content}</p>
+                        </div>
+                      </motion.div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Add note */}
+              <div className="px-8 py-6 border-t border-white/[0.06] space-y-3">
                 <textarea
                   ref={notesRef}
                   value={notesText}
                   onChange={(e) => setNotesText(e.target.value)}
-                  placeholder="Add notes about this lead — contact history, objections, preferences…"
-                  className="w-full h-full min-h-[280px] bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5 text-sm text-white/80 placeholder:text-white/20 focus:outline-none focus:border-indigo-500/40 resize-none leading-relaxed"
+                  onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) saveNotes(); }}
+                  placeholder="Add a note… (⌘↵ to save)"
+                  rows={3}
+                  className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl px-4 py-3 text-sm text-white/80 placeholder:text-white/20 focus:outline-none focus:border-indigo-500/40 resize-none leading-relaxed"
                 />
-              </div>
-
-              <div className="p-8 border-t border-white/[0.06] flex gap-3">
-                <button onClick={() => setNotesPanel(null)}
-                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm">
-                  Discard
-                </button>
-                <button onClick={saveNotes}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30 transition-all text-sm font-medium">
-                  <CheckCircle2 className="w-4 h-4" /> Save Notes
-                </button>
+                <div className="flex gap-3">
+                  <button onClick={() => setNotesPanel(null)}
+                    className="flex-1 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-white/40 hover:text-white hover:border-white/20 transition-all text-sm">
+                    Close
+                  </button>
+                  <button onClick={saveNotes} disabled={!notesText.trim()}
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-sm font-medium">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Add Note
+                  </button>
+                </div>
               </div>
             </motion.div>
           </>
