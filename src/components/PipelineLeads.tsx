@@ -846,6 +846,28 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
                       </div>
                     </div>
 
+                    {/* Last activity chip */}
+                    {(() => {
+                      const entries = parseNoteEntries(lead.lead_notes || "");
+                      const last = entries.filter(e => e.isActivity).slice(-1)[0];
+                      if (!last) return null;
+                      const { icon: ActIcon, color } = noteEntryIcon(last.content);
+                      const label = last.content.length > 42 ? last.content.slice(0, 42) + "…" : last.content;
+                      return (
+                        <div className="flex items-center gap-2 mb-4 bg-white/[0.025] border border-white/[0.05] rounded-2xl px-3.5 py-2.5">
+                          <div className={cn("w-5 h-5 rounded-lg flex items-center justify-center shrink-0", color)}>
+                            <ActIcon className="w-3 h-3" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[10px] text-white/50 font-light truncate">{label}</p>
+                          </div>
+                          {last.timestamp && (
+                            <span className="text-[9px] font-mono text-white/20 shrink-0">{last.timestamp}</span>
+                          )}
+                        </div>
+                      );
+                    })()}
+
                     {/* Primary actions */}
                     <div className="flex gap-2.5 mt-auto">
                       {isScheduled ? (
