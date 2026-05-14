@@ -19,6 +19,9 @@ import {
   Info,
   PlayCircle,
   RefreshCw,
+  Smartphone,
+  Copy,
+  Check as CheckIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createSession, saveSession, listDrafts, findDraftByImportId, loadDraftById, deleteDraft } from "@/lib/session";
@@ -146,6 +149,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
   const [retryingSessionId, setRetryingSessionId] = useState<string | null>(null);
   const [draftRefreshKey, setDraftRefreshKey] = useState(0);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [copiedSessionId, setCopiedSessionId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!confirmDeleteId) return;
@@ -485,7 +489,6 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
         } catch (err) {
           console.error("Failed to update pipeline status", err);
           patchOk = false;
-          // Re-save with error syncStatus so the dashboard badge reflects it
           saveSession({ ...session, syncStatus: "error", syncError: (err instanceof Error ? err.message : "Pipeline sync failed") });
           setImportError("Saved locally. Sync will retry when connection is restored.");
           setTimeout(() => setImportError(null), 8000);
@@ -496,9 +499,9 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
         }
         onLoadDraft(session.sessionId);
       } else {
-        setImportSuccess("Inspection started");
-        setTimeout(() => setImportSuccess(null), 4000);
-        setView("dashboard");
+        // CenterPoint import — navigate directly into the session, same as pipeline
+        setDraftRefreshKey(k => k + 1);
+        onLoadDraft(session.sessionId);
       }
     } finally {
       setIsConfirming(false);
@@ -541,9 +544,11 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
     const merged = [...local];
     serverSessions.forEach(s => {
       if (!merged.find(m => m.sessionId === s.session_id)) {
+        const addr = (s.property_address || "").trim();
+        if (!addr) return; // skip server records with no address
         merged.push({
           sessionId: s.session_id,
-          address: s.property_address || "Untitled Property",
+          address: addr,
           homeownerName: s.homeowner_name || "Unknown Owner",
           repName: s.rep_name || "Unknown Rep",
           lastSavedAt: s.updated_at,
@@ -555,8 +560,13 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
         });
       }
     });
-    return merged.sort((a, b) => new Date(b.lastSavedAt).getTime() - new Date(a.lastSavedAt).getTime());
-  }, [serverSessions, draftRefreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
+    return merged
+      .filter(d => {
+        const addr = d.address.toLowerCase().trim();
+        return addr.length > 0 && addr !== "untitled property";
+      })
+      .sort((a, b) => new Date(b.lastSavedAt).getTime() - new Date(a.lastSavedAt).getTime());
+  }, [serverSessions, draftRefreshKey, currentRep.id]);
 
   const filteredDrafts = useMemo(() => {
     return drafts.filter(d => {
@@ -570,7 +580,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
   const stats = useMemo(() => {
     return {
       active: drafts.filter(d => ["draft", "phase_a_active", "phase_a_complete", "rep_review_pending"].includes(d.sessionStatus)).length,
-      pending: drafts.filter(d => d.sessionStatus === "deferred" || d.sessionStatus === "summary_locked").length,
+      pending: drafts.filter(d => ["deferred", "summary_locked", "authorization_pending"].includes(d.sessionStatus)).length,
       missing: drafts.filter(d => d.missingFieldsCount > 0).length,
       synced: drafts.filter(d => d.syncStatus === "synced").length
     };
@@ -779,7 +789,9 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                     </div>
                     <span className="text-[9px] font-mono text-white/30 uppercase tracking-[0.2em] group-hover:text-white/50 transition-colors">Live Status</span>
                   </div>
-                  <p className="text-3xl font-display font-semibold tracking-tight mb-1">{s.value}</p>
+                  <p className="text-3xl font-display font-semibold tracking-tight mb-1">
+                    {isLoading ? <span className="inline-block w-6 h-6 border-2 border-white/10 border-t-white/40 rounded-full animate-spin" /> : s.value}
+                  </p>
                   <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest">{s.label}</p>
                 </div>
               ))}
@@ -905,7 +917,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                     <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-indigo-500/0 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-                      <div className="space-y-4">
+                      <div className="grow space-y-4">
                         <div className="flex items-center gap-3">
                           <div className={cn(
                             "px-3 py-1 rounded-full font-mono text-[9px] uppercase tracking-widest border",
@@ -950,7 +962,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-8">
+                      <div className="flex items-center gap-8 shrink-0">
                         <div className="text-right hidden md:block">
                           <p className="text-[9px] font-mono text-white/20 uppercase tracking-[0.2em] mb-1.5">Operational Phase</p>
                           <p className="text-[10px] font-mono font-medium text-white/60 tracking-widest">
@@ -982,6 +994,39 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                           <ChevronRight className="w-6 h-6 text-white group-hover:text-black transition-colors" />
                         </div>
                       </div>
+                    </div>
+
+                    {/* Rep Camera Link */}
+                    <div
+                      className="mt-5 pt-5 border-t border-white/[0.05] flex items-center gap-4 relative z-10"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=64x64&data=${encodeURIComponent(`${typeof window !== "undefined" ? window.location.origin : ""}/rep-capture?s=${d.sessionId}`)}&bgcolor=0d0d1a&color=a5b4fc&qzone=1&format=png`}
+                        alt="Rep capture QR"
+                        className="w-16 h-16 rounded-xl border border-indigo-500/20 shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Smartphone className="w-3 h-3 text-indigo-400/50" />
+                          <p className="text-[9px] font-mono text-white/30 uppercase tracking-[0.2em]">Rep Camera Link</p>
+                        </div>
+                        <p className="text-[11px] font-mono text-indigo-300/60 truncate">/rep-capture?s={d.sessionId}</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const url = `${window.location.origin}/rep-capture?s=${d.sessionId}`;
+                          navigator.clipboard.writeText(url);
+                          setCopiedSessionId(d.sessionId);
+                          setTimeout(() => setCopiedSessionId(null), 2000);
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 hover:bg-indigo-500/20 active:scale-95 transition-all text-[10px] font-mono shrink-0"
+                      >
+                        {copiedSessionId === d.sessionId
+                          ? <><CheckIcon className="w-3.5 h-3.5" /> Copied!</>
+                          : <><Copy className="w-3.5 h-3.5" /> Copy Link</>
+                        }
+                      </button>
                     </div>
                   </div>
                 ))}

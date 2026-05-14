@@ -151,8 +151,8 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
     repName: session.repName,
     insurerName: session.property.insurerNameKnown,
     claimNumber: session.property.claimNumberKnown,
-    workingDateOfLoss: session.property.workingDateOfLoss || "04/14/2026",
-    stormBasis: session.property.stormBasis || "Madison metro hail event",
+    workingDateOfLoss: session.property.workingDateOfLoss || "",
+    stormBasis: session.property.stormBasis || "",
     accessNotes: session.property.accessNotes,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -191,8 +191,8 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
       homeownerMobile: "",
       insurerName: "",
       claimNumber: "",
-      workingDateOfLoss: "05/04/2026",
-      stormBasis: "Madison metro hail event",
+      workingDateOfLoss: "",
+      stormBasis: "",
       accessNotes: "",
     }));
   };
@@ -255,25 +255,32 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
     return () => clearTimeout(timer);
   }, [form.address]);
 
-  useEffect(() => {
-    const scopedDrafts = authRep ? listDrafts(authRep.id) : [];
-    
-    // De-duplicate by address, keeping the most recent save
-    const uniqueByAddress = Array.from(
-      scopedDrafts
-        .filter((d) => !d.sessionStatus.startsWith("closed_"))
+  const getDisplayDrafts = (raw: ReturnType<typeof listDrafts>) =>
+    Array.from(
+      raw
+        .filter((d) => {
+          const addr = d.address.toLowerCase().trim();
+          return (
+            !d.sessionStatus.startsWith("closed_") &&
+            d.sessionId !== session.sessionId &&
+            addr.length > 0 &&
+            addr !== "untitled property"
+          );
+        })
         .reduce((map, draft) => {
           const key = draft.address.toLowerCase().trim();
           if (!map.has(key) || new Date(draft.lastSavedAt) > new Date(map.get(key)!.lastSavedAt)) {
             map.set(key, draft);
           }
           return map;
-        }, new Map<string, typeof scopedDrafts[0]>())
+        }, new Map<string, typeof raw[0]>())
         .values()
     );
 
-    setDrafts(uniqueByAddress);
-  }, [showDashboard, authRep?.id]);
+  useEffect(() => {
+    const scopedDrafts = authRep ? listDrafts(authRep.id) : [];
+    setDrafts(getDisplayDrafts(scopedDrafts));
+  }, [showDashboard, authRep?.id, session.sessionId]);
 
   useEffect(() => {
     if (!authRep) return;
@@ -758,7 +765,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                             onClick={(e) => {
                               e.stopPropagation();
                               deleteDraft(d.sessionId);
-                              setDrafts(authRep ? listDrafts(authRep.id).filter(x => !x.sessionStatus.startsWith("closed_")) : []);
+                              setDrafts(authRep ? getDisplayDrafts(listDrafts(authRep.id)) : []);
                             }}
                             className="p-2 rounded-xl text-white/20 hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100"
                           >

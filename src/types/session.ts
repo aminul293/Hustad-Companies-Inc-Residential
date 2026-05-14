@@ -79,6 +79,7 @@ export type DeliveryMethod = "email" | "text" | "both";
 export type SyncStatus = "local_only" | "queued" | "syncing" | "synced" | "error";
 
 export type RemoteReviewStatus =
+  | "not_sent"
   | "sent"
   | "opened"
   | "viewed"
