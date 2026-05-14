@@ -4,7 +4,7 @@ import { ScreenRouter } from "@/components/ScreenRouter";
 export default function Home() {
   return (
     <SessionProvider>
-      <div className="h-screen w-screen overflow-hidden">
+      <div className="w-screen">
         <ScreenRouter />
       </div>
     </SessionProvider>
