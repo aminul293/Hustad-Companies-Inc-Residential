@@ -53,6 +53,13 @@ const BLOCKED_STATUSES = ['inspection_in_progress', 'inspection_completed', 'sig
 
 const STAGE_STATUSES = ['new_lead', 'contact_attempted', 'contacted', 'scheduled', 'inspection_in_progress'];
 const STAGE_LABELS   = ['New Lead', 'Attempted', 'Contacted', 'Scheduled', 'In Field'];
+const STAGE_HINTS    = [
+  'No outreach yet',
+  'Email sent / voicemail left — no reply yet',
+  'Tap when homeowner responds or you speak with them',
+  'Inspection appointment booked',
+  'Inspector is on site',
+];
 
 const TIME_SLOTS = [
   { label: "7 AM",  value: "07:00" }, { label: "8 AM",  value: "08:00" },
@@ -678,10 +685,11 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
                         return (
                           <div key={i} className="relative flex-1 group/dot">
                             {/* Tooltip */}
-                            <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/dot:opacity-100 transition-opacity z-10 whitespace-nowrap">
-                              <span className="text-[9px] font-mono text-white/50 bg-[#111] border border-white/10 rounded-md px-2 py-1">
-                                {label}
-                              </span>
+                            <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/dot:opacity-100 transition-opacity z-10">
+                              <div className="bg-[#111] border border-white/10 rounded-xl px-3 py-2 text-center" style={{ minWidth: '140px', maxWidth: '200px' }}>
+                                <p className="text-[9px] font-mono text-white/70 uppercase tracking-widest mb-0.5">{label}</p>
+                                <p className="text-[9px] text-white/35 font-light leading-snug">{STAGE_HINTS[i]}</p>
+                              </div>
                             </div>
                             <button
                               onClick={() => handleStageClick(lead, i)}
