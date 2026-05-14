@@ -507,12 +507,13 @@ export function PipelineLeads({ repId }: PipelineLeadsProps) {
       const entry = `[${callTimestamp()}] Email sent to ${draftEmailModal.to} — "${draftEmailModal.subject}"`;
       const updatedNotes = currentNotes ? `${currentNotes}\n${entry}` : entry;
       const nowIso = new Date().toISOString();
+      const ADVANCED_STATUSES = ["contact_attempted","contacted","follow_up_needed","scheduled","appointment_confirmed","inspection_in_progress","inspection_completed","signed","closed","dead_lead"];
       await patch(draftEmailModal.leadId, {
         lead_notes: updatedNotes,
         last_contacted_at: nowIso,
         contact_attempt_count: (lead?.contact_attempt_count ?? 0) + 1,
-        pipeline_status: lead && !["contacted","scheduled","appointment_confirmed","inspection_in_progress","inspection_completed","signed","closed"].includes(lead.pipeline_status)
-          ? "contacted"
+        pipeline_status: lead && !ADVANCED_STATUSES.includes(lead.pipeline_status)
+          ? "contact_attempted"
           : lead?.pipeline_status,
       });
       setTimeout(() => setDraftEmailModal(null), 1800);
