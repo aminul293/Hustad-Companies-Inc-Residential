@@ -130,8 +130,11 @@ export function ManagerDashboard({ currentRep }: Props) {
       if (json.error) throw new Error(json.error);
       setData(json);
       if (repsRes.ok) {
-        const { reps } = await repsRes.json();
-        if (reps) setDbReps(reps);
+        const repsJson = await repsRes.json();
+        console.log("[ManagerDashboard] /api/reps response:", JSON.stringify(repsJson));
+        if (repsJson.reps) setDbReps(repsJson.reps);
+      } else {
+        console.error("[ManagerDashboard] /api/reps failed:", repsRes.status, await repsRes.text());
       }
     } catch (e: any) {
       setError(e.message);
