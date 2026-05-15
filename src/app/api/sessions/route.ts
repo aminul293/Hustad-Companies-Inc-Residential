@@ -8,11 +8,6 @@ export async function GET(req: NextRequest) {
     const payload = await requireAuth(req);
     const db = getServiceClient();
     
-    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(payload.repId);
-    if (!isUUID) {
-      return NextResponse.json({ sessions: [] });
-    }
-
     const { data: sessions, error } = await db
       .from("inspection_sessions")
       .select("*")
