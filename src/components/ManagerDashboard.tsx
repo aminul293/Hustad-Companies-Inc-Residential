@@ -118,8 +118,13 @@ export function ManagerDashboard({ currentRep }: Props) {
       .catch(() => {/* non-fatal */});
   }, []);
 
-  const resolveRepName = (id: string) =>
-    dbReps.find(r => r.id === id)?.name ?? id;
+  const resolveRepName = (id: string) => {
+    if (id === "unassigned") return "Unassigned";
+    const match = dbReps.find(r => r.id === id);
+    if (match) return match.name;
+    // ID not in reps table — show truncated ID so it's recognisable but not ugly
+    return `Rep …${id.slice(-6)}`;
+  };
 
   const fetchData = useCallback(async () => {
     setLoading(true); setError(null);
@@ -234,7 +239,7 @@ export function ManagerDashboard({ currentRep }: Props) {
               <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
                 className="p-5 rounded-2xl bg-amber-500/[0.05] border border-amber-500/25 space-y-3">
                 <p className="text-[9px] font-mono text-amber-400/70 uppercase tracking-widest">
-                  Rep: {a.assigned_rep_id ?? "Unknown"}
+                  Rep: {resolveRepName(a.assigned_rep_id ?? "unassigned")}
                 </p>
                 <div className="grid grid-cols-2 gap-3">
                   {[a, b].map(appt => (
