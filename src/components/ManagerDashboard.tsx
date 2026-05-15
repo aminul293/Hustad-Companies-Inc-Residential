@@ -111,29 +111,28 @@ export function ManagerDashboard({ currentRep }: Props) {
   const [retryCooldown, setRetryCooldown] = useState(false);
   const [dbReps, setDbReps]   = useState<{ id: string; name: string; role: string; active: boolean }[]>([]);
 
-  useEffect(() => {
-    fetch("/api/reps")
-      .then(r => r.json())
-      .then(({ reps }) => { if (reps) setDbReps(reps); })
-      .catch(() => {/* non-fatal */});
-  }, []);
-
   const resolveRepName = (id: string) => {
     if (id === "unassigned") return "Unassigned";
     const match = dbReps.find(r => r.id === id);
     if (match) return match.name;
-    // ID not in reps table — show truncated ID so it's recognisable but not ugly
     return `Rep …${id.slice(-6)}`;
   };
 
   const fetchData = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const res = await fetch(`/api/appointments/manager?t=${Date.now()}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
+      const [apptRes, repsRes] = await Promise.all([
+        fetch(`/api/appointments/manager?t=${Date.now()}`),
+        fetch(`/api/reps?t=${Date.now()}`),
+      ]);
+      if (!apptRes.ok) throw new Error(`HTTP ${apptRes.status}`);
+      const json = await apptRes.json();
       if (json.error) throw new Error(json.error);
       setData(json);
+      if (repsRes.ok) {
+        const { reps } = await repsRes.json();
+        if (reps) setDbReps(reps);
+      }
     } catch (e: any) {
       setError(e.message);
     } finally {
