@@ -10,8 +10,7 @@ export async function GET(request: NextRequest) {
     const supabase = getServiceClient();
     const { data, error } = await supabase
       .from("reps")
-      .select("id, name, email, role, active")
-      .eq("active", true)
+      .select("id, name, email")
       .order("name", { ascending: true });
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });

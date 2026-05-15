@@ -109,7 +109,7 @@ export function ManagerDashboard({ currentRep }: Props) {
   const [error, setError]     = useState<string | null>(null);
   const [expandedRep, setExpandedRep] = useState<string | null>(null);
   const [retryCooldown, setRetryCooldown] = useState(false);
-  const [dbReps, setDbReps]   = useState<{ id: string; name: string; role: string; active: boolean }[]>([]);
+  const [dbReps, setDbReps]   = useState<{ id: string; name: string; email: string }[]>([]);
 
   const resolveRepName = (id: string) => {
     if (id === "unassigned") return "Unassigned";
@@ -463,7 +463,7 @@ function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
   appt: Appointment;
   hasConflict: boolean;
   onReassigned: () => void;
-  reps: { id: string; name: string; role: string; active: boolean }[];
+  reps: { id: string; name: string; email: string }[];
 }) {
   const [showReassign, setShowReassign] = useState(false);
   const [reassigning, setReassigning]   = useState(false);
