@@ -22,7 +22,10 @@ import {
   Smartphone,
   Copy,
   Check as CheckIcon,
+  LogOut,
+  Shield,
 } from "lucide-react";
+import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { createSession, saveSession, listDrafts, findDraftByImportId, loadDraftById, deleteDraft } from "@/lib/session";
 import type { SessionState } from "@/types/session";
@@ -1085,6 +1088,27 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
           </div>
         ) : (
           <div className="max-w-3xl space-y-8">
+            {/* ── Signed-in account ── */}
+            <div className="p-6 rounded-[28px] bg-white/[0.03] border border-white/[0.08] flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="w-10 h-10 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center shrink-0">
+                  <Shield className="w-5 h-5 text-indigo-400" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-display font-medium text-white truncate">{currentRep.name}</p>
+                  <p className="text-[11px] font-mono text-white/35 truncate">{currentRep.email}</p>
+                  <p className="text-[9px] font-mono text-white/20 uppercase tracking-widest mt-0.5">Hustad Rep · Azure AD</p>
+                </div>
+              </div>
+              <button
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-mono uppercase tracking-widest hover:bg-rose-500/20 transition-all active:scale-95 shrink-0"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                Sign out
+              </button>
+            </div>
+
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <h3 className="text-xl font-display font-medium">Field Operatives</h3>
