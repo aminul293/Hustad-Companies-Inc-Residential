@@ -272,8 +272,8 @@ export function ManagerDashboard({ currentRep }: Props) {
 
             return (
               <motion.div key={repId} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
-                className="bg-white/[0.02] border border-white/[0.06] rounded-3xl overflow-hidden">
-                <button className="w-full p-5 flex items-center justify-between gap-4 hover:bg-white/[0.02] transition-all"
+                className="bg-white/[0.02] border border-white/[0.06] rounded-3xl">
+                <button className="w-full p-5 flex items-center justify-between gap-4 hover:bg-white/[0.02] transition-all rounded-t-3xl"
                   onClick={() => setExpandedRep(isOpen ? null : repId)}>
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
@@ -298,7 +298,8 @@ export function ManagerDashboard({ currentRep }: Props) {
                 <AnimatePresence>
                   {isOpen && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }} className="overflow-hidden">
+                      transition={{ duration: 0.2 }} 
+                      className={cn("transition-all", isOpen ? "overflow-visible" : "overflow-hidden")}>
                       <div className="border-t border-white/[0.05] divide-y divide-white/[0.04]">
                         {appts.map(appt => (
                           <RepApptRow key={appt.id} appt={appt} hasConflict={conflictApptIds.has(appt.id)} onReassigned={fetchData} reps={dbReps} />
@@ -498,7 +499,7 @@ function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
 
   return (
     <div className={cn(
-      "px-5 py-4 flex items-center justify-between gap-4 transition-all hover:bg-white/[0.02]",
+      "px-5 py-4 flex items-center justify-between gap-4 transition-all hover:bg-white/[0.02] last:rounded-b-3xl",
       hasConflict && "bg-amber-500/[0.03]"
     )}>
       <div className="flex items-center gap-3 min-w-0">
@@ -518,7 +519,7 @@ function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-3 shrink-0">
         {phone && (
           <button onClick={() => window.open(`tel:${phone}`)}
             className="p-2 rounded-lg bg-white/5 border border-white/10 text-white/30 hover:text-white transition-all">
