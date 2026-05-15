@@ -54,8 +54,10 @@ export const authOptions: NextAuthOptions = {
           (azureProfile.email as string | undefined) ||
           (azureProfile.preferred_username as string | undefined) ||
           token.email;
-
-        // Upsert rep identity on every Azure AD sign-in so names stay current
+      }
+      // Upsert on every sign-in (user present) so names stay current.
+      // Placed outside `if (profile)` because profile only fires on first OAuth login.
+      if (user) {
         const repId = String(token.id || token.sub || "");
         if (repId) {
           try {
