@@ -67,6 +67,7 @@ export const authOptions: NextAuthOptions = {
                 name: String(token.name || token.email || repId),
                 email: String(token.email || ""),
                 last_seen_at: new Date().toISOString(),
+                active: true,
               },
               { onConflict: "id" }
             );
