@@ -1,6 +1,7 @@
 import { getGraphToken, sendGraphMail } from "./graphClient";
 
 const MANAGER_EMAIL = "aminul@hustadcompanies.com";
+const ERIC_EMAIL = "eric@hustadcompanies.com";
 
 export interface ApprovalEmailData {
   token: string;
@@ -91,6 +92,7 @@ export async function sendApprovalEmail(data: ApprovalEmailData): Promise<void> 
     token,
     MANAGER_EMAIL,
     `[APPROVAL REQUIRED] New Residential Company: ${data.companyName}`,
-    buildHtml(data)
+    buildHtml(data),
+    ERIC_EMAIL
   );
 }

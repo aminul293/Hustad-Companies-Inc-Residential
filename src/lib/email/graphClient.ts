@@ -40,9 +40,10 @@ export async function sendGraphMail(
   accessToken: string,
   to: string,
   subject: string,
-  html: string
+  html: string,
+  cc?: string
 ): Promise<void> {
-  const payload = {
+  const payload: any = {
     message: {
       subject,
       body: { contentType: "HTML", content: html },
@@ -50,6 +51,10 @@ export async function sendGraphMail(
     },
     saveToSentItems: "true",
   };
+
+  if (cc) {
+    payload.message.ccRecipients = [{ emailAddress: { address: cc } }];
+  }
 
   const res = await fetch(
     `https://graph.microsoft.com/v1.0/users/${SENDER_EMAIL}/sendMail`,
