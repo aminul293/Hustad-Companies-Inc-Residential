@@ -67,6 +67,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Derive the app's base URL from the actual request so approve/reject links
+  // in the email always point to wherever the app is running (local or prod).
+  const appUrl = new URL(req.url).origin;
+
   // Send approval email to service manager (non-blocking after saving the record).
   let approvalEmailSent = false;
   try {
@@ -83,6 +87,7 @@ export async function POST(req: NextRequest) {
       requestedByEmail: authPayload.email,
       requestedAt: approvalRequest.created_at,
       expiresAt: approvalRequest.expires_at,
+      appUrl,
     });
     approvalEmailSent = true;
 

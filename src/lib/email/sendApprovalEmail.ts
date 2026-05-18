@@ -1,10 +1,6 @@
 import { getGraphToken, sendGraphMail } from "./graphClient";
 
 const MANAGER_EMAIL = "aminul@hustadcompanies.com";
-const APP_URL =
-  process.env.NEXTAUTH_URL ||
-  process.env.NEXT_PUBLIC_APP_URL ||
-  "https://portal.hustadcompanies.com";
 
 export interface ApprovalEmailData {
   token: string;
@@ -19,11 +15,14 @@ export interface ApprovalEmailData {
   requestedByEmail: string;
   requestedAt: string;
   expiresAt: string;
+  /** Base URL of the app (e.g. http://localhost:3004 or https://portal.hustadcompanies.com).
+   *  Derived from the incoming request so the approve/reject links always work. */
+  appUrl: string;
 }
 
 function buildHtml(d: ApprovalEmailData): string {
-  const approveUrl = `${APP_URL}/api/approvals/${d.token}/approve`;
-  const rejectUrl = `${APP_URL}/api/approvals/${d.token}/reject`;
+  const approveUrl = `${d.appUrl}/api/approvals/${d.token}/approve`;
+  const rejectUrl = `${d.appUrl}/api/approvals/${d.token}/reject`;
   const address = [d.streetAddress, d.locality, d.region, d.postalCode]
     .filter(Boolean)
     .join(", ");
