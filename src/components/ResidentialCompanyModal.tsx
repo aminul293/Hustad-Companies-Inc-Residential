@@ -320,6 +320,19 @@ function RequestForm({
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isFetchingManager, setIsFetchingManager] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/centerpoint/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.employeeId) {
+          setForm((f) => ({ ...f, manager: data.employeeId }));
+        }
+      })
+      .catch(() => {})
+      .finally(() => setIsFetchingManager(false));
+  }, []);
 
   const set = (k: keyof FormState, v: string) => {
     setForm((f) => ({ ...f, [k]: v }));
@@ -478,12 +491,17 @@ function RequestForm({
       <div className="pt-2 border-t border-white/[0.06]">
         <Field label="Manager ID (CenterPoint Employee ID)" error={errors.manager}>
           <div className="relative">
-            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400/50" />
+            {isFetchingManager ? (
+              <Loader2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400/50 animate-spin" />
+            ) : (
+              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400/50" />
+            )}
             <input
               value={form.manager}
               onChange={(e) => set("manager", e.target.value)}
-              placeholder="74522"
-              className={cn(inputCls(errors.manager), "pl-10")}
+              placeholder={isFetchingManager ? "Looking up..." : "74522"}
+              disabled={isFetchingManager}
+              className={cn(inputCls(errors.manager), "pl-10", isFetchingManager && "opacity-50")}
             />
           </div>
         </Field>
