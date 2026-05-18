@@ -7,14 +7,14 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { SplineScene } from "@/components/ui/splite";
 import { StarButton } from "@/components/ui/star-button";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  History, 
-  MapPin, 
-  User, 
-  Shield, 
-  ChevronRight, 
-  LayoutGrid, 
-  Info, 
+import {
+  History,
+  MapPin,
+  User,
+  Shield,
+  ChevronRight,
+  LayoutGrid,
+  Info,
   AlertTriangle,
   Mail,
   Smartphone,
@@ -29,11 +29,13 @@ import {
   List,
   Search,
   LogIn,
-  Plus
+  Plus,
+  Building2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { listDrafts, hasSameDayDraft, deleteDraft, createSession } from "@/lib/session";
 import { RepCommandCenter, type IntakePrefill } from "@/components/RepCommandCenter";
+import { ResidentialCompanyModal } from "@/components/ResidentialCompanyModal";
 import { useSession as useAuthSession, signIn, signOut } from "next-auth/react";
 import { getAuthenticatedRep } from "@/lib/rep-identity";
 import { buildRepCaptureEmail } from "@/lib/rep-capture-email";
@@ -84,6 +86,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
   const [drafts, setDrafts] = useState<ReturnType<typeof listDrafts>>([]);
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
   const [showRepNav, setShowRepNav] = useState(false);
+  const [showCompanyModal, setShowCompanyModal] = useState(false);
 
   // Stores import identifiers (leadId, centerpointId, appointmentId) when the rep
   // arrives at the intake form via a pipeline/CenterPoint "Fix & Start" flow.
@@ -719,12 +722,19 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
           <div className="flex justify-center gap-4">
             {(authStatus === "authenticated" || !!mockId) && (
               <>
-                <button 
+                <button
                   onClick={() => setShowDashboard(true)}
                   className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all"
                 >
                   <LayoutGrid className="w-4 h-4 text-white/70" />
                   <span className="text-sm font-display font-medium text-white">Command Center</span>
+                </button>
+                <button
+                  onClick={() => setShowCompanyModal(true)}
+                  className="group flex items-center gap-3 px-8 py-5 rounded-full bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all"
+                >
+                  <Building2 className="w-4 h-4 text-emerald-400" />
+                  <span className="text-sm font-display font-medium text-emerald-300">New Company</span>
                 </button>
                 <button 
                   onClick={handleStart}
@@ -749,6 +759,11 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
           </div>
         </div>
       </div>
+
+      <ResidentialCompanyModal
+        isOpen={showCompanyModal}
+        onClose={() => setShowCompanyModal(false)}
+      />
     </div>
   );
 }
