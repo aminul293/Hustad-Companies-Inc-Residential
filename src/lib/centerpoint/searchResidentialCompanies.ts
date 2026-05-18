@@ -32,7 +32,6 @@ export async function searchResidentialCompanies(
   opts: SearchResidentialOptions = {}
 ): Promise<{ companies: CpCompanyListItem[]; total: number }> {
   const params = new URLSearchParams({
-    "filter[type]": "Company",
     include: "manager,location",
     "page[size]": String(opts.pageSize ?? 25),
     "page[number]": String(opts.page ?? 1),
@@ -40,18 +39,19 @@ export async function searchResidentialCompanies(
     "fields[companies]": COMPANY_FIELDS,
   });
 
-  // Only apply the Residential customerType filter when browsing without a search term.
-  // When searching by name we want to find any existing company regardless of how it
-  // was created, so the rep knows it already exists before requesting a new one.
-  if (!opts.search) {
-    params.set("filter[custom.customerType][0]", "Residential");
+  if (opts.search) {
+    // Name search: no type/customerType filter — existing companies in CenterPoint
+    // were created with type=Residential (legacy), while new ones use type=Company
+    // + customerType=Residential. Strip type restrictions so we find either.
+    params.set("filter[search]", opts.search);
+  } else {
+    // Browsing mode: show only the residential customer type accounts.
+    // Cover both legacy (type=Residential) and new (type=Company + customerType=Residential).
+    params.set("filter[type]", "Residential");
   }
 
   if (opts.salesStatus) {
     params.set("filter[salesStatus][0]", opts.salesStatus);
-  }
-  if (opts.search) {
-    params.set("filter[search]", opts.search);
   }
 
   const res = await fetch(`${CP_BASE}/companies?${params}`, {
