@@ -454,10 +454,9 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
       </div>
 
       <div className="relative z-10 flex-1 overflow-y-auto px-10 pt-44 pb-48">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-16">
+        <div className="max-w-3xl mx-auto space-y-12">
           
-          {/* Left Column: Launch Area */}
-          <div className="lg:col-span-7 space-y-12">
+          {/* Launch Area */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-6 w-fit">
                 <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest">Autonomous Property Guardian: ACTIVE</span>
@@ -697,60 +696,6 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
             </div>
           </div>
 
-          {/* Right Column: Drafts & Tools */}
-          <div className="lg:col-span-5 space-y-10">
-            {/* Drafts Card */}
-            <section className="space-y-6">
-              <div className="flex items-center justify-between px-2">
-                <p className="text-[10px] font-mono text-white/70 uppercase tracking-widest">Resume a Draft</p>
-                {drafts.length > 0 && <span className="text-[10px] font-mono text-indigo-400">{drafts.length} Active</span>}
-              </div>
-              
-              <div className="space-y-3">
-                {drafts.length > 0 ? (
-                  drafts.slice(0, 4).map((d) => (
-                    <motion.div 
-                      key={d.sessionId}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="group relative p-6 rounded-[32px] bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/20 transition-all cursor-pointer"
-                      onClick={() => onLoadDraft(d.sessionId)}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-1">
-                          <p className="text-sm font-display font-medium text-white truncate max-w-[200px]">
-                            {d.address || "Untitled Session"}
-                          </p>
-                          <div className="flex items-center gap-3">
-                            <span className="text-[9px] font-mono text-white/50 uppercase tracking-widest">{new Date(d.lastSavedAt).toLocaleDateString()}</span>
-                            <span className="w-1 h-1 rounded-full bg-white/20" />
-                            <span className="text-[9px] font-mono text-indigo-400 uppercase tracking-widest">{d.sessionStatus.replace(/_/g, " ")}</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteDraft(d.sessionId);
-                              setDrafts(authRep ? getDisplayDrafts(listDrafts(authRep.id)) : []);
-                            }}
-                            className="p-2 rounded-xl text-white/20 hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                          <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-white transition-all" />
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))
-                ) : (
-                  <div className="p-10 rounded-[32px] border border-dashed border-white/10 flex flex-col items-center justify-center text-center space-y-3 opacity-40">
-                    <History className="w-8 h-8 text-white/20" />
-                    <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest">No Recent Drafts</p>
-                  </div>
-                )}
-              </div>
-            </section>
           </div>
         </div>
       </div>
