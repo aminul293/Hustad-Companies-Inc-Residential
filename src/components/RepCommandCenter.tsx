@@ -610,7 +610,9 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
           outcomeType: s.outcome_type,
           syncStatus: "synced",
           hasFollowUp: false,
-          missingFieldsCount: 0
+          missingFieldsCount: 0,
+          emergencyOverride: s.emergency_override,
+          reconciliationRequired: s.crm_reconciliation_required
         });
       }
     });
@@ -636,7 +638,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
       active: drafts.filter(d => ["draft", "phase_a_active", "phase_a_complete", "rep_review_pending"].includes(d.sessionStatus)).length,
       pending: drafts.filter(d => ["deferred", "summary_locked", "authorization_pending"].includes(d.sessionStatus)).length,
       missing: drafts.filter(d => d.missingFieldsCount > 0).length,
-      synced: drafts.filter(d => d.syncStatus === "synced").length
+      reconciliation: drafts.filter((d: any) => d.reconciliationRequired).length
     };
   }, [drafts]);
 
@@ -816,13 +818,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
               ))}
             </div>
             {view === "dashboard" && (
-              <button
-                onClick={onNewSession}
-                className="px-6 py-3 bg-white text-black rounded-full font-display font-medium text-sm hover:bg-white/90 transition-all flex items-center gap-2"
-              >
-                New Inspection
-                <ArrowRight className="w-4 h-4" />
-              </button>
+              <></>
             )}
           </div>
         </div>
@@ -834,7 +830,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                 { label: "Active Drafts", value: stats.active, icon: Clock, color: "text-indigo-400", bg: "bg-indigo-500/5" },
                 { label: "Pending Auth", value: stats.pending, icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/5" },
                 { label: "Missing Data", value: stats.missing, icon: AlertCircle, color: "text-rose-400", bg: "bg-rose-500/5" },
-                { label: "Cloud Synced", value: stats.synced, icon: CheckCircle2, color: "text-sky-400", bg: "bg-sky-500/5" },
+                { label: "Needs Recon", value: stats.reconciliation, icon: AlertTriangle, color: "text-amber-400", bg: "bg-amber-500/5" },
               ].map((s, i) => (
                 <div key={i} className={cn("p-6 rounded-[32px] border border-white/[0.08] backdrop-blur-xl transition-all hover:border-white/20 hover:bg-white/[0.02] group", s.bg)}>
                   <div className="flex items-center justify-between mb-4">
@@ -1005,6 +1001,12 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/5 border border-rose-500/20 text-[9px] font-mono text-rose-400 uppercase tracking-widest">
                               <AlertCircle className="w-3 h-3" />
                               {d.missingFieldsCount} Incomplete
+                            </div>
+                          )}
+                          {(d as any).reconciliationRequired && (
+                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/5 border border-amber-500/20 text-[9px] font-mono text-amber-400 uppercase tracking-widest">
+                              <AlertTriangle className="w-3 h-3" />
+                              Needs CRM Recon
                             </div>
                           )}
                         </div>

@@ -30,18 +30,63 @@ export async function POST(req: NextRequest) {
   try {
     // Demo bypass: checked against a dedicated low-privilege secret, never the service role key.
     let repId = "00000000-0000-0000-0000-000000000000";
+    let payloadRole = "";
     const bypass = req.headers.get("x-demo-bypass");
     const demoSecret = process.env.DEMO_BYPASS_SECRET;
     if (!demoSecret || bypass !== demoSecret) {
       const payload = await requireAuth(req) as any;
       repId = payload.repId;
+      payloadRole = payload.role;
     }
 
     const db = getServiceClient();
     const body = await req.json();
 
     const row = mapSessionToRow(body, repId);
+
+    const { data: existingSession } = await db
+      .from("inspection_sessions")
+      .select("session_id")
+      .eq("session_id", row.session_id)
+      .single();
+
+    const isNewSession = !existingSession;
+
+    // Phase 5: Backend Enforcement
+    // A valid session MUST originate from a CRM entity unless it's an emergency override or an existing draft update.
+    const hasCrmLink = !!(row.cpc_ticket_id || row.pipeline_lead_id || row.appointment_id);
+    const isEmergencyOverride = process.env.NEXT_PUBLIC_QA_MODE === 'true' || 
+                                payloadRole === 'admin' || 
+                                payloadRole === 'manager';
+
+    if (isNewSession && !hasCrmLink && !isEmergencyOverride) {
+      console.warn(`[AUDIT] Rejected rogue session launch from rep ${repId}. Missing CRM linkage.`);
+      const { error: auditError } = await db.from("audit_events").insert({
+        session_id: null,
+        event_name: "rogue_session_blocked",
+        actor_id: repId,
+        metadata: { 
+          rogue_session_id: row.session_id,
+          details: "Rejected session creation due to missing CRM linkage." 
+        },
+        occurred_at: new Date().toISOString()
+      });
+      if (auditError) console.error("Audit insert error:", auditError);
+      return NextResponse.json({
+        success: false,
+        message: "Inspection must originate from a valid CenterPoint CRM record."
+      }, { status: 403 });
+    }
     
+    if (isNewSession && !hasCrmLink && isEmergencyOverride) {
+      console.info(`[AUDIT] Authorized emergency override session launch from rep ${repId}.`);
+      // Inject override metadata
+      row.emergency_override = true;
+      row.crm_reconciliation_required = true;
+      row.override_reason = body.overrideReason || "Admin/Manager Emergency Override";
+      row.override_by = repId;
+    }
+
     const { data: session, error } = await db
       .from("inspection_sessions")
       .upsert(row, { onConflict: "session_id" })
@@ -49,6 +94,16 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (error) throw error;
+
+    if (isNewSession && !hasCrmLink && isEmergencyOverride) {
+      await db.from("audit_events").insert({
+        session_id: session.session_id,
+        event_name: "emergency_override_launched",
+        actor_id: repId,
+        metadata: { details: `Authorized emergency override session launch from rep ${repId}.` },
+        occurred_at: new Date().toISOString()
+      });
+    }
 
     return NextResponse.json({ session: { ...session, sync_status: "synced" }, synced: true });
   } catch (err: any) {
@@ -59,7 +114,7 @@ export async function POST(req: NextRequest) {
 }
 
 function mapSessionToRow(s: any, repId: string) {
-  return {
+  const row: any = {
     session_id: s.sessionId,
     rep_id: repId,
     pipeline_lead_id: s.pipelineLeadId ?? s.pipeline_lead_id ?? null,
@@ -114,4 +169,11 @@ function mapSessionToRow(s: any, repId: string) {
     signed_at: s.signatureData?.signedAt || null,
     sync_status: "synced",
   };
+  
+  if (s.emergency_override) row.emergency_override = s.emergency_override;
+  if (s.crm_reconciliation_required) row.crm_reconciliation_required = s.crm_reconciliation_required;
+  if (s.override_reason) row.override_reason = s.override_reason;
+  if (s.override_by) row.override_by = s.override_by;
+
+  return row;
 }

@@ -30,7 +30,8 @@ import {
   Search,
   LogIn,
   Plus,
-  Building2
+  Building2,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { listDrafts, hasSameDayDraft, deleteDraft, createSession } from "@/lib/session";
@@ -98,9 +99,18 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
     appointmentId?: string;
   } | null>(null);
 
+  const [isPreFlightMode, setIsPreFlightMode] = useState(false);
+  const [isEmergencyOverride, setIsEmergencyOverride] = useState(false);
+
   const handleStartNew = () => {
     if (!authRep) {
       void signIn("azure-ad", { callbackUrl: "/" }, { prompt: "select_account" });
+      return;
+    }
+
+    const isEmergency = IS_QA_MODE || authRep.role === "admin" || authRep.role === "manager";
+    if (!isEmergency) {
+      alert("Direct session creation is disabled. All inspections must originate from CenterPoint via the Command Center.");
       return;
     }
 
@@ -109,6 +119,8 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
 
     // Close dashboard to reveal the form
     setShowDashboard(false);
+    setIsPreFlightMode(true);
+    setIsEmergencyOverride(true);
 
     // Reset form for a fresh start if needed, but keeping repName
     setForm(f => ({
@@ -134,6 +146,8 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
       return;
     }
     setShowDashboard(false);
+    setIsPreFlightMode(true);
+    setIsEmergencyOverride(false);
     setForm(f => ({
       ...f,
       address: data.address,
@@ -514,8 +528,19 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
 
             {/* Property Intake Form — Appears after auth */}
             <AnimatePresence>
-              {(authStatus === "authenticated" || !!mockId) && authRep && (
+              {(authStatus === "authenticated" || !!mockId) && authRep && isPreFlightMode && (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-8">
+                  {isEmergencyOverride && (
+                    <div className="p-4 rounded-3xl bg-rose-500/10 border border-rose-500/30 flex items-start gap-4 shadow-[0_0_20px_rgba(244,63,94,0.15)]">
+                      <AlertTriangle className="w-5 h-5 text-rose-400 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-[10px] font-mono text-rose-300 uppercase tracking-widest mb-1">Emergency Override Active</p>
+                        <p className="text-sm text-rose-200/80 leading-relaxed font-light">
+                          This session is completely unlinked from CenterPoint. It will not automatically sync to the CRM. Manual reconciliation will be required later.
+                        </p>
+                      </div>
+                    </div>
+                  )}
                   <div className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl space-y-8">
                     {/* Property Identification */}
                     <div className="space-y-6">
@@ -526,7 +551,10 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                       </div>
 
                       <div className="space-y-2 relative">
-                        <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest pl-2">Property Address <span className="text-rose-400">*</span></p>
+                        <div className="flex items-center gap-2 pl-2">
+                          <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest">Property Address <span className="text-rose-400">*</span></p>
+                          {!isEmergencyOverride && <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 text-[8px] font-mono uppercase tracking-widest border border-indigo-500/20 flex items-center gap-1"><Lock className="w-2 h-2" /> Synced from CenterPoint</span>}
+                        </div>
                         <div className="relative group">
                           <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-400/50 group-focus-within:text-indigo-400 transition-colors" />
                           <input
@@ -534,9 +562,11 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                             onChange={(e) => set("address", e.target.value)}
                             onFocus={() => setIsAddressFocused(true)}
                             onBlur={() => setTimeout(() => setIsAddressFocused(false), 200)}
+                            readOnly={!isEmergencyOverride}
                             className={cn(
                               "w-full bg-white/[0.04] border rounded-2xl py-5 pl-14 pr-6 text-white placeholder:text-white/20 outline-none transition-all text-lg",
-                              errors.address ? "border-rose-500/50" : "border-white/[0.1] focus:border-indigo-500/30 focus:bg-white/[0.06] focus:ring-4 focus:ring-indigo-500/5"
+                              errors.address ? "border-rose-500/50" : "border-white/[0.1] focus:border-indigo-500/30 focus:bg-white/[0.06] focus:ring-4 focus:ring-indigo-500/5",
+                              !isEmergencyOverride && "opacity-70 bg-white/[0.02] cursor-not-allowed focus:ring-0 focus:border-white/[0.1] focus:bg-white/[0.02]"
                             )}
                             placeholder="Start typing property address..."
                           />
@@ -583,26 +613,35 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
 
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest pl-2">Homeowner Name</p>
+                          <div className="flex items-center gap-2 pl-2">
+                            <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest">Homeowner Name</p>
+                            {!isEmergencyOverride && <Lock className="w-2.5 h-2.5 text-white/20" />}
+                          </div>
                           <div className="relative group">
                             <User className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-white/50 transition-colors" />
-                            <input value={form.homeownerName} onChange={(e) => set("homeownerName", e.target.value)} autoComplete="off" spellCheck="false" className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all" placeholder="Full Name" />
+                            <input readOnly={!isEmergencyOverride} value={form.homeownerName} onChange={(e) => set("homeownerName", e.target.value)} className={cn("w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all", !isEmergencyOverride && "opacity-70 bg-white/[0.02] cursor-not-allowed focus:border-white/[0.1] focus:bg-white/[0.02]")} placeholder="Full Name" />
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest pl-2">Mobile Number</p>
+                          <div className="flex items-center gap-2 pl-2">
+                            <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest">Mobile Number</p>
+                            {!isEmergencyOverride && <Lock className="w-2.5 h-2.5 text-white/20" />}
+                          </div>
                           <div className="relative group">
                             <Smartphone className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-white/50 transition-colors" />
-                            <input value={form.homeownerMobile} onChange={(e) => set("homeownerMobile", e.target.value)} autoComplete="off" className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all" placeholder="(608) 000-0000" />
+                            <input readOnly={!isEmergencyOverride} value={form.homeownerMobile} onChange={(e) => set("homeownerMobile", e.target.value)} className={cn("w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all", !isEmergencyOverride && "opacity-70 bg-white/[0.02] cursor-not-allowed focus:border-white/[0.1] focus:bg-white/[0.02]")} placeholder="(608) 000-0000" />
                           </div>
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest pl-2">Email Address</p>
+                        <div className="flex items-center gap-2 pl-2">
+                          <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest">Email Address</p>
+                          {!isEmergencyOverride && <Lock className="w-2.5 h-2.5 text-white/20" />}
+                        </div>
                         <div className="relative group max-w-sm">
                           <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-white/50 transition-colors" />
-                          <input value={form.homeownerEmail} onChange={(e) => set("homeownerEmail", e.target.value)} type="email" autoComplete="off" className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all" placeholder="homeowner@example.com" />
+                          <input readOnly={!isEmergencyOverride} value={form.homeownerEmail} onChange={(e) => set("homeownerEmail", e.target.value)} type="email" className={cn("w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all", !isEmergencyOverride && "opacity-70 bg-white/[0.02] cursor-not-allowed focus:border-white/[0.1] focus:bg-white/[0.02]")} placeholder="homeowner@example.com" />
                         </div>
                       </div>
                     </div>
@@ -722,27 +761,41 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
           <div className="flex justify-center gap-4">
             {(authStatus === "authenticated" || !!mockId) && (
               <>
-                <button
-                  onClick={() => setShowDashboard(true)}
-                  className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all"
-                >
-                  <LayoutGrid className="w-4 h-4 text-white/70" />
-                  <span className="text-sm font-display font-medium text-white">Command Center</span>
-                </button>
-                <button
-                  onClick={() => setShowCompanyModal(true)}
-                  className="group flex items-center gap-3 px-8 py-5 rounded-full bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all"
-                >
-                  <Building2 className="w-4 h-4 text-emerald-400" />
-                  <span className="text-sm font-display font-medium text-emerald-300">New Company</span>
-                </button>
-                <button 
-                  onClick={handleStart}
-                  className="group flex items-center gap-4 px-12 py-6 rounded-full bg-white text-black transition-all hover:bg-neutral-200 active:scale-95 shadow-[0_20px_50px_rgba(255,255,255,0.1)]"
-                >
-                  <span className="text-lg font-display font-semibold tracking-tight">Launch Inspection</span>
-                  <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-                </button>
+                {!isPreFlightMode ? (
+                  <>
+                    <button
+                      onClick={() => setShowDashboard(true)}
+                      className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all"
+                    >
+                      <LayoutGrid className="w-4 h-4 text-white/70" />
+                      <span className="text-sm font-display font-medium text-white">Command Center</span>
+                    </button>
+                    <button
+                      onClick={() => setShowCompanyModal(true)}
+                      className="group flex items-center gap-3 px-8 py-5 rounded-full bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all"
+                    >
+                      <Building2 className="w-4 h-4 text-emerald-400" />
+                      <span className="text-sm font-display font-medium text-emerald-300">New Company</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setIsPreFlightMode(false)}
+                      className="group flex items-center gap-3 px-8 py-6 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+                    >
+                      <X className="w-5 h-5 text-white/50" />
+                      <span className="text-sm font-display font-medium text-white/70">Cancel / Back to Hub</span>
+                    </button>
+                    <button 
+                      onClick={handleStart}
+                      className="group flex items-center gap-4 px-12 py-6 rounded-full bg-white text-black transition-all hover:bg-neutral-200 active:scale-95 shadow-[0_20px_50px_rgba(255,255,255,0.1)]"
+                    >
+                      <span className="text-lg font-display font-semibold tracking-tight">Launch Inspection</span>
+                      <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                    </button>
+                  </>
+                )}
               </>
             )}
           </div>

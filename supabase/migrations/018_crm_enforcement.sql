@@ -1,0 +1,5 @@
+ALTER TABLE inspection_sessions 
+ADD COLUMN IF NOT EXISTS emergency_override BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS crm_reconciliation_required BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS override_reason TEXT,
+ADD COLUMN IF NOT EXISTS override_by TEXT;
