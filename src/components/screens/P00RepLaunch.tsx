@@ -586,14 +586,14 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                           <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest pl-2">Homeowner Name</p>
                           <div className="relative group">
                             <User className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-white/50 transition-colors" />
-                            <input value={form.homeownerName} onChange={(e) => set("homeownerName", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all" placeholder="Full Name" />
+                            <input value={form.homeownerName} onChange={(e) => set("homeownerName", e.target.value)} autoComplete="off" spellCheck="false" className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all" placeholder="Full Name" />
                           </div>
                         </div>
                         <div className="space-y-2">
                           <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest pl-2">Mobile Number</p>
                           <div className="relative group">
                             <Smartphone className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-white/50 transition-colors" />
-                            <input value={form.homeownerMobile} onChange={(e) => set("homeownerMobile", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all" placeholder="(608) 000-0000" />
+                            <input value={form.homeownerMobile} onChange={(e) => set("homeownerMobile", e.target.value)} autoComplete="off" className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all" placeholder="(608) 000-0000" />
                           </div>
                         </div>
                       </div>
@@ -602,7 +602,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                         <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest pl-2">Email Address</p>
                         <div className="relative group max-w-sm">
                           <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-white/50 transition-colors" />
-                          <input value={form.homeownerEmail} onChange={(e) => set("homeownerEmail", e.target.value)} type="email" className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all" placeholder="homeowner@example.com" />
+                          <input value={form.homeownerEmail} onChange={(e) => set("homeownerEmail", e.target.value)} type="email" autoComplete="off" className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all" placeholder="homeowner@example.com" />
                         </div>
                       </div>
                     </div>
