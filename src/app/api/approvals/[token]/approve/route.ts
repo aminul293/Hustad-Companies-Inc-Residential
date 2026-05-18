@@ -40,13 +40,17 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: { token: string } }
 ) {
+  const token = params.token;
+  console.log(`[APPROVE] GET /api/approvals/${token}/approve`);
   try {
-    const result = await approveRequest(params.token);
+    const result = await approveRequest(token);
+    console.log(`[APPROVE] Success — company:${result.companyId} ticket:${result.ticketId}`);
     return new NextResponse(approvedHtml(result.companyId, result.ticketId), {
       headers: { "Content-Type": "text/html; charset=utf-8" },
     });
   } catch (err: any) {
-    return new NextResponse(errorHtml(err.message), {
+    console.error(`[APPROVE] Failed — stage:${err.stage ?? "unknown"} message:${err.message}`);
+    return new NextResponse(errorHtml(`${err.message}${err.stage ? ` (stage: ${err.stage})` : ""}`), {
       status: 400,
       headers: { "Content-Type": "text/html; charset=utf-8" },
     });
