@@ -331,6 +331,9 @@ function RequestForm({
     if (!form.name.trim()) e.name = "Company name is required";
     if (!form.salesStatus) e.salesStatus = "Required";
     if (!form.timezone) e.timezone = "Required";
+    if (form.manager.trim() && !/^\d+$/.test(form.manager.trim())) {
+      e.manager = "Must be a numeric CenterPoint Employee ID";
+    }
     return e;
   };
 
@@ -473,14 +476,14 @@ function RequestForm({
 
       {/* Manager ID */}
       <div className="pt-2 border-t border-white/[0.06]">
-        <Field label="Manager ID (CenterPoint Employee ID)">
+        <Field label="Manager ID (CenterPoint Employee ID)" error={errors.manager}>
           <div className="relative">
             <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400/50" />
             <input
               value={form.manager}
               onChange={(e) => set("manager", e.target.value)}
               placeholder="74522"
-              className={cn(inputCls(), "pl-10")}
+              className={cn(inputCls(errors.manager), "pl-10")}
             />
           </div>
         </Field>
