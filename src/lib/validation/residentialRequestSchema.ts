@@ -10,7 +10,7 @@ export const ResidentialRequestSchema = z.object({
   locality: z.string().optional(),
   region: z.string().optional(),
   postalCode: z.string().optional(),
-  manager: z.string().optional(),
+  manager: z.string().regex(/^\d+$/, "Manager ID must be numeric").optional().or(z.literal("")),
 });
 
 export type ResidentialRequestInput = z.infer<typeof ResidentialRequestSchema>;

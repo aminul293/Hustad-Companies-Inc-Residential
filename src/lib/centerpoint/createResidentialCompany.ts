@@ -22,7 +22,7 @@ export async function createResidentialCompany(
       type: "companies",
       attributes: {
         name: input.name,
-        type: "Company",
+        type: "Residential",
         salesStatus: input.salesStatus,
         timezone: input.timezone,
         ...(input.streetAddress && { streetAddress: input.streetAddress }),
@@ -60,7 +60,7 @@ export async function createResidentialCompany(
   return {
     id: String(json.data?.id ?? ""),
     name: attr.name ?? input.name,
-    type: "Company",
+    type: "Residential",
     customerType: "Residential",
     salesStatus: attr.salesStatus ?? input.salesStatus,
     timezone: attr.timezone,
