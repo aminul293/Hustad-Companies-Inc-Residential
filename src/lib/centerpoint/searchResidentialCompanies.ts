@@ -32,7 +32,6 @@ export async function searchResidentialCompanies(
   opts: SearchResidentialOptions = {}
 ): Promise<{ companies: CpCompanyListItem[]; total: number }> {
   const params = new URLSearchParams({
-    "filter[custom.customerType][0]": "Residential",
     "filter[type]": "Company",
     include: "manager,location",
     "page[size]": String(opts.pageSize ?? 25),
@@ -40,6 +39,13 @@ export async function searchResidentialCompanies(
     sort: "-recentActivity",
     "fields[companies]": COMPANY_FIELDS,
   });
+
+  // Only apply the Residential customerType filter when browsing without a search term.
+  // When searching by name we want to find any existing company regardless of how it
+  // was created, so the rep knows it already exists before requesting a new one.
+  if (!opts.search) {
+    params.set("filter[custom.customerType][0]", "Residential");
+  }
 
   if (opts.salesStatus) {
     params.set("filter[salesStatus][0]", opts.salesStatus);
