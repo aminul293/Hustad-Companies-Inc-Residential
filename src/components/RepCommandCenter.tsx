@@ -311,7 +311,10 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
         setPendingDuplicate({ sessionId: existingLocal, address: normalizeAddress(address) || job.id });
         return;
       }
-      const existingCloud = serverSessionsRef.current.some((s: any) => s.cpc_ticket_id === job.id);
+      const existingCloud = serverSessionsRef.current.some((s: any) =>
+        s.cpc_ticket_id === job.id ||
+        (job.pipelineLeadId && s.pipeline_lead_id === job.pipelineLeadId)
+      );
       if (existingCloud) {
         showImportError("An inspection for this CenterPoint job already exists. Find it in the dashboard.", 8000);
         return;
@@ -349,7 +352,10 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
         setPendingDuplicate({ sessionId: existingLocal, address: normalizeAddress(address) || lead.id });
         return;
       }
-      const existingCloud = serverSessionsRef.current.some((s: any) => s.pipeline_lead_id === lead.id);
+      const existingCloud = serverSessionsRef.current.some((s: any) =>
+        s.pipeline_lead_id === lead.id ||
+        (lead.cpc_ticket_id && s.cpc_ticket_id === lead.cpc_ticket_id)
+      );
       if (existingCloud) {
         showImportError("An inspection for this lead already exists. Find it in the dashboard.", 8000);
         return;
@@ -1022,6 +1028,10 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                             e.stopPropagation();
                             if (confirmDeleteId === d.sessionId) {
                               deleteDraft(d.sessionId);
+                              if (d.syncStatus === "synced") {
+                                fetch(`/api/sessions/${d.sessionId}`, { method: "DELETE" }).catch(() => {});
+                              }
+                              setServerSessions(prev => prev.filter(s => s.session_id !== d.sessionId));
                               setDraftRefreshKey(k => k + 1);
                               setConfirmDeleteId(null);
                             } else {

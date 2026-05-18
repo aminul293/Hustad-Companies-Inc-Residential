@@ -80,6 +80,16 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
       throw deleteError;
     }
 
+    // 5. Archive any inspection sessions linked to this lead
+    const { error: archiveError } = await supabase
+      .from('inspection_sessions')
+      .update({ session_status: 'archived' })
+      .eq('pipeline_lead_id', params.id);
+
+    if (archiveError) {
+      console.error(`[API] Session archive failed (non-fatal):`, archiveError);
+    }
+
     console.log(`[API] Removal successful for: \${params.id}`);
     return NextResponse.json({ success: true });
   } catch (error: any) {

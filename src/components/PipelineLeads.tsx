@@ -7,6 +7,7 @@ import {
   Activity, Flame, ChevronRight, ChevronLeft, X, AlertTriangle, PenLine, Mail
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { findDraftByImportId, deleteDraft } from "@/lib/session";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface PipelineLead {
@@ -645,6 +646,11 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
     setConfirmModal({ leadId: lead.id, leadName: lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id });
   };
 
+  const purgeLinkedLocalDraft = (leadId: string) => {
+    const sessionId = findDraftByImportId("pipelineLeadId", leadId);
+    if (sessionId) deleteDraft(sessionId);
+  };
+
   const confirmRemove = async () => {
     if (!confirmModal) return;
     const { leadId } = confirmModal;
@@ -653,7 +659,11 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
     try {
       const res = await fetch(`/api/pipeline/${leadId}`, { method: "DELETE" });
       const data = await res.json();
-      if (res.ok) { setLeads(p => p.filter(l => l.id !== leadId)); setTimeout(fetchLeads, 300); }
+      if (res.ok) {
+        purgeLinkedLocalDraft(leadId);
+        setLeads(p => p.filter(l => l.id !== leadId));
+        setTimeout(fetchLeads, 300);
+      }
       else if (res.status === 403) setBlockedModal(confirmModal);
       else console.error("Remove failed:", data.error);
     } catch (e) { console.error(e); }
@@ -667,7 +677,11 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
     setRemoving(leadId);
     try {
       const res = await fetch(`/api/pipeline/${leadId}?force=true`, { method: "DELETE" });
-      if (res.ok) { setLeads(p => p.filter(l => l.id !== leadId)); setTimeout(fetchLeads, 300); }
+      if (res.ok) {
+        purgeLinkedLocalDraft(leadId);
+        setLeads(p => p.filter(l => l.id !== leadId));
+        setTimeout(fetchLeads, 300);
+      }
     } catch (e) { console.error(e); }
     finally { setRemoving(null); }
   };
