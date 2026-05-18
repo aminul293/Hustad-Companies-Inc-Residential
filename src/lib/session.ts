@@ -241,6 +241,8 @@ interface DraftMeta {
   lastSyncedAt?: string;
   syncError?: string;
   syncRetryCount?: number;
+  emergencyOverride?: boolean;
+  reconciliationRequired?: boolean;
 }
 
 function getDraftsIndex(): Record<string, DraftMeta> {
