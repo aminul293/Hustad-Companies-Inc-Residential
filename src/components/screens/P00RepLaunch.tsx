@@ -695,9 +695,6 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
               </p>
             </div>
           </div>
-
-          </div>
-        </div>
       </div>
 
       {/* Footer CTA */}
