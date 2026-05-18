@@ -1,7 +1,7 @@
 import { getGraphToken, sendGraphMail } from "./graphClient";
 
 const MANAGER_EMAIL = "aminul@hustadcompanies.com";
-const ERIC_EMAIL = "eric@hustadcompanies.com";
+const ERIC_EMAIL = "ecaturia@hustadcompanies.com";
 
 export interface ApprovalEmailData {
   token: string;
