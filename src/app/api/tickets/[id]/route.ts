@@ -94,7 +94,7 @@ export async function PATCH(
           Authorization: CP_KEY,
         },
         body: JSON.stringify({
-          data: { type: "productions", id: current.cp_job_id, attributes: { status: cpStatus } },
+          data: { type: "services", id: current.cp_job_id, attributes: { status: cpStatus } },
         }),
       });
 
