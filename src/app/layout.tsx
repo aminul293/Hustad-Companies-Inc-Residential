@@ -21,7 +21,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       </head>
-      <body className="font-body bg-hustad-cream">
+      <body className="font-body bg-[#06090F] h-screen overflow-hidden">
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
