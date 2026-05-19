@@ -33,7 +33,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { lockSummary, setOutcomeType } from "@/lib/session";
-import { calculateEstimate } from "@/lib/pricingEngine";
 import { AIAssistSummary } from "@/components/AIAssistSummary";
 import { PhotoAnnotationLayer } from "@/components/PhotoAnnotationLayer";
 import { ProofRefinementModal } from "@/components/ProofRefinementModal";
@@ -203,58 +202,6 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
   const [body, setBody] = useState(f.summaryBody);
   const [roofingArea, setRoofingArea] = useState(f.roofingArea || "3,200");
   const [estimatedValue, setEstimatedValue] = useState(f.estimatedClaimValue || "$28,800");
-
-  // Estimating variables states
-  const [totalSF, setTotalSF] = useState(f.totalSF || (f.roofingArea ? parseInt(f.roofingArea.replace(/,/g, "")) || 3200 : 3200));
-  const [wasteFactor, setWasteFactor] = useState(f.wasteFactor ?? 12);
-  const [pitch, setPitch] = useState(f.pitch || "6/12");
-  const [stories, setStories] = useState(f.stories || 1);
-  const [layers, setLayers] = useState(f.layers || 1);
-  const [pipeBootsCount, setPipeBootsCount] = useState(f.pipeBootsCount || 0);
-  const [pipeBootsSize, setPipeBootsSize] = useState(f.pipeBootsSize || "1.5\"-3\"");
-  const [ridgeVentLF, setRidgeVentLF] = useState(f.ridgeVentLF || 0);
-  const [offRidgeVentsCount, setOffRidgeVentsCount] = useState(f.offRidgeVentsCount || 0);
-  const [powerVentsCount, setPowerVentsCount] = useState(f.powerVentsCount || 0);
-  const [valleyMetalLF, setValleyMetalLF] = useState(f.valleyMetalLF || 0);
-  const [heightOfRoof, setHeightOfRoof] = useState(f.heightOfRoof || 15);
-  const [shingleType, setShingleType] = useState(f.shingleType || "dimensional");
-
-  // Dynamic estimate calculation
-  useEffect(() => {
-    const breakdown = calculateEstimate({
-      totalSF,
-      wasteFactor,
-      pitch,
-      stories,
-      layers,
-      pipeBootsCount,
-      pipeBootsSize,
-      ridgeVentLF,
-      offRidgeVentsCount,
-      powerVentsCount,
-      valleyMetalLF,
-      heightOfRoof,
-      shingleType,
-    } as any);
-
-    setRoofingArea(totalSF.toLocaleString());
-    setEstimatedValue(`$${breakdown.basePrice.toLocaleString()}`);
-  }, [
-    totalSF,
-    wasteFactor,
-    pitch,
-    stories,
-    layers,
-    pipeBootsCount,
-    pipeBootsSize,
-    ridgeVentLF,
-    offRidgeVentsCount,
-    powerVentsCount,
-    valleyMetalLF,
-    heightOfRoof,
-    shingleType,
-  ]);
-
   const [weatherEvents, setWeatherEvents] = useState(f.weatherEvents || [
     { time: "5:39 PM CDT", reference: "NWS MKX LSR: 1 E Madison, 3.25 inch hail", relevance: "Same east Madison trade area near property." },
     { time: "5:34 PM CDT", reference: "NWS MKX LSR: 1 E Maple Bluff, 3.00 inch hail", relevance: "Confirms large hail north of the property." },
@@ -338,22 +285,6 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
 
-    const breakdown = calculateEstimate({
-      totalSF,
-      wasteFactor,
-      pitch,
-      stories,
-      layers,
-      pipeBootsCount,
-      pipeBootsSize,
-      ridgeVentLF,
-      offRidgeVentsCount,
-      powerVentsCount,
-      valleyMetalLF,
-      heightOfRoof,
-      shingleType,
-    } as any);
-
     let updated: SessionState = {
       ...session,
       findings: {
@@ -371,20 +302,6 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
         internalNotes,
         urgentProtectionRecommended: urgentRecommended,
         findingCategories,
-        totalSF,
-        wasteFactor,
-        pitch,
-        stories,
-        layers,
-        pipeBootsCount,
-        pipeBootsSize,
-        ridgeVentLF,
-        offRidgeVentsCount,
-        powerVentsCount,
-        valleyMetalLF,
-        heightOfRoof,
-        shingleType,
-        baseEstimatePrice: breakdown.basePrice,
       },
     };
     updated = setOutcomeType(updated, outcomeType!);
@@ -574,236 +491,25 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                 ))}
               </div>
 
-              {/* Technical Property Metrics & Estimating Panel */}
-              <div className="p-10 rounded-[40px] bg-white/[0.02] border border-white/[0.05] space-y-10">
-                <div className="flex items-center justify-between border-b border-white/5 pb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
-                      <Layers className="w-4 h-4 text-indigo-400" />
-                    </div>
-                    <div>
-                      <h3 className="text-xs font-mono font-bold text-white/80 uppercase tracking-[0.2em]">Estimating & Dimension Profile</h3>
-                      <p className="text-[10px] text-white/30 font-light mt-0.5">Calculates base contract and warranty tier values dynamically.</p>
-                    </div>
-                  </div>
-                  
-                  {/* Live Calculation Badge */}
-                  <div className="flex items-center gap-4 bg-indigo-500/[0.06] border border-indigo-500/20 px-6 py-3 rounded-2xl">
-                    <div className="text-right">
-                      <p className="text-[8px] font-mono text-indigo-400 uppercase tracking-widest">Base GAF HDZ Estimate</p>
-                      <p className="text-xl font-display font-bold text-white mt-0.5">{estimatedValue}</p>
-                    </div>
-                    <div className="h-8 w-[1px] bg-indigo-500/20" />
-                    <div className="text-left">
-                      <p className="text-[8px] font-mono text-indigo-400 uppercase tracking-widest">Total squares</p>
-                      <p className="text-xl font-display font-bold text-indigo-300 mt-0.5">
-                        {calculateEstimate({ totalSF, wasteFactor, pitch, stories, layers, pipeBootsCount, pipeBootsSize, ridgeVentLF, offRidgeVentsCount, powerVentsCount, valleyMetalLF, heightOfRoof, shingleType } as any).totalSquares} SQ
-                      </p>
-                    </div>
-                  </div>
+              {/* Technical Property Metrics */}
+              <div className="p-10 rounded-[40px] bg-white/[0.02] border border-white/[0.05] grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div className="space-y-4">
+                  <p className="text-[9px] font-mono text-white/30 uppercase tracking-[0.4em] pl-1 font-bold">Roofing Area (SF)</p>
+                  <input
+                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl py-5 px-6 text-white text-xl font-display placeholder:text-white/10 outline-none focus:border-indigo-500/40 focus:bg-white/[0.05] transition-all"
+                    placeholder="e.g. 3,200"
+                    value={roofingArea}
+                    onChange={(e) => setRoofingArea(e.target.value)}
+                  />
                 </div>
-
-                {/* Grid 1: Basic Parameters */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Roofing Area SF */}
-                  <div className="space-y-3">
-                    <label className="text-[9px] font-mono text-white/30 uppercase tracking-[0.3em] font-bold block">Roof Area (SF)</label>
-                    <input
-                      type="number"
-                      className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl py-4 px-5 text-white text-lg font-display placeholder:text-white/10 outline-none focus:border-indigo-500/40 focus:bg-white/[0.05] transition-all"
-                      placeholder="e.g. 3200"
-                      value={totalSF}
-                      onChange={(e) => setTotalSF(parseInt(e.target.value) || 0)}
-                    />
-                  </div>
-
-                  {/* Waste Factor % */}
-                  <div className="space-y-3">
-                    <label className="text-[9px] font-mono text-white/30 uppercase tracking-[0.3em] font-bold block">Waste Factor (%)</label>
-                    <div className="flex items-center bg-white/[0.03] border border-white/[0.08] rounded-2xl overflow-hidden">
-                      <button 
-                        onClick={() => setWasteFactor(Math.max(5, wasteFactor - 1))}
-                        className="h-14 px-4 text-white/40 hover:text-white/80 active:scale-95 transition-all"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
-                      <input
-                        type="number"
-                        className="flex-1 w-full bg-transparent border-none text-center text-white text-lg font-display outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        value={wasteFactor}
-                        onChange={(e) => setWasteFactor(parseInt(e.target.value) || 0)}
-                      />
-                      <button 
-                        onClick={() => setWasteFactor(Math.min(50, wasteFactor + 1))}
-                        className="h-14 px-4 text-white/40 hover:text-white/80 active:scale-95 transition-all"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Roof Pitch */}
-                  <div className="space-y-3">
-                    <label className="text-[9px] font-mono text-white/30 uppercase tracking-[0.3em] font-bold block">Roof Pitch</label>
-                    <select
-                      className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl h-14 px-5 text-white text-md font-display outline-none focus:border-indigo-500/40 focus:bg-white/[0.05] transition-all cursor-pointer"
-                      value={pitch}
-                      onChange={(e) => setPitch(e.target.value)}
-                    >
-                      {["3/12", "4/12", "5/12", "6/12", "7/12", "8/12", "9/12", "10/12", "11/12", "12/12", "13/12+"].map((p) => (
-                        <option key={p} value={p} className="bg-[#0A0A0A] text-white">{p}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Grid 2: Structural Factors */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Stories */}
-                  <div className="space-y-3">
-                    <label className="text-[9px] font-mono text-white/30 uppercase tracking-[0.3em] font-bold block">Stories</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[1, 2, 3].map((num) => (
-                        <button
-                          key={num}
-                          onClick={() => setStories(num)}
-                          className={cn(
-                            "py-4 rounded-xl text-xs font-mono uppercase tracking-wider border transition-all",
-                            stories === num 
-                              ? "bg-indigo-500/20 border-indigo-500/50 text-white font-bold"
-                              : "bg-white/[0.02] border-white/5 text-white/40 hover:border-white/10"
-                          )}
-                        >
-                          {num === 3 ? "3+" : `${num} Story`}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Tear-off Layers */}
-                  <div className="space-y-3">
-                    <label className="text-[9px] font-mono text-white/30 uppercase tracking-[0.3em] font-bold block">Tear-off Layers</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[1, 2, 3].map((num) => (
-                        <button
-                          key={num}
-                          onClick={() => setLayers(num)}
-                          className={cn(
-                            "py-4 rounded-xl text-xs font-mono uppercase tracking-wider border transition-all",
-                            layers === num 
-                              ? "bg-indigo-500/20 border-indigo-500/50 text-white font-bold"
-                              : "bg-white/[0.02] border-white/5 text-white/40 hover:border-white/10"
-                          )}
-                        >
-                          {num} Layer{num > 1 ? "s" : ""}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Height of Roof (Ground to Eave in feet) */}
-                  <div className="space-y-3">
-                    <label className="text-[9px] font-mono text-white/30 uppercase tracking-[0.3em] font-bold block">Height / Eave Ht (ft)</label>
-                    <input
-                      type="number"
-                      className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl py-4 px-5 text-white text-md font-display outline-none focus:border-indigo-500/40 focus:bg-white/[0.05] transition-all"
-                      placeholder="e.g. 15"
-                      value={heightOfRoof}
-                      onChange={(e) => setHeightOfRoof(parseInt(e.target.value) || 0)}
-                    />
-                  </div>
-                </div>
-
-                {/* Grid 3: Accessories & Ventilation */}
-                <div className="space-y-4 pt-4 border-t border-white/5">
-                  <h4 className="text-[9px] font-mono text-white/40 uppercase tracking-[0.3em] font-bold pl-1">Accessories & Ventilation Details</h4>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                    {/* Pipe Boots Count */}
-                    <div className="space-y-2">
-                      <label className="text-[8px] font-mono text-white/30 uppercase tracking-widest font-bold block">Pipe Boots</label>
-                      <input
-                        type="number"
-                        className="w-full bg-white/[0.02] border border-white/5 rounded-xl py-3 px-4 text-white text-center text-sm outline-none focus:border-indigo-500/30"
-                        value={pipeBootsCount}
-                        onChange={(e) => setPipeBootsCount(parseInt(e.target.value) || 0)}
-                      />
-                    </div>
-
-                    {/* Pipe Boot Sizes */}
-                    <div className="space-y-2">
-                      <label className="text-[8px] font-mono text-white/30 uppercase tracking-widest block">Boot size</label>
-                      <select
-                        className="w-full bg-white/[0.02] border border-white/5 rounded-xl h-11 px-3 text-white text-xs outline-none focus:border-indigo-500/30 cursor-pointer"
-                        value={pipeBootsSize}
-                        onChange={(e) => setPipeBootsSize(e.target.value)}
-                      >
-                        {['1.5"-3"', '3"-4"', 'Split Boot'].map((sz) => (
-                          <option key={sz} value={sz} className="bg-[#0A0A0A] text-white">{sz}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Ridge Vent LF */}
-                    <div className="space-y-2">
-                      <label className="text-[8px] font-mono text-white/30 uppercase tracking-widest font-bold block">Ridge Vent (LF)</label>
-                      <input
-                        type="number"
-                        className="w-full bg-white/[0.02] border border-white/5 rounded-xl py-3 px-4 text-white text-center text-sm outline-none focus:border-indigo-500/30"
-                        value={ridgeVentLF}
-                        onChange={(e) => setRidgeVentLF(parseInt(e.target.value) || 0)}
-                      />
-                    </div>
-
-                    {/* Valley Metal LF */}
-                    <div className="space-y-2">
-                      <label className="text-[8px] font-mono text-white/30 uppercase tracking-widest font-bold block">Valley Metal (LF)</label>
-                      <input
-                        type="number"
-                        className="w-full bg-white/[0.02] border border-white/5 rounded-xl py-3 px-4 text-white text-center text-sm outline-none focus:border-indigo-500/30"
-                        value={valleyMetalLF}
-                        onChange={(e) => setValleyMetalLF(parseInt(e.target.value) || 0)}
-                      />
-                    </div>
-
-                    {/* Off-Ridge Vents */}
-                    <div className="space-y-2">
-                      <label className="text-[8px] font-mono text-white/30 uppercase tracking-widest font-bold block">Off-Ridge Vents</label>
-                      <input
-                        type="number"
-                        className="w-full bg-white/[0.02] border border-white/5 rounded-xl py-3 px-4 text-white text-center text-sm outline-none focus:border-indigo-500/30"
-                        value={offRidgeVentsCount}
-                        onChange={(e) => setOffRidgeVentsCount(parseInt(e.target.value) || 0)}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-                    {/* Power Vents */}
-                    <div className="space-y-2">
-                      <label className="text-[8px] font-mono text-white/30 uppercase tracking-widest font-bold block">Power Attic Vents (Count)</label>
-                      <input
-                        type="number"
-                        className="w-full bg-white/[0.02] border border-white/5 rounded-xl py-3.5 px-4 text-white text-sm outline-none focus:border-indigo-500/30"
-                        value={powerVentsCount}
-                        onChange={(e) => setPowerVentsCount(parseInt(e.target.value) || 0)}
-                      />
-                    </div>
-
-                    {/* Shingle Style Selection */}
-                    <div className="md:col-span-2 space-y-2">
-                      <label className="text-[8px] font-mono text-white/30 uppercase tracking-widest block">Default System Specification</label>
-                      <select
-                        className="w-full bg-white/[0.02] border border-white/5 rounded-xl h-12 px-4 text-white text-xs outline-none focus:border-indigo-500/30 cursor-pointer"
-                        value={shingleType}
-                        onChange={(e) => setShingleType(e.target.value)}
-                      >
-                        <option value="dimensional" className="bg-[#0A0A0A] text-white">GAF Timberline HDZ (Dimensional) - Standard</option>
-                        <option value="three_tab" className="bg-[#0A0A0A] text-white">3-Tab Asphalt Shingle - Legacy</option>
-                        <option value="luxury" className="bg-[#0A0A0A] text-white">Camelot II / Grand Sequoia (Luxury) - Premium</option>
-                      </select>
-                    </div>
-                  </div>
+                <div className="space-y-4">
+                  <p className="text-[9px] font-mono text-white/30 uppercase tracking-[0.4em] pl-1 font-bold">Estimated Claim Value</p>
+                  <input
+                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl py-5 px-6 text-indigo-400 text-xl font-display placeholder:text-white/10 outline-none focus:border-indigo-500/40 focus:bg-white/[0.05] transition-all"
+                    placeholder="e.g. $28,800"
+                    value={estimatedValue}
+                    onChange={(e) => setEstimatedValue(e.target.value)}
+                  />
                 </div>
               </div>
 

@@ -80,21 +80,6 @@ export function createSession(repId: string, repName: string, repEmail = ""): Se
       findingCategories: [],
       aiPdfCopy: "",
       aiFollowUpNote: "",
-      totalSF: 0,
-      wasteFactor: 12,
-      pitch: "6/12",
-      stories: 1,
-      layers: 1,
-      pipeBootsCount: 0,
-      pipeBootsSize: "1.5\"-3\"",
-      ridgeVentLF: 0,
-      offRidgeVentsCount: 0,
-      powerVentsCount: 0,
-      valleyMetalLF: 0,
-      heightOfRoof: 15,
-      shingleType: "dimensional",
-      baseEstimatePrice: 0,
-      selectedUpgrade: "none",
     },
     pathData: {
       selectedPath: null,
@@ -332,12 +317,6 @@ export function deleteDraft(sessionId: string): void {
   const index = getDraftsIndex();
   delete index[sessionId];
   localStorage.setItem(DRAFTS_INDEX_KEY, JSON.stringify(index));
-
-  // If the deleted draft is currently the active session, clear the active session too
-  const active = loadActiveSession();
-  if (active && active.sessionId === sessionId) {
-    clearActiveSession();
-  }
 }
 
 export function hasSameDayDraft(address: string, repId?: string): DraftMeta | null {
