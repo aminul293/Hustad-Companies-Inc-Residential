@@ -38,7 +38,7 @@ export async function POST() {
             Authorization: CP_KEY!,
           },
           body: JSON.stringify({
-            data: { type: "productions", id: item.target_id, attributes: { status: item.payload.status } },
+            data: { type: "services", id: item.target_id, attributes: { status: item.payload.status } },
           }),
         });
 

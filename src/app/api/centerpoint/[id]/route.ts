@@ -25,7 +25,7 @@ export async function PATCH(
       Authorization: CP_KEY,
     },
     body: JSON.stringify({
-      data: { type: "productions", id, attributes: { status } },
+      data: { type: "services", id, attributes: { status } },
     }),
   });
 
