@@ -371,7 +371,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
         </p>
         <p style="font-size:15px;color:#333;margin:0 0 4px;">Best regards,</p>
         <p style="font-size:15px;color:#1a1a1a;font-weight:600;margin:0 0 4px;">Hustad Companies</p>
-        <p style="font-size:14px;color:#666;margin:0;">(608) 846-2222</p>
+        <p style="font-size:14px;color:#666;margin:0;">(402) 934-2173</p>
       </div>`;
 
     const subject = `Inspection Confirmed — ${dateStr} at ${timeStr} · ${propertyName}`;
@@ -584,7 +584,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
       leadName: propertyName,
       to: em,
       subject: `Storm Inspection Follow-up — ${propertyName}`,
-      body: `Hi ${ownerFirst},\n\nI'm reaching out regarding the storm inspection for your property at ${propertyName}.\n\nBased on our assessment, we'd like to schedule a time to walk you through our findings and recommend next steps for your roof.\n\nPlease let me know when you're available, or feel free to call us at your convenience — we'd love to help you get this taken care of quickly.\n\nBest regards,\nHustad Companies\n(608) 846-2222`,
+      body: `Hi ${ownerFirst},\n\nI'm reaching out regarding the storm inspection for your property at ${propertyName}.\n\nBased on our assessment, we'd like to schedule a time to walk you through our findings and recommend next steps for your roof.\n\nPlease let me know when you're available, or feel free to call us at your convenience — we'd love to help you get this taken care of quickly.\n\nBest regards,\nHustad Companies\n(402) 934-2173`,
     });
     setEmailSending(false);
     setEmailSent(false);
