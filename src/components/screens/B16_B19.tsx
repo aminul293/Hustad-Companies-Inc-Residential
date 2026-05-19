@@ -34,7 +34,6 @@ import { downloadSummaryPDF } from "@/lib/pdf-export";
 import { PRODUCT_CONFIG, IMPACT_DISCLAIMER } from "@/config/products";
 import { RemoteStatusTracker } from "@/components/RemoteStatusTracker";
 import { getMissingRequiredShots } from "@/lib/inspectionShotList";
-import { calculateEstimate } from "@/lib/pricingEngine";
 
 interface Props {
   session: SessionState;
@@ -49,62 +48,62 @@ interface Props {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
-  const f = session.findings;
-  
-  // Calculate base estimate if not present
-  const baseBreakdown = calculateEstimate(f);
-  const squares = baseBreakdown.totalSquares;
-
-  // Selected state
-  const [shingleChoice, setShingleChoice] = useState<"hdz" | "uhdz" | "designer">(
-    session.pathData.productSelected === "Timberline UHDZ" ? "uhdz" :
-    session.pathData.productSelected === "Premium Designer" ? "designer" : "hdz"
-  );
-  
-  const [warrantyChoice, setWarrantyChoice] = useState<"system_plus" | "silver" | "golden">(
-    session.pathData.warrantyOptionSelected === "Silver Pledge" ? "silver" :
-    session.pathData.warrantyOptionSelected === "Golden Pledge" ? "golden" : "system_plus"
-  );
-
-  // Dynamic calculations
-  const shinglePremium = shingleChoice === "uhdz" ? 35 : shingleChoice === "designer" ? 95 : 0;
-  const warrantyPremium = warrantyChoice === "silver" ? 25 : warrantyChoice === "golden" ? 55 : 0;
-  
-  const shingleUpgradeCost = Math.round(squares * shinglePremium);
-  const warrantyUpgradeCost = Math.round(squares * warrantyPremium);
-  
-  const finalPrice = baseBreakdown.basePrice + shingleUpgradeCost + warrantyUpgradeCost;
-  const monthlyPayment = Math.round((finalPrice * 0.012) || 0); // 1.2% multiplier for rough financing payment estimate
+  const [manufacturer, setManufacturer] = useState(session.pathData.manufacturerSelected);
+  const [impactUpgrade, setImpactUpgrade] = useState(session.pathData.impactUpgradeSelected);
+  const [warranty, setWarranty] = useState(session.pathData.warrantyOptionSelected);
 
   const handleContinue = () => {
     const updated: SessionState = {
       ...session,
       pathData: {
         ...session.pathData,
-        manufacturerSelected: "GAF",
-        productSelected: shingleChoice === "uhdz" ? "Timberline UHDZ" : shingleChoice === "designer" ? "Premium Designer" : "Timberline HDZ",
-        warrantyOptionSelected: warrantyChoice === "silver" ? "Silver Pledge" : warrantyChoice === "golden" ? "Golden Pledge" : "System Plus",
+        manufacturerSelected: manufacturer,
+        impactUpgradeSelected: impactUpgrade,
+        warrantyOptionSelected: warranty,
       },
-      findings: {
-        ...session.findings,
-        baseEstimatePrice: finalPrice, // Save the final selected price
-      }
     };
     onUpdate(updated);
     onNext();
   };
 
+  const warrantyOptions = manufacturer && PRODUCT_CONFIG[manufacturer]
+    ? PRODUCT_CONFIG[manufacturer].warranties
+    : [];
+
   return (
     <div className="relative flex flex-col min-h-screen w-full bg-[#060606]">
-      {/* Background HUD Layers */}
+      {/* Background Assets: Forensic Rapid Deployment Cloud */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Ambient Gradient Lift */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.04),transparent_70%)]" />
+
+        {/* Forensic HUD Data Layer */}
         <motion.div 
           animate={{ opacity: [0.03, 0.05, 0.03], scale: [1, 1.02, 1] }}
           transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
           className="absolute inset-0"
         >
           <img src="/images/forensic_hud.png" alt="" className="w-full h-full object-cover mix-blend-screen opacity-20 grayscale" />
+        </motion.div>
+
+        {/* National Mobilization Map - Ultra Subtle Accountability */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 0.05, scale: 0.85, y: [0, -15, 0] }}
+          transition={{ duration: 2, y: { duration: 20, repeat: Infinity, ease: "easeInOut" } }}
+          className="absolute top-[10%] -left-32 w-[550px] h-[550px]"
+        >
+          <img src="/images/mobilization_map.png" alt="" className="w-full h-full object-contain mix-blend-screen grayscale" />
+        </motion.div>
+
+        {/* Forensic Inspection Drone - Far Top Right */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.5, x: 200 }}
+          animate={{ opacity: 0.08, scale: 0.7, x: 0, y: [0, -20, 0] }}
+          transition={{ duration: 2, y: { duration: 15, repeat: Infinity, ease: "easeInOut" } }}
+          className="absolute top-[2%] -right-48 w-[450px] h-[450px]"
+        >
+          <img src="/images/inspection_drone.png" alt="" className="w-full h-full object-contain mix-blend-screen opacity-70" />
         </motion.div>
       </div>
 
@@ -119,309 +118,102 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
         <ProgressBar currentScreen="B16_system_options" phase="B" />
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto px-10 pt-12 pb-44">
-        <div className="max-w-[1400px] mx-auto space-y-12">
-          
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 max-w-2xl">
-              <div className="flex items-center gap-3 px-3 py-1 rounded-full bg-indigo-500/[0.08] border border-indigo-500/30 w-fit">
-                <Shield className="w-3 h-3 text-indigo-400" />
-                <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest pt-0.5">Interactive Proposal</span>
-              </div>
-              <h1 className="text-5xl md:text-7xl font-display font-medium text-white tracking-tight leading-[1.05]">
-                Configure Your
-                <br />
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">GAF Lifetime Roofing System</span>
-              </h1>
-            </motion.div>
+      <div className="relative z-10 flex-1 overflow-y-auto px-10 pt-12 pb-40">
+        <div className="max-w-5xl mx-auto space-y-12">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+            <div className="flex items-center gap-3 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-md w-fit">
+              <Shield className="w-3 h-3 text-indigo-400" />
+              <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest pt-0.5">System Configuration</span>
+            </div>
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
+              Choose your system
+              <br />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">and protection level.</span>
+            </h1>
+          </motion.div>
 
-            {/* Premium Interactive Price Badge */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="p-6 rounded-[32px] bg-white/[0.03] border border-white/10 backdrop-blur-2xl flex items-center gap-8 shadow-2xl relative overflow-hidden group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/[0.04] to-transparent pointer-events-none" />
-              <div className="space-y-1">
-                <span className="text-[9px] font-mono text-white/30 uppercase tracking-[0.2em] font-bold block">Investment total</span>
-                <span className="text-4xl md:text-5xl font-display font-bold text-white tracking-tight">${finalPrice.toLocaleString()}</span>
-              </div>
-              <div className="h-10 w-[1px] bg-white/10" />
-              <div className="space-y-1">
-                <span className="text-[9px] font-mono text-indigo-400 uppercase tracking-[0.2em] font-bold block">Financing Estimate</span>
-                <span className="text-2xl font-display font-bold text-indigo-300">${monthlyPayment}/mo</span>
-              </div>
-            </motion.div>
-          </div>
-
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
-            
-            {/* Left Column: Base Estimate Summary */}
-            <div className="xl:col-span-4 space-y-8">
-              <div className="p-8 rounded-[40px] bg-white/[0.02] border border-white/[0.05] backdrop-blur-xl space-y-6">
-                <div className="flex items-center gap-3 border-b border-white/5 pb-4">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
-                    <LayoutGrid className="w-5 h-5 text-indigo-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-display font-medium text-white">GAF System Base</h3>
-                    <p className="text-[10px] font-mono text-white/40 uppercase tracking-wider mt-0.5">Timberline HDZ + System Plus</p>
-                  </div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            <div className="lg:col-span-7 space-y-10">
+              {/* Manufacturer Grid */}
+              <section className="space-y-6">
+                <p className="text-[10px] font-mono text-white/70 uppercase tracking-[0.3em] pl-2">Precision Manufacturer</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {Object.values(PRODUCT_CONFIG).map((m) => (
+                    <button
+                      key={m.id}
+                      onClick={() => { setManufacturer(m.id as any); setWarranty(""); }}
+                      className={cn(
+                        "p-6 rounded-[32px] border transition-all duration-300 text-center",
+                        manufacturer === m.id 
+                          ? "bg-indigo-500/20 border-indigo-500/50 shadow-xl" 
+                          : "bg-white/[0.03] border-white/[0.05] hover:border-white/20"
+                      )}
+                    >
+                      <p className={cn("text-lg font-display font-medium", manufacturer === m.id ? "text-white" : "text-white/90")}>
+                        {m.label}
+                      </p>
+                    </button>
+                  ))}
                 </div>
+              </section>
 
-                <div className="space-y-4 font-mono text-xs text-white/60">
-                  <div className="flex justify-between">
-                    <span>Roofing Area:</span>
-                    <span className="text-white font-medium">{f.totalSF?.toLocaleString() || 3200} SF</span>
+              {/* Warranty Bento */}
+              {manufacturer && (
+                <section className="space-y-6">
+                  <p className="text-[10px] font-mono text-white/70 uppercase tracking-[0.3em] pl-2">Protection Tier</p>
+                  <div className="grid grid-cols-1 gap-3">
+                    {warrantyOptions.map((opt) => (
+                      <button
+                        key={opt}
+                        onClick={() => setWarranty(opt)}
+                        className={cn(
+                          "group flex items-center justify-between p-6 rounded-3xl border transition-all duration-300",
+                          warranty === opt 
+                            ? "bg-white/10 border-white/30" 
+                            : "bg-white/[0.02] border-white/[0.05] hover:bg-white/[0.05]"
+                        )}
+                      >
+                        <span className={cn("text-base font-display font-medium", warranty === opt ? "text-white" : "text-white/70")}>{opt}</span>
+                        {warranty === opt && <CheckCircle2 className="w-5 h-5 text-indigo-400" />}
+                      </button>
+                    ))}
                   </div>
-                  <div className="flex justify-between">
-                    <span>Waste Allowance ({f.wasteFactor || 12}%):</span>
-                    <span className="text-white font-medium">+{Math.round((f.totalSF || 3200) * (f.wasteFactor || 12) / 100).toLocaleString()} SF</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Total Squares Needed:</span>
-                    <span className="text-indigo-300 font-bold">{squares} SQ</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Tear-off Layers:</span>
-                    <span className="text-white font-medium">{f.layers || 1} Layer{f.layers && f.layers > 1 ? "s" : ""}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Roof Pitch / Stories:</span>
-                    <span className="text-white font-medium">{f.pitch || "6/12"} / {f.stories || 1} Story</span>
-                  </div>
-                  <div className="h-[1px] bg-white/5 my-2" />
-                  <div className="flex justify-between">
-                    <span>Tear-off & Disposal:</span>
-                    <span className="text-white">${baseBreakdown.tearOffCost.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Material & Labor Base:</span>
-                    <span className="text-white">${Math.round(squares * 380).toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Slope / Story Premium:</span>
-                    <span className="text-white">${baseBreakdown.laborPremium.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Accessories & Vents:</span>
-                    <span className="text-white">${baseBreakdown.accessoriesCost.toLocaleString()}</span>
-                  </div>
-                  <div className="h-[1px] bg-white/5 my-2" />
-                  <div className="flex justify-between text-sm">
-                    <span className="text-white">Base System Total:</span>
-                    <span className="text-white font-bold">${baseBreakdown.basePrice.toLocaleString()}</span>
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-indigo-500/[0.04] border border-indigo-500/10 text-[10px] font-mono text-indigo-300/80 uppercase tracking-wider leading-relaxed">
-                  ✓ GAF Leak Barrier & Deck Protection included.
-                  <br />
-                  ✓ GAF Cobra Attic Ridge Ventilation included.
-                </div>
-              </div>
+                </section>
+              )}
             </div>
 
-            {/* Right Column: Dynamic Interactive Upgrades */}
-            <div className="xl:col-span-8 space-y-10">
-              
-              {/* Shingle Quality Upgrades */}
-              <section className="space-y-6">
-                <h3 className="text-xs font-mono font-bold text-white/50 uppercase tracking-[0.3em] pl-2">Step 1: Choose Shingle Specification</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Timberline HDZ (Base) */}
+            <div className="lg:col-span-5 space-y-10">
+              {/* Impact Upgrade Card */}
+              <div className="p-8 rounded-[40px] bg-white/[0.03] border border-white/[0.1] backdrop-blur-3xl space-y-6">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-2">
+                    <p className="text-xl font-display font-medium text-white">Impact-Resistant Upgrade</p>
+                    <p className="text-xs text-white/70 font-light leading-relaxed">Class 3 or Class 4 high-velocity impact rating.</p>
+                  </div>
                   <button
-                    onClick={() => setShingleChoice("hdz")}
+                    onClick={() => setImpactUpgrade(!impactUpgrade)}
                     className={cn(
-                      "p-6 rounded-[32px] border text-left flex flex-col justify-between h-72 transition-all duration-300 relative overflow-hidden group",
-                      shingleChoice === "hdz"
-                        ? "bg-white/[0.05] border-white/30 shadow-[0_0_30px_rgba(99,102,241,0.15)]"
-                        : "bg-white/[0.02] border-white/[0.05] hover:border-white/20"
+                      "w-14 h-8 rounded-full transition-all duration-300 relative shrink-0",
+                      impactUpgrade ? "bg-indigo-500" : "bg-white/10"
                     )}
                   >
-                    <div>
-                      <div className="flex items-center justify-between mb-4">
-                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", shingleChoice === "hdz" ? "bg-indigo-500 text-white" : "bg-white/5 text-white/30")}>
-                          <ShieldCheck className="w-5 h-5" />
-                        </div>
-                        {shingleChoice === "hdz" && <div className="w-2.5 h-2.5 rounded-full bg-indigo-400" />}
-                      </div>
-                      <p className="text-lg font-display font-medium text-white leading-tight">Timberline HDZ</p>
-                      <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest mt-1">Base System Shingle</p>
-                      <ul className="text-[11px] font-light text-white/50 leading-relaxed mt-4 space-y-1">
-                        <li>• LayerLock™ technology</li>
-                        <li>• StrikeZone™ nail area</li>
-                        <li>• 130 MPH wind rating</li>
-                      </ul>
-                    </div>
-                    <p className="text-xs font-mono text-indigo-300 font-bold uppercase mt-4">Included in Base</p>
-                  </button>
-
-                  {/* Timberline UHDZ */}
-                  <button
-                    onClick={() => setShingleChoice("uhdz")}
-                    className={cn(
-                      "p-6 rounded-[32px] border text-left flex flex-col justify-between h-72 transition-all duration-300 relative overflow-hidden group",
-                      shingleChoice === "uhdz"
-                        ? "bg-white/[0.05] border-indigo-500/50 shadow-[0_0_30px_rgba(99,102,241,0.25)]"
-                        : "bg-white/[0.02] border-white/[0.05] hover:border-white/20"
-                    )}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-4">
-                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", shingleChoice === "uhdz" ? "bg-indigo-500 text-white" : "bg-white/5 text-white/30")}>
-                          <Zap className="w-5 h-5" />
-                        </div>
-                        {shingleChoice === "uhdz" && <div className="w-2.5 h-2.5 rounded-full bg-indigo-400 animate-pulse" />}
-                      </div>
-                      <p className="text-lg font-display font-medium text-white leading-tight">Timberline UHDZ</p>
-                      <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest mt-1">Premium Ultra HDZ</p>
-                      <ul className="text-[11px] font-light text-white/50 leading-relaxed mt-4 space-y-1">
-                        <li>• Thicker dimensional profile</li>
-                        <li>• Patent-pending Dual Shadow</li>
-                        <li>• StainGuard Plus PRO™</li>
-                      </ul>
-                    </div>
-                    <p className="text-xs font-mono text-indigo-300 font-bold uppercase mt-4">
-                      +${Math.round(squares * 35).toLocaleString()} <span className="text-white/30 font-normal">(+$35/SQ)</span>
-                    </p>
-                  </button>
-
-                  {/* Premium Designer */}
-                  <button
-                    onClick={() => setShingleChoice("designer")}
-                    className={cn(
-                      "p-6 rounded-[32px] border text-left flex flex-col justify-between h-72 transition-all duration-300 relative overflow-hidden group",
-                      shingleChoice === "designer"
-                        ? "bg-white/[0.05] border-indigo-500/50 shadow-[0_0_30px_rgba(99,102,241,0.25)]"
-                        : "bg-white/[0.02] border-white/[0.05] hover:border-white/20"
-                    )}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-4">
-                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", shingleChoice === "designer" ? "bg-indigo-500 text-white" : "bg-white/5 text-white/30")}>
-                          <Wrench className="w-5 h-5" />
-                        </div>
-                        {shingleChoice === "designer" && <div className="w-2.5 h-2.5 rounded-full bg-indigo-400 animate-pulse" />}
-                      </div>
-                      <p className="text-lg font-display font-medium text-white leading-tight">GAF Designer</p>
-                      <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest mt-1">Luxury Shingle Styles</p>
-                      <ul className="text-[11px] font-light text-white/50 leading-relaxed mt-4 space-y-1">
-                        <li>• Hand-cut shake or slate look</li>
-                        <li>• Camelot II or Slateline styles</li>
-                        <li>• Unmatched custom curb appeal</li>
-                      </ul>
-                    </div>
-                    <p className="text-xs font-mono text-indigo-300 font-bold uppercase mt-4">
-                      +${Math.round(squares * 95).toLocaleString()} <span className="text-white/30 font-normal">(+$95/SQ)</span>
-                    </p>
+                    <div className={cn("absolute top-1 w-6 h-6 rounded-full bg-white transition-all shadow-md", impactUpgrade ? "left-7" : "left-1")} />
                   </button>
                 </div>
-              </section>
-
-              {/* GAF System Warranties */}
-              <section className="space-y-6">
-                <h3 className="text-xs font-mono font-bold text-white/50 uppercase tracking-[0.3em] pl-2">Step 2: Choose GAF Protection Tier</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* System Plus Warranty */}
-                  <button
-                    onClick={() => setWarrantyChoice("system_plus")}
-                    className={cn(
-                      "p-6 rounded-[32px] border text-left flex flex-col justify-between h-72 transition-all duration-300 relative overflow-hidden group",
-                      warrantyChoice === "system_plus"
-                        ? "bg-white/[0.05] border-white/30 shadow-[0_0_30px_rgba(99,102,241,0.15)]"
-                        : "bg-white/[0.02] border-white/[0.05] hover:border-white/20"
-                    )}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-4">
-                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", warrantyChoice === "system_plus" ? "bg-indigo-500 text-white" : "bg-white/5 text-white/30")}>
-                          <Shield className="w-5 h-5" />
-                        </div>
-                        {warrantyChoice === "system_plus" && <div className="w-2.5 h-2.5 rounded-full bg-indigo-400" />}
-                      </div>
-                      <p className="text-lg font-display font-medium text-white leading-tight">System Plus</p>
-                      <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest mt-1">GAF Lifetime Warranty</p>
-                      <ul className="text-[11px] font-light text-white/50 leading-relaxed mt-4 space-y-1">
-                        <li>• 50 Year Smart Choice Protection</li>
-                        <li>• 100% Tear-off labor covered</li>
-                        <li>• Lifetime shingle coverage</li>
-                      </ul>
-                    </div>
-                    <p className="text-xs font-mono text-indigo-300 font-bold uppercase mt-4">Included in Base</p>
-                  </button>
-
-                  {/* Silver Pledge Warranty */}
-                  <button
-                    onClick={() => setWarrantyChoice("silver")}
-                    className={cn(
-                      "p-6 rounded-[32px] border text-left flex flex-col justify-between h-72 transition-all duration-300 relative overflow-hidden group",
-                      warrantyChoice === "silver"
-                        ? "bg-white/[0.05] border-indigo-500/50 shadow-[0_0_30px_rgba(99,102,241,0.25)]"
-                        : "bg-white/[0.02] border-white/[0.05] hover:border-white/20"
-                    )}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-4">
-                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", warrantyChoice === "silver" ? "bg-indigo-500 text-white" : "bg-white/5 text-white/30")}>
-                          <ShieldCheck className="w-5 h-5" />
-                        </div>
-                        {warrantyChoice === "silver" && <div className="w-2.5 h-2.5 rounded-full bg-indigo-400 animate-pulse" />}
-                      </div>
-                      <p className="text-lg font-display font-medium text-white leading-tight">Silver Pledge</p>
-                      <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest mt-1">GAF Certified Silver</p>
-                      <ul className="text-[11px] font-light text-white/50 leading-relaxed mt-4 space-y-1">
-                        <li>• 10-Yr Workmanship Guarantee</li>
-                        <li>• GAF-backed repair labor</li>
-                        <li>• Tear-off & disposal covered</li>
-                      </ul>
-                    </div>
-                    <p className="text-xs font-mono text-indigo-300 font-bold uppercase mt-4">
-                      +${Math.round(squares * 25).toLocaleString()} <span className="text-white/30 font-normal">(+$25/SQ)</span>
-                    </p>
-                  </button>
-
-                  {/* Golden Pledge Warranty */}
-                  <button
-                    onClick={() => setWarrantyChoice("golden")}
-                    className={cn(
-                      "p-6 rounded-[32px] border text-left flex flex-col justify-between h-72 transition-all duration-300 relative overflow-hidden group",
-                      warrantyChoice === "golden"
-                        ? "bg-white/[0.05] border-indigo-500/50 shadow-[0_0_30px_rgba(99,102,241,0.25)]"
-                        : "bg-white/[0.02] border-white/[0.05] hover:border-white/20"
-                    )}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-4">
-                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", warrantyChoice === "golden" ? "bg-indigo-500 text-white" : "bg-white/5 text-white/30")}>
-                          <FileText className="w-5 h-5" />
-                        </div>
-                        {warrantyChoice === "golden" && <div className="w-2.5 h-2.5 rounded-full bg-indigo-400 animate-pulse" />}
-                      </div>
-                      <p className="text-lg font-display font-medium text-white leading-tight">Golden Pledge</p>
-                      <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest mt-1">GAF Master Elite Gold</p>
-                      <ul className="text-[11px] font-light text-white/50 leading-relaxed mt-4 space-y-1">
-                        <li>• 25-Yr Workmanship Guarantee</li>
-                        <li>• Direct GAF post-install audit</li>
-                        <li>• Absolute maximum protection</li>
-                      </ul>
-                    </div>
-                    <p className="text-xs font-mono text-indigo-300 font-bold uppercase mt-4">
-                      +${Math.round(squares * 55).toLocaleString()} <span className="text-white/30 font-normal">(+$55/SQ)</span>
-                    </p>
-                  </button>
-                </div>
-              </section>
+                {impactUpgrade && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="p-4 rounded-2xl bg-black/40 border border-white/5 flex items-start gap-3">
+                    <Info className="w-4 h-4 text-indigo-400 mt-1 shrink-0" />
+                    <p className="text-[10px] font-mono text-white/70 uppercase tracking-widest leading-relaxed">{IMPACT_DISCLAIMER}</p>
+                  </motion.div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Control Surface (Footer) */}
       <div className="fixed bottom-0 inset-x-0 p-8 z-30 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-t from-[#060606] via-[#060606]/95 to-transparent pt-20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20" />
         <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-6 pointer-events-auto">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
             <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
@@ -434,7 +226,7 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
             className="flex-1 max-w-md h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
           >
             <div className="flex items-center justify-center gap-4">
-              <span className="text-xl font-display font-semibold tracking-tight">Accept Specifications</span>
+              <span className="text-xl font-display font-semibold tracking-tight">Agreement Summary</span>
               <ChevronRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
             </div>
           </StarButton>
