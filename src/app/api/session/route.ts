@@ -57,9 +57,13 @@ export async function GET(request: Request) {
 export async function POST(request: NextRequest) {
   try {
     // Demo Bypass
+    let repId = "00000000-0000-0000-0000-000000000000";
+    let payloadRole = "";
     const bypass = request.headers.get("x-demo-bypass");
     if (bypass !== process.env.DEMO_BYPASS_SECRET) {
-      await requireAuth(request);
+      const payload = await requireAuth(request) as any;
+      repId = payload.repId;
+      payloadRole = payload.role;
     }
 
     const session = await request.json();
@@ -67,6 +71,49 @@ export async function POST(request: NextRequest) {
 
     if (!sessionId) {
       return NextResponse.json({ error: "Missing sessionId" }, { status: 400 });
+    }
+
+    const supabase = getServiceClient();
+    const { data: existingSession } = await supabase
+      .from("inspection_sessions")
+      .select("session_id")
+      .eq("session_id", sessionId)
+      .maybeSingle();
+
+    const isNewSession = !existingSession;
+
+    // Phase 5: Backend Enforcement
+    // A valid session MUST originate from a CRM entity unless it's an emergency override or an existing draft update.
+    const hasCrmLink = !!(session.centerpointId || session.pipelineLeadId || session.appointmentId);
+    const isEmergencyOverride = process.env.NEXT_PUBLIC_QA_MODE === 'true' || 
+                                payloadRole === 'admin' || 
+                                payloadRole === 'manager';
+
+    if (isNewSession && !hasCrmLink && !isEmergencyOverride) {
+      console.warn(`[AUDIT] Rejected rogue session launch from rep ${repId}. Missing CRM linkage.`);
+      const { error: auditError } = await supabase.from("audit_events").insert({
+        session_id: null,
+        event_name: "rogue_session_blocked",
+        actor_id: repId,
+        metadata: { 
+          rogue_session_id: sessionId,
+          details: "Rejected session creation due to missing CRM linkage." 
+        },
+        occurred_at: new Date().toISOString()
+      });
+      if (auditError) console.error("Audit insert error:", auditError);
+      return NextResponse.json({
+        success: false,
+        message: "Inspection must originate from a valid CenterPoint CRM record."
+      }, { status: 403 });
+    }
+    
+    if (isNewSession && !hasCrmLink && isEmergencyOverride) {
+      console.info(`[AUDIT] Authorized emergency override session launch from rep ${repId}.`);
+      session.emergency_override = true;
+      session.crm_reconciliation_required = true;
+      session.override_reason = session.overrideReason || "Admin/Manager Emergency Override";
+      session.override_by = repId;
     }
 
     await upsertSession(session);

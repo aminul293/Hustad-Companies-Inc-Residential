@@ -72,6 +72,7 @@ export function ScreenRouter() {
           onLoadDraft={loadDraft}
           onRepJump={repJumpTo}
           isOnline={isOnline}
+          onResetSession={resetSession}
         />
       );
 

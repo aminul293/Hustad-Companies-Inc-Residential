@@ -238,6 +238,22 @@ export interface RepFindingsData {
   findingCategories: string[];
   aiPdfCopy: string;
   aiFollowUpNote: string;
+  // Estimate data gathering fields
+  totalSF?: number;
+  wasteFactor?: number;
+  pitch?: string;
+  stories?: number;
+  layers?: number;
+  pipeBootsCount?: number;
+  pipeBootsSize?: string;
+  ridgeVentLF?: number;
+  offRidgeVentsCount?: number;
+  powerVentsCount?: number;
+  valleyMetalLF?: number;
+  heightOfRoof?: number;
+  shingleType?: string;
+  baseEstimatePrice?: number;
+  selectedUpgrade?: string;
 }
 
 export interface PathSelectionData {
@@ -451,7 +467,8 @@ export function shouldShowScreen(
     case "B16_system_options":
       return (
         outcomeType === "full_restoration_candidate" ||
-        selectedPath === "full_restoration"
+        selectedPath === "full_restoration" ||
+        selectedPath === "direct_repair"
       );
     case "B17_agreement_summary":
     case "B18_signature_deferral":

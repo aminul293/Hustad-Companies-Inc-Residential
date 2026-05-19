@@ -130,9 +130,10 @@ interface Props {
   onNewSession: () => void;
   onPrefillAndStart: (data: IntakePrefill) => void;
   onBack?: () => void;
+  onResetSession?: () => void;
 }
 
-export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPrefillAndStart, onBack }: Props) {
+export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPrefillAndStart, onBack, onResetSession }: Props) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<string>("all");
   const [view, setView] = useState<"dashboard" | "pipeline" | "schedule" | "calendar" | "centerpoint" | "tickets" | "manager" | "settings">("dashboard");
@@ -1030,6 +1031,17 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                           onClick={(e) => {
                             e.stopPropagation();
                             if (confirmDeleteId === d.sessionId) {
+                              const activeRaw = localStorage.getItem("hustad_session_draft");
+                              let isActive = false;
+                              if (activeRaw) {
+                                try {
+                                  const active = JSON.parse(activeRaw);
+                                  if (active && active.sessionId === d.sessionId) {
+                                    isActive = true;
+                                  }
+                                } catch {}
+                              }
+
                               deleteDraft(d.sessionId);
                               if (d.syncStatus === "synced") {
                                 fetch(`/api/sessions/${d.sessionId}`, { method: "DELETE" }).catch(() => {});
@@ -1037,6 +1049,10 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                               setServerSessions(prev => prev.filter(s => s.session_id !== d.sessionId));
                               setDraftRefreshKey(k => k + 1);
                               setConfirmDeleteId(null);
+
+                              if (isActive && onResetSession) {
+                                onResetSession();
+                              }
                             } else {
                               setConfirmDeleteId(d.sessionId);
                             }

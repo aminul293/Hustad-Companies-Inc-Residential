@@ -49,10 +49,11 @@ interface Props {
   onLoadDraft: (sessionId: string) => void;
   onRepJump: (screen: ScreenId) => void;
   isOnline: boolean;
+  onResetSession?: () => void;
 }
 
 
-export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump, isOnline }: Props) {
+export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump, isOnline, onResetSession }: Props) {
   const { data: authSession, status: authStatus } = useAuthSession();
   
   // Support mock rep for QA/Dev
@@ -261,6 +262,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
         onNewSession={handleStartNew}
         onPrefillAndStart={handlePrefillAndStart}
         onBack={() => setShowDashboard(false)}
+        onResetSession={onResetSession}
       />
     );
   }
