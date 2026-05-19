@@ -67,7 +67,7 @@ export function ProofRefinementModal({ photo, allPhotos, onSave, onCancel }: Pro
           
           <div className="absolute top-8 left-8 flex flex-col gap-3">
             {tags.map(t => (
-              <span key={t} className="px-3 py-1 rounded-lg bg-indigo-500 text-[8px] font-mono text-white uppercase tracking-widest border border-indigo-400 shadow-lg">
+              <span key={t} className="px-3 py-1 rounded-lg bg-indigo-500 text-[8px] font-mono text-[#E8EDF8] uppercase tracking-widest border border-indigo-400 shadow-lg">
                 {t.replace('_', ' ')}
               </span>
             ))}
@@ -86,8 +86,8 @@ export function ProofRefinementModal({ photo, allPhotos, onSave, onCancel }: Pro
           {isSensitive && (
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center">
               <div className="flex flex-col items-center gap-4">
-                <EyeOff className="w-12 h-12 text-white/40" />
-                <p className="text-[10px] font-mono text-white/40 uppercase tracking-[0.4em]">Sensitive Content // Hidden from Buyer</p>
+                <EyeOff className="w-12 h-12 text-[#567090]" />
+                <p className="text-[10px] font-mono text-[#567090] uppercase tracking-[0.4em]">Sensitive Content // Hidden from Buyer</p>
               </div>
             </div>
           )}
@@ -96,8 +96,8 @@ export function ProofRefinementModal({ photo, allPhotos, onSave, onCancel }: Pro
         {/* Right: Controls */}
         <div className="w-full lg:w-[400px] p-10 border-l border-white/10 flex flex-col overflow-y-auto custom-scrollbar">
           <div className="flex items-center justify-between mb-10">
-            <h2 className="text-xl font-display font-medium text-white tracking-tight">Refine Proof</h2>
-            <button onClick={onCancel} className="p-2 rounded-xl hover:bg-white/5 text-white/40">
+            <h2 className="text-xl font-display font-medium text-[#E8EDF8] tracking-tight">Refine Proof</h2>
+            <button onClick={onCancel} className="p-2 rounded-xl hover:bg-white/5 text-[#567090]">
               <X className="w-6 h-6" />
             </button>
           </div>
@@ -105,7 +105,7 @@ export function ProofRefinementModal({ photo, allPhotos, onSave, onCancel }: Pro
           <div className="space-y-10">
             {/* Tagging */}
             <section className="space-y-4">
-              <div className="flex items-center gap-3 text-white/30">
+              <div className="flex items-center gap-3 text-[#3F5878]">
                 <Tag className="w-4 h-4" />
                 <span className="text-[9px] font-mono uppercase tracking-widest font-bold">Forensic Tagging</span>
               </div>
@@ -117,8 +117,8 @@ export function ProofRefinementModal({ photo, allPhotos, onSave, onCancel }: Pro
                     className={cn(
                       "px-4 py-2 rounded-xl text-[9px] font-mono uppercase tracking-widest border transition-all",
                       tags.includes(opt.value) 
-                        ? "bg-indigo-500 border-indigo-400 text-white" 
-                        : "bg-white/5 border-white/10 text-white/40 hover:border-white/20"
+                        ? "bg-indigo-500 border-indigo-400 text-[#E8EDF8]" 
+                        : "bg-white/5 border-white/10 text-[#567090] hover:border-white/20"
                     )}
                   >
                     {opt.label}
@@ -129,7 +129,7 @@ export function ProofRefinementModal({ photo, allPhotos, onSave, onCancel }: Pro
 
             {/* Severity */}
             <section className="space-y-4">
-              <div className="flex items-center gap-3 text-white/30">
+              <div className="flex items-center gap-3 text-[#3F5878]">
                 <BarChart3 className="w-4 h-4" />
                 <span className="text-[9px] font-mono uppercase tracking-widest font-bold">Evidence Severity</span>
               </div>
@@ -141,8 +141,8 @@ export function ProofRefinementModal({ photo, allPhotos, onSave, onCancel }: Pro
                     className={cn(
                       "px-4 py-3 rounded-2xl text-[10px] font-mono uppercase tracking-widest border transition-all text-left flex items-center justify-between",
                       severity === opt.value 
-                        ? "bg-white/10 border-white/20 text-white" 
-                        : "bg-transparent border-white/5 text-white/20 hover:border-white/10"
+                        ? "bg-white/10 border-white/20 text-[#E8EDF8]" 
+                        : "bg-transparent border-white/5 text-[#2D4060] hover:border-white/10"
                     )}
                   >
                     <span>{opt.label}</span>
@@ -154,12 +154,12 @@ export function ProofRefinementModal({ photo, allPhotos, onSave, onCancel }: Pro
 
             {/* Comparison View */}
             <section className="space-y-4">
-              <div className="flex items-center gap-3 text-white/30">
+              <div className="flex items-center gap-3 text-[#3F5878]">
                 <Layers className="w-4 h-4" />
                 <span className="text-[9px] font-mono uppercase tracking-widest font-bold">Forensic Comparison (Before/After)</span>
               </div>
               <select 
-                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-xs text-white outline-none"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-xs text-[#E8EDF8] outline-none"
                 value={comparisonId || ""}
                 onChange={(e) => setComparisonId(e.target.value || undefined)}
               >
@@ -174,7 +174,7 @@ export function ProofRefinementModal({ photo, allPhotos, onSave, onCancel }: Pro
 
             {/* Privacy & Sensitivity */}
             <section className="space-y-4">
-              <div className="flex items-center gap-3 text-white/30">
+              <div className="flex items-center gap-3 text-[#3F5878]">
                 <ShieldAlert className="w-4 h-4" />
                 <span className="text-[9px] font-mono uppercase tracking-widest font-bold">Privacy Controls</span>
               </div>
@@ -182,7 +182,7 @@ export function ProofRefinementModal({ photo, allPhotos, onSave, onCancel }: Pro
                 onClick={() => setIsSensitive(!isSensitive)}
                 className={cn(
                   "w-full flex items-center justify-between p-5 rounded-3xl border transition-all text-left",
-                  isSensitive ? "bg-rose-500/10 border-rose-500/30 text-rose-400" : "bg-white/5 border-white/10 text-white/40"
+                  isSensitive ? "bg-rose-500/10 border-rose-500/30 text-rose-400" : "bg-white/5 border-white/10 text-[#567090]"
                 )}
               >
                 <div className="flex items-center gap-4">

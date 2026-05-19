@@ -102,7 +102,7 @@ function Field({
 
 const inputCls = (error?: string) =>
   cn(
-    "w-full bg-white/[0.04] border rounded-xl py-3.5 px-4 text-white placeholder:text-white/20 outline-none transition-all text-sm font-body",
+    "w-full bg-white/[0.04] border rounded-xl py-3.5 px-4 text-[#E8EDF8] placeholder:text-[#2D4060] outline-none transition-all text-sm font-body",
     error
       ? "border-rose-500/50 focus:border-rose-500/50"
       : "border-white/[0.1] focus:border-indigo-500/40 focus:bg-white/[0.06] focus:ring-2 focus:ring-indigo-500/10"
@@ -110,7 +110,7 @@ const inputCls = (error?: string) =>
 
 const selectCls = cn(
   "w-full bg-white/[0.04] border border-white/[0.1] rounded-xl py-3.5 px-4",
-  "text-white text-sm font-body outline-none transition-all",
+  "text-[#E8EDF8] text-sm font-body outline-none transition-all",
   "focus:border-indigo-500/40 focus:bg-white/[0.06] focus:ring-2 focus:ring-indigo-500/10"
 );
 
@@ -169,12 +169,12 @@ function SearchStep({
           onChange={(e) => { setQuery(e.target.value); setSearched(false); }}
           onKeyDown={handleKey}
           placeholder="Search by company name…"
-          className="w-full bg-white/[0.04] border border-white/10 focus:border-indigo-500/40 focus:ring-2 focus:ring-indigo-500/10 rounded-2xl py-4 pl-12 pr-32 text-white placeholder:text-white/20 outline-none transition-all text-base"
+          className="w-full bg-white/[0.04] border border-white/10 focus:border-indigo-500/40 focus:ring-2 focus:ring-indigo-500/10 rounded-2xl py-4 pl-12 pr-32 text-[#E8EDF8] placeholder:text-[#2D4060] outline-none transition-all text-base"
         />
         <button
           onClick={handleSearch}
           disabled={isSearching || !query.trim()}
-          className="absolute right-2 top-1/2 -translate-y-1/2 px-5 py-2 rounded-xl bg-indigo-500 disabled:opacity-40 hover:bg-indigo-400 transition-all text-white text-sm font-medium flex items-center gap-2"
+          className="absolute right-2 top-1/2 -translate-y-1/2 px-5 py-2 rounded-xl bg-indigo-500 disabled:opacity-40 hover:bg-indigo-400 transition-all text-[#E8EDF8] text-sm font-medium flex items-center gap-2"
         >
           {isSearching ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -204,7 +204,7 @@ function SearchStep({
           >
             {results.length > 0 ? (
               <>
-                <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest px-1">
+                <p className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest px-1">
                   {results.length} match{results.length !== 1 ? "es" : ""} found in CenterPoint
                 </p>
                 <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
@@ -214,7 +214,7 @@ function SearchStep({
                       className="p-4 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-between group"
                     >
                       <div className="space-y-1 min-w-0">
-                        <p className="text-sm font-display font-medium text-white truncate">
+                        <p className="text-sm font-display font-medium text-[#E8EDF8] truncate">
                           {c.name}
                         </p>
                         <div className="flex items-center gap-2 flex-wrap">
@@ -222,7 +222,7 @@ function SearchStep({
                             {c.salesStatus}
                           </span>
                           {(c.locality || c.region) && (
-                            <span className="text-[9px] font-mono text-white/30 uppercase tracking-widest">
+                            <span className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest">
                               {[c.locality, c.region].filter(Boolean).join(", ")}
                             </span>
                           )}
@@ -243,7 +243,7 @@ function SearchStep({
                 <div className="pt-2 border-t border-white/[0.06]">
                   <button
                     onClick={() => onNotFound(query)}
-                    className="w-full py-3 rounded-2xl border border-dashed border-white/10 text-white/40 hover:text-white/60 hover:border-white/20 transition-all text-xs font-mono uppercase tracking-widest"
+                    className="w-full py-3 rounded-2xl border border-dashed border-white/10 text-[#567090] hover:text-[#8BA5C5] hover:border-white/20 transition-all text-xs font-mono uppercase tracking-widest"
                   >
                     Company not listed? Request a new one
                   </button>
@@ -254,24 +254,24 @@ function SearchStep({
               <div className="py-4 space-y-5">
                 <div className="p-8 rounded-[28px] border border-dashed border-white/[0.08] flex flex-col items-center justify-center text-center space-y-3">
                   <div className="w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
-                    <Building2 className="w-6 h-6 text-white/20" />
+                    <Building2 className="w-6 h-6 text-[#2D4060]" />
                   </div>
                   <div>
-                    <p className="text-sm font-display text-white/60">
+                    <p className="text-sm font-display text-[#8BA5C5]">
                       No company found for
                     </p>
-                    <p className="text-base font-display font-medium text-white mt-0.5">
+                    <p className="text-base font-display font-medium text-[#E8EDF8] mt-0.5">
                       &ldquo;{query}&rdquo;
                     </p>
                   </div>
-                  <p className="text-[11px] text-white/30 font-mono max-w-xs">
+                  <p className="text-[11px] text-[#3F5878] font-mono max-w-xs">
                     This company does not exist in CenterPoint as a Residential account.
                   </p>
                 </div>
 
                 <button
                   onClick={() => onNotFound(query)}
-                  className="w-full py-4 rounded-2xl bg-indigo-500 hover:bg-indigo-400 active:scale-[0.98] transition-all text-white font-display font-semibold flex items-center justify-center gap-3 shadow-[0_0_40px_rgba(99,102,241,0.25)]"
+                  className="w-full py-4 rounded-2xl bg-indigo-500 hover:bg-indigo-400 active:scale-[0.98] transition-all text-[#E8EDF8] font-display font-semibold flex items-center justify-center gap-3 shadow-[0_0_40px_rgba(99,102,241,0.25)]"
                 >
                   Request New Residential Company
                   <ArrowRight className="w-4 h-4" />
@@ -289,8 +289,8 @@ function SearchStep({
             exit={{ opacity: 0 }}
             className="py-8 flex flex-col items-center gap-3 text-center"
           >
-            <Search className="w-8 h-8 text-white/10" />
-            <p className="text-[11px] font-mono text-white/20 uppercase tracking-widest">
+            <Search className="w-8 h-8 text-[#1F2E48]" />
+            <p className="text-[11px] font-mono text-[#2D4060] uppercase tracking-widest">
               Search CenterPoint before creating
             </p>
           </motion.div>
@@ -441,7 +441,7 @@ function RequestForm({
 
       {/* Address section */}
       <div className="space-y-3 pt-2 border-t border-white/[0.06]">
-        <p className="text-[10px] font-mono text-white/20 uppercase tracking-widest">
+        <p className="text-[10px] font-mono text-[#2D4060] uppercase tracking-widest">
           Address — optional
         </p>
         <Field label="Street Address">
@@ -529,7 +529,7 @@ function RequestForm({
       <div className="flex gap-3 pt-2">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 px-5 py-3.5 rounded-xl bg-white/[0.05] border border-white/[0.1] text-white/50 hover:text-white hover:bg-white/[0.08] transition-all text-sm"
+          className="flex items-center gap-2 px-5 py-3.5 rounded-xl bg-white/[0.05] border border-white/[0.1] text-[#7090B0] hover:text-[#E8EDF8] hover:bg-white/[0.08] transition-all text-sm"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
@@ -537,7 +537,7 @@ function RequestForm({
         <button
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="flex-1 flex items-center justify-center gap-3 py-3.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 disabled:opacity-50 active:scale-[0.98] transition-all text-white font-display font-semibold shadow-[0_0_30px_rgba(99,102,241,0.25)]"
+          className="flex-1 flex items-center justify-center gap-3 py-3.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 disabled:opacity-50 active:scale-[0.98] transition-all text-[#E8EDF8] font-display font-semibold shadow-[0_0_30px_rgba(99,102,241,0.25)]"
         >
           {isSubmitting ? (
             <>
@@ -577,10 +577,10 @@ function PendingStep({
       </motion.div>
 
       <div className="space-y-2">
-        <h3 className="text-xl font-display font-medium text-white">
+        <h3 className="text-xl font-display font-medium text-[#E8EDF8]">
           Request Submitted
         </h3>
-        <p className="text-sm text-white/50 max-w-xs leading-relaxed">
+        <p className="text-sm text-[#7090B0] max-w-xs leading-relaxed">
           The service manager has been notified and will approve or reject this request.
           You will receive an email with the outcome.
         </p>
@@ -588,14 +588,14 @@ function PendingStep({
 
       <div className="w-full p-5 rounded-2xl bg-white/[0.03] border border-white/[0.07] space-y-3">
         <div className="flex items-center justify-between text-xs">
-          <span className="font-mono text-white/30 uppercase tracking-widest">Status</span>
+          <span className="font-mono text-[#3F5878] uppercase tracking-widest">Status</span>
           <span className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 font-mono text-[10px] uppercase tracking-widest">
             Pending Approval
           </span>
         </div>
         <div className="flex items-center justify-between text-xs">
-          <span className="font-mono text-white/30 uppercase tracking-widest">Link Expires</span>
-          <span className="text-white/50 font-mono text-[11px]">
+          <span className="font-mono text-[#3F5878] uppercase tracking-widest">Link Expires</span>
+          <span className="text-[#7090B0] font-mono text-[11px]">
             {new Date(expiresAt).toLocaleString()} (48h)
           </span>
         </div>
@@ -691,11 +691,11 @@ export function ResidentialCompanyModal({ isOpen, onClose }: Props) {
                       />
                     ))}
                   </div>
-                  <h2 className="text-xl font-display font-medium text-white">
+                  <h2 className="text-xl font-display font-medium text-[#E8EDF8]">
                     {STEP_TITLES[step]}
                   </h2>
                   {STEP_SUBTITLES[step] && (
-                    <p className="text-[11px] font-mono text-white/30 uppercase tracking-widest">
+                    <p className="text-[11px] font-mono text-[#3F5878] uppercase tracking-widest">
                       {STEP_SUBTITLES[step]}
                     </p>
                   )}
@@ -703,7 +703,7 @@ export function ResidentialCompanyModal({ isOpen, onClose }: Props) {
                 {step !== "pending" && (
                   <button
                     onClick={onClose}
-                    className="p-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                    className="p-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-[#567090] hover:text-[#E8EDF8] hover:bg-white/10 transition-all"
                   >
                     <X className="w-4 h-4" />
                   </button>

@@ -148,7 +148,7 @@ export function ManagerDashboard({ currentRep }: Props) {
   if (loading && !data) {
     return (
       <div className="flex items-center justify-center h-64">
-        <RefreshCw className="w-5 h-5 text-white/20 animate-spin" />
+        <RefreshCw className="w-5 h-5 text-[#2D4060] animate-spin" />
       </div>
     );
   }
@@ -157,7 +157,7 @@ export function ManagerDashboard({ currentRep }: Props) {
     return (
       <div className="p-8 text-center">
         <p className="text-rose-400 text-sm">{error}</p>
-        <button onClick={fetchData} className="mt-4 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs text-white/60 hover:text-white transition-all">
+        <button onClick={fetchData} className="mt-4 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs text-[#8BA5C5] hover:text-[#E8EDF8] transition-all">
           Retry
         </button>
       </div>
@@ -196,12 +196,12 @@ export function ManagerDashboard({ currentRep }: Props) {
       {/* Refresh row */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-[9px] font-mono text-white/25 uppercase tracking-[0.2em]">
+          <p className="text-[9px] font-mono text-[#354D6F] uppercase tracking-[0.2em]">
             {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
           </p>
         </div>
         <button onClick={fetchData}
-          className="flex items-center gap-2 text-[10px] font-mono text-white/30 hover:text-white uppercase tracking-widest transition-colors">
+          className="flex items-center gap-2 text-[10px] font-mono text-[#3F5878] hover:text-[#E8EDF8] uppercase tracking-widest transition-colors">
           <RefreshCw className={cn("w-3.5 h-3.5", loading && "animate-spin")} />
           Refresh
         </button>
@@ -210,7 +210,7 @@ export function ManagerDashboard({ currentRep }: Props) {
       {/* ── KPI Cards ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Total Today",       value: total,         icon: CalendarDays, color: "text-white/60",    bg: "bg-white/[0.02]",       border: "border-white/[0.07]" },
+          { label: "Total Today",       value: total,         icon: CalendarDays, color: "text-[#8BA5C5]",    bg: "bg-white/[0.02]",       border: "border-white/[0.07]" },
           { label: "Remaining",         value: scheduled,     icon: Clock,        color: "text-emerald-400", bg: "bg-emerald-500/[0.04]", border: "border-emerald-500/[0.12]" },
           { label: "Completed",         value: completed,     icon: CheckCircle2, color: "text-purple-400",  bg: "bg-purple-500/[0.04]",  border: "border-purple-500/[0.12]" },
           { label: "No Shows",          value: noShows,       icon: UserX,        color: "text-rose-400",    bg: "bg-rose-500/[0.04]",    border: "border-rose-500/[0.12]" },
@@ -227,7 +227,7 @@ export function ManagerDashboard({ currentRep }: Props) {
               </div>
             </div>
             <p className="text-3xl font-display font-semibold tracking-tight mb-1">{s.value}</p>
-            <p className="text-[10px] font-mono text-white/35 uppercase tracking-widest">{s.label}</p>
+            <p className="text-[10px] font-mono text-[#4D678A] uppercase tracking-widest">{s.label}</p>
           </motion.div>
         ))}
       </div>
@@ -246,8 +246,8 @@ export function ManagerDashboard({ currentRep }: Props) {
                 <div className="grid grid-cols-2 gap-3">
                   {[a, b].map(appt => (
                     <div key={appt.id} className="p-3 rounded-xl bg-black/20 border border-white/[0.06]">
-                      <p className="text-xs font-display font-medium text-white/90 truncate">{getAddress(appt)}</p>
-                      <p className="text-[10px] font-mono text-white/40 mt-0.5">
+                      <p className="text-xs font-display font-medium text-[#DDE5F5] truncate">{getAddress(appt)}</p>
+                      <p className="text-[10px] font-mono text-[#567090] mt-0.5">
                         {fmtTime(appt.appointment_start_at)} – {fmtTime(appt.appointment_end_at)}
                       </p>
                     </div>
@@ -277,14 +277,14 @@ export function ManagerDashboard({ currentRep }: Props) {
                   onClick={() => setExpandedRep(isOpen ? null : repId)}>
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                      <Users className="w-4 h-4 text-white/30" />
+                      <Users className="w-4 h-4 text-[#3F5878]" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-display font-medium text-white/90 truncate">
+                      <p className="text-sm font-display font-medium text-[#DDE5F5] truncate">
                         {resolveRepName(repId)}
                       </p>
                       <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-                        <Pill label={`${appts.length} total`} color="text-white/30" />
+                        <Pill label={`${appts.length} total`} color="text-[#3F5878]" />
                         {repRemaining > 0 && <Pill label={`${repRemaining} remaining`} color="text-emerald-400" />}
                         {repCompleted > 0 && <Pill label={`${repCompleted} done`} color="text-purple-400" />}
                         {repNoShows > 0 && <Pill label={`${repNoShows} no-show`} color="text-rose-400" />}
@@ -292,7 +292,7 @@ export function ManagerDashboard({ currentRep }: Props) {
                       </div>
                     </div>
                   </div>
-                  <ChevronDown className={cn("w-4 h-4 text-white/20 transition-transform shrink-0", isOpen && "rotate-180")} />
+                  <ChevronDown className={cn("w-4 h-4 text-[#2D4060] transition-transform shrink-0", isOpen && "rotate-180")} />
                 </button>
 
                 <AnimatePresence>
@@ -314,8 +314,8 @@ export function ManagerDashboard({ currentRep }: Props) {
 
           {Object.keys(byRep).length === 0 && (
             <div className="py-12 text-center">
-              <CalendarDays className="w-8 h-8 text-white/10 mx-auto mb-3" />
-              <p className="text-white/25 text-sm">No appointments scheduled for today.</p>
+              <CalendarDays className="w-8 h-8 text-[#1F2E48] mx-auto mb-3" />
+              <p className="text-[#354D6F] text-sm">No appointments scheduled for today.</p>
             </div>
           )}
         </div>
@@ -330,8 +330,8 @@ export function ManagerDashboard({ currentRep }: Props) {
               <motion.div key={appt.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
                 className="p-4 rounded-2xl bg-rose-500/[0.04] border border-rose-500/15 flex items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="text-sm font-display font-medium text-white/90 truncate">{getAddress(appt)}</p>
-                  <p className="text-[10px] font-mono text-white/30 mt-0.5">
+                  <p className="text-sm font-display font-medium text-[#DDE5F5] truncate">{getAddress(appt)}</p>
+                  <p className="text-[10px] font-mono text-[#3F5878] mt-0.5">
                     {fmtTime(appt.appointment_start_at)} · {appt.assigned_rep_id ? resolveRepName(appt.assigned_rep_id) : "Unassigned"}
                   </p>
                 </div>
@@ -351,12 +351,12 @@ export function ManagerDashboard({ currentRep }: Props) {
               <motion.div key={lead.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
                 className="p-4 rounded-2xl bg-orange-500/[0.04] border border-orange-500/15 flex items-center justify-between gap-4">
                 <div className="min-w-0 space-y-0.5">
-                  <p className="text-sm font-display font-medium text-white/90 truncate">
+                  <p className="text-sm font-display font-medium text-[#DDE5F5] truncate">
                     {lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id}
                   </p>
                   <div className="flex items-center gap-3 flex-wrap">
                     {lead.centerpoint_jobs?.raw?._owner && (
-                      <span className="text-[10px] font-mono text-white/30 uppercase tracking-wider">
+                      <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-wider">
                         {lead.centerpoint_jobs.raw._owner}
                       </span>
                     )}
@@ -365,7 +365,7 @@ export function ManagerDashboard({ currentRep }: Props) {
                         Due {fmtShortDate(lead.next_follow_up_at)}
                       </span>
                     )}
-                    <span className="text-[10px] font-mono text-white/20">{lead.contact_attempt_count} attempts</span>
+                    <span className="text-[10px] font-mono text-[#2D4060]">{lead.contact_attempt_count} attempts</span>
                   </div>
                 </div>
                 <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse shrink-0" />
@@ -386,12 +386,12 @@ export function ManagerDashboard({ currentRep }: Props) {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[10px] font-mono text-white/60 uppercase">{item.target_system}</span>
-                      <span className="text-[10px] font-mono text-white/30">→</span>
-                      <span className="text-[10px] font-mono text-white/40">{item.action}</span>
+                      <span className="text-[10px] font-mono text-[#8BA5C5] uppercase">{item.target_system}</span>
+                      <span className="text-[10px] font-mono text-[#3F5878]">→</span>
+                      <span className="text-[10px] font-mono text-[#567090]">{item.action}</span>
                     </div>
                     {item.target_id && (
-                      <p className="text-[10px] font-mono text-white/25 mt-0.5 truncate">ID: {item.target_id}</p>
+                      <p className="text-[10px] font-mono text-[#354D6F] mt-0.5 truncate">ID: {item.target_id}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -404,7 +404,7 @@ export function ManagerDashboard({ currentRep }: Props) {
                     {item.error.slice(0, 120)}{item.error.length > 120 ? "…" : ""}
                   </p>
                 )}
-                <p className="text-[9px] font-mono text-white/20">
+                <p className="text-[9px] font-mono text-[#2D4060]">
                   Failed {fmtShortDate(item.updated_at)} · Created {fmtShortDate(item.created_at)}
                 </p>
               </motion.div>
@@ -422,7 +422,7 @@ export function ManagerDashboard({ currentRep }: Props) {
                     setTimeout(() => setRetryCooldown(false), 5000);
                   }
                 }}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-white/40 hover:text-white hover:bg-white/10 transition-all disabled:opacity-40">
+                className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-[#567090] hover:text-[#E8EDF8] hover:bg-white/10 transition-all disabled:opacity-40">
                 <Zap className="w-3.5 h-3.5" />
                 {retryCooldown ? "Retrying…" : "Retry Failed Items"}
               </button>
@@ -434,9 +434,9 @@ export function ManagerDashboard({ currentRep }: Props) {
       {/* All clear state */}
       {total === 0 && overdue_followups.length === 0 && outbound_failures.length === 0 && (
         <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
-          <Activity className="w-8 h-8 text-white/10" />
-          <p className="text-lg font-display font-medium text-white/30">All clear</p>
-          <p className="text-sm text-white/20 font-light">No appointments, follow-ups, or queue failures today.</p>
+          <Activity className="w-8 h-8 text-[#1F2E48]" />
+          <p className="text-lg font-display font-medium text-[#3F5878]">All clear</p>
+          <p className="text-sm text-[#2D4060] font-light">No appointments, follow-ups, or queue failures today.</p>
         </div>
       )}
     </div>
@@ -448,7 +448,7 @@ function SectionHeader({ icon: Icon, label, count, color }: { icon: any; label: 
   return (
     <div className="flex items-center gap-3">
       <Icon className={cn("w-4 h-4", color)} />
-      <h3 className="text-sm font-display font-medium text-white/70">{label}</h3>
+      <h3 className="text-sm font-display font-medium text-[#AABDCF]">{label}</h3>
       <span className={cn("text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5", color)}>{count}</span>
     </div>
   );
@@ -506,15 +506,15 @@ function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
         <div className={cn("w-2 h-2 rounded-full shrink-0", dot)} />
         <div className="min-w-0 space-y-0.5">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-display font-medium text-white/90 truncate">{address}</p>
+            <p className="text-sm font-display font-medium text-[#DDE5F5] truncate">{address}</p>
             {hasConflict && <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0" />}
           </div>
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-[10px] font-mono text-white/35">
+            <span className="text-[10px] font-mono text-[#4D678A]">
               {fmtTime(appt.appointment_start_at)} – {fmtTime(appt.appointment_end_at)}
             </span>
-            {owner && <span className="text-[10px] font-mono text-white/25 uppercase">{owner}</span>}
-            <span className="text-[10px] font-mono text-white/20">{label}</span>
+            {owner && <span className="text-[10px] font-mono text-[#354D6F] uppercase">{owner}</span>}
+            <span className="text-[10px] font-mono text-[#2D4060]">{label}</span>
           </div>
         </div>
       </div>
@@ -522,12 +522,12 @@ function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
       <div className="flex items-center gap-3 shrink-0">
         {phone && (
           <button onClick={() => window.open(`tel:${phone}`)}
-            className="p-2 rounded-lg bg-white/5 border border-white/10 text-white/30 hover:text-white transition-all">
+            className="p-2 rounded-lg bg-white/5 border border-white/10 text-[#3F5878] hover:text-[#E8EDF8] transition-all">
             <Phone className="w-3 h-3" />
           </button>
         )}
         <button onClick={() => navigate(address)}
-          className="p-2 rounded-lg bg-white/5 border border-white/10 text-white/30 hover:text-white transition-all">
+          className="p-2 rounded-lg bg-white/5 border border-white/10 text-[#3F5878] hover:text-[#E8EDF8] transition-all">
           <Navigation2 className="w-3 h-3" />
         </button>
         {canStart && (
@@ -549,7 +549,7 @@ function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
           <button
             onClick={() => setShowReassign(v => !v)}
             disabled={reassigning}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/30 hover:text-sky-400 hover:border-sky-500/30 hover:bg-sky-500/10 transition-all text-[10px] font-mono disabled:opacity-40"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-[#3F5878] hover:text-sky-400 hover:border-sky-500/30 hover:bg-sky-500/10 transition-all text-[10px] font-mono disabled:opacity-40"
           >
             <UserPlus className="w-3 h-3" />
             Reassign
@@ -563,7 +563,7 @@ function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
                 transition={{ duration: 0.12 }}
                 className="absolute right-0 top-full mt-1.5 z-50 min-w-[180px] bg-[#111] border border-white/15 rounded-2xl shadow-2xl overflow-hidden"
               >
-                <p className="px-3 pt-2.5 pb-1 text-[9px] font-mono text-white/25 uppercase tracking-widest">
+                <p className="px-3 pt-2.5 pb-1 text-[9px] font-mono text-[#354D6F] uppercase tracking-widest">
                   Assign to rep
                 </p>
                 {reps.map(rep => (
@@ -572,7 +572,7 @@ function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
                     onClick={() => handleReassign(rep.id)}
                     className={cn(
                       "w-full text-left px-3 py-2.5 text-xs font-display transition-all hover:bg-white/10",
-                      appt.assigned_rep_id === rep.id ? "text-sky-400 bg-sky-500/10" : "text-white/70"
+                      appt.assigned_rep_id === rep.id ? "text-sky-400 bg-sky-500/10" : "text-[#AABDCF]"
                     )}
                   >
                     {rep.name}
@@ -583,7 +583,7 @@ function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
                 ))}
                 <button
                   onClick={() => setShowReassign(false)}
-                  className="w-full text-left px-3 py-2 text-[10px] font-mono text-white/20 hover:text-white/50 transition-all border-t border-white/[0.06]"
+                  className="w-full text-left px-3 py-2 text-[10px] font-mono text-[#2D4060] hover:text-[#7090B0] transition-all border-t border-white/[0.06]"
                 >
                   Cancel
                 </button>

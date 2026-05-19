@@ -645,7 +645,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
   }, [drafts]);
 
   return (
-    <div className="flex flex-col h-full bg-[#060606] text-white">
+    <div className="flex flex-col h-full bg-[#060606] text-[#E8EDF8]">
       {/* Import error banner */}
       <AnimatePresence>
         {importError && (
@@ -791,7 +791,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                   </span>
                 )}
               </div>
-              <p className="text-sm text-white/50 font-light">
+              <p className="text-sm text-[#7090B0] font-light">
                 {{ dashboard: "Field intelligence and session management.", pipeline: "Manage leads from reach-out to appointment scheduling.", schedule: "Appointments, conflicts, and daily work queue.", calendar: "Day and week view with conflict detection and route navigation.", centerpoint: "Jobs synced from CenterPoint Connect.", tickets: "Your managed pipeline — stages, touches, and write-back.", manager: "All-rep activity, no-shows, follow-ups, and queue health.", settings: "Manage field identities and operational parameters." }[view]}
               </p>
             </div>
@@ -814,7 +814,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                   onClick={() => setView(tab.id)}
                   className={cn(
                     "px-4 py-2 rounded-full text-xs font-display transition-all",
-                    view === tab.id ? "bg-white text-black" : "text-white/40 hover:text-white"
+                    view === tab.id ? "bg-white text-black" : "text-[#567090] hover:text-[#E8EDF8]"
                   )}
                 >{tab.label}</button>
               ))}
@@ -839,19 +839,19 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                     <div className={cn("p-2 rounded-xl bg-white/5", s.color)}>
                       <s.icon className="w-4 h-4" />
                     </div>
-                    <span className="text-[9px] font-mono text-white/30 uppercase tracking-[0.2em] group-hover:text-white/50 transition-colors">Live Status</span>
+                    <span className="text-[9px] font-mono text-[#3F5878] uppercase tracking-[0.2em] group-hover:text-[#7090B0] transition-colors">Live Status</span>
                   </div>
                   <p className="text-3xl font-display font-semibold tracking-tight mb-1">
                     {isLoading ? <span className="inline-block w-6 h-6 border-2 border-white/10 border-t-white/40 rounded-full animate-spin" /> : s.value}
                   </p>
-                  <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest">{s.label}</p>
+                  <p className="text-[10px] font-mono text-[#567090] uppercase tracking-widest">{s.label}</p>
                 </div>
               ))}
             </div>
 
             <div className="flex flex-col md:flex-row items-center gap-4">
               <div className="relative flex-1 w-full">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#3F5878]" />
                 <input 
                   type="text" 
                   placeholder="Search by address or homeowner..." 
@@ -876,7 +876,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                       "px-4 py-2 rounded-full border text-xs font-display transition-all whitespace-nowrap",
                       filter === f.id 
                         ? "bg-white text-black border-white" 
-                        : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10"
+                        : "bg-white/5 border-white/10 text-[#8BA5C5] hover:bg-white/10"
                     )}
                   >
                     {f.label}
@@ -930,10 +930,10 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                             <CalendarDays className="w-4 h-4 text-emerald-400" />
                           </div>
                           <div>
-                            <p className="text-sm font-display font-medium text-white">
+                            <p className="text-sm font-display font-medium text-[#E8EDF8]">
                               {lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name || lead.cpc_ticket_id}
                             </p>
-                            <p className="text-[10px] font-mono text-white/35 uppercase tracking-wider mt-0.5">
+                            <p className="text-[10px] font-mono text-[#4D678A] uppercase tracking-wider mt-0.5">
                               {dateStr}{timeStr ? ` · ${timeStr}` : ""}
                               {lead.centerpoint_jobs?.raw?._owner ? ` · ${lead.centerpoint_jobs.raw._owner}` : ""}
                             </p>
@@ -1014,7 +1014,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                         </div>
                         <div className="space-y-1">
                           <p className="text-xl font-display font-medium tracking-tight group-hover:text-indigo-300 transition-colors">{d.address}</p>
-                          <div className="flex items-center gap-6 text-[11px] font-mono text-white/40 uppercase tracking-wider">
+                          <div className="flex items-center gap-6 text-[11px] font-mono text-[#567090] uppercase tracking-wider">
                             <span className="flex items-center gap-2"><User className="w-3.5 h-3.5 text-indigo-400/50" /> {d.homeownerName || "No Owner Listed"}</span>
                             <span className="flex items-center gap-2"><Calendar className="w-3.5 h-3.5 text-indigo-400/50" /> {new Date(d.lastSavedAt).toLocaleDateString()}</span>
                           </div>
@@ -1022,8 +1022,8 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                       </div>
                       <div className="flex items-center gap-8 shrink-0">
                         <div className="text-right hidden md:block">
-                          <p className="text-[9px] font-mono text-white/20 uppercase tracking-[0.2em] mb-1.5">Operational Phase</p>
-                          <p className="text-[10px] font-mono font-medium text-white/60 tracking-widest">
+                          <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-[0.2em] mb-1.5">Operational Phase</p>
+                          <p className="text-[10px] font-mono font-medium text-[#8BA5C5] tracking-widest">
                             {d.sessionStatus.replace(/_/g, " ").toUpperCase()}
                           </p>
                         </div>
@@ -1061,14 +1061,14 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                             "flex items-center gap-1.5 rounded-xl transition-all shrink-0",
                             confirmDeleteId === d.sessionId
                               ? "px-3 py-2 bg-rose-500/20 border border-rose-500/40 text-rose-300 text-[9px] font-mono uppercase tracking-widest"
-                              : "p-2 text-white/20 hover:text-rose-400 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100"
+                              : "p-2 text-[#2D4060] hover:text-rose-400 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100"
                           )}
                         >
                           <Trash className="w-4 h-4 shrink-0" />
                           {confirmDeleteId === d.sessionId && <span>Confirm</span>}
                         </button>
                         <div className="h-14 w-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:scale-105 transition-all">
-                          <ChevronRight className="w-6 h-6 text-white group-hover:text-black transition-colors" />
+                          <ChevronRight className="w-6 h-6 text-[#E8EDF8] group-hover:text-black transition-colors" />
                         </div>
                       </div>
                     </div>
@@ -1086,7 +1086,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <Smartphone className="w-3 h-3 text-indigo-400/50" />
-                          <p className="text-[9px] font-mono text-white/30 uppercase tracking-[0.2em]">Rep Camera Link</p>
+                          <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-[0.2em]">Rep Camera Link</p>
                         </div>
                         <p className="text-[11px] font-mono text-indigo-300/60 truncate">/rep-capture?s={d.sessionId}</p>
                       </div>
@@ -1124,9 +1124,9 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                   <Shield className="w-5 h-5 text-indigo-400" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-display font-medium text-white truncate">{currentRep.name}</p>
-                  <p className="text-[11px] font-mono text-white/35 truncate">{currentRep.email}</p>
-                  <p className="text-[9px] font-mono text-white/20 uppercase tracking-widest mt-0.5">Hustad Rep · Azure AD</p>
+                  <p className="text-sm font-display font-medium text-[#E8EDF8] truncate">{currentRep.name}</p>
+                  <p className="text-[11px] font-mono text-[#4D678A] truncate">{currentRep.email}</p>
+                  <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-widest mt-0.5">Hustad Rep · Azure AD</p>
                 </div>
               </div>
               <button
@@ -1141,7 +1141,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <h3 className="text-xl font-display font-medium">Field Operatives</h3>
-                <p className="text-xs text-white/40">Add or manage reps authorized for forensic sessions.</p>
+                <p className="text-xs text-[#567090]">Add or manage reps authorized for forensic sessions.</p>
               </div>
               <button 
                 onClick={() => setIsAdding(!isAdding)}
@@ -1169,7 +1169,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                   />
                 </div>
                 <div className="flex justify-end gap-3">
-                  <button onClick={() => setIsAdding(false)} className="text-xs text-white/40 px-4">Cancel</button>
+                  <button onClick={() => setIsAdding(false)} className="text-xs text-[#567090] px-4">Cancel</button>
                   <button 
                     onClick={() => {
                       saveCustomRep({ id: `custom_${Date.now()}`, name: newRep.name, role: newRep.role, active: true });
@@ -1177,7 +1177,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                       setNewRep({ name: "", role: "" });
                       setLiveReps(getLiveReps());
                     }}
-                    className="bg-indigo-500 text-white px-6 py-2 rounded-full text-xs font-medium"
+                    className="bg-indigo-500 text-[#E8EDF8] px-6 py-2 rounded-full text-xs font-medium"
                   >
                     Save Operative
                   </button>
@@ -1190,17 +1190,17 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                 <div key={rep.id} className="p-5 rounded-[24px] bg-white/[0.02] border border-white/[0.05] flex items-center justify-between group hover:bg-white/[0.04] transition-all">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
-                      <User className="w-5 h-5 text-white/40" />
+                      <User className="w-5 h-5 text-[#567090]" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-white">{rep.name}</p>
-                      <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest">{rep.role}</p>
+                      <p className="text-sm font-medium text-[#E8EDF8]">{rep.name}</p>
+                      <p className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest">{rep.role}</p>
                     </div>
                   </div>
                   {rep.id.startsWith("custom_") && (
                     <button 
                       onClick={() => { deleteCustomRep(rep.id); setLiveReps(getLiveReps()); }}
-                      className="p-2 text-white/10 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-all"
+                      className="p-2 text-[#1F2E48] hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-all"
                     >
                       <Trash className="w-4 h-4" />
                     </button>
@@ -1230,19 +1230,19 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
               transition={{ duration: 0.18 }}
             >
               <div className="space-y-1">
-                <p className="text-[9px] font-mono text-white/30 uppercase tracking-[0.2em]">Confirm</p>
+                <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-[0.2em]">Confirm</p>
                 <h2 className="text-xl font-display font-medium tracking-tight">Start Inspection?</h2>
-                <p className="text-sm text-white/50 font-light">
+                <p className="text-sm text-[#7090B0] font-light">
                   Save this session locally and begin the inspection flow.
                 </p>
               </div>
               <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.08] space-y-2">
-                <div className="flex items-center gap-2 text-xs font-mono text-white/60 uppercase tracking-wider">
+                <div className="flex items-center gap-2 text-xs font-mono text-[#8BA5C5] uppercase tracking-wider">
                   <LayoutGrid className="w-3.5 h-3.5 text-indigo-400/50 shrink-0" />
                   {pendingImport.address}
                 </div>
                 {pendingImport.homeownerName && (
-                  <div className="flex items-center gap-2 text-xs font-mono text-white/40 uppercase tracking-wider">
+                  <div className="flex items-center gap-2 text-xs font-mono text-[#567090] uppercase tracking-wider">
                     <User className="w-3.5 h-3.5 text-indigo-400/50 shrink-0" />
                     {pendingImport.homeownerName}
                   </div>
@@ -1252,7 +1252,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                 <button
                   onClick={handleDismissImport}
                   disabled={isConfirming}
-                  className="flex-1 py-3 rounded-2xl border border-white/10 text-sm text-white/50 hover:text-white hover:border-white/20 font-display transition-all disabled:opacity-40 disabled:pointer-events-none"
+                  className="flex-1 py-3 rounded-2xl border border-white/10 text-sm text-[#7090B0] hover:text-[#E8EDF8] hover:border-white/20 font-display transition-all disabled:opacity-40 disabled:pointer-events-none"
                 >
                   Cancel
                 </button>

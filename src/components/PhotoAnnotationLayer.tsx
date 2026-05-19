@@ -81,17 +81,17 @@ export function PhotoAnnotationLayer({ photo, onSave, onCancel }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-white/10">
         <div className="flex items-center gap-4">
-          <button onClick={onCancel} className="p-3 rounded-2xl bg-white/5 hover:bg-white/10 text-white/70 transition-all">
+          <button onClick={onCancel} className="p-3 rounded-2xl bg-white/5 hover:bg-white/10 text-[#AABDCF] transition-all">
             <X className="w-5 h-5" />
           </button>
           <div>
-            <h3 className="font-display font-medium text-white">Forensic Markup</h3>
-            <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest">Pixel-Level Damage Evidence</p>
+            <h3 className="font-display font-medium text-[#E8EDF8]">Forensic Markup</h3>
+            <p className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest">Pixel-Level Damage Evidence</p>
           </div>
         </div>
         <button 
           onClick={() => onSave(annotations)}
-          className="px-6 py-3 rounded-2xl bg-indigo-500 text-white text-xs font-display font-medium hover:bg-indigo-400 transition-all flex items-center gap-2"
+          className="px-6 py-3 rounded-2xl bg-indigo-500 text-[#E8EDF8] text-xs font-display font-medium hover:bg-indigo-400 transition-all flex items-center gap-2"
         >
           <Check className="w-4 h-4" />
           Apply Annotations
@@ -158,25 +158,25 @@ export function PhotoAnnotationLayer({ photo, onSave, onCancel }: Props) {
         <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-2 p-2 rounded-[32px] bg-[#1a1a1a] border border-white/10 shadow-2xl backdrop-blur-2xl">
           <button 
             onClick={() => setActiveType("circle")}
-            className={cn("p-4 rounded-full transition-all", activeType === "circle" ? "bg-indigo-500 text-white shadow-lg" : "text-white/40 hover:bg-white/5")}
+            className={cn("p-4 rounded-full transition-all", activeType === "circle" ? "bg-indigo-500 text-[#E8EDF8] shadow-lg" : "text-[#567090] hover:bg-white/5")}
           >
             <Circle className="w-6 h-6" />
           </button>
           <button 
             onClick={() => setActiveType("arrow")}
-            className={cn("p-4 rounded-full transition-all", activeType === "arrow" ? "bg-indigo-500 text-white shadow-lg" : "text-white/40 hover:bg-white/5")}
+            className={cn("p-4 rounded-full transition-all", activeType === "arrow" ? "bg-indigo-500 text-[#E8EDF8] shadow-lg" : "text-[#567090] hover:bg-white/5")}
           >
             <ArrowUpRight className="w-6 h-6" />
           </button>
           <button 
             onClick={() => setActiveType("label")}
-            className={cn("p-4 rounded-full transition-all", activeType === "label" ? "bg-indigo-500 text-white shadow-lg" : "text-white/40 hover:bg-white/5")}
+            className={cn("p-4 rounded-full transition-all", activeType === "label" ? "bg-indigo-500 text-[#E8EDF8] shadow-lg" : "text-[#567090] hover:bg-white/5")}
           >
             <Type className="w-6 h-6" />
           </button>
           <button 
             onClick={() => setActiveType("blur")}
-            className={cn("p-4 rounded-full transition-all", activeType === "blur" ? "bg-indigo-500 text-white shadow-lg" : "text-white/40 hover:bg-white/5")}
+            className={cn("p-4 rounded-full transition-all", activeType === "blur" ? "bg-indigo-500 text-[#E8EDF8] shadow-lg" : "text-[#567090] hover:bg-white/5")}
           >
             <ShieldAlert className="w-6 h-6" />
           </button>
@@ -201,12 +201,12 @@ export function PhotoAnnotationLayer({ photo, onSave, onCancel }: Props) {
 
       {/* History sidebar (Mobile hidden) */}
       <div className="absolute right-0 top-24 bottom-0 w-64 border-l border-white/10 p-6 hidden lg:flex flex-col gap-4 overflow-y-auto">
-        <p className="text-[10px] font-mono text-white/30 uppercase tracking-[0.2em] mb-2">Evidence Queue</p>
+        <p className="text-[10px] font-mono text-[#3F5878] uppercase tracking-[0.2em] mb-2">Evidence Queue</p>
         {annotations.map((ann, i) => (
           <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10 group">
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full" style={{ backgroundColor: ann.color }} />
-              <span className="text-xs text-white/70 capitalize">{ann.type} {i + 1}</span>
+              <span className="text-xs text-[#AABDCF] capitalize">{ann.type} {i + 1}</span>
             </div>
             <button onClick={() => removeAnnotation(i)} className="opacity-0 group-hover:opacity-100 text-rose-400 hover:text-rose-300 transition-all">
               <Trash2 className="w-4 h-4" />

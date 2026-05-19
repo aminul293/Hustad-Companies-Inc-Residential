@@ -64,8 +64,8 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
       {/* Branding */}
       <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-white text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-white/20 uppercase tracking-[0.3em]">Technical Core</span>
+          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
+          <span className="text-[10px] font-mono text-[#2D4060] uppercase tracking-[0.3em]">Technical Core</span>
         </div>
       </div>
 
@@ -86,12 +86,12 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
               <Zap className="w-3 h-3 text-indigo-400" />
               <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest pt-0.5">The Technical Edge</span>
             </div>
-            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
               Forensic analysis.
               <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">Digital accountability.</span>
             </h1>
-            <p className="text-xl text-white/30 font-light max-w-2xl leading-relaxed mt-8">
+            <p className="text-xl text-[#3F5878] font-light max-w-2xl leading-relaxed mt-8">
               Hustad replaces manual guesswork with a technical ecosystem designed to protect your asset value at every stage.
             </p>
           </motion.div>
@@ -122,8 +122,8 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
                 <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
                   <Camera className="w-7 h-7 text-indigo-400" />
                 </div>
-                <h3 className="text-3xl font-display font-medium text-white tracking-tight">Autonomous Inspection</h3>
-                <p className="text-lg text-white/40 font-light leading-relaxed max-w-md">
+                <h3 className="text-3xl font-display font-medium text-[#E8EDF8] tracking-tight">Autonomous Inspection</h3>
+                <p className="text-lg text-[#567090] font-light leading-relaxed max-w-md">
                   High-resolution aerial data capture ensuring zero-miss forensic documentation of every square foot.
                 </p>
               </div>
@@ -140,8 +140,8 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
                   <div className="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
                     <Cloud className="w-6 h-6 text-rose-400" />
                   </div>
-                  <h3 className="text-2xl font-display font-medium text-white tracking-tight">Real-Time Sync</h3>
-                  <p className="text-base text-white/40 font-light leading-relaxed">
+                  <h3 className="text-2xl font-display font-medium text-[#E8EDF8] tracking-tight">Real-Time Sync</h3>
+                  <p className="text-base text-[#567090] font-light leading-relaxed">
                     Field data is instantly encrypted and synchronized to your permanent digital property record.
                   </p>
                 </div>
@@ -161,8 +161,8 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
                   <Cpu className="w-5 h-5 text-emerald-400" />
                 </div>
-                <h3 className="text-xl font-display font-medium text-white tracking-tight">Forensic Core</h3>
-                <p className="text-sm text-white/40 font-light leading-relaxed">
+                <h3 className="text-xl font-display font-medium text-[#E8EDF8] tracking-tight">Forensic Core</h3>
+                <p className="text-sm text-[#567090] font-light leading-relaxed">
                   Technical processing of moisture levels and structural integrity markers.
                 </p>
               </div>
@@ -178,8 +178,8 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
                 <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
                   <FileText className="w-5 h-5 text-amber-400" />
                 </div>
-                <h3 className="text-xl font-display font-medium text-white tracking-tight">Digital Vault</h3>
-                <p className="text-sm text-white/40 font-light leading-relaxed">
+                <h3 className="text-xl font-display font-medium text-[#E8EDF8] tracking-tight">Digital Vault</h3>
+                <p className="text-sm text-[#567090] font-light leading-relaxed">
                   A secure archive of all inspection deliverables, accessible 24/7 via your private portal.
                 </p>
               </div>
@@ -201,8 +201,8 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
                    </div>
                  ))}
               </div>
-              <p className="text-base text-white/40 font-light leading-relaxed">
-                <span className="text-white font-medium italic">"Technology is the ultimate truth-teller."</span> 
+              <p className="text-base text-[#567090] font-light leading-relaxed">
+                <span className="text-[#E8EDF8] font-medium italic">"Technology is the ultimate truth-teller."</span> 
                 <br />Our forensic team uses this tech to ensure your claim is processed with surgical precision.
               </p>
             </div>
@@ -214,8 +214,8 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
       <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-6">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
-            <ArrowLeft className="w-4 h-4 text-white/40 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-white/60">Priorities</span>
+            <ArrowLeft className="w-4 h-4 text-[#567090] group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-display font-medium text-[#8BA5C5]">Priorities</span>
           </button>
           <StarButton 
             onClick={onNext} 

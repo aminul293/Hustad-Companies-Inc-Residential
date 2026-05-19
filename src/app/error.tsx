@@ -24,7 +24,7 @@ export default function Error({
   }
 
   return (
-    <div className="min-h-screen bg-[#060606] flex items-center justify-center p-6 text-white">
+    <div className="min-h-screen bg-[#060606] flex items-center justify-center p-6 text-[#E8EDF8]">
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -43,7 +43,7 @@ export default function Error({
 
         <div className="p-4 rounded-2xl bg-black/40 border border-white/5 text-left">
            <p className="text-[10px] font-mono text-rose-400/70 uppercase tracking-widest mb-1">Diagnostic Info</p>
-           <p className="text-[11px] font-mono text-white/40 break-all overflow-hidden line-clamp-3">
+           <p className="text-[11px] font-mono text-[#567090] break-all overflow-hidden line-clamp-3">
              {error.message || "Unknown error"}
            </p>
         </div>
@@ -51,7 +51,7 @@ export default function Error({
         <div className="grid grid-cols-1 gap-3">
           <button
             onClick={reset}
-            className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-full bg-indigo-500 text-white font-display font-medium hover:bg-indigo-400 transition-all"
+            className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-full bg-indigo-500 text-[#E8EDF8] font-display font-medium hover:bg-indigo-400 transition-all"
           >
             <RotateCcw className="w-4 h-4" />
             Try Again
@@ -59,7 +59,7 @@ export default function Error({
           
           <button
             onClick={() => window.location.href = "/"}
-            className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-full bg-white/5 border border-white/10 text-white font-display font-medium hover:bg-white/10 transition-all"
+            className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-full bg-white/5 border border-white/10 text-[#E8EDF8] font-display font-medium hover:bg-white/10 transition-all"
           >
             <Home className="w-4 h-4" />
             Return Home
@@ -67,7 +67,7 @@ export default function Error({
 
           <button
             onClick={handleHardReset}
-            className="w-full mt-4 text-[10px] font-mono text-white/20 hover:text-rose-400 uppercase tracking-widest transition-colors"
+            className="w-full mt-4 text-[10px] font-mono text-[#2D4060] hover:text-rose-400 uppercase tracking-widest transition-colors"
           >
             Clear Local Storage (Hard Reset)
           </button>

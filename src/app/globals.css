@@ -15,6 +15,13 @@
   --cream-dark: #ebe4d6;
   --amber: #c8923a;
   --mist: #e8eff7;
+
+  /* Dark-screen text hierarchy — blue-tinted for navy brand cohesion */
+  --tx1: #E8EDF8;  /* Headlines, primary labels         */
+  --tx2: #C2D0E4;  /* Body text, descriptions           */
+  --tx3: #8BA5C5;  /* Secondary — timestamps, meta      */
+  --tx4: #567090;  /* Muted — labels, placeholders      */
+  --tx5: #2D4060;  /* Faint — disabled, very subtle     */
 }
 
 * {
@@ -155,7 +162,7 @@ html, body {
   .rep-mode-bar {
     @apply flex items-center gap-2 px-4 py-2 text-xs font-mono font-medium;
     background: var(--navy);
-    color: rgba(255,255,255,0.7);
+    color: var(--tx3);
   }
 
   /* Smooth screen transitions */
@@ -183,4 +190,12 @@ html, body {
     @apply h-1 rounded-full w-full;
     background: var(--fog, #d0dcea);
   }
+}
+
+@layer utilities {
+  .text-tx1 { color: var(--tx1); }
+  .text-tx2 { color: var(--tx2); }
+  .text-tx3 { color: var(--tx3); }
+  .text-tx4 { color: var(--tx4); }
+  .text-tx5 { color: var(--tx5); }
 }

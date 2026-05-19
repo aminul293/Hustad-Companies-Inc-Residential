@@ -28,6 +28,12 @@ module.exports = {
           green: "#27774a",
           mist: "#e8eff7",
           fog: "#d0dcea",
+          /* Dark-screen text hierarchy */
+          tx1: "#E8EDF8",
+          tx2: "#C2D0E4",
+          tx3: "#8BA5C5",
+          tx4: "#567090",
+          tx5: "#2D4060",
         },
       },
       boxShadow: {

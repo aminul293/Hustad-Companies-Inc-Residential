@@ -27,7 +27,7 @@ interface Props {
 
 export function A02WhyInspection({ session, onUpdate, onNext, onBack }: Props) {
   return (
-    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606] selection:bg-indigo-500/30 selection:text-white">
+    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606] selection:bg-indigo-500/30 selection:text-[#E8EDF8]">
       {/* Background Assets: Forensic Rapid Deployment Cloud */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Ambient Gradient Lift - Softer */}
@@ -57,10 +57,10 @@ export function A02WhyInspection({ session, onUpdate, onNext, onBack }: Props) {
       {/* Persistent Branding Anchor */}
       <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-white text-2xl tracking-[0.1em] drop-shadow-sm">
+          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em] drop-shadow-sm">
             HUSTAD
           </span>
-          <span className="text-[10px] font-mono text-white/20 uppercase tracking-[0.3em] pt-0.5">
+          <span className="text-[10px] font-mono text-[#2D4060] uppercase tracking-[0.3em] pt-0.5">
             Madison Residential
           </span>
         </div>
@@ -90,14 +90,14 @@ export function A02WhyInspection({ session, onUpdate, onNext, onBack }: Props) {
               </span>
             </div>
             
-            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05] max-w-4xl">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05] max-w-4xl">
               Hail damage isn&rsquo;t always
               <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">
                 visible from the ground.
               </span>
             </h1>
-            <p className="text-xl text-white/30 font-light max-w-2xl leading-relaxed mt-8">
+            <p className="text-xl text-[#3F5878] font-light max-w-2xl leading-relaxed mt-8">
               What you can see from your yard rarely tells the full story.
               We look deeper to protect your asset.
             </p>
@@ -124,13 +124,13 @@ export function A02WhyInspection({ session, onUpdate, onNext, onBack }: Props) {
                     "w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(99,102,241,0.1)]",
                     "group-hover:shadow-[0_0_30px_rgba(99,102,241,0.2)]"
                   )}>
-                    <area.icon className="w-7 h-7 text-indigo-300 group-hover:text-white transition-colors duration-500" />
+                    <area.icon className="w-7 h-7 text-indigo-300 group-hover:text-[#E8EDF8] transition-colors duration-500" />
                   </div>
                   
-                  <h3 className="text-xl font-display font-medium text-white mb-3 tracking-tight">
+                  <h3 className="text-xl font-display font-medium text-[#E8EDF8] mb-3 tracking-tight">
                     {area.label}
                   </h3>
-                  <p className="text-base text-white/30 font-light leading-relaxed group-hover:text-white/50 transition-colors">
+                  <p className="text-base text-[#3F5878] font-light leading-relaxed group-hover:text-[#7090B0] transition-colors">
                     {area.description}
                   </p>
                 </div>
@@ -145,17 +145,17 @@ export function A02WhyInspection({ session, onUpdate, onNext, onBack }: Props) {
               className="bg-gradient-to-br from-indigo-500/[0.08] to-transparent border border-white/10 p-10 rounded-[40px] relative overflow-hidden group"
             >
               <div className="absolute top-0 right-0 p-8 opacity-10">
-                <AlertCircle className="w-24 h-24 text-white" />
+                <AlertCircle className="w-24 h-24 text-[#E8EDF8]" />
               </div>
               <div className="relative z-10 space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center">
                     <AlertCircle className="w-4 h-4 text-indigo-400" />
                   </div>
-                  <span className="text-[10px] font-mono text-white/50 uppercase tracking-widest pt-0.5">Critical Notice</span>
+                  <span className="text-[10px] font-mono text-[#7090B0] uppercase tracking-widest pt-0.5">Critical Notice</span>
                 </div>
-                <p className="text-lg text-white/80 font-light leading-relaxed">
-                  Some hail damage appears over weeks or months. <span className="text-white font-medium underline underline-offset-8 decoration-indigo-500/40">Early documentation</span> is your strongest asset.
+                <p className="text-lg text-[#C2D0E4] font-light leading-relaxed">
+                  Some hail damage appears over weeks or months. <span className="text-[#E8EDF8] font-medium underline underline-offset-8 decoration-indigo-500/40">Early documentation</span> is your strongest asset.
                 </p>
               </div>
             </motion.div>
@@ -164,7 +164,7 @@ export function A02WhyInspection({ session, onUpdate, onNext, onBack }: Props) {
               whileHover={{ y: -5 }}
               className="bg-white/[0.02] border border-white/[0.05] p-10 rounded-[40px] flex items-center"
             >
-              <p className="text-base text-white/30 font-light leading-relaxed italic">
+              <p className="text-base text-[#3F5878] font-light leading-relaxed italic">
                 &ldquo;Experts with integrity on a local and national level. We promise absolute transparency in every finding, ensuring your peace of mind.&rdquo;
               </p>
             </motion.div>
@@ -179,8 +179,8 @@ export function A02WhyInspection({ session, onUpdate, onNext, onBack }: Props) {
             onClick={onBack}
             className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300"
           >
-            <ArrowLeft className="w-4 h-4 text-white/40 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-white/60">Previous Step</span>
+            <ArrowLeft className="w-4 h-4 text-[#567090] group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-display font-medium text-[#8BA5C5]">Previous Step</span>
           </button>
 
           <StarButton 

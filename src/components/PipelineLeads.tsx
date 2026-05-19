@@ -41,7 +41,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bar: string;
   inspection_completed:  { label: "Inspected",  color: "text-purple-300 bg-purple-300/10 border-purple-300/20", bar: "bg-purple-400", icon: CheckCircle2 },
   dead_lead:             { label: "Dead Lead",  color: "text-rose-400 bg-rose-400/10 border-rose-400/20",     bar: "bg-rose-500/50",  icon: XCircle },
   signed:                { label: "Signed",     color: "text-green-400 bg-green-400/10 border-green-400/20",  bar: "bg-green-500",    icon: CheckCircle2 },
-  closed:                { label: "Closed",     color: "text-white/30 bg-white/5 border-white/10",            bar: "bg-white/20",     icon: CheckCircle2 },
+  closed:                { label: "Closed",     color: "text-[#3F5878] bg-white/5 border-white/10",            bar: "bg-white/20",     icon: CheckCircle2 },
 };
 
 const STAGE_MAP: Record<string, number> = {
@@ -545,8 +545,8 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
     if (content.startsWith("Voicemail")) return { icon: Phone, color: "text-sky-400 bg-sky-400/10" };
     if (content.startsWith("Wrong Number")) return { icon: Phone, color: "text-rose-400 bg-rose-400/10" };
     if (content.startsWith("Follow-up set")) return { icon: Clock, color: "text-orange-400 bg-orange-400/10" };
-    if (content.startsWith("Imported")) return { icon: CheckCircle2, color: "text-white/30 bg-white/5" };
-    return { icon: MessageSquare, color: "text-white/25 bg-white/5" };
+    if (content.startsWith("Imported")) return { icon: CheckCircle2, color: "text-[#3F5878] bg-white/5" };
+    return { icon: MessageSquare, color: "text-[#354D6F] bg-white/5" };
   };
 
   // Phone edit
@@ -718,7 +718,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
           </button>
           <div>
             <h2 className="text-4xl font-display font-medium tracking-tight">Sales Pipeline</h2>
-            <p className="text-white/40 text-sm mt-1 font-light tracking-wide">Lead lifecycle and field conversion intelligence</p>
+            <p className="text-[#567090] text-sm mt-1 font-light tracking-wide">Lead lifecycle and field conversion intelligence</p>
           </div>
         </div>
 
@@ -729,12 +729,12 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
             { label: "Avg Touches",  value: stats.avgAttempts, sub: "contact attempts",                icon: Phone, color: "text-sky-400" },
           ].map((s, i) => (
             <div key={i} className="px-5 py-4 rounded-[24px] bg-white/[0.03] border border-white/[0.08] min-w-[148px]">
-              <p className="text-[9px] font-mono text-white/20 uppercase tracking-[0.2em] mb-1">{s.label}</p>
+              <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-[0.2em] mb-1">{s.label}</p>
               <div className="flex items-baseline gap-2">
                 <s.icon className={cn("w-3.5 h-3.5 shrink-0", s.color)} />
                 <p className="text-xl font-display font-semibold">{s.value}</p>
               </div>
-              <p className="text-[10px] text-white/20 mt-1 font-light truncate">{s.sub}</p>
+              <p className="text-[10px] text-[#2D4060] mt-1 font-light truncate">{s.sub}</p>
             </div>
           ))}
         </div>
@@ -750,10 +750,10 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
       ) : leads.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <div className="w-16 h-16 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
-            <Activity className="w-7 h-7 text-white/20" />
+            <Activity className="w-7 h-7 text-[#2D4060]" />
           </div>
-          <p className="text-white/40 font-light text-lg">No leads in pipeline</p>
-          <p className="text-white/20 text-sm mt-2">Import tickets from CP Inbox to get started</p>
+          <p className="text-[#567090] font-light text-lg">No leads in pipeline</p>
+          <p className="text-[#2D4060] text-sm mt-2">Import tickets from CP Inbox to get started</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -804,8 +804,8 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                             {/* Tooltip */}
                             <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/dot:opacity-100 transition-opacity z-10">
                               <div className="bg-[#111] border border-white/10 rounded-xl px-3 py-2 text-center" style={{ minWidth: '140px', maxWidth: '200px' }}>
-                                <p className="text-[9px] font-mono text-white/70 uppercase tracking-widest mb-0.5">{label}</p>
-                                <p className="text-[9px] text-white/35 font-light leading-snug">{STAGE_HINTS[i]}</p>
+                                <p className="text-[9px] font-mono text-[#AABDCF] uppercase tracking-widest mb-0.5">{label}</p>
+                                <p className="text-[9px] text-[#4D678A] font-light leading-snug">{STAGE_HINTS[i]}</p>
                               </div>
                             </div>
                             <button
@@ -835,7 +835,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                       <div className="flex items-center gap-2">
                         {isUrgent  && <div className="flex items-center gap-1 text-[9px] font-mono text-rose-400/80"><Flame className="w-3 h-3" /> Urgent</div>}
                         {isWarning && <div className="flex items-center gap-1 text-[9px] font-mono text-amber-400/70"><AlertCircle className="w-3 h-3" /> Stale</div>}
-                        <span className="text-[9px] font-mono text-white/20 bg-white/[0.04] border border-white/[0.06] px-2 py-1 rounded-lg">
+                        <span className="text-[9px] font-mono text-[#2D4060] bg-white/[0.04] border border-white/[0.06] px-2 py-1 rounded-lg">
                           #{lead.cpc_ticket_id}
                         </span>
                       </div>
@@ -843,18 +843,18 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
 
                     {/* Property */}
                     <div className="mb-6">
-                      <h3 className="text-[1.4rem] font-display font-medium text-white tracking-tight leading-tight mb-2">
+                      <h3 className="text-[1.4rem] font-display font-medium text-[#E8EDF8] tracking-tight leading-tight mb-2">
                         {lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name}
                       </h3>
                       <div className="flex items-center gap-3 mb-1.5">
-                        <span className="text-xs text-white/35 flex items-center gap-1.5 font-light">
-                          <User className="w-3.5 h-3.5 text-white/20" />
+                        <span className="text-xs text-[#4D678A] flex items-center gap-1.5 font-light">
+                          <User className="w-3.5 h-3.5 text-[#2D4060]" />
                           {lead.centerpoint_jobs?.raw?._owner
                             ? (lead.centerpoint_jobs.raw._owner as string).replace(/\b\w/g, (c: string) => c.toUpperCase())
                             : "Unknown Owner"}
                         </span>
                         <div className="w-1 h-1 rounded-full bg-white/10" />
-                        <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest">Residential</span>
+                        <span className="text-[9px] font-mono text-[#2D4060] uppercase tracking-widest">Residential</span>
                       </div>
                       {(() => {
                         const ph = resolvePhone(lead);
@@ -869,7 +869,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                             </a>
                             <button
                               onClick={e => { e.stopPropagation(); openEditPhone(lead); }}
-                              className="text-white/15 hover:text-white/50 transition-colors"
+                              className="text-[#293A58] hover:text-[#7090B0] transition-colors"
                             >
                               <PenLine className="w-2.5 h-2.5" />
                             </button>
@@ -877,7 +877,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                         ) : (
                           <button
                             onClick={e => { e.stopPropagation(); openEditPhone(lead); }}
-                            className="flex items-center gap-1.5 text-[11px] text-white/20 hover:text-sky-400/70 transition-colors font-light"
+                            className="flex items-center gap-1.5 text-[11px] text-[#2D4060] hover:text-sky-400/70 transition-colors font-light"
                           >
                             <Phone className="w-3 h-3 shrink-0" />
                             Add phone number
@@ -898,7 +898,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                             </button>
                             <button
                               onClick={e => { e.stopPropagation(); openEditEmail(lead); }}
-                              className="text-white/15 hover:text-white/50 transition-colors"
+                              className="text-[#293A58] hover:text-[#7090B0] transition-colors"
                             >
                               <PenLine className="w-2.5 h-2.5" />
                             </button>
@@ -906,7 +906,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                         ) : (
                           <button
                             onClick={e => { e.stopPropagation(); openEditEmail(lead); }}
-                            className="flex items-center gap-1.5 text-[11px] text-white/20 hover:text-indigo-400/70 transition-colors font-light mt-1"
+                            className="flex items-center gap-1.5 text-[11px] text-[#2D4060] hover:text-indigo-400/70 transition-colors font-light mt-1"
                           >
                             <Mail className="w-3 h-3 shrink-0" />
                             Add email address
@@ -920,8 +920,8 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                       {/* Attempts */}
                       <div className="bg-white/[0.025] border border-white/[0.05] rounded-[18px] p-3.5">
                         <div className="flex items-center justify-between mb-1.5">
-                          <p className="text-[7px] font-mono text-white/20 uppercase tracking-[0.2em]">Attempts</p>
-                          <Phone className="w-2.5 h-2.5 text-white/10" />
+                          <p className="text-[7px] font-mono text-[#2D4060] uppercase tracking-[0.2em]">Attempts</p>
+                          <Phone className="w-2.5 h-2.5 text-[#1F2E48]" />
                         </div>
                         <p className="text-[1.4rem] font-display font-semibold leading-none">{lead.contact_attempt_count}</p>
                       </div>
@@ -929,12 +929,12 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                       {/* Last contact / scheduled date */}
                       <div className="bg-white/[0.025] border border-white/[0.05] rounded-[18px] p-3.5">
                         <div className="flex items-center justify-between mb-1.5">
-                          <p className="text-[7px] font-mono text-white/20 uppercase tracking-[0.2em]">
+                          <p className="text-[7px] font-mono text-[#2D4060] uppercase tracking-[0.2em]">
                             {isScheduled ? 'Date' : 'Last Contact'}
                           </p>
-                          <Clock className="w-2.5 h-2.5 text-white/10" />
+                          <Clock className="w-2.5 h-2.5 text-[#1F2E48]" />
                         </div>
-                        <p className="text-xs font-display text-white/55 leading-tight">
+                        <p className="text-xs font-display text-[#7E9DBE] leading-tight">
                           {isScheduled && lead.scheduled_start_at
                             ? fmtDate(lead.scheduled_start_at)
                             : fmtDate(lead.last_contacted_at) || "Never"}
@@ -944,26 +944,26 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                       {/* Time / follow-up / idle */}
                       <div className="bg-white/[0.025] border border-white/[0.05] rounded-[18px] p-3.5">
                         <div className="flex items-center justify-between mb-1.5">
-                          <p className="text-[7px] font-mono text-white/20 uppercase tracking-[0.2em]">
+                          <p className="text-[7px] font-mono text-[#2D4060] uppercase tracking-[0.2em]">
                             {isScheduled ? 'Duration'
                               : lead.pipeline_status === 'follow_up_needed' ? 'Follow Up'
                               : 'Idle'}
                           </p>
-                          <CalendarDays className="w-2.5 h-2.5 text-white/10" />
+                          <CalendarDays className="w-2.5 h-2.5 text-[#1F2E48]" />
                         </div>
                         {isScheduled ? (
                           <div>
                             <p className="text-xs font-display text-emerald-400/80 leading-tight">
                               {lead.scheduled_start_at ? fmtTime(lead.scheduled_start_at) : '—'}
                             </p>
-                            <p className="text-[9px] font-mono text-white/25 mt-0.5">
+                            <p className="text-[9px] font-mono text-[#354D6F] mt-0.5">
                               {apptDurationMin !== null
                                 ? apptDurationMin < 60 ? `${apptDurationMin} min` : `${apptDurationMin / 60} hr`
                                 : '—'}
                             </p>
                           </div>
                         ) : (
-                          <p className={cn("text-xs font-display leading-tight", isUrgent ? "text-rose-400/80" : isWarning ? "text-amber-400/70" : "text-white/55")}>
+                          <p className={cn("text-xs font-display leading-tight", isUrgent ? "text-rose-400/80" : isWarning ? "text-amber-400/70" : "text-[#7E9DBE]")}>
                             {lead.pipeline_status === 'follow_up_needed' && lead.next_follow_up_at
                               ? fmtDate(lead.next_follow_up_at)
                               : idleDays !== null ? `${idleDays}d` : "New"}
@@ -985,10 +985,10 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                             <ActIcon className="w-3 h-3" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-[10px] text-white/50 font-light truncate">{label}</p>
+                            <p className="text-[10px] text-[#7090B0] font-light truncate">{label}</p>
                           </div>
                           {last.timestamp && (
-                            <span className="text-[9px] font-mono text-white/20 shrink-0">{last.timestamp}</span>
+                            <span className="text-[9px] font-mono text-[#2D4060] shrink-0">{last.timestamp}</span>
                           )}
                         </div>
                       );
@@ -999,7 +999,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                       {isScheduled ? (
                         <button
                           onClick={() => handleStartInspection(lead)}
-                          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-indigo-500 hover:bg-indigo-400 active:scale-95 text-white transition-all text-sm font-medium shadow-lg shadow-indigo-500/20"
+                          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-indigo-500 hover:bg-indigo-400 active:scale-95 text-[#E8EDF8] transition-all text-sm font-medium shadow-lg shadow-indigo-500/20"
                         >
                           <PlayCircle className="w-4 h-4" />
                           Start Inspection
@@ -1038,7 +1038,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                       <div className="mt-2.5 pt-2.5 border-t border-white/[0.05] flex items-center gap-1">
                         <button
                           onClick={() => openNotes(lead)}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-white/25 hover:text-white/60 hover:bg-white/[0.04] transition-all text-[11px] font-medium"
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[#354D6F] hover:text-[#8BA5C5] hover:bg-white/[0.04] transition-all text-[11px] font-medium"
                         >
                           <MessageSquare className="w-3.5 h-3.5" />
                           Notes
@@ -1072,8 +1072,8 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                           className={cn(
                             "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl transition-all text-[11px] font-medium",
                             isBlocked
-                              ? "text-white/10 cursor-not-allowed"
-                              : "text-white/20 hover:text-white/50 hover:bg-white/[0.04]"
+                              ? "text-[#1F2E48] cursor-not-allowed"
+                              : "text-[#2D4060] hover:text-[#7090B0] hover:bg-white/[0.04]"
                           )}
                         >
                           <MinusCircle className="w-3.5 h-3.5" />
@@ -1108,28 +1108,28 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                     <CalendarDays className="w-5 h-5 text-emerald-400" />
                     <h3 className="text-xl font-display font-medium">Schedule Inspection</h3>
                   </div>
-                  <p className="text-sm text-white/35 font-light">{schedModal.leadName}</p>
+                  <p className="text-sm text-[#4D678A] font-light">{schedModal.leadName}</p>
                 </div>
-                <button onClick={() => setSchedModal(null)} className="p-2 rounded-2xl text-white/30 hover:text-white hover:bg-white/5 transition-all">
+                <button onClick={() => setSchedModal(null)} className="p-2 rounded-2xl text-[#3F5878] hover:text-[#E8EDF8] hover:bg-white/5 transition-all">
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Date */}
               <div className="mb-6">
-                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">Date</label>
+                <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2">Date</label>
                 <input
                   type="date"
                   value={schedDate}
                   min={new Date().toISOString().split("T")[0]}
                   onChange={(e) => setSchedDate(e.target.value)}
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-500/50 [color-scheme:dark]"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-[#E8EDF8] text-sm focus:outline-none focus:border-indigo-500/50 [color-scheme:dark]"
                 />
               </div>
 
               {/* Time grid */}
               <div className="mb-6">
-                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2.5">Time</label>
+                <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2.5">Time</label>
                 <div className="grid grid-cols-4 gap-2">
                   {TIME_SLOTS.map(slot => (
                     <button
@@ -1138,8 +1138,8 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                       className={cn(
                         "py-2.5 rounded-xl text-xs font-medium transition-all",
                         schedTime === slot.value
-                          ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20"
-                          : "bg-white/[0.04] text-white/35 hover:bg-white/[0.08] hover:text-white/70"
+                          ? "bg-indigo-500 text-[#E8EDF8] shadow-lg shadow-indigo-500/20"
+                          : "bg-white/[0.04] text-[#4D678A] hover:bg-white/[0.08] hover:text-[#AABDCF]"
                       )}
                     >
                       {slot.label}
@@ -1150,7 +1150,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
 
               {/* Duration */}
               <div className="mb-7">
-                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2.5">Duration</label>
+                <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2.5">Duration</label>
                 <div className="flex gap-2">
                   {DURATIONS.map(dur => (
                     <button
@@ -1160,7 +1160,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                         "flex-1 py-2.5 rounded-xl text-xs font-medium transition-all",
                         schedDuration === dur.value
                           ? "bg-emerald-500/20 border border-emerald-500/40 text-emerald-300"
-                          : "bg-white/[0.04] text-white/30 hover:bg-white/[0.07] hover:text-white/60"
+                          : "bg-white/[0.04] text-[#3F5878] hover:bg-white/[0.07] hover:text-[#8BA5C5]"
                       )}
                     >
                       {dur.label}
@@ -1199,7 +1199,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
               {/* Actions */}
               <div className="flex gap-3">
                 <button onClick={() => { setSchedModal(null); setClashWarning(null); }}
-                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm">
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-[#7090B0] hover:text-[#E8EDF8] hover:border-white/20 transition-all text-sm">
                   Cancel
                 </button>
                 <button
@@ -1237,16 +1237,16 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                     <Clock className="w-5 h-5 text-orange-400" />
                     <h3 className="text-xl font-display font-medium">Schedule Follow-up</h3>
                   </div>
-                  <p className="text-sm text-white/35 font-light">{followModal.leadName}</p>
+                  <p className="text-sm text-[#4D678A] font-light">{followModal.leadName}</p>
                 </div>
-                <button onClick={() => setFollowModal(null)} className="p-2 rounded-2xl text-white/30 hover:text-white hover:bg-white/5 transition-all">
+                <button onClick={() => setFollowModal(null)} className="p-2 rounded-2xl text-[#3F5878] hover:text-[#E8EDF8] hover:bg-white/5 transition-all">
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Reason pills */}
               <div className="mb-5">
-                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2.5">Reason</label>
+                <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2.5">Reason</label>
                 <div className="flex flex-wrap gap-2">
                   {["No answer", "Requested callback", "Not ready yet", "Price check", "Reviewing options"].map(r => (
                     <button
@@ -1256,7 +1256,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                         "px-3.5 py-2 rounded-xl text-xs font-medium border transition-all",
                         followReason === r
                           ? "bg-orange-500/20 border-orange-500/40 text-orange-300"
-                          : "bg-white/[0.03] border-white/[0.07] text-white/30 hover:bg-white/[0.07] hover:text-white/60"
+                          : "bg-white/[0.03] border-white/[0.07] text-[#3F5878] hover:bg-white/[0.07] hover:text-[#8BA5C5]"
                       )}
                     >
                       {r}
@@ -1267,7 +1267,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
 
               {/* Quick picks */}
               <div className="mb-5">
-                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2.5">Follow-up Date</label>
+                <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2.5">Follow-up Date</label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { label: "Tomorrow",   days: 1 },
@@ -1284,7 +1284,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                           "py-3 rounded-2xl text-sm font-medium transition-all",
                           followDate === d
                             ? "bg-orange-500/20 border border-orange-500/40 text-orange-300"
-                            : "bg-white/[0.04] text-white/40 hover:bg-white/[0.08] hover:text-white/70"
+                            : "bg-white/[0.04] text-[#567090] hover:bg-white/[0.08] hover:text-[#AABDCF]"
                         )}
                       >
                         {opt.label}
@@ -1296,31 +1296,31 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
 
               {/* Custom date */}
               <div className="mb-5">
-                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">Custom Date</label>
+                <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2">Custom Date</label>
                 <input
                   type="date"
                   value={followDate}
                   min={new Date().toISOString().split("T")[0]}
                   onChange={(e) => setFollowDate(e.target.value)}
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-orange-500/40 [color-scheme:dark]"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-[#E8EDF8] text-sm focus:outline-none focus:border-orange-500/40 [color-scheme:dark]"
                 />
               </div>
 
               {/* Note */}
               <div className="mb-7">
-                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">Note (optional)</label>
+                <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2">Note (optional)</label>
                 <input
                   type="text"
                   value={followNote}
                   onChange={e => setFollowNote(e.target.value)}
                   placeholder="e.g. 'Prefers mornings', 'Waiting on insurance adjuster'"
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-orange-500/40"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-[#E8EDF8] text-sm placeholder:text-[#2D4060] focus:outline-none focus:border-orange-500/40"
                 />
               </div>
 
               <div className="flex gap-3">
                 <button onClick={() => setFollowModal(null)}
-                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm">
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-[#7090B0] hover:text-[#E8EDF8] hover:border-white/20 transition-all text-sm">
                   Cancel
                 </button>
                 <button
@@ -1358,9 +1358,9 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                     <MessageSquare className="w-4 h-4 text-indigo-400" />
                     <h3 className="text-lg font-display font-medium">Activity Log</h3>
                   </div>
-                  <p className="text-xs text-white/30 font-light">{notesPanel.leadName}</p>
+                  <p className="text-xs text-[#3F5878] font-light">{notesPanel.leadName}</p>
                 </div>
-                <button onClick={() => setNotesPanel(null)} className="p-2.5 rounded-2xl text-white/30 hover:text-white hover:bg-white/5 transition-all">
+                <button onClick={() => setNotesPanel(null)} className="p-2.5 rounded-2xl text-[#3F5878] hover:text-[#E8EDF8] hover:bg-white/5 transition-all">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -1370,10 +1370,10 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                 {parseNoteEntries(notesPanel.current).length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
                     <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center mb-4">
-                      <MessageSquare className="w-5 h-5 text-white/15" />
+                      <MessageSquare className="w-5 h-5 text-[#293A58]" />
                     </div>
-                    <p className="text-white/25 text-sm font-light">No activity yet</p>
-                    <p className="text-white/15 text-xs mt-1">Add a note below to get started</p>
+                    <p className="text-[#354D6F] text-sm font-light">No activity yet</p>
+                    <p className="text-[#293A58] text-xs mt-1">Add a note below to get started</p>
                   </div>
                 ) : (
                   [...parseNoteEntries(notesPanel.current)].reverse().map((entry, i) => {
@@ -1391,9 +1391,9 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                         </div>
                         <div className="flex-1 bg-white/[0.025] border border-white/[0.06] rounded-2xl px-4 py-3 min-w-0">
                           {entry.timestamp && (
-                            <p className="text-[9px] font-mono text-white/25 uppercase tracking-widest mb-1.5">{entry.timestamp}</p>
+                            <p className="text-[9px] font-mono text-[#354D6F] uppercase tracking-widest mb-1.5">{entry.timestamp}</p>
                           )}
-                          <p className="text-sm text-white/70 font-light leading-relaxed break-words">{entry.content}</p>
+                          <p className="text-sm text-[#AABDCF] font-light leading-relaxed break-words">{entry.content}</p>
                         </div>
                       </motion.div>
                     );
@@ -1410,11 +1410,11 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                   onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) saveNotes(); }}
                   placeholder="Add a note… (⌘↵ to save)"
                   rows={3}
-                  className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl px-4 py-3 text-sm text-white/80 placeholder:text-white/20 focus:outline-none focus:border-indigo-500/40 resize-none leading-relaxed"
+                  className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl px-4 py-3 text-sm text-[#C2D0E4] placeholder:text-[#2D4060] focus:outline-none focus:border-indigo-500/40 resize-none leading-relaxed"
                 />
                 <div className="flex gap-3">
                   <button onClick={() => setNotesPanel(null)}
-                    className="flex-1 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-white/40 hover:text-white hover:border-white/20 transition-all text-sm">
+                    className="flex-1 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-[#567090] hover:text-[#E8EDF8] hover:border-white/20 transition-all text-sm">
                     Close
                   </button>
                   <button onClick={saveNotes} disabled={!notesText.trim()}
@@ -1448,15 +1448,15 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                       {editPhoneModal.current ? "Edit Phone Number" : "Add Phone Number"}
                     </h3>
                   </div>
-                  <p className="text-sm text-white/35 font-light">{editPhoneModal.leadName}</p>
+                  <p className="text-sm text-[#4D678A] font-light">{editPhoneModal.leadName}</p>
                 </div>
-                <button onClick={() => setEditPhoneModal(null)} className="p-2 rounded-2xl text-white/30 hover:text-white hover:bg-white/5 transition-all">
+                <button onClick={() => setEditPhoneModal(null)} className="p-2 rounded-2xl text-[#3F5878] hover:text-[#E8EDF8] hover:bg-white/5 transition-all">
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               <div className="mb-7">
-                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">
+                <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2">
                   Homeowner Phone
                 </label>
                 <input
@@ -1466,16 +1466,16 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                   onKeyDown={e => { if (e.key === "Enter") savePhone(); }}
                   placeholder="(555) 867-5309"
                   autoFocus
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-base placeholder:text-white/20 focus:outline-none focus:border-sky-500/40 tracking-wide"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-[#E8EDF8] text-base placeholder:text-[#2D4060] focus:outline-none focus:border-sky-500/40 tracking-wide"
                 />
-                <p className="text-[10px] text-white/20 mt-2 font-light">
+                <p className="text-[10px] text-[#2D4060] mt-2 font-light">
                   Saved to this lead. Tap the number on the card to dial directly.
                 </p>
               </div>
 
               <div className="flex gap-3">
                 <button onClick={() => setEditPhoneModal(null)}
-                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm">
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-[#7090B0] hover:text-[#E8EDF8] hover:border-white/20 transition-all text-sm">
                   Cancel
                 </button>
                 <button onClick={savePhone}
@@ -1508,15 +1508,15 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                       {editEmailModal.current ? "Edit Email Address" : "Add Email Address"}
                     </h3>
                   </div>
-                  <p className="text-sm text-white/35 font-light">{editEmailModal.leadName}</p>
+                  <p className="text-sm text-[#4D678A] font-light">{editEmailModal.leadName}</p>
                 </div>
-                <button onClick={() => setEditEmailModal(null)} className="p-2 rounded-2xl text-white/30 hover:text-white hover:bg-white/5 transition-all">
+                <button onClick={() => setEditEmailModal(null)} className="p-2 rounded-2xl text-[#3F5878] hover:text-[#E8EDF8] hover:bg-white/5 transition-all">
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               <div className="mb-7">
-                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">
+                <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2">
                   Homeowner Email
                 </label>
                 <input
@@ -1526,16 +1526,16 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                   onKeyDown={e => { if (e.key === "Enter") saveEmail(); }}
                   placeholder="homeowner@example.com"
                   autoFocus
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-base placeholder:text-white/20 focus:outline-none focus:border-indigo-500/40 tracking-wide"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-[#E8EDF8] text-base placeholder:text-[#2D4060] focus:outline-none focus:border-indigo-500/40 tracking-wide"
                 />
-                <p className="text-[10px] text-white/20 mt-2 font-light">
+                <p className="text-[10px] text-[#2D4060] mt-2 font-light">
                   Saved to this lead. Tap the address on the card to open your mail app.
                 </p>
               </div>
 
               <div className="flex gap-3">
                 <button onClick={() => setEditEmailModal(null)}
-                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm">
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-[#7090B0] hover:text-[#E8EDF8] hover:border-white/20 transition-all text-sm">
                   Cancel
                 </button>
                 <button onClick={saveEmail}
@@ -1567,43 +1567,43 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                     <Mail className="w-5 h-5 text-indigo-400" />
                     <h3 className="text-xl font-display font-medium">Draft Email</h3>
                   </div>
-                  <p className="text-sm text-white/35 font-light">{draftEmailModal.leadName}</p>
+                  <p className="text-sm text-[#4D678A] font-light">{draftEmailModal.leadName}</p>
                 </div>
-                <button onClick={() => setDraftEmailModal(null)} className="p-2 rounded-2xl text-white/30 hover:text-white hover:bg-white/5 transition-all">
+                <button onClick={() => setDraftEmailModal(null)} className="p-2 rounded-2xl text-[#3F5878] hover:text-[#E8EDF8] hover:bg-white/5 transition-all">
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               {/* To */}
               <div className="mb-4">
-                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">To</label>
+                <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2">To</label>
                 <input
                   type="email"
                   value={draftEmailModal.to}
                   onChange={e => setDraftEmailModal(prev => prev ? { ...prev, to: e.target.value } : prev)}
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-indigo-500/40"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-[#E8EDF8] text-sm placeholder:text-[#2D4060] focus:outline-none focus:border-indigo-500/40"
                 />
               </div>
 
               {/* Subject */}
               <div className="mb-4">
-                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">Subject</label>
+                <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2">Subject</label>
                 <input
                   type="text"
                   value={draftEmailModal.subject}
                   onChange={e => setDraftEmailModal(prev => prev ? { ...prev, subject: e.target.value } : prev)}
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-indigo-500/40"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-[#E8EDF8] text-sm placeholder:text-[#2D4060] focus:outline-none focus:border-indigo-500/40"
                 />
               </div>
 
               {/* Body */}
               <div className="mb-7">
-                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">Message</label>
+                <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2">Message</label>
                 <textarea
                   value={draftEmailModal.body}
                   onChange={e => setDraftEmailModal(prev => prev ? { ...prev, body: e.target.value } : prev)}
                   rows={9}
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-indigo-500/40 resize-none leading-relaxed"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-[#E8EDF8] text-sm placeholder:text-[#2D4060] focus:outline-none focus:border-indigo-500/40 resize-none leading-relaxed"
                 />
               </div>
 
@@ -1637,7 +1637,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
               {/* Actions */}
               <div className="flex gap-3">
                 <button onClick={() => setDraftEmailModal(null)}
-                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm">
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-[#7090B0] hover:text-[#E8EDF8] hover:border-white/20 transition-all text-sm">
                   Cancel
                 </button>
                 <button
@@ -1678,9 +1678,9 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                     <Phone className="w-5 h-5 text-sky-400" />
                     <h3 className="text-xl font-display font-medium">Log Call</h3>
                   </div>
-                  <p className="text-sm text-white/35 font-light">{callModal.leadName}</p>
+                  <p className="text-sm text-[#4D678A] font-light">{callModal.leadName}</p>
                 </div>
-                <button onClick={() => setCallModal(null)} className="p-2 rounded-2xl text-white/30 hover:text-white hover:bg-white/5 transition-all">
+                <button onClick={() => setCallModal(null)} className="p-2 rounded-2xl text-[#3F5878] hover:text-[#E8EDF8] hover:bg-white/5 transition-all">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -1688,8 +1688,8 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
               {/* Contact info */}
               <div className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-5 mb-6">
                 <div className="flex items-center gap-3 mb-3">
-                  <User className="w-4 h-4 text-white/20 shrink-0" />
-                  <span className="text-sm text-white/60 font-light">
+                  <User className="w-4 h-4 text-[#2D4060] shrink-0" />
+                  <span className="text-sm text-[#8BA5C5] font-light">
                     {callModal.ownerName.replace(/\b\w/g, c => c.toUpperCase())}
                   </span>
                 </div>
@@ -1707,8 +1707,8 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                   </a>
                 ) : (
                   <div className="flex items-center gap-3 mb-2">
-                    <Phone className="w-4 h-4 text-white/15 shrink-0" />
-                    <span className="text-sm text-white/25 font-light italic">No phone number on file</span>
+                    <Phone className="w-4 h-4 text-[#293A58] shrink-0" />
+                    <span className="text-sm text-[#354D6F] font-light italic">No phone number on file</span>
                   </div>
                 )}
                 {callModal.email && (
@@ -1728,7 +1728,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
 
               {/* Outcome pills */}
               <div className="mb-6">
-                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2.5">Call Outcome</label>
+                <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2.5">Call Outcome</label>
                 <div className="grid grid-cols-2 gap-2">
                   {([
                     { value: "reached",      label: "✓ Reached",    active: "bg-emerald-500/20 border-emerald-500/40 text-emerald-300" },
@@ -1743,7 +1743,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                         "py-3 rounded-2xl text-sm font-medium border transition-all",
                         callOutcome === opt.value
                           ? opt.active
-                          : "bg-white/[0.03] border-white/[0.07] text-white/30 hover:bg-white/[0.07] hover:text-white/60"
+                          : "bg-white/[0.03] border-white/[0.07] text-[#3F5878] hover:bg-white/[0.07] hover:text-[#8BA5C5]"
                       )}
                     >
                       {opt.label}
@@ -1754,21 +1754,21 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
 
               {/* Quick note */}
               <div className="mb-7">
-                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">Quick Note (optional)</label>
+                <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2">Quick Note (optional)</label>
                 <input
                   type="text"
                   value={callNote}
                   onChange={e => setCallNote(e.target.value)}
                   onKeyDown={e => { if (e.key === "Enter" && callOutcome) confirmCall(); }}
                   placeholder="e.g. 'Interested — send quote', 'Call back Friday'"
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-sky-500/40"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-[#E8EDF8] text-sm placeholder:text-[#2D4060] focus:outline-none focus:border-sky-500/40"
                 />
               </div>
 
               {/* Actions */}
               <div className="flex gap-3">
                 <button onClick={() => setCallModal(null)}
-                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm">
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-[#7090B0] hover:text-[#E8EDF8] hover:border-white/20 transition-all text-sm">
                   Cancel
                 </button>
                 <button
@@ -1800,12 +1800,12 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                 <XCircle className="w-6 h-6 text-rose-400" />
               </div>
               <h3 className="text-xl font-display font-medium mb-3">Mark as Dead Lead?</h3>
-              <p className="text-white/40 text-sm leading-relaxed mb-8">
-                <span className="text-white/70 font-medium">{deadLeadModal.leadName}</span> will be marked as dead and removed from your active pipeline. This can be undone by moving it back to New Lead.
+              <p className="text-[#567090] text-sm leading-relaxed mb-8">
+                <span className="text-[#AABDCF] font-medium">{deadLeadModal.leadName}</span> will be marked as dead and removed from your active pipeline. This can be undone by moving it back to New Lead.
               </p>
               <div className="flex gap-3">
                 <button onClick={() => setDeadLeadModal(null)}
-                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm">
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-[#7090B0] hover:text-[#E8EDF8] hover:border-white/20 transition-all text-sm">
                   Cancel
                 </button>
                 <button onClick={confirmDeadLead}
@@ -1831,15 +1831,15 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
               className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 max-w-sm w-full shadow-2xl"
             >
               <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
-                <MinusCircle className="w-6 h-6 text-white/40" />
+                <MinusCircle className="w-6 h-6 text-[#567090]" />
               </div>
               <h3 className="text-xl font-display font-medium mb-3">Remove from Pipeline?</h3>
-              <p className="text-white/40 text-sm leading-relaxed mb-8">
-                <span className="text-white/70 font-medium">{confirmModal.leadName}</span> will be removed from your pipeline but kept in CenterPoint. You can re-import it from CP Inbox later.
+              <p className="text-[#567090] text-sm leading-relaxed mb-8">
+                <span className="text-[#AABDCF] font-medium">{confirmModal.leadName}</span> will be removed from your pipeline but kept in CenterPoint. You can re-import it from CP Inbox later.
               </p>
               <div className="flex gap-3">
                 <button onClick={() => setConfirmModal(null)}
-                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm">
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-[#7090B0] hover:text-[#E8EDF8] hover:border-white/20 transition-all text-sm">
                   Cancel
                 </button>
                 <button onClick={confirmRemove}
@@ -1865,22 +1865,22 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
               className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 max-w-sm w-full shadow-2xl"
             >
               <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
-                <ChevronLeft className="w-6 h-6 text-white/40" />
+                <ChevronLeft className="w-6 h-6 text-[#567090]" />
               </div>
               <h3 className="text-xl font-display font-medium mb-2">
-                Move back to <span className="text-white/70">{STAGE_LABELS[stageBackModal.targetIdx]}</span>?
+                Move back to <span className="text-[#AABDCF]">{STAGE_LABELS[stageBackModal.targetIdx]}</span>?
               </h3>
-              <p className="text-white/35 text-sm leading-relaxed mb-8">
+              <p className="text-[#4D678A] text-sm leading-relaxed mb-8">
                 {stageBackModal.leadName} will be reset to this stage.
                 {stageBackModal.targetIdx < 3 && " Any scheduled appointment will be cleared."}
               </p>
               <div className="flex gap-3">
                 <button onClick={() => setStageBackModal(null)}
-                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm">
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-[#7090B0] hover:text-[#E8EDF8] hover:border-white/20 transition-all text-sm">
                   Cancel
                 </button>
                 <button onClick={confirmStageBack}
-                  className="flex-1 py-3 rounded-2xl bg-white/[0.07] border border-white/15 text-white/80 hover:bg-white/[0.12] transition-all text-sm font-medium">
+                  className="flex-1 py-3 rounded-2xl bg-white/[0.07] border border-white/15 text-[#C2D0E4] hover:bg-white/[0.12] transition-all text-sm font-medium">
                   Confirm
                 </button>
               </div>
@@ -1905,8 +1905,8 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                 <AlertCircle className="w-6 h-6 text-amber-400" />
               </div>
               <h3 className="text-xl font-display font-medium mb-3">Cannot Remove Lead</h3>
-              <p className="text-white/40 text-sm leading-relaxed mb-8">
-                <span className="text-white/70 font-medium">{blockedModal.leadName}</span> has inspection activity and cannot be removed from Pipeline by standard users.
+              <p className="text-[#567090] text-sm leading-relaxed mb-8">
+                <span className="text-[#AABDCF] font-medium">{blockedModal.leadName}</span> has inspection activity and cannot be removed from Pipeline by standard users.
               </p>
               
               <div className="flex flex-col gap-3">
@@ -1918,7 +1918,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                 </button>
                 <button 
                   onClick={() => setBlockedModal(null)}
-                  className="w-full py-3 rounded-2xl bg-white/5 border border-white/10 text-white/40 hover:text-white hover:border-white/20 transition-all text-sm"
+                  className="w-full py-3 rounded-2xl bg-white/5 border border-white/10 text-[#567090] hover:text-[#E8EDF8] hover:border-white/20 transition-all text-sm"
                 >
                   Understood
                 </button>

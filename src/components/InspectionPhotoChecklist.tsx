@@ -252,14 +252,14 @@ export function InspectionPhotoChecklist({ session, onUpdate }: Props) {
         <div className="p-5 rounded-3xl bg-white/[0.03] border border-white/[0.07]">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-sm font-display font-medium text-white">
+              <p className="text-sm font-display font-medium text-[#E8EDF8]">
                 {pct === 100 ? "All photos captured ✓" : `${remaining} photo${remaining !== 1 ? "s" : ""} still needed`}
               </p>
-              <p className="text-[11px] text-white/35 mt-0.5">{completedRequired} of {totalRequired} required shots done</p>
+              <p className="text-[11px] text-[#4D678A] mt-0.5">{completedRequired} of {totalRequired} required shots done</p>
             </div>
             <span className={cn(
               "text-2xl font-display font-bold",
-              pct === 100 ? "text-emerald-400" : pct > 60 ? "text-indigo-400" : "text-white/50"
+              pct === 100 ? "text-emerald-400" : pct > 60 ? "text-indigo-400" : "text-[#7090B0]"
             )}>
               {pct}%
             </span>
@@ -281,8 +281,8 @@ export function InspectionPhotoChecklist({ session, onUpdate }: Props) {
               <Smartphone className="w-4 h-4 text-indigo-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-display font-medium text-white">Rep takes photos on their phone</p>
-              <p className="text-[11px] text-white/35 mt-0.5">Share this link — photos appear here automatically</p>
+              <p className="text-sm font-display font-medium text-[#E8EDF8]">Rep takes photos on their phone</p>
+              <p className="text-[11px] text-[#4D678A] mt-0.5">Share this link — photos appear here automatically</p>
             </div>
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 shrink-0">
               <Wifi className="w-3 h-3 text-emerald-400" />
@@ -299,7 +299,7 @@ export function InspectionPhotoChecklist({ session, onUpdate }: Props) {
             />
             <div className="flex-1 min-w-0 space-y-2.5">
               <div>
-                <p className="text-[9px] font-mono text-white/25 uppercase tracking-widest mb-1">Rep opens this URL</p>
+                <p className="text-[9px] font-mono text-[#354D6F] uppercase tracking-widest mb-1">Rep opens this URL</p>
                 <p className="text-[11px] text-indigo-300/60 font-mono truncate">{repCaptureUrl}</p>
               </div>
               <button
@@ -336,12 +336,12 @@ export function InspectionPhotoChecklist({ session, onUpdate }: Props) {
               {/* Section header */}
               <div className="flex items-center gap-2.5 px-1 mb-3">
                 <div className={cn("w-6 h-6 rounded-lg flex items-center justify-center", sectionComplete ? "bg-emerald-500/15" : "bg-white/[0.06]")}>
-                  <SectionIcon className={cn("w-3.5 h-3.5", sectionComplete ? "text-emerald-400" : meta?.color ?? "text-white/40")} />
+                  <SectionIcon className={cn("w-3.5 h-3.5", sectionComplete ? "text-emerald-400" : meta?.color ?? "text-[#567090]")} />
                 </div>
-                <span className="text-xs font-mono text-white/50 uppercase tracking-[0.25em]">
+                <span className="text-xs font-mono text-[#7090B0] uppercase tracking-[0.25em]">
                   {meta?.label ?? section.title}
                 </span>
-                <span className="text-[10px] font-mono text-white/20 ml-auto">{sectionDone}/{sectionRequired}</span>
+                <span className="text-[10px] font-mono text-[#2D4060] ml-auto">{sectionDone}/{sectionRequired}</span>
               </div>
 
               {/* Items */}
@@ -365,17 +365,17 @@ export function InspectionPhotoChecklist({ session, onUpdate }: Props) {
                       )}>
                         {isComplete
                           ? <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                          : <Camera className={cn("w-4 h-4", isOptional ? "text-white/20" : "text-white/40")} />
+                          : <Camera className={cn("w-4 h-4", isOptional ? "text-[#2D4060]" : "text-[#567090]")} />
                         }
                       </div>
 
                       {/* Label + hint */}
                       <div className="flex-1 min-w-0">
-                        <p className={cn("text-sm font-medium leading-snug", isOptional ? "text-white/35" : isComplete ? "text-white/65" : "text-white/90")}>
+                        <p className={cn("text-sm font-medium leading-snug", isOptional ? "text-[#4D678A]" : isComplete ? "text-[#93AEC8]" : "text-[#DDE5F5]")}>
                           {item.label}
-                          {isOptional && <span className="ml-2 text-[9px] font-mono text-white/20 uppercase tracking-widest">Optional</span>}
+                          {isOptional && <span className="ml-2 text-[9px] font-mono text-[#2D4060] uppercase tracking-widest">Optional</span>}
                         </p>
-                        <p className="text-[11px] text-white/25 mt-0.5 leading-relaxed">{item.description}</p>
+                        <p className="text-[11px] text-[#354D6F] mt-0.5 leading-relaxed">{item.description}</p>
                       </div>
 
                       {/* Thumbnails (tap to view full) */}
@@ -390,14 +390,14 @@ export function InspectionPhotoChecklist({ session, onUpdate }: Props) {
                                 {photo.syncStatus === "error" && (
                                   <button onClick={e => { e.stopPropagation(); retryPhotoSync(session, photo.id, onUpdate); }} className="w-3 h-3 bg-rose-500 rounded-full border border-[#0a0a0a] animate-pulse" />
                                 )}
-                                {photo.syncStatus === "syncing" && <div className="w-3 h-3 bg-indigo-500 rounded-full border border-[#0a0a0a]"><RefreshCw className="w-2 h-2 text-white animate-spin" /></div>}
+                                {photo.syncStatus === "syncing" && <div className="w-3 h-3 bg-indigo-500 rounded-full border border-[#0a0a0a]"><RefreshCw className="w-2 h-2 text-[#E8EDF8] animate-spin" /></div>}
                                 {photo.syncStatus === "local" && <div className="w-3 h-3 bg-white/20 rounded-full border border-[#0a0a0a]" />}
                               </div>
                             </button>
                           ))}
                           {captured > 2 && (
                             <button onClick={() => setViewingPhoto({ photo: itemPhotos[2], item })} className="w-10 h-10 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center">
-                              <span className="text-[10px] font-bold text-white/50">+{captured - 2}</span>
+                              <span className="text-[10px] font-bold text-[#7090B0]">+{captured - 2}</span>
                             </button>
                           )}
                         </div>
@@ -409,10 +409,10 @@ export function InspectionPhotoChecklist({ session, onUpdate }: Props) {
                         className={cn(
                           "flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all active:scale-95 shrink-0",
                           isComplete
-                            ? "bg-white/[0.05] text-white/35 hover:bg-white/10 hover:text-white/60"
+                            ? "bg-white/[0.05] text-[#4D678A] hover:bg-white/10 hover:text-[#8BA5C5]"
                             : isOptional
-                            ? "bg-white/[0.04] text-white/25 hover:bg-white/[0.08] hover:text-white/50"
-                            : "bg-indigo-500 text-white shadow-[0_0_18px_rgba(99,102,241,0.25)] hover:bg-indigo-600"
+                            ? "bg-white/[0.04] text-[#354D6F] hover:bg-white/[0.08] hover:text-[#7090B0]"
+                            : "bg-indigo-500 text-[#E8EDF8] shadow-[0_0_18px_rgba(99,102,241,0.25)] hover:bg-indigo-600"
                         )}
                       >
                         {isComplete
@@ -492,11 +492,11 @@ function GuidedCapture({ captureState, onClose, onOpenCamera }: {
     <div className="flex flex-col h-full">
       {/* Top bar */}
       <div className="flex items-center justify-between px-8 pt-10 pb-6">
-        <button onClick={onClose} className="flex items-center gap-2 text-white/50 hover:text-white/80 transition-colors">
+        <button onClick={onClose} className="flex items-center gap-2 text-[#7090B0] hover:text-[#C2D0E4] transition-colors">
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm font-mono uppercase tracking-widest">Back to list</span>
         </button>
-        <span className="text-[10px] font-mono text-white/25 uppercase tracking-widest">
+        <span className="text-[10px] font-mono text-[#354D6F] uppercase tracking-widest">
           {sectionLabel} · {itemIndex} of {totalItems}
         </span>
       </div>
@@ -523,8 +523,8 @@ function GuidedCapture({ captureState, onClose, onOpenCamera }: {
           className="space-y-4 max-w-lg"
         >
           <p className="text-[11px] font-mono text-indigo-400/80 uppercase tracking-[0.3em]">Capture required</p>
-          <h2 className="text-3xl font-display font-medium text-white leading-snug">{item.label}</h2>
-          <p className="text-base text-white/50 font-light leading-relaxed">{item.description}</p>
+          <h2 className="text-3xl font-display font-medium text-[#E8EDF8] leading-snug">{item.label}</h2>
+          <p className="text-base text-[#7090B0] font-light leading-relaxed">{item.description}</p>
         </motion.div>
 
         {hint && (
@@ -534,8 +534,8 @@ function GuidedCapture({ captureState, onClose, onOpenCamera }: {
             transition={{ delay: 0.2 }}
             className="mt-8 max-w-md p-5 rounded-2xl bg-white/[0.03] border border-white/[0.07] text-left"
           >
-            <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest mb-2">Tip</p>
-            <p className="text-sm text-white/60 font-light leading-relaxed">{hint}</p>
+            <p className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest mb-2">Tip</p>
+            <p className="text-sm text-[#8BA5C5] font-light leading-relaxed">{hint}</p>
           </motion.div>
         )}
       </div>
@@ -551,11 +551,11 @@ function GuidedCapture({ captureState, onClose, onOpenCamera }: {
           onClick={onOpenCamera}
           className="w-full h-20 rounded-[32px] bg-indigo-500 hover:bg-indigo-600 active:scale-[0.98] transition-all flex items-center justify-center gap-4 shadow-[0_0_40px_rgba(99,102,241,0.3)]"
         >
-          <Camera className="w-7 h-7 text-white" />
-          <span className="text-xl font-display font-semibold text-white tracking-tight">Open Camera</span>
+          <Camera className="w-7 h-7 text-[#E8EDF8]" />
+          <span className="text-xl font-display font-semibold text-[#E8EDF8] tracking-tight">Open Camera</span>
           <ChevronRight className="w-5 h-5 text-indigo-300" />
         </button>
-        <p className="text-center text-[10px] font-mono text-white/20 uppercase tracking-widest mt-4">
+        <p className="text-center text-[10px] font-mono text-[#2D4060] uppercase tracking-widest mt-4">
           Camera opens automatically · Point &amp; shoot
         </p>
       </motion.div>
@@ -584,25 +584,25 @@ function PhotoPreview({ captureState, onRetake, onAccept }: {
         )}
         {/* Top label overlay */}
         <div className="absolute top-0 inset-x-0 bg-gradient-to-b from-black/80 to-transparent pt-10 pb-16 px-8">
-          <p className="text-[10px] font-mono text-white/50 uppercase tracking-[0.3em] mb-1">Review your photo</p>
-          <p className="text-lg font-display font-medium text-white">{item.label}</p>
+          <p className="text-[10px] font-mono text-[#7090B0] uppercase tracking-[0.3em] mb-1">Review your photo</p>
+          <p className="text-lg font-display font-medium text-[#E8EDF8]">{item.label}</p>
         </div>
       </div>
 
       {/* Action bar */}
       <div className="bg-[#060606] px-8 py-8 space-y-4">
-        <p className="text-center text-xs text-white/40 font-light">Does this photo clearly show the damage or condition?</p>
+        <p className="text-center text-xs text-[#567090] font-light">Does this photo clearly show the damage or condition?</p>
         <div className="flex gap-4">
           <button
             onClick={onRetake}
-            className="flex-1 h-16 rounded-2xl bg-white/[0.08] border border-white/[0.12] text-white/80 font-display font-medium flex items-center justify-center gap-3 hover:bg-white/[0.14] active:scale-[0.98] transition-all"
+            className="flex-1 h-16 rounded-2xl bg-white/[0.08] border border-white/[0.12] text-[#C2D0E4] font-display font-medium flex items-center justify-center gap-3 hover:bg-white/[0.14] active:scale-[0.98] transition-all"
           >
             <RotateCcw className="w-4 h-4" />
             Retake
           </button>
           <button
             onClick={onAccept}
-            className="flex-[2] h-16 rounded-2xl bg-indigo-500 text-white font-display font-semibold flex items-center justify-center gap-3 hover:bg-indigo-600 active:scale-[0.98] transition-all shadow-[0_0_30px_rgba(99,102,241,0.3)]"
+            className="flex-[2] h-16 rounded-2xl bg-indigo-500 text-[#E8EDF8] font-display font-semibold flex items-center justify-center gap-3 hover:bg-indigo-600 active:scale-[0.98] transition-all shadow-[0_0_30px_rgba(99,102,241,0.3)]"
           >
             <CheckCircle2 className="w-5 h-5" />
             Looks Good — Save
@@ -637,13 +637,13 @@ function PhotoViewer({ photo, item, allPhotos, onDelete, onRetake, onClose, onRe
       {/* Header */}
       <div className="flex items-center justify-between px-8 pt-10 pb-4">
         <div>
-          <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest">{item.label}</p>
+          <p className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest">{item.label}</p>
           {allPhotos.length > 1 && (
-            <p className="text-xs text-white/40 mt-0.5">{activeIdx + 1} of {allPhotos.length} photos</p>
+            <p className="text-xs text-[#567090] mt-0.5">{activeIdx + 1} of {allPhotos.length} photos</p>
           )}
         </div>
         <button onClick={onClose} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
-          <X className="w-5 h-5 text-white" />
+          <X className="w-5 h-5 text-[#E8EDF8]" />
         </button>
       </div>
 

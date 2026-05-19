@@ -36,7 +36,7 @@ interface Props {
 
 export function A03WhatWeInspect({ session, onUpdate, onNext, onBack }: Props) {
   return (
-    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606] selection:bg-indigo-500/30 selection:text-white">
+    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606] selection:bg-indigo-500/30 selection:text-[#E8EDF8]">
       {/* Background Assets: Forensic Rapid Deployment Cloud */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Ambient Gradient Lift */}
@@ -75,10 +75,10 @@ export function A03WhatWeInspect({ session, onUpdate, onNext, onBack }: Props) {
       {/* Persistent Branding Anchor */}
       <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-white text-2xl tracking-[0.1em]">
+          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">
             HUSTAD
           </span>
-          <span className="text-[10px] font-mono text-white/20 uppercase tracking-[0.3em] pt-0.5">
+          <span className="text-[10px] font-mono text-[#2D4060] uppercase tracking-[0.3em] pt-0.5">
             Madison Residential
           </span>
         </div>
@@ -102,14 +102,14 @@ export function A03WhatWeInspect({ session, onUpdate, onNext, onBack }: Props) {
                 Categorization System
               </span>
             </div>
-            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
               Three categories.
               <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">
                 Clear, honest labels.
               </span>
             </h1>
-            <p className="text-xl text-white/30 font-light max-w-2xl leading-relaxed mt-8">
+            <p className="text-xl text-[#3F5878] font-light max-w-2xl leading-relaxed mt-8">
               Hustad organizes every finding into one of three categories so
               you understand urgency and impact at a glance.
             </p>
@@ -128,12 +128,12 @@ export function A03WhatWeInspect({ session, onUpdate, onNext, onBack }: Props) {
                 
                 <div className="relative z-10">
                   <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center mb-8 shadow-[0_0_20px_rgba(255,255,255,0.02)] group-hover:scale-110 transition-transform duration-500">
-                    <cat.icon className="w-7 h-7 text-white/80 group-hover:text-white transition-colors" />
+                    <cat.icon className="w-7 h-7 text-[#C2D0E4] group-hover:text-[#E8EDF8] transition-colors" />
                   </div>
-                  <h3 className="text-2xl font-display font-medium text-white mb-3 tracking-tight">
+                  <h3 className="text-2xl font-display font-medium text-[#E8EDF8] mb-3 tracking-tight">
                     {cat.label}
                   </h3>
-                  <p className="text-base text-white/30 font-light leading-relaxed group-hover:text-white/50 transition-colors">
+                  <p className="text-base text-[#3F5878] font-light leading-relaxed group-hover:text-[#7090B0] transition-colors">
                     {cat.description}
                   </p>
                 </div>
@@ -145,8 +145,8 @@ export function A03WhatWeInspect({ session, onUpdate, onNext, onBack }: Props) {
             whileHover={{ y: -5 }}
             className="bg-white/[0.02] border border-white/[0.05] p-10 rounded-[40px] flex items-center"
           >
-            <p className="text-lg text-white/30 font-light leading-relaxed italic">
-              <span className="text-white font-medium not-italic">Our honest promise:</span> Hustad
+            <p className="text-lg text-[#3F5878] font-light leading-relaxed italic">
+              <span className="text-[#E8EDF8] font-medium not-italic">Our honest promise:</span> Hustad
               is looking for evidence of real damage, not trying to manufacture
               a replacement. If there is nothing actionable, we will tell you that.
             </p>
@@ -166,8 +166,8 @@ export function A03WhatWeInspect({ session, onUpdate, onNext, onBack }: Props) {
       <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-6">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
-            <ArrowLeft className="w-4 h-4 text-white/40 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-white/60">Previous</span>
+            <ArrowLeft className="w-4 h-4 text-[#567090] group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-display font-medium text-[#8BA5C5]">Previous</span>
           </button>
           <StarButton 
             onClick={onNext} 
@@ -234,10 +234,10 @@ export function A04HowFindingsSorted({ session, onUpdate, onNext, onBack }: Prop
         </motion.div>
       </div>
 
-      <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none text-white">
+      <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none text-[#E8EDF8]">
         <div className="flex items-baseline gap-2.5">
           <span className="font-display font-bold text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-white/20 uppercase tracking-[0.3em]">Madison Residential</span>
+          <span className="text-[10px] font-mono text-[#2D4060] uppercase tracking-[0.3em]">Madison Residential</span>
         </div>
       </div>
 
@@ -248,12 +248,12 @@ export function A04HowFindingsSorted({ session, onUpdate, onNext, onBack }: Prop
       <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56">
         <div className="max-w-4xl mx-auto space-y-16">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
               When the rep returns,
               <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">here&rsquo;s the sequence.</span>
             </h1>
-            <p className="text-xl text-white/30 font-light leading-relaxed mt-8 max-w-2xl">No surprises. No sales pressure. Just a structured walk through what was actually found on your property.</p>
+            <p className="text-xl text-[#3F5878] font-light leading-relaxed mt-8 max-w-2xl">No surprises. No sales pressure. Just a structured walk through what was actually found on your property.</p>
           </motion.div>
 
           <div className="space-y-4">
@@ -269,8 +269,8 @@ export function A04HowFindingsSorted({ session, onUpdate, onNext, onBack }: Prop
                   0{i + 1}
                 </div>
                 <div>
-                  <h3 className="text-xl font-display font-medium text-white mb-2">{step.title}</h3>
-                  <p className="text-base text-white/30 font-light leading-relaxed group-hover:text-white/50 transition-colors">{step.detail}</p>
+                  <h3 className="text-xl font-display font-medium text-[#E8EDF8] mb-2">{step.title}</h3>
+                  <p className="text-base text-[#3F5878] font-light leading-relaxed group-hover:text-[#7090B0] transition-colors">{step.detail}</p>
                 </div>
               </motion.div>
             ))}
@@ -281,8 +281,8 @@ export function A04HowFindingsSorted({ session, onUpdate, onNext, onBack }: Prop
       <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-6">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
-            <ArrowLeft className="w-4 h-4 text-white/40 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-white/60">Previous</span>
+            <ArrowLeft className="w-4 h-4 text-[#567090] group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-display font-medium text-[#8BA5C5]">Previous</span>
           </button>
           <StarButton 
             onClick={onNext} 
@@ -350,10 +350,10 @@ export function A05InsuranceClarity({ session, onUpdate, onNext, onBack }: Props
         </motion.div>
       </div>
 
-      <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none text-white">
+      <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none text-[#E8EDF8]">
         <div className="flex items-baseline gap-2.5">
           <span className="font-display font-bold text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-white/20 uppercase tracking-[0.3em]">Madison Residential</span>
+          <span className="text-[10px] font-mono text-[#2D4060] uppercase tracking-[0.3em]">Madison Residential</span>
         </div>
       </div>
 
@@ -364,12 +364,12 @@ export function A05InsuranceClarity({ session, onUpdate, onNext, onBack }: Props
       <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56">
         <div className="max-w-5xl mx-auto space-y-16">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
               What insurance can and
               <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">cannot promise you.</span>
             </h1>
-            <p className="text-xl text-white/30 font-light leading-relaxed mt-8 max-w-2xl">A few things that are worth knowing before the review — so nothing feels like a surprise later.</p>
+            <p className="text-xl text-[#3F5878] font-light leading-relaxed mt-8 max-w-2xl">A few things that are worth knowing before the review — so nothing feels like a surprise later.</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -384,8 +384,8 @@ export function A05InsuranceClarity({ session, onUpdate, onNext, onBack }: Props
                 <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center mb-6">
                   <item.icon className="w-6 h-6 text-indigo-300" />
                 </div>
-                <h3 className="text-xl font-display font-medium text-white mb-2">{item.title}</h3>
-                <p className="text-sm text-white/30 font-light leading-relaxed group-hover:text-white/50 transition-colors">{item.detail}</p>
+                <h3 className="text-xl font-display font-medium text-[#E8EDF8] mb-2">{item.title}</h3>
+                <p className="text-sm text-[#3F5878] font-light leading-relaxed group-hover:text-[#7090B0] transition-colors">{item.detail}</p>
               </motion.div>
             ))}
           </div>
@@ -393,8 +393,8 @@ export function A05InsuranceClarity({ session, onUpdate, onNext, onBack }: Props
           <div className="bg-gradient-to-br from-indigo-500/[0.05] to-transparent border border-white/10 p-10 rounded-[40px]">
             <div className="flex items-start gap-4">
               <ShieldCheck className="w-6 h-6 text-indigo-400 shrink-0 mt-1" />
-              <p className="text-base text-white/40 font-light leading-relaxed">
-                <span className="text-white font-medium">Note:</span> Coverage decisions belong to your carrier and your policy — not to
+              <p className="text-base text-[#567090] font-light leading-relaxed">
+                <span className="text-[#E8EDF8] font-medium">Note:</span> Coverage decisions belong to your carrier and your policy — not to
                 your contractor. Hustad can document damage and coordinate with your
                 permission, but we do not negotiate claims on your behalf.
               </p>
@@ -411,8 +411,8 @@ export function A05InsuranceClarity({ session, onUpdate, onNext, onBack }: Props
       <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-6">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
-            <ArrowLeft className="w-4 h-4 text-white/40 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-white/60">Previous</span>
+            <ArrowLeft className="w-4 h-4 text-[#567090] group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-display font-medium text-[#8BA5C5]">Previous</span>
           </button>
           <StarButton 
             onClick={onNext} 

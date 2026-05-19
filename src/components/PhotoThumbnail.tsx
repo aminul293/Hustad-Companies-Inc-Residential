@@ -47,7 +47,7 @@ export function PhotoThumbnail({ photo, className }: PhotoThumbnailProps) {
   if (!url) {
     return (
       <div className={cn("bg-white/5 flex items-center justify-center animate-pulse", className)}>
-        <RefreshCw className="w-4 h-4 text-white/10 animate-spin" />
+        <RefreshCw className="w-4 h-4 text-[#1F2E48] animate-spin" />
       </div>
     );
   }

@@ -60,11 +60,11 @@ export function AIAssistSummary({ findings, outcome, onApprove }: Props) {
       <div className="flex items-center justify-between border-b border-white/5 pb-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-indigo-500 flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.3)]">
-            <Sparkles className="w-5 h-5 text-white" />
+            <Sparkles className="w-5 h-5 text-[#E8EDF8]" />
           </div>
           <div>
-            <h3 className="font-display font-medium text-white">AI-Drafted Summary</h3>
-            <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest">Review & Approve Required</p>
+            <h3 className="font-display font-medium text-[#E8EDF8]">AI-Drafted Summary</h3>
+            <p className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest">Review & Approve Required</p>
           </div>
         </div>
         <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
@@ -75,49 +75,49 @@ export function AIAssistSummary({ findings, outcome, onApprove }: Props) {
 
       <div className="space-y-6 overflow-y-auto max-h-[400px] pr-4">
         <div className="space-y-2">
-          <label className="text-[10px] font-mono text-white/30 uppercase tracking-widest">Summary Headline</label>
+          <label className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest">Summary Headline</label>
           <input 
-            className="w-full bg-transparent text-xl font-display font-medium text-white outline-none focus:text-indigo-400 transition-colors"
+            className="w-full bg-transparent text-xl font-display font-medium text-[#E8EDF8] outline-none focus:text-indigo-400 transition-colors"
             value={draft.headline}
             onChange={(e) => setDraft({...draft, headline: e.target.value})}
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-[10px] font-mono text-white/30 uppercase tracking-widest">Forensic Finding</label>
+          <label className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest">Forensic Finding</label>
           <textarea 
             rows={3}
-            className="w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-sm text-white/70 outline-none focus:border-indigo-500/30 transition-all resize-none"
+            className="w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-sm text-[#AABDCF] outline-none focus:border-indigo-500/30 transition-all resize-none"
             value={draft.findingSummary}
             onChange={(e) => setDraft({...draft, findingSummary: e.target.value})}
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-[10px] font-mono text-white/30 uppercase tracking-widest">Recommended Path</label>
+          <label className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest">Recommended Path</label>
           <textarea 
             rows={2}
-            className="w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-sm text-white/70 outline-none focus:border-indigo-500/30 transition-all resize-none"
+            className="w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-sm text-[#AABDCF] outline-none focus:border-indigo-500/30 transition-all resize-none"
             value={draft.pathExplanation}
             onChange={(e) => setDraft({...draft, pathExplanation: e.target.value})}
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-[10px] font-mono text-white/30 uppercase tracking-widest">Technical PDF Copy</label>
+          <label className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest">Technical PDF Copy</label>
           <textarea 
             rows={2}
-            className="w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-[10px] font-mono text-white/50 outline-none focus:border-indigo-500/30 transition-all resize-none"
+            className="w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-[10px] font-mono text-[#7090B0] outline-none focus:border-indigo-500/30 transition-all resize-none"
             value={draft.pdfCopy}
             onChange={(e) => setDraft({...draft, pdfCopy: e.target.value})}
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-[10px] font-mono text-white/30 uppercase tracking-widest">Follow-up Communication</label>
+          <label className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest">Follow-up Communication</label>
           <textarea 
             rows={2}
-            className="w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-sm text-white/70 outline-none focus:border-indigo-500/30 transition-all resize-none italic"
+            className="w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-sm text-[#AABDCF] outline-none focus:border-indigo-500/30 transition-all resize-none italic"
             value={draft.followUpNote}
             onChange={(e) => setDraft({...draft, followUpNote: e.target.value})}
           />

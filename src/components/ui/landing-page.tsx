@@ -489,7 +489,7 @@ export function DesignAgency() {
                   fill
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 flex flex-col justify-end p-6 text-white opacity-0 transition-opacity group-hover:opacity-100 z-20">
+                <div className="absolute inset-0 flex flex-col justify-end p-6 text-[#E8EDF8] opacity-0 transition-opacity group-hover:opacity-100 z-20">
                   <h3 className="text-xl font-bold">E-commerce Redesign</h3>
                   <p className="text-sm">A complete overhaul of an online retail platform</p>
                   <motion.div
@@ -501,7 +501,7 @@ export function DesignAgency() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="rounded-3xl bg-white/20 backdrop-blur-sm border-white/40 text-white hover:bg-white/30"
+                      className="rounded-3xl bg-white/20 backdrop-blur-sm border-white/40 text-[#E8EDF8] hover:bg-white/30"
                     >
                       View Project <ArrowUpRight className="ml-2 h-4 w-4" />
                     </Button>
@@ -521,7 +521,7 @@ export function DesignAgency() {
                   fill
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 flex flex-col justify-end p-6 text-white opacity-0 transition-opacity group-hover:opacity-100 z-20">
+                <div className="absolute inset-0 flex flex-col justify-end p-6 text-[#E8EDF8] opacity-0 transition-opacity group-hover:opacity-100 z-20">
                   <h3 className="text-xl font-bold">Mobile App Design</h3>
                   <p className="text-sm">UI/UX for a fitness tracking application</p>
                 </div>
@@ -539,7 +539,7 @@ export function DesignAgency() {
                   fill
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 flex flex-col justify-end p-6 text-white opacity-0 transition-opacity group-hover:opacity-100 z-20">
+                <div className="absolute inset-0 flex flex-col justify-end p-6 text-[#E8EDF8] opacity-0 transition-opacity group-hover:opacity-100 z-20">
                   <h3 className="text-xl font-bold">Brand Identity</h3>
                   <p className="text-sm">Complete rebrand for a tech startup</p>
                 </div>
@@ -557,7 +557,7 @@ export function DesignAgency() {
                   fill
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 flex flex-col justify-end p-6 text-white opacity-0 transition-opacity group-hover:opacity-100 z-20">
+                <div className="absolute inset-0 flex flex-col justify-end p-6 text-[#E8EDF8] opacity-0 transition-opacity group-hover:opacity-100 z-20">
                   <h3 className="text-xl font-bold">Web Application</h3>
                   <p className="text-sm">Dashboard design for a SaaS platform</p>
                 </div>
@@ -575,7 +575,7 @@ export function DesignAgency() {
                   fill
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 flex flex-col justify-end p-6 text-white opacity-0 transition-opacity group-hover:opacity-100 z-20">
+                <div className="absolute inset-0 flex flex-col justify-end p-6 text-[#E8EDF8] opacity-0 transition-opacity group-hover:opacity-100 z-20">
                   <h3 className="text-xl font-bold">Marketing Campaign</h3>
                   <p className="text-sm">Integrated digital campaign for product launch</p>
                 </div>
@@ -685,7 +685,7 @@ export function DesignAgency() {
                       height={400}
                       className="h-[300px] w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 to-transparent p-4 text-white">
+                    <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 to-transparent p-4 text-[#E8EDF8]">
                       <h4 className="font-bold">{member.name}</h4>
                       <p className="text-sm">{member.role}</p>
                     </div>

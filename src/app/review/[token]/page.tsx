@@ -169,8 +169,8 @@ export default function RemoteReviewPage() {
   if (error) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#060606] px-10 text-center">
       <AlertTriangle className="w-12 h-12 text-rose-500 mb-6" />
-      <h1 className="text-2xl font-display font-medium text-white mb-2 tracking-tight">Access Denied</h1>
-      <p className="text-white/50 font-light max-w-sm leading-relaxed">{error}</p>
+      <h1 className="text-2xl font-display font-medium text-[#E8EDF8] mb-2 tracking-tight">Access Denied</h1>
+      <p className="text-[#7090B0] font-light max-w-sm leading-relaxed">{error}</p>
     </div>
   );
 
@@ -201,8 +201,8 @@ export default function RemoteReviewPage() {
         </div>
         
         <div className="space-y-3">
-          <h1 className="text-3xl font-display font-medium text-white tracking-tight leading-tight">Identity Verification</h1>
-          <p className="text-white/40 text-[11px] font-mono uppercase tracking-widest leading-relaxed">
+          <h1 className="text-3xl font-display font-medium text-[#E8EDF8] tracking-tight leading-tight">Identity Verification</h1>
+          <p className="text-[#567090] text-[11px] font-mono uppercase tracking-widest leading-relaxed">
             Enter the last 4 digits of the primary mobile number to access this dossier.
           </p>
         </div>
@@ -212,7 +212,7 @@ export default function RemoteReviewPage() {
           maxLength={4}
           value={verifyInput}
           onChange={(e) => setVerifyInput(e.target.value)}
-          className="w-full bg-white/5 border border-white/10 rounded-3xl py-6 text-center text-5xl font-mono tracking-[0.5em] text-white outline-none focus:border-indigo-500/50 transition-all placeholder:text-white/10"
+          className="w-full bg-white/5 border border-white/10 rounded-3xl py-6 text-center text-5xl font-mono tracking-[0.5em] text-[#E8EDF8] outline-none focus:border-indigo-500/50 transition-all placeholder:text-[#1F2E48]"
           placeholder="••••"
         />
 
@@ -230,8 +230,8 @@ export default function RemoteReviewPage() {
       </motion.div>
 
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-2.5 opacity-20">
-        <span className="font-display font-bold text-white text-lg tracking-[0.15em]">HUSTAD</span>
-        <span className="text-[8px] font-mono text-white/70 uppercase tracking-[0.4em] pt-0.5">Madison Residential</span>
+        <span className="font-display font-bold text-[#E8EDF8] text-lg tracking-[0.15em]">HUSTAD</span>
+        <span className="text-[8px] font-mono text-[#AABDCF] uppercase tracking-[0.4em] pt-0.5">Madison Residential</span>
       </div>
     </div>
   );
@@ -245,8 +245,8 @@ export default function RemoteReviewPage() {
         <CheckCircle2 className="w-12 h-12 text-emerald-400" />
       </motion.div>
       
-      <h1 className="relative z-10 text-5xl font-display font-medium text-white mb-6 tracking-tight">Authorization Complete</h1>
-      <p className="relative z-10 text-white/50 font-light max-w-md leading-relaxed text-lg mb-12">
+      <h1 className="relative z-10 text-5xl font-display font-medium text-[#E8EDF8] mb-6 tracking-tight">Authorization Complete</h1>
+      <p className="relative z-10 text-[#7090B0] font-light max-w-md leading-relaxed text-lg mb-12">
         Thank you. Your digital authorization has been securely transmitted to Hustad Residential. A finalized copy of your Forensic Dossier is being sent to your inbox.
       </p>
 
@@ -263,8 +263,8 @@ export default function RemoteReviewPage() {
       </StarButton>
 
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-2.5 opacity-20">
-        <span className="font-display font-bold text-white text-lg tracking-[0.15em]">HUSTAD</span>
-        <span className="text-[8px] font-mono text-white/70 uppercase tracking-[0.4em] pt-0.5">Madison Residential</span>
+        <span className="font-display font-bold text-[#E8EDF8] text-lg tracking-[0.15em]">HUSTAD</span>
+        <span className="text-[8px] font-mono text-[#AABDCF] uppercase tracking-[0.4em] pt-0.5">Madison Residential</span>
       </div>
     </div>
   );
@@ -274,7 +274,7 @@ export default function RemoteReviewPage() {
   const photos = (session!.photoAssets || []).filter(p => p.selectedForSummary && !p.isSensitive);
 
   return (
-    <div className="relative min-h-screen bg-[#060606] text-white font-sans selection:bg-indigo-500/30 overflow-y-auto custom-scrollbar pb-32">
+    <div className="relative min-h-screen bg-[#060606] text-[#E8EDF8] font-sans selection:bg-indigo-500/30 overflow-y-auto custom-scrollbar pb-32">
       {/* HUD Background Layers */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.04),transparent_70%)]" />
@@ -284,8 +284,8 @@ export default function RemoteReviewPage() {
       <main className="relative z-10 max-w-3xl mx-auto px-6 pt-16 space-y-16">
         <header className="space-y-8 text-center">
           <div className="flex items-baseline gap-3 justify-center">
-            <span className="font-display font-bold text-white text-2xl tracking-[0.15em]">HUSTAD</span>
-            <span className="text-[10px] font-mono text-white/40 uppercase tracking-[0.4em] pt-0.5">Residential</span>
+            <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.15em]">HUSTAD</span>
+            <span className="text-[10px] font-mono text-[#567090] uppercase tracking-[0.4em] pt-0.5">Residential</span>
           </div>
           <div className="space-y-3">
             <h1 className="text-5xl md:text-6xl font-display font-medium tracking-tight leading-[1.1]">Co-Decision Review</h1>
@@ -301,31 +301,31 @@ export default function RemoteReviewPage() {
           <div className="p-8 rounded-[40px] bg-white/[0.02] border border-white/[0.06] backdrop-blur-3xl space-y-6 md:col-span-2">
             <div className="flex items-center gap-3">
               <Database className="w-4 h-4 text-indigo-400" />
-              <span className="text-[10px] font-mono text-white/40 uppercase tracking-[0.3em] pt-0.5">Property Intelligence</span>
+              <span className="text-[10px] font-mono text-[#567090] uppercase tracking-[0.3em] pt-0.5">Property Intelligence</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
               <div className="space-y-1">
-                <p className="text-[9px] font-mono text-white/20 uppercase tracking-[0.3em]">Homeowner</p>
-                <p className="text-base font-display font-medium text-white/90">{session!.property.homeownerPrimaryName || '—'}</p>
+                <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-[0.3em]">Homeowner</p>
+                <p className="text-base font-display font-medium text-[#DDE5F5]">{session!.property.homeownerPrimaryName || '—'}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-[9px] font-mono text-white/20 uppercase tracking-[0.3em]">Carrier</p>
-                <p className="text-base font-display font-medium text-white/90">{session!.property.insurerNameKnown || 'Not specified'}</p>
+                <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-[0.3em]">Carrier</p>
+                <p className="text-base font-display font-medium text-[#DDE5F5]">{session!.property.insurerNameKnown || 'Not specified'}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-[9px] font-mono text-white/20 uppercase tracking-[0.3em]">Storm Basis</p>
-                <p className="text-base font-display font-medium text-white/90">{session!.property.stormBasis || '—'}</p>
+                <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-[0.3em]">Storm Basis</p>
+                <p className="text-base font-display font-medium text-[#DDE5F5]">{session!.property.stormBasis || '—'}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-[9px] font-mono text-white/20 uppercase tracking-[0.3em]">Lead Inspector</p>
-                <p className="text-base font-display font-medium text-white/90">{session!.repName}</p>
+                <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-[0.3em]">Lead Inspector</p>
+                <p className="text-base font-display font-medium text-[#DDE5F5]">{session!.repName}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-[9px] font-mono text-white/20 uppercase tracking-[0.3em]">Working DOL</p>
-                <p className="text-base font-display font-medium text-white/90">{session!.property.workingDateOfLoss || '—'}</p>
+                <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-[0.3em]">Working DOL</p>
+                <p className="text-base font-display font-medium text-[#DDE5F5]">{session!.property.workingDateOfLoss || '—'}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-[9px] font-mono text-white/20 uppercase tracking-[0.3em]">Session ID</p>
+                <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-[0.3em]">Session ID</p>
                 <p className="text-base font-mono text-indigo-400/70">{session!.sessionId.slice(-6).toUpperCase()}</p>
               </div>
             </div>
@@ -335,7 +335,7 @@ export default function RemoteReviewPage() {
         {/* Outcome Summary - High Impact */}
         <section onMouseEnter={trackViewed} className="relative p-10 rounded-[56px] bg-white/[0.03] border border-white/[0.1] backdrop-blur-3xl overflow-hidden group">
           <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity">
-            <ShieldCheck className="w-48 h-48 text-white" />
+            <ShieldCheck className="w-48 h-48 text-[#E8EDF8]" />
           </div>
           
           <div className="relative z-10 space-y-10">
@@ -348,7 +348,7 @@ export default function RemoteReviewPage() {
               <h2 className="text-6xl md:text-8xl font-display font-medium tracking-tight leading-[1.05] capitalize">
                 {outcome.replace(/_/g, " ")}
               </h2>
-              <p className="text-xl md:text-2xl text-white/70 font-light leading-relaxed max-w-2xl">
+              <p className="text-xl md:text-2xl text-[#AABDCF] font-light leading-relaxed max-w-2xl">
                 {session!.findings.summaryBody}
               </p>
             </div>
@@ -359,7 +359,7 @@ export default function RemoteReviewPage() {
         <section className="space-y-8">
           <div className="flex items-center gap-3 px-4">
             <Camera className="w-4 h-4 text-indigo-400" />
-            <span className="text-[10px] font-mono text-white/40 uppercase tracking-[0.3em] pt-0.5">Forensic Documentation</span>
+            <span className="text-[10px] font-mono text-[#567090] uppercase tracking-[0.3em] pt-0.5">Forensic Documentation</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {photos.map((photo) => (
@@ -382,7 +382,7 @@ export default function RemoteReviewPage() {
                     {photo.severity && (
                       <span className={cn(
                         "text-[8px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-md border",
-                        photo.severity === 'critical' ? 'bg-rose-500/10 border-rose-500/30 text-rose-400' : 'bg-white/5 border-white/10 text-white/40'
+                        photo.severity === 'critical' ? 'bg-rose-500/10 border-rose-500/30 text-rose-400' : 'bg-white/5 border-white/10 text-[#567090]'
                       )}>{photo.severity} Severity</span>
                     )}
                   </div>
@@ -396,7 +396,7 @@ export default function RemoteReviewPage() {
         <section className="space-y-10">
           <div className="flex items-center gap-3 px-4">
             <Zap className="w-4 h-4 text-indigo-400" />
-            <span className="text-[10px] font-mono text-white/40 uppercase tracking-[0.3em] pt-0.5">Restoration Roadmap</span>
+            <span className="text-[10px] font-mono text-[#567090] uppercase tracking-[0.3em] pt-0.5">Restoration Roadmap</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
@@ -416,12 +416,12 @@ export default function RemoteReviewPage() {
                 {selectedPath === path.id && <motion.div layoutId="path-bg" className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent pointer-events-none" />}
                 <div className={cn(
                   "w-12 h-12 rounded-2xl flex items-center justify-center mb-6 transition-all duration-500",
-                  selectedPath === path.id ? `bg-${path.color}-500 text-white` : "bg-white/5 text-white/20 group-hover:text-white/40"
+                  selectedPath === path.id ? `bg-${path.color}-500 text-[#E8EDF8]` : "bg-white/5 text-[#2D4060] group-hover:text-[#567090]"
                 )}>
                   <path.icon className="w-6 h-6" />
                 </div>
-                <p className={cn("text-2xl font-display font-medium mb-2 tracking-tight", selectedPath === path.id ? "text-white" : "text-white/60 group-hover:text-white/80")}>{path.label}</p>
-                <p className="text-sm text-white/30 font-light leading-relaxed group-hover:text-white/40 transition-colors">{path.detail}</p>
+                <p className={cn("text-2xl font-display font-medium mb-2 tracking-tight", selectedPath === path.id ? "text-[#E8EDF8]" : "text-[#8BA5C5] group-hover:text-[#C2D0E4]")}>{path.label}</p>
+                <p className="text-sm text-[#3F5878] font-light leading-relaxed group-hover:text-[#567090] transition-colors">{path.detail}</p>
               </button>
             ))}
           </div>
@@ -433,7 +433,7 @@ export default function RemoteReviewPage() {
             <ShieldAlert className="w-4 h-4 text-rose-500/60" />
             <span className="text-[10px] font-mono text-rose-500/60 uppercase tracking-[0.3em] pt-0.5">Advisory Disclosure</span>
           </div>
-          <p className="text-xs text-white/30 leading-relaxed font-light pl-2">
+          <p className="text-xs text-[#3F5878] leading-relaxed font-light pl-2">
             This document is a forensic inspection summary only. No insurance outcome is guaranteed. Hustad does not represent that any carrier will approve, deny, or modify a claim. Warranty terms are manufacturer-specific and subject to product registration requirements. All decisions remain yours.
           </p>
         </section>
@@ -445,15 +445,15 @@ export default function RemoteReviewPage() {
               <CheckCircle2 className="w-8 h-8 text-emerald-400" />
             </div>
             <div className="space-y-3">
-              <h3 className="text-3xl font-display font-medium text-white">Response Received</h3>
-              <p className="text-white/40 text-sm font-light max-w-sm mx-auto leading-relaxed uppercase tracking-widest">Your {actionSent.replace('_',' ')} has been securely transmitted to the Hustad Forensic terminal.</p>
+              <h3 className="text-3xl font-display font-medium text-[#E8EDF8]">Response Received</h3>
+              <p className="text-[#567090] text-sm font-light max-w-sm mx-auto leading-relaxed uppercase tracking-widest">Your {actionSent.replace('_',' ')} has been securely transmitted to the Hustad Forensic terminal.</p>
             </div>
           </motion.section>
         ) : (
           <section className="space-y-10">
             <div className="flex items-center gap-3 px-4">
               <PenTool className="w-4 h-4 text-indigo-400" />
-              <span className="text-[10px] font-mono text-white/40 uppercase tracking-[0.3em] pt-0.5">Response Control Terminal</span>
+              <span className="text-[10px] font-mono text-[#567090] uppercase tracking-[0.3em] pt-0.5">Response Control Terminal</span>
             </div>
             <div className="grid grid-cols-2 gap-4">
               {[
@@ -472,11 +472,11 @@ export default function RemoteReviewPage() {
                 >
                   <div className={cn(
                     'w-10 h-10 rounded-xl flex items-center justify-center transition-all',
-                    activePanel === a.id ? `bg-${a.color}-500 text-white` : 'bg-white/5 text-white/30 group-hover:text-white/50'
+                    activePanel === a.id ? `bg-${a.color}-500 text-[#E8EDF8]` : 'bg-white/5 text-[#3F5878] group-hover:text-[#7090B0]'
                   )}>
                     <a.icon className="w-5 h-5" />
                   </div>
-                  <p className={cn("text-sm font-display font-medium tracking-tight", activePanel === a.id ? "text-white" : "text-white/60")}>{a.label}</p>
+                  <p className={cn("text-sm font-display font-medium tracking-tight", activePanel === a.id ? "text-[#E8EDF8]" : "text-[#8BA5C5]")}>{a.label}</p>
                 </button>
               ))}
             </div>
@@ -497,8 +497,8 @@ export default function RemoteReviewPage() {
             <AnimatePresence mode="wait">
               {activePanel === 'question' && (
                 <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.1] backdrop-blur-3xl space-y-6">
-                  <p className="text-[10px] font-mono text-white/30 uppercase tracking-[0.4em] pl-1 font-bold">Question for Representative</p>
-                  <textarea value={questionText} onChange={e => setQuestionText(e.target.value)} placeholder="Type your question here..." className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 text-white text-base outline-none focus:border-indigo-500/40 resize-none h-40 font-light leading-relaxed" />
+                  <p className="text-[10px] font-mono text-[#3F5878] uppercase tracking-[0.4em] pl-1 font-bold">Question for Representative</p>
+                  <textarea value={questionText} onChange={e => setQuestionText(e.target.value)} placeholder="Type your question here..." className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 text-[#E8EDF8] text-base outline-none focus:border-indigo-500/40 resize-none h-40 font-light leading-relaxed" />
                   <StarButton onClick={() => sendAction('question', {questionText, askerName: signerName})} disabled={isSubmitting || !questionText.trim()} lightColor="#FAFAFA" backgroundColor="#060606" className="w-full h-16 rounded-full">
                     <div className="flex items-center justify-center gap-3">
                       <Send className="w-4 h-4 text-indigo-400" />
@@ -509,10 +509,10 @@ export default function RemoteReviewPage() {
               )}
               {activePanel === 'callback' && (
                 <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.1] backdrop-blur-3xl space-y-6">
-                  <p className="text-[10px] font-mono text-white/30 uppercase tracking-[0.4em] pl-1 font-bold">Callback Coordinates</p>
+                  <p className="text-[10px] font-mono text-[#3F5878] uppercase tracking-[0.4em] pl-1 font-bold">Callback Coordinates</p>
                   <div className="space-y-4">
-                    <input value={callbackPhone} onChange={e => setCallbackPhone(e.target.value)} placeholder="Phone Number" className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-white outline-none focus:border-emerald-500/40 font-light" />
-                    <input value={callbackTime} onChange={e => setCallbackTime(e.target.value)} placeholder="Preferred Time (e.g. Tomorrow Morning)" className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-white outline-none focus:border-emerald-500/40 font-light" />
+                    <input value={callbackPhone} onChange={e => setCallbackPhone(e.target.value)} placeholder="Phone Number" className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-[#E8EDF8] outline-none focus:border-emerald-500/40 font-light" />
+                    <input value={callbackTime} onChange={e => setCallbackTime(e.target.value)} placeholder="Preferred Time (e.g. Tomorrow Morning)" className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-[#E8EDF8] outline-none focus:border-emerald-500/40 font-light" />
                   </div>
                   <StarButton onClick={() => sendAction('callback', {phone: callbackPhone, preferredTime: callbackTime})} disabled={isSubmitting || !callbackPhone.trim()} lightColor="#FAFAFA" backgroundColor="#060606" className="w-full h-16 rounded-full">
                     <div className="flex items-center justify-center gap-3">
@@ -525,8 +525,8 @@ export default function RemoteReviewPage() {
               {activePanel === 'sign' && (
                 <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.1] backdrop-blur-3xl space-y-8 shadow-[0_40px_100px_rgba(0,0,0,0.4)]">
                   <div className="space-y-6">
-                    <p className="text-[10px] font-mono text-white/30 uppercase tracking-[0.4em] pl-1 font-bold">Digital Authorization Signature</p>
-                    <input value={signerName} onChange={e => setSignerName(e.target.value)} placeholder="Full Legal Name" className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-white outline-none focus:border-indigo-500/40 text-xl font-display" />
+                    <p className="text-[10px] font-mono text-[#3F5878] uppercase tracking-[0.4em] pl-1 font-bold">Digital Authorization Signature</p>
+                    <input value={signerName} onChange={e => setSignerName(e.target.value)} placeholder="Full Legal Name" className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-[#E8EDF8] outline-none focus:border-indigo-500/40 text-xl font-display" />
                     <div className="h-56 bg-white/[0.02] border border-dashed border-white/10 rounded-[40px] overflow-hidden group hover:border-indigo-500/30 transition-colors">
                       <SignatureCanvas ref={sigPad} penColor="white" canvasProps={{className:'w-full h-full cursor-crosshair'}} />
                     </div>
@@ -547,8 +547,8 @@ export default function RemoteReviewPage() {
               )}
               {activePanel === 'decline' && (
                 <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.1] backdrop-blur-3xl space-y-6">
-                  <p className="text-[10px] font-mono text-white/30 uppercase tracking-[0.4em] pl-1 font-bold">Deferral / Concerns</p>
-                  <textarea value={declineReason} onChange={e => setDeclineReason(e.target.value)} placeholder="Let us know your reason or concerns..." className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 text-white text-base outline-none focus:border-rose-500/40 resize-none h-32 font-light leading-relaxed" />
+                  <p className="text-[10px] font-mono text-[#3F5878] uppercase tracking-[0.4em] pl-1 font-bold">Deferral / Concerns</p>
+                  <textarea value={declineReason} onChange={e => setDeclineReason(e.target.value)} placeholder="Let us know your reason or concerns..." className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 text-[#E8EDF8] text-base outline-none focus:border-rose-500/40 resize-none h-32 font-light leading-relaxed" />
                   <button onClick={() => sendAction('decline', {reason: declineReason})} disabled={isSubmitting} className="w-full py-5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-300 font-display font-bold text-sm tracking-widest uppercase hover:bg-rose-500/20 transition-all">
                     {isSubmitting ? 'Submitting...' : 'Decline / Defer for Now'}
                   </button>

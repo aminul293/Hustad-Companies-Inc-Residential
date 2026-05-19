@@ -103,7 +103,7 @@ const TestimonialsColumn = (props: {
                         className="h-10 w-10 rounded-full object-cover ring-2 ring-neutral-100 dark:ring-neutral-800 group-hover:ring-primary/30 transition-all duration-300 ease-in-out"
                       />
                       <div className="flex flex-col">
-                        <cite className="font-semibold not-italic tracking-tight leading-5 text-neutral-900 dark:text-white transition-colors duration-300">
+                        <cite className="font-semibold not-italic tracking-tight leading-5 text-neutral-900 dark:text-[#E8EDF8] transition-colors duration-300">
                           {name}
                         </cite>
                         <span className="text-sm leading-5 tracking-tight text-neutral-500 dark:text-neutral-500 mt-0.5 transition-colors duration-300">
@@ -146,7 +146,7 @@ export const TestimonialsSection = () => {
             </div>
           </div>
 
-          <h2 id="testimonials-heading" className="text-4xl md:text-5xl font-extrabold tracking-tight mt-6 text-center text-neutral-900 dark:text-white transition-colors">
+          <h2 id="testimonials-heading" className="text-4xl md:text-5xl font-extrabold tracking-tight mt-6 text-center text-neutral-900 dark:text-[#E8EDF8] transition-colors">
             What our users say
           </h2>
           <p className="text-center mt-5 text-neutral-500 dark:text-neutral-400 text-lg leading-relaxed max-w-sm transition-colors">
@@ -181,7 +181,7 @@ export default function TestimonialV2() {
   }, [isDark]);
 
   return (
-    <div className="w-full bg-transparent transition-colors duration-300 flex flex-col justify-center relative selection:bg-primary selection:text-white">
+    <div className="w-full bg-transparent transition-colors duration-300 flex flex-col justify-center relative selection:bg-primary selection:text-[#E8EDF8]">
       {/* Dark Mode Toggle - Optional, but keeping for compatibility */}
       <button 
         onClick={() => setIsDark(!isDark)}

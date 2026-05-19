@@ -44,7 +44,7 @@ function SplineSceneBasic() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-6 w-fit">
               <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest">Active Protection System</span>
             </div>
-            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
               What matters <br /> most to you?
             </h1>
             <p className="mt-6 text-neutral-400 text-lg font-light max-w-md leading-relaxed">
@@ -177,7 +177,7 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
   };
 
   return (
-    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606] selection:bg-indigo-500/30 selection:text-white">
+    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606] selection:bg-indigo-500/30 selection:text-[#E8EDF8]">
       {/* Background Assets: Forensic Rapid Deployment Cloud */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Ambient Gradient Lift */}
@@ -216,10 +216,10 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
       {/* Persistent Branding Anchor */}
       <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-white text-2xl tracking-[0.1em]">
+          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">
             HUSTAD
           </span>
-          <span className="text-[10px] font-mono text-white/20 uppercase tracking-[0.3em] pt-0.5">
+          <span className="text-[10px] font-mono text-[#2D4060] uppercase tracking-[0.3em] pt-0.5">
             Madison Residential
           </span>
         </div>
@@ -237,7 +237,7 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
           {/* Priorities Section */}
           <div className="space-y-8">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-display font-medium text-white/80 uppercase tracking-wider">
+              <h2 className="text-lg font-display font-medium text-[#C2D0E4] uppercase tracking-wider">
                 What matters most to you? <span className="text-indigo-400/60 lowercase">(select all that apply)</span>
               </h2>
             </div>
@@ -262,18 +262,18 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
                     <div className="relative z-10 flex flex-col gap-4">
                       <div className={cn(
                         "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
-                        isSelected ? "bg-indigo-500 text-white" : "bg-white/[0.05] text-white/40 group-hover:text-white/60"
+                        isSelected ? "bg-indigo-500 text-[#E8EDF8]" : "bg-white/[0.05] text-[#567090] group-hover:text-[#8BA5C5]"
                       )}>
                         <p.icon className="w-5 h-5" />
                       </div>
                       <div>
                         <p className={cn(
                           "font-display font-medium text-lg transition-colors",
-                          isSelected ? "text-white" : "text-white/60 group-hover:text-white/80"
+                          isSelected ? "text-[#E8EDF8]" : "text-[#8BA5C5] group-hover:text-[#C2D0E4]"
                         )}>
                           {p.label}
                         </p>
-                        <p className="text-xs text-white/30 font-light leading-snug mt-1 group-hover:text-white/40 transition-colors">
+                        <p className="text-xs text-[#3F5878] font-light leading-snug mt-1 group-hover:text-[#567090] transition-colors">
                           {p.detail}
                         </p>
                       </div>
@@ -296,7 +296,7 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             {/* Insurer Status */}
             <div className="space-y-6">
-              <h2 className="text-lg font-display font-medium text-white/80 uppercase tracking-wider">
+              <h2 className="text-lg font-display font-medium text-[#C2D0E4] uppercase tracking-wider">
                 Have you contacted your insurer yet?
               </h2>
               <div className="space-y-3">
@@ -309,8 +309,8 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
                       className={cn(
                         "w-full text-left px-6 py-4 rounded-2xl border transition-all duration-300",
                         isSelected 
-                          ? "bg-white/10 border-white/20 text-white shadow-xl" 
-                          : "bg-white/[0.02] border-white/[0.05] text-white/40 hover:bg-white/[0.04]"
+                          ? "bg-white/10 border-white/20 text-[#E8EDF8] shadow-xl" 
+                          : "bg-white/[0.02] border-white/[0.05] text-[#567090] hover:bg-white/[0.04]"
                       )}
                     >
                       <span className="text-sm font-body">{opt.label}</span>
@@ -323,7 +323,7 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
 
             {/* Decision Maker */}
             <div className="space-y-6">
-              <h2 className="text-lg font-display font-medium text-white/80 uppercase tracking-wider">
+              <h2 className="text-lg font-display font-medium text-[#C2D0E4] uppercase tracking-wider">
                 Another decision-maker involved?
               </h2>
               <div className="flex gap-3">
@@ -336,8 +336,8 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
                       className={cn(
                         "flex-1 px-6 py-4 rounded-2xl border transition-all duration-300 text-center",
                         isSelected 
-                          ? "bg-white/10 border-white/20 text-white shadow-xl" 
-                          : "bg-white/[0.02] border-white/[0.05] text-white/40 hover:bg-white/[0.04]"
+                          ? "bg-white/10 border-white/20 text-[#E8EDF8] shadow-xl" 
+                          : "bg-white/[0.02] border-white/[0.05] text-[#567090] hover:bg-white/[0.04]"
                       )}
                     >
                       <span className="text-sm font-body">{opt.label}</span>
@@ -357,10 +357,10 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
                   >
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                        <UserPlus className="w-4 h-4 text-white/20 group-focus-within:text-indigo-400 transition-colors" />
+                        <UserPlus className="w-4 h-4 text-[#2D4060] group-focus-within:text-indigo-400 transition-colors" />
                       </div>
                       <input
-                        className="w-full bg-white/[0.03] border border-white/[0.1] rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/20 focus:border-indigo-500/50 outline-none transition-all"
+                        className="w-full bg-white/[0.03] border border-white/[0.1] rounded-xl py-3 pl-12 pr-4 text-[#E8EDF8] placeholder:text-[#2D4060] focus:border-indigo-500/50 outline-none transition-all"
                         placeholder="Their name (optional)"
                         value={dmName}
                         onChange={(e) => setDmName(e.target.value)}
@@ -368,10 +368,10 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
                     </div>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                        <FileText className="w-4 h-4 text-white/20 group-focus-within:text-indigo-400 transition-colors" />
+                        <FileText className="w-4 h-4 text-[#2D4060] group-focus-within:text-indigo-400 transition-colors" />
                       </div>
                       <input
-                        className="w-full bg-white/[0.03] border border-white/[0.1] rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/20 focus:border-indigo-500/50 outline-none transition-all"
+                        className="w-full bg-white/[0.03] border border-white/[0.1] rounded-xl py-3 pl-12 pr-4 text-[#E8EDF8] placeholder:text-[#2D4060] focus:border-indigo-500/50 outline-none transition-all"
                         placeholder="Their email — to receive a summary"
                         type="email"
                         value={dmEmail}
@@ -391,12 +391,12 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
           >
             <div className="flex items-center gap-3">
               <MessageSquare className="w-5 h-5 text-indigo-400" />
-              <h2 className="text-lg font-display font-medium text-white/80 uppercase tracking-wider">
-                Questions for the rep? <span className="text-white/20 lowercase">(optional)</span>
+              <h2 className="text-lg font-display font-medium text-[#C2D0E4] uppercase tracking-wider">
+                Questions for the rep? <span className="text-[#2D4060] lowercase">(optional)</span>
               </h2>
             </div>
             <textarea
-              className="w-full bg-white/[0.02] border border-white/[0.1] rounded-[32px] p-8 text-white placeholder:text-white/10 focus:border-indigo-500/30 outline-none transition-all resize-none font-light leading-relaxed min-h-[160px]"
+              className="w-full bg-white/[0.02] border border-white/[0.1] rounded-[32px] p-8 text-[#E8EDF8] placeholder:text-[#1F2E48] focus:border-indigo-500/30 outline-none transition-all resize-none font-light leading-relaxed min-h-[160px]"
               placeholder="Anything specific you want the rep to address during the review..."
               value={questions}
               onChange={(e) => setQuestions(e.target.value)}
@@ -408,8 +408,8 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
       <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-6">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
-            <ArrowLeft className="w-4 h-4 text-white/40 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-white/60">Previous</span>
+            <ArrowLeft className="w-4 h-4 text-[#567090] group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-display font-medium text-[#8BA5C5]">Previous</span>
           </button>
           <StarButton 
             onClick={handleSave} 

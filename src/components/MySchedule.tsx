@@ -59,7 +59,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string 
   confirmed:    { label: "Confirmed",   color: "text-sky-400 bg-sky-400/10 border-sky-400/20",             dot: "bg-sky-400" },
   rescheduled:  { label: "Rescheduled", color: "text-amber-400 bg-amber-400/10 border-amber-400/20",       dot: "bg-amber-400" },
   no_show:      { label: "No Show",     color: "text-rose-400 bg-rose-400/10 border-rose-400/20",          dot: "bg-rose-400" },
-  cancelled:    { label: "Cancelled",   color: "text-white/30 bg-white/5 border-white/10",                 dot: "bg-white/30" },
+  cancelled:    { label: "Cancelled",   color: "text-[#3F5878] bg-white/5 border-white/10",                 dot: "bg-white/30" },
   completed:    { label: "Completed",   color: "text-purple-400 bg-purple-400/10 border-purple-400/20",    dot: "bg-purple-400" },
 };
 
@@ -246,14 +246,14 @@ export function MySchedule({ currentRep }: Props) {
               "flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-display whitespace-nowrap transition-all border",
               filter === tab.id
                 ? "bg-white text-black border-white"
-                : "bg-white/5 text-white/40 border-white/10 hover:text-white/70 hover:bg-white/10"
+                : "bg-white/5 text-[#567090] border-white/10 hover:text-[#AABDCF] hover:bg-white/10"
             )}
           >
             <tab.icon className="w-3 h-3" />
             {tab.label}
           </button>
         ))}
-        <button onClick={fetchData} className="ml-auto p-2.5 rounded-full bg-white/5 border border-white/10 text-white/30 hover:text-white/70 transition-all shrink-0">
+        <button onClick={fetchData} className="ml-auto p-2.5 rounded-full bg-white/5 border border-white/10 text-[#3F5878] hover:text-[#AABDCF] transition-all shrink-0">
           <RefreshCw className={cn("w-3.5 h-3.5", loading && "animate-spin")} />
         </button>
       </div>
@@ -261,7 +261,7 @@ export function MySchedule({ currentRep }: Props) {
       {/* Content */}
       {loading ? (
         <div className="flex items-center justify-center py-24">
-          <RefreshCw className="w-5 h-5 text-white/20 animate-spin" />
+          <RefreshCw className="w-5 h-5 text-[#2D4060] animate-spin" />
         </div>
       ) : (filter === "followups") ? (
         <FollowUpsList leads={followUps} />
@@ -272,7 +272,7 @@ export function MySchedule({ currentRep }: Props) {
       ) : (
         <div className="space-y-4">
           {filter === "today" && (
-            <p className="text-[9px] font-mono text-white/25 uppercase tracking-[0.2em]">
+            <p className="text-[9px] font-mono text-[#354D6F] uppercase tracking-[0.2em]">
               {todayCount} appointment{todayCount !== 1 ? "s" : ""} today
             </p>
           )}
@@ -298,29 +298,29 @@ export function MySchedule({ currentRep }: Props) {
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2.5 flex-wrap">
-                        <Clock className="w-3.5 h-3.5 text-white/30 shrink-0" />
-                        <span className="text-sm font-medium text-white">
+                        <Clock className="w-3.5 h-3.5 text-[#3F5878] shrink-0" />
+                        <span className="text-sm font-medium text-[#E8EDF8]">
                           {fmtTime(appt.appointment_start_at)} – {fmtTime(appt.appointment_end_at)}
                         </span>
                         {filter !== "today" && (
-                          <span className="text-[10px] font-mono text-white/30 uppercase tracking-wider">
+                          <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-wider">
                             {fmtDate(appt.appointment_start_at)}
                           </span>
                         )}
                       </div>
                       <div className="flex items-center gap-2">
-                        <MapPin className="w-3 h-3 text-white/20 shrink-0" />
-                        <span className="text-base font-display font-medium text-white/90">{address}</span>
+                        <MapPin className="w-3 h-3 text-[#2D4060] shrink-0" />
+                        <span className="text-base font-display font-medium text-[#DDE5F5]">{address}</span>
                       </div>
                       {owner && (
-                        <p className="text-[10px] font-mono text-white/35 uppercase tracking-wider pl-5">
+                        <p className="text-[10px] font-mono text-[#4D678A] uppercase tracking-wider pl-5">
                           {owner} · Residential
                         </p>
                       )}
                       {phone && (
                         <div className="flex items-center gap-1.5 pl-5">
-                          <Phone className="w-2.5 h-2.5 text-white/20 shrink-0" />
-                          <span className="text-[10px] font-mono text-white/30">{phone}</span>
+                          <Phone className="w-2.5 h-2.5 text-[#2D4060] shrink-0" />
+                          <span className="text-[10px] font-mono text-[#3F5878]">{phone}</span>
                         </div>
                       )}
                     </div>
@@ -329,7 +329,7 @@ export function MySchedule({ currentRep }: Props) {
                         {cfg.label}
                       </span>
                       {appt.pipeline_leads?.pipeline_status && (
-                        <span className="text-[9px] font-mono text-white/20 uppercase tracking-wider">
+                        <span className="text-[9px] font-mono text-[#2D4060] uppercase tracking-wider">
                           {appt.pipeline_leads.pipeline_status.replace(/_/g, " ")}
                         </span>
                       )}
@@ -338,7 +338,7 @@ export function MySchedule({ currentRep }: Props) {
 
                   {/* Notes */}
                   {appt.notes && (
-                    <p className="text-xs text-white/40 font-light border-l-2 border-white/10 pl-3 italic">{appt.notes}</p>
+                    <p className="text-xs text-[#567090] font-light border-l-2 border-white/10 pl-3 italic">{appt.notes}</p>
                   )}
 
                   {/* Primary actions */}
@@ -348,13 +348,13 @@ export function MySchedule({ currentRep }: Props) {
                         const phone = appt.pipeline_leads?.centerpoint_jobs?.raw?._phone;
                         if (phone) window.open(`tel:${phone}`);
                       }}
-                      className="flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-all text-xs"
+                      className="flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-[#7090B0] hover:text-[#E8EDF8] hover:bg-white/10 transition-all text-xs"
                     >
                       <Phone className="w-3.5 h-3.5" /> Call
                     </button>
                     <button
                       onClick={() => window.open(`https://maps.apple.com/?q=${encodeURIComponent(address)}`)}
-                      className="flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-all text-xs"
+                      className="flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-[#7090B0] hover:text-[#E8EDF8] hover:bg-white/10 transition-all text-xs"
                     >
                       <MapPin className="w-3.5 h-3.5" /> Navigate
                     </button>
@@ -390,19 +390,19 @@ export function MySchedule({ currentRep }: Props) {
                   <div className="flex items-center gap-4 pt-1 border-t border-white/[0.05]">
                     <button
                       onClick={() => { setReschedModal({ apptId: appt.id, label: address, leadId: appt.pipeline_leads?.id }); setReschedDate(new Date().toISOString().slice(0, 10)); setReschedClash(null); }}
-                      className="flex items-center gap-1.5 text-[10px] font-mono text-white/25 hover:text-amber-400 uppercase tracking-widest transition-colors"
+                      className="flex items-center gap-1.5 text-[10px] font-mono text-[#354D6F] hover:text-amber-400 uppercase tracking-widest transition-colors"
                     >
                       <RotateCcw className="w-3 h-3" /> Reschedule
                     </button>
                     <button
                       onClick={() => { setFollowUpPrompt({ apptId: appt.id, action: "no_show", label: address }); setFollowUpDate(addDays(1)); }}
-                      className="flex items-center gap-1.5 text-[10px] font-mono text-white/25 hover:text-rose-400 uppercase tracking-widest transition-colors"
+                      className="flex items-center gap-1.5 text-[10px] font-mono text-[#354D6F] hover:text-rose-400 uppercase tracking-widest transition-colors"
                     >
                       <UserX className="w-3 h-3" /> No Show
                     </button>
                     <button
                       onClick={() => { setFollowUpPrompt({ apptId: appt.id, action: "cancelled", label: address }); setFollowUpDate(addDays(1)); }}
-                      className="flex items-center gap-1.5 text-[10px] font-mono text-white/25 hover:text-white/60 uppercase tracking-widest transition-colors ml-auto"
+                      className="flex items-center gap-1.5 text-[10px] font-mono text-[#354D6F] hover:text-[#8BA5C5] uppercase tracking-widest transition-colors ml-auto"
                     >
                       <XCircle className="w-3 h-3" /> Cancel
                     </button>
@@ -429,19 +429,19 @@ export function MySchedule({ currentRep }: Props) {
                   <div className="flex items-center gap-2.5 mb-1">
                     {followUpPrompt.action === "no_show"
                       ? <UserX className="w-5 h-5 text-rose-400" />
-                      : <XCircle className="w-5 h-5 text-white/40" />}
+                      : <XCircle className="w-5 h-5 text-[#567090]" />}
                     <h3 className="text-xl font-display font-medium">
                       {followUpPrompt.action === "no_show" ? "No Show" : "Cancel Appointment"}
                     </h3>
                   </div>
-                  <p className="text-sm text-white/35 font-light">{followUpPrompt.label}</p>
+                  <p className="text-sm text-[#4D678A] font-light">{followUpPrompt.label}</p>
                 </div>
-                <button onClick={() => setFollowUpPrompt(null)} className="p-2 rounded-2xl text-white/30 hover:text-white hover:bg-white/5 transition-all">
+                <button onClick={() => setFollowUpPrompt(null)} className="p-2 rounded-2xl text-[#3F5878] hover:text-[#E8EDF8] hover:bg-white/5 transition-all">
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mb-3">Set next follow-up date</p>
+              <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest mb-3">Set next follow-up date</p>
 
               <div className="grid grid-cols-2 gap-2 mb-5">
                 {[
@@ -456,7 +456,7 @@ export function MySchedule({ currentRep }: Props) {
                       className={cn("py-3 rounded-2xl text-sm font-medium transition-all",
                         followUpDate === d
                           ? "bg-rose-500/15 border border-rose-500/30 text-rose-300"
-                          : "bg-white/[0.04] text-white/40 hover:bg-white/[0.08] hover:text-white/70"
+                          : "bg-white/[0.04] text-[#567090] hover:bg-white/[0.08] hover:text-[#AABDCF]"
                       )}
                     >{opt.label}</button>
                   );
@@ -464,16 +464,16 @@ export function MySchedule({ currentRep }: Props) {
               </div>
 
               <div className="mb-7">
-                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">Custom Date</label>
+                <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2">Custom Date</label>
                 <input type="date" value={followUpDate} min={new Date().toISOString().slice(0, 10)}
                   onChange={e => setFollowUpDate(e.target.value)}
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-rose-500/40 [color-scheme:dark]"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-[#E8EDF8] text-sm focus:outline-none focus:border-rose-500/40 [color-scheme:dark]"
                 />
               </div>
 
               <div className="flex gap-3">
                 <button onClick={() => setFollowUpPrompt(null)}
-                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white transition-all text-sm">
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-[#7090B0] hover:text-[#E8EDF8] transition-all text-sm">
                   Back
                 </button>
                 <button onClick={confirmFollowUp}
@@ -481,7 +481,7 @@ export function MySchedule({ currentRep }: Props) {
                     "flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl transition-all text-sm font-medium",
                     followUpPrompt.action === "no_show"
                       ? "bg-rose-500/15 border border-rose-500/25 text-rose-300 hover:bg-rose-500/25"
-                      : "bg-white/[0.07] border border-white/15 text-white/80 hover:bg-white/[0.12]"
+                      : "bg-white/[0.07] border border-white/15 text-[#C2D0E4] hover:bg-white/[0.12]"
                   )}
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -509,28 +509,28 @@ export function MySchedule({ currentRep }: Props) {
                     <RotateCcw className="w-5 h-5 text-amber-400" />
                     <h3 className="text-xl font-display font-medium">Reschedule</h3>
                   </div>
-                  <p className="text-sm text-white/35 font-light">{reschedModal.label}</p>
+                  <p className="text-sm text-[#4D678A] font-light">{reschedModal.label}</p>
                 </div>
-                <button onClick={() => setReschedModal(null)} className="p-2 rounded-2xl text-white/30 hover:text-white hover:bg-white/5 transition-all">
+                <button onClick={() => setReschedModal(null)} className="p-2 rounded-2xl text-[#3F5878] hover:text-[#E8EDF8] hover:bg-white/5 transition-all">
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               <div className="mb-6">
-                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2">New Date</label>
+                <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2">New Date</label>
                 <input type="date" value={reschedDate} min={new Date().toISOString().slice(0, 10)}
                   onChange={e => setReschedDate(e.target.value)}
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-amber-500/50 [color-scheme:dark]"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-[#E8EDF8] text-sm focus:outline-none focus:border-amber-500/50 [color-scheme:dark]"
                 />
               </div>
 
               <div className="mb-6">
-                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2.5">Time</label>
+                <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2.5">Time</label>
                 <div className="grid grid-cols-4 gap-2">
                   {TIME_SLOTS.map(slot => (
                     <button key={slot.value} onClick={() => setReschedTime(slot.value)}
                       className={cn("py-2.5 rounded-xl text-xs font-medium transition-all",
-                        reschedTime === slot.value ? "bg-amber-500 text-white" : "bg-white/[0.04] text-white/35 hover:bg-white/[0.08]"
+                        reschedTime === slot.value ? "bg-amber-500 text-[#E8EDF8]" : "bg-white/[0.04] text-[#4D678A] hover:bg-white/[0.08]"
                       )}
                     >{slot.label}</button>
                   ))}
@@ -538,12 +538,12 @@ export function MySchedule({ currentRep }: Props) {
               </div>
 
               <div className="mb-7">
-                <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest block mb-2.5">Duration</label>
+                <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2.5">Duration</label>
                 <div className="flex gap-2">
                   {DURATIONS.map(d => (
                     <button key={d.value} onClick={() => setReschedDur(d.value)}
                       className={cn("flex-1 py-2.5 rounded-xl text-xs font-medium transition-all",
-                        reschedDur === d.value ? "bg-amber-500/20 border border-amber-500/40 text-amber-300" : "bg-white/[0.04] text-white/30 hover:bg-white/[0.07]"
+                        reschedDur === d.value ? "bg-amber-500/20 border border-amber-500/40 text-amber-300" : "bg-white/[0.04] text-[#3F5878] hover:bg-white/[0.07]"
                       )}
                     >{d.label}</button>
                   ))}
@@ -562,7 +562,7 @@ export function MySchedule({ currentRep }: Props) {
 
               <div className="flex gap-3">
                 <button onClick={() => { setReschedModal(null); setReschedClash(null); }}
-                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white transition-all text-sm">
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-[#7090B0] hover:text-[#E8EDF8] transition-all text-sm">
                   Cancel
                 </button>
                 <button onClick={() => confirmReschedule(false)}
@@ -583,18 +583,18 @@ function FollowUpsList({ leads }: { leads: FollowUpLead[] }) {
   if (leads.length === 0) return <EmptyState filter="followups" />;
   return (
     <div className="space-y-3">
-      <p className="text-[9px] font-mono text-white/25 uppercase tracking-[0.2em]">
+      <p className="text-[9px] font-mono text-[#354D6F] uppercase tracking-[0.2em]">
         {leads.length} overdue follow-up{leads.length !== 1 ? "s" : ""}
       </p>
       {leads.map(lead => (
         <div key={lead.id} className="bg-rose-500/[0.04] border border-rose-500/15 rounded-3xl p-5 flex items-center justify-between gap-4">
           <div className="space-y-1 min-w-0">
-            <p className="text-base font-display font-medium text-white/90 truncate">
+            <p className="text-base font-display font-medium text-[#DDE5F5] truncate">
               {lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id}
             </p>
             <div className="flex items-center gap-3">
               {lead.centerpoint_jobs?.raw?._owner && (
-                <span className="text-[10px] font-mono text-white/35 uppercase tracking-wider">
+                <span className="text-[10px] font-mono text-[#4D678A] uppercase tracking-wider">
                   {lead.centerpoint_jobs.raw._owner}
                 </span>
               )}
@@ -606,7 +606,7 @@ function FollowUpsList({ leads }: { leads: FollowUpLead[] }) {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <span className="text-[10px] font-mono text-white/25 uppercase">{lead.contact_attempt_count} attempts</span>
+            <span className="text-[10px] font-mono text-[#354D6F] uppercase">{lead.contact_attempt_count} attempts</span>
             <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
           </div>
         </div>
@@ -624,26 +624,26 @@ function UnscheduledList({ leads }: { leads: FollowUpLead[] }) {
   };
   return (
     <div className="space-y-3">
-      <p className="text-[9px] font-mono text-white/25 uppercase tracking-[0.2em]">
+      <p className="text-[9px] font-mono text-[#354D6F] uppercase tracking-[0.2em]">
         {leads.length} lead{leads.length !== 1 ? "s" : ""} need scheduling
       </p>
       {leads.map(lead => (
         <div key={lead.id} className="bg-white/[0.02] border border-white/[0.06] rounded-3xl p-5 flex items-center justify-between gap-4">
           <div className="space-y-1 min-w-0">
-            <p className="text-base font-display font-medium text-white/90 truncate">
+            <p className="text-base font-display font-medium text-[#DDE5F5] truncate">
               {lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id}
             </p>
             {lead.centerpoint_jobs?.raw?._owner && (
-              <p className="text-[10px] font-mono text-white/35 uppercase tracking-wider">
+              <p className="text-[10px] font-mono text-[#4D678A] uppercase tracking-wider">
                 {lead.centerpoint_jobs.raw._owner}
               </p>
             )}
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <span className={cn("text-[10px] font-mono uppercase tracking-wider", statusColors[lead.pipeline_status] || "text-white/30")}>
+            <span className={cn("text-[10px] font-mono uppercase tracking-wider", statusColors[lead.pipeline_status] || "text-[#3F5878]")}>
               {lead.pipeline_status.replace(/_/g, " ")}
             </span>
-            <span className="text-[10px] font-mono text-white/20">{lead.contact_attempt_count} touches</span>
+            <span className="text-[10px] font-mono text-[#2D4060]">{lead.contact_attempt_count} touches</span>
           </div>
         </div>
       ))}
@@ -663,9 +663,9 @@ function EmptyState({ filter }: { filter: FilterTab | string }) {
   const m = msgs[filter] || msgs.today;
   return (
     <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
-      <m.icon className="w-8 h-8 text-white/10" />
-      <p className="text-lg font-display font-medium text-white/30">{m.title}</p>
-      <p className="text-sm text-white/20 font-light">{m.sub}</p>
+      <m.icon className="w-8 h-8 text-[#1F2E48]" />
+      <p className="text-lg font-display font-medium text-[#3F5878]">{m.title}</p>
+      <p className="text-sm text-[#2D4060] font-light">{m.sub}</p>
     </div>
   );
 }
