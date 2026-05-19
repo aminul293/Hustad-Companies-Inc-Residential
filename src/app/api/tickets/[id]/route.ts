@@ -86,6 +86,17 @@ export async function PATCH(
   if (stage && stage !== current.stage && current.cp_job_id && CP_WRITEBACK[stage]) {
     const cpStatus = CP_WRITEBACK[stage];
     try {
+      const nowStr = new Date().toISOString();
+      const attrs: Record<string, any> = { status: cpStatus };
+      if (cpStatus === "completed") {
+        attrs.completedAt = nowStr;
+      } else if (cpStatus === "closed") {
+        attrs.closedAt = nowStr;
+        attrs.invoicedAt = nowStr;
+      } else if (cpStatus === "started") {
+        attrs.startedAt = nowStr;
+      }
+
       const cpRes = await fetch(`${CP_BASE}/services/${current.cp_job_id}`, {
         method: "PATCH",
         headers: {
@@ -94,7 +105,7 @@ export async function PATCH(
           Authorization: CP_KEY,
         },
         body: JSON.stringify({
-          data: { type: "services", id: current.cp_job_id, attributes: { status: cpStatus } },
+          data: { type: "services", id: current.cp_job_id, attributes: attrs },
         }),
       });
 

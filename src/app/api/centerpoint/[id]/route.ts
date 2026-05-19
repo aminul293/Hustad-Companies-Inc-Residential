@@ -16,6 +16,17 @@ export async function PATCH(
     return NextResponse.json({ error: "status is required" }, { status: 400 });
   }
 
+  const nowStr = new Date().toISOString();
+  const attrs: Record<string, any> = { status };
+  if (status === "completed") {
+    attrs.completedAt = nowStr;
+  } else if (status === "closed") {
+    attrs.closedAt = nowStr;
+    attrs.invoicedAt = nowStr;
+  } else if (status === "started") {
+    attrs.startedAt = nowStr;
+  }
+
   // Push to CenterPoint
   const res = await fetch(`${CP_BASE}/services/${id}`, {
     method: "PATCH",
@@ -25,7 +36,7 @@ export async function PATCH(
       Authorization: CP_KEY,
     },
     body: JSON.stringify({
-      data: { type: "services", id, attributes: { status } },
+      data: { type: "services", id, attributes: attrs },
     }),
   });
 

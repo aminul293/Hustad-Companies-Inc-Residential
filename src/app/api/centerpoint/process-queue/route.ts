@@ -30,6 +30,25 @@ export async function POST() {
         const CP_BASE = "https://api.centerpointconnect.io/centerpoint";
         const CP_KEY = process.env.CENTERPOINT_API_KEY;
 
+        const nowStr = new Date().toISOString();
+        const attrs: Record<string, any> = { status: item.payload.status };
+        if (item.payload.startedAt)   attrs.startedAt   = item.payload.startedAt;
+        if (item.payload.completedAt) attrs.completedAt = item.payload.completedAt;
+        if (item.payload.closedAt)    attrs.closedAt    = item.payload.closedAt;
+        if (item.payload.invoicedAt)  attrs.invoicedAt  = item.payload.invoicedAt;
+
+        // Auto-populate dates if not provided but status demands them
+        if (attrs.status === "completed" && !attrs.completedAt) {
+          attrs.completedAt = nowStr;
+        }
+        if (attrs.status === "closed" && !attrs.closedAt) {
+          attrs.closedAt = nowStr;
+          if (!attrs.invoicedAt) attrs.invoicedAt = nowStr;
+        }
+        if (attrs.status === "started" && !attrs.startedAt) {
+          attrs.startedAt = nowStr;
+        }
+
         const res = await fetch(`${CP_BASE}/services/${item.target_id}`, {
           method: "PATCH",
           headers: {
@@ -38,7 +57,7 @@ export async function POST() {
             Authorization: CP_KEY!,
           },
           body: JSON.stringify({
-            data: { type: "services", id: item.target_id, attributes: { status: item.payload.status } },
+            data: { type: "services", id: item.target_id, attributes: attrs },
           }),
         });
 
