@@ -13,8 +13,7 @@ export async function upsertSession(session: SessionState) {
   // 1. Prepare Session Row
   const sessionRow = {
     session_id: sessionId,
-    // Attempt to parse UUID, fallback to null if rep_id is a placeholder string
-    rep_id: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(repId) ? repId : null,
+    rep_id: repId,
     session_status: session.sessionStatus,
     current_screen: session.currentScreen,
     mode: session.mode,
