@@ -19,11 +19,11 @@ export function ProgressBar({ currentScreen, phase }: ProgressBarProps) {
             
             {/* Step Counter Label */}
             <div className="flex flex-col shrink-0">
-              <span className="text-[10px] font-mono text-white/30 uppercase tracking-[0.2em] leading-none mb-1">
+              <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-[0.2em] leading-none mb-1">
                 Progress
               </span>
-              <span className="text-sm font-display font-medium text-white tracking-tight">
-                {String(Math.max(0, idx + 1)).padStart(2, "0")} <span className="text-white/20 mx-1">/</span> {PHASE_A_SCREENS.length}
+              <span className="text-sm font-display font-medium text-[#E8EDF8] tracking-tight">
+                {String(Math.max(0, idx + 1)).padStart(2, "0")} <span className="text-[#2D4060] mx-1">/</span> {PHASE_A_SCREENS.length}
               </span>
             </div>
 
@@ -57,13 +57,13 @@ export function ProgressBar({ currentScreen, phase }: ProgressBarProps) {
 
             {/* Phase Badge */}
             <div className="flex flex-col items-end shrink-0">
-              <span className="text-[10px] font-mono text-white/30 uppercase tracking-[0.2em] leading-none mb-1">
+              <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-[0.2em] leading-none mb-1">
                 Phase
               </span>
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse shadow-[0_0_8px_rgba(129,140,248,0.6)]" />
-                <span className="text-sm font-display font-medium text-white tracking-tight">
-                  A. <span className="text-white/40 text-xs font-light italic">Portal</span>
+                <span className="text-sm font-display font-medium text-[#E8EDF8] tracking-tight">
+                  A. <span className="text-[#567090] text-xs font-light italic">Portal</span>
                 </span>
               </div>
             </div>
@@ -85,11 +85,11 @@ export function ProgressBar({ currentScreen, phase }: ProgressBarProps) {
           
           {/* Label */}
           <div className="flex flex-col shrink-0">
-            <span className="text-[10px] font-mono text-white/30 uppercase tracking-[0.2em] leading-none mb-1">
+            <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-[0.2em] leading-none mb-1">
               Status
             </span>
-            <span className="text-sm font-display font-medium text-white tracking-tight">
-              Review <span className="text-white/20 mx-1">/</span> Finalize
+            <span className="text-sm font-display font-medium text-[#E8EDF8] tracking-tight">
+              Review <span className="text-[#2D4060] mx-1">/</span> Finalize
             </span>
           </div>
 
@@ -103,13 +103,13 @@ export function ProgressBar({ currentScreen, phase }: ProgressBarProps) {
 
           {/* Phase Badge */}
           <div className="flex flex-col items-end shrink-0">
-            <span className="text-[10px] font-mono text-white/30 uppercase tracking-[0.2em] leading-none mb-1">
+            <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-[0.2em] leading-none mb-1">
               Phase
             </span>
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse shadow-[0_0_8px_rgba(251,113,133,0.6)]" />
-              <span className="text-sm font-display font-medium text-white tracking-tight">
-                B. <span className="text-white/40 text-xs font-light italic">Agreement</span>
+              <span className="text-sm font-display font-medium text-[#E8EDF8] tracking-tight">
+                B. <span className="text-[#567090] text-xs font-light italic">Agreement</span>
               </span>
             </div>
           </div>

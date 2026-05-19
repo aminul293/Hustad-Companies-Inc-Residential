@@ -436,8 +436,8 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
       {/* Header */}
       <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-white text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-white/70 uppercase tracking-[0.3em]">Madison Residential</span>
+          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
+          <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em]">Madison Residential</span>
         </div>
       </div>
 
@@ -477,20 +477,20 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
               <div className="flex items-center justify-between px-2">
                 <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest">Production Identity Layer</p>
                 {(authStatus === "authenticated" || !!mockId) && (
-                  <button onClick={() => signOut({ callbackUrl: "/login" })} className="text-[9px] font-mono text-white/30 hover:text-white uppercase tracking-widest">Switch Account</button>
+                  <button onClick={() => signOut({ callbackUrl: "/login" })} className="text-[9px] font-mono text-[#3F5878] hover:text-[#E8EDF8] uppercase tracking-widest">Switch Account</button>
                 )}
               </div>
 
               {(authStatus === "authenticated" || !!mockId) && authRep ? (
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-8 rounded-[40px] bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-between group">
                   <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 rounded-3xl bg-indigo-500 flex items-center justify-center text-white shadow-[0_0_30px_rgba(99,102,241,0.4)]">
+                    <div className="w-16 h-16 rounded-3xl bg-indigo-500 flex items-center justify-center text-[#E8EDF8] shadow-[0_0_30px_rgba(99,102,241,0.4)]">
                       <User className="w-8 h-8" />
                     </div>
                     <div>
                       <p className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest mb-1">Authenticated Operative</p>
-                      <h3 className="text-2xl font-display font-medium text-white">{authRep.name}</h3>
-                      <p className="text-xs text-white/40">{authRep.email}</p>
+                      <h3 className="text-2xl font-display font-medium text-[#E8EDF8]">{authRep.name}</h3>
+                      <p className="text-xs text-[#567090]">{authRep.email}</p>
                     </div>
                   </div>
                   <button onClick={() => setShowDashboard(true)} className="h-14 w-14 rounded-2xl bg-white text-black flex items-center justify-center hover:scale-105 transition-all">
@@ -547,7 +547,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                     <div className="space-y-6">
                       <div className="flex items-center gap-3 px-2">
                         <div className="h-px flex-1 bg-white/[0.05]" />
-                        <span className="text-[10px] font-mono text-white/30 uppercase tracking-[0.2em]">Property Identification</span>
+                        <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-[0.2em]">Property Identification</span>
                         <div className="h-px flex-1 bg-white/[0.05]" />
                       </div>
 
@@ -565,7 +565,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                             onBlur={() => setTimeout(() => setIsAddressFocused(false), 200)}
                             readOnly={!isEmergencyOverride}
                             className={cn(
-                              "w-full bg-white/[0.04] border rounded-2xl py-5 pl-14 pr-6 text-white placeholder:text-white/20 outline-none transition-all text-lg",
+                              "w-full bg-white/[0.04] border rounded-2xl py-5 pl-14 pr-6 text-[#E8EDF8] placeholder:text-[#2D4060] outline-none transition-all text-lg",
                               errors.address ? "border-rose-500/50" : "border-white/[0.1] focus:border-indigo-500/30 focus:bg-white/[0.06] focus:ring-4 focus:ring-indigo-500/5",
                               !isEmergencyOverride && "opacity-70 bg-white/[0.02] cursor-not-allowed focus:ring-0 focus:border-white/[0.1] focus:bg-white/[0.02]"
                             )}
@@ -593,8 +593,8 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                                     <MapPin className="w-4 h-4 text-indigo-400" />
                                   </div>
                                   <div>
-                                    <p className="text-sm text-white font-medium">{s.main}</p>
-                                    <p className="text-[10px] text-white/40 font-mono uppercase tracking-wider">{s.sub}</p>
+                                    <p className="text-sm text-[#E8EDF8] font-medium">{s.main}</p>
+                                    <p className="text-[10px] text-[#567090] font-mono uppercase tracking-wider">{s.sub}</p>
                                   </div>
                                 </button>
                               ))}
@@ -608,41 +608,41 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                     <div className="space-y-6 pt-4">
                       <div className="flex items-center gap-3 px-2">
                         <div className="h-px flex-1 bg-white/[0.05]" />
-                        <span className="text-[10px] font-mono text-white/30 uppercase tracking-[0.2em]">Ownership Details</span>
+                        <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-[0.2em]">Ownership Details</span>
                         <div className="h-px flex-1 bg-white/[0.05]" />
                       </div>
 
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 pl-2">
-                            <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest">Homeowner Name</p>
-                            {!isEmergencyOverride && <Lock className="w-2.5 h-2.5 text-white/20" />}
+                            <p className="text-[10px] font-mono text-[#7090B0] uppercase tracking-widest">Homeowner Name</p>
+                            {!isEmergencyOverride && <Lock className="w-2.5 h-2.5 text-[#2D4060]" />}
                           </div>
                           <div className="relative group">
-                            <User className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-white/50 transition-colors" />
-                            <input readOnly={!isEmergencyOverride} value={form.homeownerName} onChange={(e) => set("homeownerName", e.target.value)} className={cn("w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all", !isEmergencyOverride && "opacity-70 bg-white/[0.02] cursor-not-allowed focus:border-white/[0.1] focus:bg-white/[0.02]")} placeholder="Full Name" />
+                            <User className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[#2D4060] group-focus-within:text-[#7090B0] transition-colors" />
+                            <input readOnly={!isEmergencyOverride} value={form.homeownerName} onChange={(e) => set("homeownerName", e.target.value)} className={cn("w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-[#E8EDF8] placeholder:text-[#2D4060] outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all", !isEmergencyOverride && "opacity-70 bg-white/[0.02] cursor-not-allowed focus:border-white/[0.1] focus:bg-white/[0.02]")} placeholder="Full Name" />
                           </div>
                         </div>
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 pl-2">
-                            <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest">Mobile Number</p>
-                            {!isEmergencyOverride && <Lock className="w-2.5 h-2.5 text-white/20" />}
+                            <p className="text-[10px] font-mono text-[#7090B0] uppercase tracking-widest">Mobile Number</p>
+                            {!isEmergencyOverride && <Lock className="w-2.5 h-2.5 text-[#2D4060]" />}
                           </div>
                           <div className="relative group">
-                            <Smartphone className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-white/50 transition-colors" />
-                            <input readOnly={!isEmergencyOverride} value={form.homeownerMobile} onChange={(e) => set("homeownerMobile", e.target.value)} className={cn("w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all", !isEmergencyOverride && "opacity-70 bg-white/[0.02] cursor-not-allowed focus:border-white/[0.1] focus:bg-white/[0.02]")} placeholder="(608) 000-0000" />
+                            <Smartphone className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[#2D4060] group-focus-within:text-[#7090B0] transition-colors" />
+                            <input readOnly={!isEmergencyOverride} value={form.homeownerMobile} onChange={(e) => set("homeownerMobile", e.target.value)} className={cn("w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-[#E8EDF8] placeholder:text-[#2D4060] outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all", !isEmergencyOverride && "opacity-70 bg-white/[0.02] cursor-not-allowed focus:border-white/[0.1] focus:bg-white/[0.02]")} placeholder="(608) 000-0000" />
                           </div>
                         </div>
                       </div>
 
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 pl-2">
-                          <p className="text-[10px] font-mono text-white/50 uppercase tracking-widest">Email Address</p>
-                          {!isEmergencyOverride && <Lock className="w-2.5 h-2.5 text-white/20" />}
+                          <p className="text-[10px] font-mono text-[#7090B0] uppercase tracking-widest">Email Address</p>
+                          {!isEmergencyOverride && <Lock className="w-2.5 h-2.5 text-[#2D4060]" />}
                         </div>
                         <div className="relative group max-w-sm">
-                          <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-white/50 transition-colors" />
-                          <input readOnly={!isEmergencyOverride} value={form.homeownerEmail} onChange={(e) => set("homeownerEmail", e.target.value)} type="email" className={cn("w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all", !isEmergencyOverride && "opacity-70 bg-white/[0.02] cursor-not-allowed focus:border-white/[0.1] focus:bg-white/[0.02]")} placeholder="homeowner@example.com" />
+                          <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[#2D4060] group-focus-within:text-[#7090B0] transition-colors" />
+                          <input readOnly={!isEmergencyOverride} value={form.homeownerEmail} onChange={(e) => set("homeownerEmail", e.target.value)} type="email" className={cn("w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-[#E8EDF8] placeholder:text-[#2D4060] outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all", !isEmergencyOverride && "opacity-70 bg-white/[0.02] cursor-not-allowed focus:border-white/[0.1] focus:bg-white/[0.02]")} placeholder="homeowner@example.com" />
                         </div>
                       </div>
                     </div>
@@ -652,8 +652,8 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                     {/* Rep Identity */}
                     <div className="space-y-2">
                       <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest pl-2">Rep Identity <span className="text-rose-400">*</span></p>
-                      <input value={authRep.name} readOnly className={cn("w-full bg-white/[0.04] border rounded-2xl py-4 px-6 text-white outline-none transition-all cursor-default", errors.repName ? "border-rose-500/50" : "border-white/[0.1]")} />
-                      {authRep.email && <p className="text-[10px] text-white/30 pl-2">{authRep.email}</p>}
+                      <input value={authRep.name} readOnly className={cn("w-full bg-white/[0.04] border rounded-2xl py-4 px-6 text-[#E8EDF8] outline-none transition-all cursor-default", errors.repName ? "border-rose-500/50" : "border-white/[0.1]")} />
+                      {authRep.email && <p className="text-[10px] text-[#3F5878] pl-2">{authRep.email}</p>}
                       {errors.repName && <p className="text-[10px] text-rose-400 pl-2">{errors.repName}</p>}
                     </div>
 
@@ -664,22 +664,22 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                       <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest pl-2">Carrier & Storm Context</p>
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-1">
-                          <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest pl-2">Insurance Carrier</p>
-                          <input value={form.insurerName} onChange={(e) => set("insurerName", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="e.g. State Farm" />
+                          <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest pl-2">Insurance Carrier</p>
+                          <input value={form.insurerName} onChange={(e) => set("insurerName", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-[#E8EDF8] placeholder:text-[#3F5878] outline-none focus:border-indigo-500/50" placeholder="e.g. State Farm" />
                         </div>
                         <div className="space-y-1">
-                          <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest pl-2">Claim Number (if known)</p>
-                          <input value={form.claimNumber} onChange={(e) => set("claimNumber", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="e.g. 123-456-789" />
+                          <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest pl-2">Claim Number (if known)</p>
+                          <input value={form.claimNumber} onChange={(e) => set("claimNumber", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-[#E8EDF8] placeholder:text-[#3F5878] outline-none focus:border-indigo-500/50" placeholder="e.g. 123-456-789" />
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-1">
-                          <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest pl-2">Date of Loss</p>
-                          <input value={form.workingDateOfLoss} onChange={(e) => set("workingDateOfLoss", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="MM/DD/YYYY" />
+                          <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest pl-2">Date of Loss</p>
+                          <input value={form.workingDateOfLoss} onChange={(e) => set("workingDateOfLoss", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-[#E8EDF8] placeholder:text-[#3F5878] outline-none focus:border-indigo-500/50" placeholder="MM/DD/YYYY" />
                         </div>
                         <div className="space-y-1">
-                          <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest pl-2">Storm Basis</p>
-                          <input value={form.stormBasis} onChange={(e) => set("stormBasis", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50" placeholder="Madison metro hail event" />
+                          <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest pl-2">Storm Basis</p>
+                          <input value={form.stormBasis} onChange={(e) => set("stormBasis", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-[#E8EDF8] placeholder:text-[#3F5878] outline-none focus:border-indigo-500/50" placeholder="Madison metro hail event" />
                         </div>
                       </div>
                     </div>
@@ -691,8 +691,8 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
             {/* Compliance Banner */}
             <div className="p-6 rounded-3xl bg-indigo-500/5 border border-indigo-500/10 flex items-start gap-4">
               <Shield className="w-5 h-5 text-indigo-400 mt-0.5" />
-              <p className="text-xs text-white/70 leading-relaxed font-light">
-                <span className="text-white font-medium uppercase tracking-widest text-[9px] mr-2">Advisory</span>
+              <p className="text-xs text-[#AABDCF] leading-relaxed font-light">
+                <span className="text-[#E8EDF8] font-medium uppercase tracking-widest text-[9px] mr-2">Advisory</span>
                 Strictly forensic session. No claim promises or deductible guarantees during the buyer walkthrough.
               </p>
             </div>
@@ -711,8 +711,8 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                       onClick={() => setShowDashboard(true)}
                       className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all"
                     >
-                      <LayoutGrid className="w-4 h-4 text-white/70" />
-                      <span className="text-sm font-display font-medium text-white">Command Center</span>
+                      <LayoutGrid className="w-4 h-4 text-[#AABDCF]" />
+                      <span className="text-sm font-display font-medium text-[#E8EDF8]">Command Center</span>
                     </button>
                     <button
                       onClick={() => setShowCompanyModal(true)}
@@ -728,8 +728,8 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                       onClick={() => setIsPreFlightMode(false)}
                       className="group flex items-center gap-3 px-8 py-6 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
                     >
-                      <X className="w-5 h-5 text-white/50" />
-                      <span className="text-sm font-display font-medium text-white/70">Cancel / Back to Hub</span>
+                      <X className="w-5 h-5 text-[#7090B0]" />
+                      <span className="text-sm font-display font-medium text-[#AABDCF]">Cancel / Back to Hub</span>
                     </button>
                     <button 
                       onClick={handleStart}

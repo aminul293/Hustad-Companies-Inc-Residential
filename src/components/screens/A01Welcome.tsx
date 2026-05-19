@@ -40,7 +40,7 @@ export function A01Welcome({ session, onUpdate, onNext, onBack, onSkip }: Props)
   }, [titleNumber, titles]);
 
   return (
-    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606] selection:bg-indigo-500/30 selection:text-white">
+    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606] selection:bg-indigo-500/30 selection:text-[#E8EDF8]">
       {/* Background Assets: Forensic Rapid Deployment Cloud */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Ambient Gradient Lift - Cleaner & Softer */}
@@ -93,10 +93,10 @@ export function A01Welcome({ session, onUpdate, onNext, onBack, onSkip }: Props)
       {/* Persistent Branding Anchor */}
       <div className="absolute top-8 left-8 z-20 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-white text-2xl tracking-[0.1em]">
+          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">
             HUSTAD
           </span>
-          <span className="text-[10px] font-mono text-white/20 uppercase tracking-[0.3em] pt-0.5">
+          <span className="text-[10px] font-mono text-[#2D4060] uppercase tracking-[0.3em] pt-0.5">
             Madison Residential
           </span>
         </div>
@@ -113,15 +113,15 @@ export function A01Welcome({ session, onUpdate, onNext, onBack, onSkip }: Props)
             <div className="text-center space-y-8 mb-12">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-white/[0.08] shadow-sm mx-auto">
                 <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
-                <p className="text-[11px] font-mono text-white/60 uppercase tracking-[0.2em] pt-0.5">
+                <p className="text-[11px] font-mono text-[#8BA5C5] uppercase tracking-[0.2em] pt-0.5">
                   Client Portal Active
                 </p>
               </div>
               
-              <h1 className="font-display font-medium text-white text-5xl md:text-8xl leading-[1.1] tracking-tight max-w-6xl mx-auto">
+              <h1 className="font-display font-medium text-[#E8EDF8] text-5xl md:text-8xl leading-[1.1] tracking-tight max-w-6xl mx-auto">
                 {name ? (
                   <>
-                    <span className="text-white/50">Hello,</span> {name.split(" ")[0]}.
+                    <span className="text-[#7090B0]">Hello,</span> {name.split(" ")[0]}.
                   </>
                 ) : "Welcome."}
                 <br />
@@ -169,10 +169,10 @@ export function A01Welcome({ session, onUpdate, onNext, onBack, onSkip }: Props)
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
                 </div>
                 <div>
-                  <p className="font-body font-medium text-white text-xl tracking-wide">
+                  <p className="font-body font-medium text-[#E8EDF8] text-xl tracking-wide">
                     No commitment required.
                   </p>
-                  <p className="font-body font-light text-white/50 text-base mt-2 leading-relaxed max-w-lg">
+                  <p className="font-body font-light text-[#7090B0] text-base mt-2 leading-relaxed max-w-lg">
                     Nothing you do here is binding. This walkthrough is simply
                     for your information and peace of mind.
                   </p>
@@ -186,10 +186,10 @@ export function A01Welcome({ session, onUpdate, onNext, onBack, onSkip }: Props)
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
                 </div>
                 <div>
-                  <p className="font-body font-medium text-white text-xl tracking-wide">
+                  <p className="font-body font-medium text-[#E8EDF8] text-xl tracking-wide">
                     About 7–9 minutes at your own pace.
                   </p>
-                  <p className="font-body font-light text-white/50 text-base mt-2 leading-relaxed max-w-lg">
+                  <p className="font-body font-light text-[#7090B0] text-base mt-2 leading-relaxed max-w-lg">
                     The rep will return when the exterior review is
                     complete. Take your time.
                   </p>
@@ -211,7 +211,7 @@ export function A01Welcome({ session, onUpdate, onNext, onBack, onSkip }: Props)
               </StarButton>
               
               <button 
-                className="text-sm font-body text-white/30 hover:text-white/60 transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-px after:bg-white/20 after:origin-bottom-right after:scale-x-0 hover:after:origin-bottom-left hover:after:scale-x-100 after:transition-transform after:duration-300 flex items-center gap-2"
+                className="text-sm font-body text-[#3F5878] hover:text-[#8BA5C5] transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-px after:bg-white/20 after:origin-bottom-right after:scale-x-0 hover:after:origin-bottom-left hover:after:scale-x-100 after:transition-transform after:duration-300 flex items-center gap-2"
                 onClick={onBack}
               >
                 <ArrowLeft className="w-3 h-3" />
@@ -219,7 +219,7 @@ export function A01Welcome({ session, onUpdate, onNext, onBack, onSkip }: Props)
               </button>
               
               <button 
-                className="text-sm font-body text-white/30 hover:text-white/60 transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-px after:bg-white/20 after:origin-bottom-right after:scale-x-0 hover:after:origin-bottom-left hover:after:scale-x-100 after:transition-transform after:duration-300 mt-2"
+                className="text-sm font-body text-[#3F5878] hover:text-[#8BA5C5] transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-px after:bg-white/20 after:origin-bottom-right after:scale-x-0 hover:after:origin-bottom-left hover:after:scale-x-100 after:transition-transform after:duration-300 mt-2"
                 onClick={onSkip}
               >
                 I&rsquo;d rather wait for the live review

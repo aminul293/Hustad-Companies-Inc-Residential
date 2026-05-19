@@ -224,7 +224,7 @@ export function HustadTickets() {
             </button>
             <div>
               <h2 className="text-2xl font-display font-medium tracking-tight">Hustad Tickets</h2>
-              <p className="text-sm text-white/40 mt-1">
+              <p className="text-sm text-[#567090] mt-1">
                 {total.toLocaleString()} tickets · managed pipeline
               </p>
             </div>
@@ -233,13 +233,13 @@ export function HustadTickets() {
             onClick={() => fetchTickets({ refresh: true, newPage: 1 })}
             className={cn("p-3 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all", refreshing && "animate-spin")}
           >
-            <RefreshCw className="w-4 h-4 text-white/50" />
+            <RefreshCw className="w-4 h-4 text-[#7090B0]" />
           </button>
         </div>
 
         {/* Search */}
         <form onSubmit={(e) => { e.preventDefault(); setSearch(searchInput); }} className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#3F5878]" />
           <input
             type="text"
             placeholder="Search by property, client, or job number..."
@@ -254,14 +254,14 @@ export function HustadTickets() {
 
         {/* Stage filter */}
         <div className="flex items-center gap-3 overflow-x-auto pb-1">
-          <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest shrink-0">Stage</span>
+          <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest shrink-0">Stage</span>
           {STAGE_FILTERS.map(f => (
             <button
               key={f.id}
               onClick={() => setStageFilter(f.id)}
               className={cn(
                 "px-4 py-2 rounded-full border text-xs font-display transition-all whitespace-nowrap shrink-0",
-                stageFilter === f.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"
+                stageFilter === f.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-[#7090B0] hover:bg-white/10"
               )}
             >{f.label}</button>
           ))}
@@ -273,13 +273,13 @@ export function HustadTickets() {
         {loading ? (
           <div className="py-20 flex flex-col items-center gap-4 opacity-40">
             <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            <p className="text-sm font-mono text-white/40">Loading tickets...</p>
+            <p className="text-sm font-mono text-[#567090]">Loading tickets...</p>
           </div>
         ) : tickets.length === 0 ? (
           <div className="py-20 text-center opacity-30">
             <Ticket className="w-12 h-12 mx-auto mb-4" />
             <p className="font-display">No tickets yet</p>
-            <p className="text-xs text-white/40 mt-2">Push jobs from CenterPoint to create tickets</p>
+            <p className="text-xs text-[#567090] mt-2">Push jobs from CenterPoint to create tickets</p>
           </div>
         ) : (
           <>
@@ -306,11 +306,11 @@ export function HustadTickets() {
                       <div className={cn("w-2.5 h-2.5 rounded-full shrink-0", stage.ring)} />
                       <div className="min-w-0">
                         <div className="flex items-center gap-3 mb-1 flex-wrap">
-                          <span className="text-base font-display font-medium text-white truncate">
+                          <span className="text-base font-display font-medium text-[#E8EDF8] truncate">
                             {ticket.property_name}
                           </span>
                           {ticket.cp_job_name && (
-                            <span className="text-[9px] font-mono text-white/30 tracking-widest">#{ticket.cp_job_name}</span>
+                            <span className="text-[9px] font-mono text-[#3F5878] tracking-widest">#{ticket.cp_job_name}</span>
                           )}
                         </div>
                         <div className="flex items-center gap-4 flex-wrap">
@@ -318,10 +318,10 @@ export function HustadTickets() {
                             {stage.label}
                           </span>
                           {ticket.client_name && (
-                            <span className="text-[10px] font-mono text-white/30">{ticket.client_name}</span>
+                            <span className="text-[10px] font-mono text-[#3F5878]">{ticket.client_name}</span>
                           )}
                           {lastTouch && (
-                            <span className="text-[10px] font-mono text-white/25">
+                            <span className="text-[10px] font-mono text-[#354D6F]">
                               Last touch: {new Date(lastTouch.occurred_at).toLocaleDateString()} · {lastTouch.outcome.replace(/_/g, " ")}
                             </span>
                           )}
@@ -336,16 +336,16 @@ export function HustadTickets() {
 
                     <div className="flex items-center gap-6 shrink-0">
                       <div className="text-right hidden md:block">
-                        <p className="text-[9px] font-mono text-white/20 uppercase tracking-widest mb-0.5">Touches</p>
-                        <p className="text-sm font-display font-medium text-white">{touches.length}</p>
+                        <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-widest mb-0.5">Touches</p>
+                        <p className="text-sm font-display font-medium text-[#E8EDF8]">{touches.length}</p>
                       </div>
                       {ticket.price > 0 && (
                         <div className="text-right hidden md:block">
-                          <p className="text-[9px] font-mono text-white/20 uppercase tracking-widest mb-0.5">Value</p>
-                          <p className="text-sm font-display font-medium text-white">${Number(ticket.price).toLocaleString()}</p>
+                          <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-widest mb-0.5">Value</p>
+                          <p className="text-sm font-display font-medium text-[#E8EDF8]">${Number(ticket.price).toLocaleString()}</p>
                         </div>
                       )}
-                      <ChevronRight className={cn("w-4 h-4 text-white/20 transition-transform duration-200", isExpanded && "rotate-90")} />
+                      <ChevronRight className={cn("w-4 h-4 text-[#2D4060] transition-transform duration-200", isExpanded && "rotate-90")} />
                     </div>
                   </button>
 
@@ -363,7 +363,7 @@ export function HustadTickets() {
 
                           {/* Stage pipeline */}
                           <div>
-                            <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mb-3">Pipeline</p>
+                            <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest mb-3">Pipeline</p>
                             <div className="flex items-center gap-1 overflow-x-auto pb-2">
                               {STAGE_ORDER.map((s, i) => {
                                 const isPast = i < currentIndex;
@@ -374,8 +374,8 @@ export function HustadTickets() {
                                     <div className={cn(
                                       "px-3 py-1.5 rounded-full text-[9px] font-mono uppercase tracking-widest border transition-all",
                                       isCurrent ? stg.color + " ring-1 ring-white/20" :
-                                      isPast ? "bg-white/5 text-white/20 border-white/5" :
-                                      "bg-transparent text-white/15 border-white/[0.04]"
+                                      isPast ? "bg-white/5 text-[#2D4060] border-white/5" :
+                                      "bg-transparent text-[#293A58] border-white/[0.04]"
                                     )}>
                                       {stg.label}
                                     </div>
@@ -403,8 +403,8 @@ export function HustadTickets() {
                                   : "None yet" },
                             ].map(item => (
                               <div key={item.label} className="space-y-1">
-                                <p className="text-[9px] font-mono text-white/25 uppercase tracking-widest">{item.label}</p>
-                                <p className="text-xs text-white/70 font-display">{item.value}</p>
+                                <p className="text-[9px] font-mono text-[#354D6F] uppercase tracking-widest">{item.label}</p>
+                                <p className="text-xs text-[#AABDCF] font-display">{item.value}</p>
                               </div>
                             ))}
                           </div>
@@ -412,16 +412,16 @@ export function HustadTickets() {
                           {/* Notes */}
                           <div>
                             <div className="flex items-center justify-between mb-2">
-                              <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest">Notes</p>
+                              <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest">Notes</p>
                               {editingNotes === ticket.id ? (
                                 <div className="flex items-center gap-2">
-                                  <button onClick={() => setEditingNotes(null)} className="text-[10px] text-white/30 hover:text-white/60">Cancel</button>
+                                  <button onClick={() => setEditingNotes(null)} className="text-[10px] text-[#3F5878] hover:text-[#8BA5C5]">Cancel</button>
                                   <button onClick={() => handleSaveNotes(ticket)} className="text-[10px] text-indigo-400 hover:text-indigo-300">Save</button>
                                 </div>
                               ) : (
                                 <button
                                   onClick={() => { setEditingNotes(ticket.id); setNotesValue(ticket.notes || ""); }}
-                                  className="text-[10px] font-mono text-white/25 hover:text-white/60 uppercase tracking-widest"
+                                  className="text-[10px] font-mono text-[#354D6F] hover:text-[#8BA5C5] uppercase tracking-widest"
                                 >Edit</button>
                               )}
                             </div>
@@ -430,17 +430,17 @@ export function HustadTickets() {
                                 value={notesValue}
                                 onChange={(e) => setNotesValue(e.target.value)}
                                 rows={3}
-                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white/70 outline-none focus:border-indigo-500/50 resize-none"
+                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-[#AABDCF] outline-none focus:border-indigo-500/50 resize-none"
                               />
                             ) : (
-                              <p className="text-sm text-white/40 font-display">{ticket.notes || "No notes yet."}</p>
+                              <p className="text-sm text-[#567090] font-display">{ticket.notes || "No notes yet."}</p>
                             )}
                           </div>
 
                           {/* Touch log */}
                           <div>
                             <div className="flex items-center justify-between mb-3">
-                              <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest">
+                              <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest">
                                 Touch Log · {touches.length} contacts
                               </p>
                               <button
@@ -464,28 +464,28 @@ export function HustadTickets() {
                                   <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] space-y-3">
                                     <div className="grid grid-cols-2 gap-3">
                                       <div>
-                                        <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mb-1.5">Method</p>
+                                        <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest mb-1.5">Method</p>
                                         <div className="flex flex-wrap gap-1.5">
                                           {TOUCH_METHODS.map(m => (
                                             <button key={m}
                                               onClick={() => setTouchForm(f => ({ ...f, method: m }))}
                                               className={cn(
                                                 "px-3 py-1 rounded-full text-[10px] font-mono border transition-all",
-                                                touchForm.method === m ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10"
+                                                touchForm.method === m ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-[#567090] hover:bg-white/10"
                                               )}
                                             >{m.replace(/_/g, " ")}</button>
                                           ))}
                                         </div>
                                       </div>
                                       <div>
-                                        <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mb-1.5">Outcome</p>
+                                        <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest mb-1.5">Outcome</p>
                                         <div className="flex flex-wrap gap-1.5">
                                           {TOUCH_OUTCOMES.map(o => (
                                             <button key={o}
                                               onClick={() => setTouchForm(f => ({ ...f, outcome: o }))}
                                               className={cn(
                                                 "px-3 py-1 rounded-full text-[10px] font-mono border transition-all",
-                                                touchForm.outcome === o ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10"
+                                                touchForm.outcome === o ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-[#567090] hover:bg-white/10"
                                               )}
                                             >{o.replace(/_/g, " ")}</button>
                                           ))}
@@ -506,11 +506,11 @@ export function HustadTickets() {
                                       className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500/50 resize-none"
                                     />
                                     <div className="flex justify-end gap-2">
-                                      <button onClick={() => setAddingTouchId(null)} className="text-xs text-white/30 px-4">Cancel</button>
+                                      <button onClick={() => setAddingTouchId(null)} className="text-xs text-[#3F5878] px-4">Cancel</button>
                                       <button
                                         onClick={() => handleAddTouch(ticket)}
                                         disabled={savingTouch}
-                                        className="px-5 py-2 rounded-full bg-indigo-500 text-white text-xs font-display hover:bg-indigo-400 disabled:opacity-50 transition-all"
+                                        className="px-5 py-2 rounded-full bg-indigo-500 text-[#E8EDF8] text-xs font-display hover:bg-indigo-400 disabled:opacity-50 transition-all"
                                       >
                                         {savingTouch ? "Saving…" : "Log Touch"}
                                       </button>
@@ -522,7 +522,7 @@ export function HustadTickets() {
 
                             {/* Touch entries */}
                             {touches.length === 0 ? (
-                              <p className="text-[10px] font-mono text-white/20">No touches logged yet.</p>
+                              <p className="text-[10px] font-mono text-[#2D4060]">No touches logged yet.</p>
                             ) : (
                               <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                                 {touches.map((touch) => {
@@ -530,16 +530,16 @@ export function HustadTickets() {
                                   return (
                                     <div key={touch.id} className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
                                       <div className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center shrink-0 mt-0.5">
-                                        <Icon className="w-3.5 h-3.5 text-white/40" />
+                                        <Icon className="w-3.5 h-3.5 text-[#567090]" />
                                       </div>
                                       <div className="min-w-0 flex-1">
                                         <div className="flex items-center gap-2 flex-wrap">
-                                          <span className="text-[10px] font-mono text-white/60 uppercase tracking-widest">{touch.outcome.replace(/_/g, " ")}</span>
-                                          <span className="text-[9px] font-mono text-white/25">{touch.method.replace(/_/g, " ")}</span>
-                                          {touch.rep_name && <span className="text-[9px] font-mono text-white/25">· {touch.rep_name}</span>}
-                                          <span className="text-[9px] font-mono text-white/20 ml-auto">{new Date(touch.occurred_at).toLocaleDateString()}</span>
+                                          <span className="text-[10px] font-mono text-[#8BA5C5] uppercase tracking-widest">{touch.outcome.replace(/_/g, " ")}</span>
+                                          <span className="text-[9px] font-mono text-[#354D6F]">{touch.method.replace(/_/g, " ")}</span>
+                                          {touch.rep_name && <span className="text-[9px] font-mono text-[#354D6F]">· {touch.rep_name}</span>}
+                                          <span className="text-[9px] font-mono text-[#2D4060] ml-auto">{new Date(touch.occurred_at).toLocaleDateString()}</span>
                                         </div>
-                                        {touch.notes && <p className="text-xs text-white/40 mt-1">{touch.notes}</p>}
+                                        {touch.notes && <p className="text-xs text-[#567090] mt-1">{touch.notes}</p>}
                                       </div>
                                     </div>
                                   );
@@ -577,7 +577,7 @@ export function HustadTickets() {
                               )}
                               <button
                                 onClick={() => setDeleteModal({ id: ticket.id, name: ticket.property_name })}
-                                className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-white/[0.03] border border-white/10 text-xs font-display text-white/30 hover:text-rose-400 hover:border-rose-500/30 hover:bg-rose-500/[0.06] transition-all"
+                                className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-white/[0.03] border border-white/10 text-xs font-display text-[#3F5878] hover:text-rose-400 hover:border-rose-500/30 hover:bg-rose-500/[0.06] transition-all"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                                 Delete
@@ -586,7 +586,7 @@ export function HustadTickets() {
                             {STAGES[ticket.stage]?.cpWriteback && (
                               <div className="flex items-center gap-1.5">
                                 <CheckCircle2 className="w-3 h-3 text-emerald-500/50" />
-                                <span className="text-[9px] font-mono text-white/25">Will sync to CP at this stage</span>
+                                <span className="text-[9px] font-mono text-[#354D6F]">Will sync to CP at this stage</span>
                               </div>
                             )}
                           </div>
@@ -601,7 +601,7 @@ export function HustadTickets() {
             {tickets.length < total && (
               <button
                 onClick={() => { const next = page + 1; setPage(next); fetchTickets({ newPage: next }); }}
-                className="w-full py-4 rounded-2xl border border-white/10 text-white/40 text-sm font-display hover:bg-white/5 hover:text-white/70 transition-all"
+                className="w-full py-4 rounded-2xl border border-white/10 text-[#567090] text-sm font-display hover:bg-white/5 hover:text-[#AABDCF] transition-all"
               >
                 Load more · {(total - tickets.length).toLocaleString()} remaining
               </button>
@@ -627,18 +627,18 @@ export function HustadTickets() {
                 <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
                   <Trash2 className="w-5 h-5 text-rose-400" />
                 </div>
-                <button onClick={() => setDeleteModal(null)} className="p-2 rounded-xl text-white/30 hover:text-white hover:bg-white/5 transition-all">
+                <button onClick={() => setDeleteModal(null)} className="p-2 rounded-xl text-[#3F5878] hover:text-[#E8EDF8] hover:bg-white/5 transition-all">
                   <X className="w-4 h-4" />
                 </button>
               </div>
               <h3 className="text-xl font-display font-medium mb-3">Delete Ticket?</h3>
-              <p className="text-white/40 text-sm leading-relaxed mb-8">
-                <span className="text-white/70 font-medium">{deleteModal.name}</span> and all its touch history will be permanently deleted. This cannot be undone.
+              <p className="text-[#567090] text-sm leading-relaxed mb-8">
+                <span className="text-[#AABDCF] font-medium">{deleteModal.name}</span> and all its touch history will be permanently deleted. This cannot be undone.
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setDeleteModal(null)}
-                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all text-sm"
+                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-[#7090B0] hover:text-[#E8EDF8] hover:border-white/20 transition-all text-sm"
                 >
                   Cancel
                 </button>

@@ -17,7 +17,7 @@ const STAGES: Record<string, { label: string; next: string | null; color: string
   started:       { label: "In Progress", next: "completed",     color: "bg-purple-500/20 text-purple-300 border-purple-500/30", ring: "bg-purple-500" },
   completed:     { label: "Completed",   next: "invoiced",      color: "bg-teal-500/20 text-teal-300 border-teal-500/30",    ring: "bg-teal-500" },
   invoiced:      { label: "Invoiced",    next: "closed",        color: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",    ring: "bg-cyan-500" },
-  closed:        { label: "Closed Out",  next: null,            color: "bg-white/10 text-white/40 border-white/10",          ring: "bg-white/30" },
+  closed:        { label: "Closed Out",  next: null,            color: "bg-white/10 text-[#567090] border-white/10",          ring: "bg-white/30" },
 };
 
 const STAGE_ORDER = ["lead_opened","lead_pending","lead_quoted","lead_sold","dead_lead","opened","scheduled","started","completed","invoiced","closed"];
@@ -251,12 +251,12 @@ export function CenterPointJobs() {
           <div className="min-w-0">
             <h2 className="text-2xl font-display font-medium tracking-tight">CenterPoint Jobs</h2>
             <div className="flex items-center gap-3 mt-1 flex-wrap">
-              <p className="text-sm text-white/40">
+              <p className="text-sm text-[#567090]">
                 {totalJobs.toLocaleString()} jobs
                 {syncStatus.totalCached > 0 && ` · ${syncStatus.totalCached.toLocaleString()} cached`}
               </p>
               {syncStatus.lastSync && (
-                <span className="flex items-center gap-1 text-[10px] font-mono text-white/25 uppercase tracking-widest">
+                <span className="flex items-center gap-1 text-[10px] font-mono text-[#354D6F] uppercase tracking-widest">
                   <CheckCircle2 className="w-3 h-3 text-emerald-500/50" />
                   synced {new Date(syncStatus.lastSync).toLocaleString()}
                 </span>
@@ -286,14 +286,14 @@ export function CenterPointJobs() {
               onClick={() => fetchJobs({ refresh: true, newPage: 1 })}
               className={cn("p-3 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all", refreshing && "animate-spin")}
             >
-              <RefreshCw className="w-4 h-4 text-white/50" />
+              <RefreshCw className="w-4 h-4 text-[#7090B0]" />
             </button>
           </div>
         </div>
 
         {/* Search */}
         <form onSubmit={handleSearchSubmit} className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#3F5878]" />
           <input
             type="text"
             placeholder="Search by job number or property name..."
@@ -308,14 +308,14 @@ export function CenterPointJobs() {
 
         {/* Stage filter */}
         <div className="flex items-center gap-3 overflow-x-auto pb-1">
-          <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest shrink-0">Stage</span>
+          <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest shrink-0">Stage</span>
           {STATUS_FILTERS.map(f => (
             <button
               key={f.id}
               onClick={() => setStatusFilter(f.id)}
               className={cn(
                 "px-4 py-2 rounded-full border text-xs font-display transition-all whitespace-nowrap shrink-0",
-                statusFilter === f.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"
+                statusFilter === f.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-[#7090B0] hover:bg-white/10"
               )}
             >{f.label}</button>
           ))}
@@ -327,7 +327,7 @@ export function CenterPointJobs() {
         {loading ? (
           <div className="py-20 flex flex-col items-center gap-4 opacity-40">
             <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            <p className="text-sm font-mono text-white/40">Loading from CenterPoint...</p>
+            <p className="text-sm font-mono text-[#567090]">Loading from CenterPoint...</p>
           </div>
         ) : jobs.length === 0 ? (
           <div className="py-20 text-center opacity-30">
@@ -338,7 +338,7 @@ export function CenterPointJobs() {
           <>
             {jobs.map((job) => {
               const attr = job.attributes;
-              const stage = STAGES[attr.status] ?? { label: attr.displayStatus, next: null, color: "bg-white/10 text-white/40 border-white/10", ring: "bg-white/30" };
+              const stage = STAGES[attr.status] ?? { label: attr.displayStatus, next: null, color: "bg-white/10 text-[#567090] border-white/10", ring: "bg-white/30" };
               const nextStage = stage.next;
               const isExpanded = expandedId === job.id;
               const isTransitioning = transitioningId === job.id;
@@ -361,20 +361,20 @@ export function CenterPointJobs() {
 
                       <div className="min-w-0">
                         <div className="flex items-center gap-3 mb-1 flex-wrap">
-                          <span className="text-base font-display font-medium text-white truncate">
+                          <span className="text-base font-display font-medium text-[#E8EDF8] truncate">
                             {attr.propertyName || attr.name || `Job #${job.id}`}
                           </span>
-                          <span className="text-[9px] font-mono text-white/30 tracking-widest">#{attr.name}</span>
+                          <span className="text-[9px] font-mono text-[#3F5878] tracking-widest">#{attr.name}</span>
                         </div>
                         <div className="flex items-center gap-4 flex-wrap">
                           <span className={cn("px-2.5 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest border", stage.color)}>
                             {stage.label}
                           </span>
                           {attr.domain && (
-                            <span className="text-[10px] font-mono text-white/30 uppercase tracking-wider">{attr.domain}</span>
+                            <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-wider">{attr.domain}</span>
                           )}
                           {(attr.opportunityType || attr.workType) && (
-                            <span className="text-[10px] font-mono text-white/30">{attr.opportunityType || attr.workType}</span>
+                            <span className="text-[10px] font-mono text-[#3F5878]">{attr.opportunityType || attr.workType}</span>
                           )}
                         </div>
                       </div>
@@ -383,13 +383,13 @@ export function CenterPointJobs() {
                     <div className="flex items-center gap-6 shrink-0">
                       {attr.price > 0 && (
                         <div className="text-right hidden md:block">
-                          <p className="text-[9px] font-mono text-white/20 uppercase tracking-widest mb-0.5">Value</p>
-                          <p className="text-sm font-display font-medium text-white">
+                          <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-widest mb-0.5">Value</p>
+                          <p className="text-sm font-display font-medium text-[#E8EDF8]">
                             ${attr.price.toLocaleString()}
                           </p>
                         </div>
                       )}
-                      <ChevronRight className={cn("w-4 h-4 text-white/20 transition-transform duration-200", isExpanded && "rotate-90")} />
+                      <ChevronRight className={cn("w-4 h-4 text-[#2D4060] transition-transform duration-200", isExpanded && "rotate-90")} />
                     </div>
                   </button>
 
@@ -407,7 +407,7 @@ export function CenterPointJobs() {
 
                           {/* Stage pipeline */}
                           <div>
-                            <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mb-3">Stage Pipeline</p>
+                            <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest mb-3">Stage Pipeline</p>
                             <div className="flex items-center gap-1 overflow-x-auto pb-2">
                               {STAGE_ORDER.map((s, i) => {
                                 const isPast = i < currentIndex;
@@ -417,8 +417,8 @@ export function CenterPointJobs() {
                                     <div className={cn(
                                       "px-3 py-1.5 rounded-full text-[9px] font-mono uppercase tracking-widest border transition-all",
                                       isCurrent ? stage.color + " ring-1 ring-white/20" :
-                                      isPast ? "bg-white/5 text-white/20 border-white/5" :
-                                      "bg-transparent text-white/15 border-white/[0.04]"
+                                      isPast ? "bg-white/5 text-[#2D4060] border-white/5" :
+                                      "bg-transparent text-[#293A58] border-white/[0.04]"
                                     )}>
                                       {STAGES[s]?.label ?? s}
                                     </div>
@@ -444,8 +444,8 @@ export function CenterPointJobs() {
                               { label: "Created", value: new Date(attr.createdAt).toLocaleDateString() },
                             ].map(item => (
                               <div key={item.label} className="space-y-1">
-                                <p className="text-[9px] font-mono text-white/25 uppercase tracking-widest">{item.label}</p>
-                                <p className="text-xs text-white/70 font-display">{item.value}</p>
+                                <p className="text-[9px] font-mono text-[#354D6F] uppercase tracking-widest">{item.label}</p>
+                                <p className="text-xs text-[#AABDCF] font-display">{item.value}</p>
                               </div>
                             ))}
                           </div>
@@ -453,13 +453,13 @@ export function CenterPointJobs() {
                           {/* Stage transition CTA & Import to Pipeline */}
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 border-t border-white/[0.05]">
                             <div>
-                              <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest mb-2">Actions</p>
+                              <p className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest mb-2">Actions</p>
                               <div className="flex items-center gap-3">
                                 {nextStage ? (
                                   <button
                                     onClick={() => handleStageTransition(job, nextStage)}
                                     disabled={isTransitioning}
-                                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 text-white text-xs font-display font-medium hover:bg-white/20 active:scale-95 transition-all disabled:opacity-50"
+                                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 text-[#E8EDF8] text-xs font-display font-medium hover:bg-white/20 active:scale-95 transition-all disabled:opacity-50"
                                   >
                                     {isTransitioning ? (
                                       <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -469,7 +469,7 @@ export function CenterPointJobs() {
                                     Move to {STAGES[nextStage]?.label ?? nextStage}
                                   </button>
                                 ) : (
-                                  <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest">Final stage</span>
+                                  <span className="text-[10px] font-mono text-[#2D4060] uppercase tracking-widest">Final stage</span>
                                 )}
 
                                 {job.inbox_status === 'imported_to_pipeline' ? (
@@ -508,7 +508,7 @@ export function CenterPointJobs() {
                                 ) : (
                                   <button
                                     disabled={promotingId === job.id}
-                                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-indigo-500 text-white text-xs font-display font-medium hover:bg-indigo-400 active:scale-95 transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)] disabled:opacity-50"
+                                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-indigo-500 text-[#E8EDF8] text-xs font-display font-medium hover:bg-indigo-400 active:scale-95 transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)] disabled:opacity-50"
                                     onClick={async () => {
                                       setPromotingId(job.id);
                                       setImportError(null);
@@ -559,7 +559,7 @@ export function CenterPointJobs() {
             {jobs.length < totalJobs && (
               <button
                 onClick={handleLoadMore}
-                className="w-full py-4 rounded-2xl border border-white/10 text-white/40 text-sm font-display hover:bg-white/5 hover:text-white/70 transition-all"
+                className="w-full py-4 rounded-2xl border border-white/10 text-[#567090] text-sm font-display hover:bg-white/5 hover:text-[#AABDCF] transition-all"
               >
                 Load more · {(totalJobs - jobs.length).toLocaleString()} remaining
               </button>

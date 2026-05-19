@@ -16,8 +16,8 @@ interface Props {
 }
 
 const STATUS_CONFIG: Record<RemoteReviewStatus, { label: string; icon: any; color: string }> = {
-  not_sent: { label: "Not Sent", icon: Clock, color: "text-white/20" },
-  sent: { label: "Link Sent", icon: Send, color: "text-white/40" },
+  not_sent: { label: "Not Sent", icon: Clock, color: "text-[#2D4060]" },
+  sent: { label: "Link Sent", icon: Send, color: "text-[#567090]" },
   opened: { label: "Opened", icon: Eye, color: "text-sky-400" },
   viewed: { label: "Reviewed Findings", icon: Eye, color: "text-indigo-400" },
   question_submitted: { label: "Question Asked", icon: MessageSquare, color: "text-amber-400" },
@@ -25,7 +25,7 @@ const STATUS_CONFIG: Record<RemoteReviewStatus, { label: string; icon: any; colo
   approved: { label: "Approved", icon: CheckCircle2, color: "text-emerald-400" },
   signed: { label: "Signed Remotely", icon: PenTool, color: "text-emerald-500" },
   declined: { label: "Declined", icon: XCircle, color: "text-rose-400" },
-  expired: { label: "Expired", icon: Clock, color: "text-white/20" },
+  expired: { label: "Expired", icon: Clock, color: "text-[#2D4060]" },
 };
 
 export function RemoteStatusTracker({ token, recipientEmail, recipientName }: Props) {
@@ -63,19 +63,19 @@ export function RemoteStatusTracker({ token, recipientEmail, recipientName }: Pr
             <StatusIcon className="w-4 h-4" />
           </div>
           <div>
-            <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest">Remote Review Status</p>
+            <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest">Remote Review Status</p>
             <p className={cn("text-sm font-display font-medium", config.color)}>{config.label}</p>
           </div>
         </div>
         <button onClick={fetchStatus} disabled={loading} className="p-2 rounded-xl hover:bg-white/5 transition-all">
-          <RefreshCw className={cn("w-4 h-4 text-white/30", loading && "animate-spin")} />
+          <RefreshCw className={cn("w-4 h-4 text-[#3F5878]", loading && "animate-spin")} />
         </button>
       </div>
 
       {/* Recipient */}
-      <div className="flex items-center gap-3 text-xs text-white/40">
+      <div className="flex items-center gap-3 text-xs text-[#567090]">
         <span className="font-mono">To:</span>
-        <span className="text-white/60">{recipientName || recipientEmail}</span>
+        <span className="text-[#8BA5C5]">{recipientName || recipientEmail}</span>
       </div>
 
       {/* Timeline */}
@@ -94,7 +94,7 @@ export function RemoteStatusTracker({ token, recipientEmail, recipientName }: Pr
           );
         })}
       </div>
-      <div className="flex justify-between text-[8px] font-mono text-white/20 uppercase tracking-widest">
+      <div className="flex justify-between text-[8px] font-mono text-[#2D4060] uppercase tracking-widest">
         {TIMELINE_STEPS.map(s => <span key={s}>{s.replace(/_/g,' ')}</span>)}
       </div>
 
@@ -104,8 +104,8 @@ export function RemoteStatusTracker({ token, recipientEmail, recipientName }: Pr
           <p className="text-[9px] font-mono text-amber-400 uppercase tracking-widest">Questions Received</p>
           {questions.map((q: any) => (
             <div key={q.questionId} className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10">
-              <p className="text-xs text-white/70">{q.questionText}</p>
-              <p className="text-[9px] font-mono text-white/20 mt-2">{q.askerName} • {new Date(q.askedAt).toLocaleString()}</p>
+              <p className="text-xs text-[#AABDCF]">{q.questionText}</p>
+              <p className="text-[9px] font-mono text-[#2D4060] mt-2">{q.askerName} • {new Date(q.askedAt).toLocaleString()}</p>
             </div>
           ))}
         </div>
@@ -114,10 +114,10 @@ export function RemoteStatusTracker({ token, recipientEmail, recipientName }: Pr
       {/* History */}
       {history.length > 0 && (
         <details className="group">
-          <summary className="text-[9px] font-mono text-white/20 uppercase tracking-widest cursor-pointer hover:text-white/40">Activity Log ({history.length})</summary>
+          <summary className="text-[9px] font-mono text-[#2D4060] uppercase tracking-widest cursor-pointer hover:text-[#567090]">Activity Log ({history.length})</summary>
           <div className="mt-3 space-y-1">
             {history.map((h, i) => (
-              <div key={i} className="flex items-center gap-3 text-[10px] text-white/30">
+              <div key={i} className="flex items-center gap-3 text-[10px] text-[#3F5878]">
                 <span className="font-mono">{new Date(h.at).toLocaleTimeString()}</span>
                 <span className={STATUS_CONFIG[h.status]?.color}>{STATUS_CONFIG[h.status]?.label}</span>
               </div>

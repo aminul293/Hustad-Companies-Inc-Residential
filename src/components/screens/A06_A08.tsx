@@ -42,7 +42,7 @@ export function A06WarrantyImpact({ session, onUpdate, onNext, onBack }: Props) 
   const [expanded, setExpanded] = useState(false);
   
   return (
-    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606] selection:bg-indigo-500/30 selection:text-white">
+    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606] selection:bg-indigo-500/30 selection:text-[#E8EDF8]">
       {/* Background Assets: Forensic Rapid Deployment Cloud */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Ambient Gradient Lift - Softer */}
@@ -72,10 +72,10 @@ export function A06WarrantyImpact({ session, onUpdate, onNext, onBack }: Props) 
       {/* Persistent Branding Anchor */}
       <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-white text-2xl tracking-[0.1em]">
+          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">
             HUSTAD
           </span>
-          <span className="text-[10px] font-mono text-white/20 uppercase tracking-[0.3em] pt-0.5">
+          <span className="text-[10px] font-mono text-[#2D4060] uppercase tracking-[0.3em] pt-0.5">
             Madison Residential
           </span>
         </div>
@@ -99,7 +99,7 @@ export function A06WarrantyImpact({ session, onUpdate, onNext, onBack }: Props) 
                 Asset Protection
               </span>
             </div>
-            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
               Three types of warranty.
               <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">
@@ -119,13 +119,13 @@ export function A06WarrantyImpact({ session, onUpdate, onNext, onBack }: Props) 
               >
                 <div className="flex items-start gap-6">
                   <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center shrink-0">
-                    <w.icon className="w-6 h-6 text-white/70 group-hover:text-white transition-colors" />
+                    <w.icon className="w-6 h-6 text-[#AABDCF] group-hover:text-[#E8EDF8] transition-colors" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-display font-medium text-white mb-2 tracking-tight">
+                    <h3 className="text-xl font-display font-medium text-[#E8EDF8] mb-2 tracking-tight">
                       {w.label}
                     </h3>
-                    <p className="text-base text-white/30 font-light leading-relaxed group-hover:text-white/50 transition-colors">
+                    <p className="text-base text-[#3F5878] font-light leading-relaxed group-hover:text-[#7090B0] transition-colors">
                       {w.detail}
                     </p>
                   </div>
@@ -145,10 +145,10 @@ export function A06WarrantyImpact({ session, onUpdate, onNext, onBack }: Props) 
             <div className="relative z-10 flex items-start gap-6">
               <Info className="w-6 h-6 text-amber-400 shrink-0 mt-1" />
               <div className="space-y-2">
-                <p className="text-xl font-display font-medium text-white/90">
+                <p className="text-xl font-display font-medium text-[#DDE5F5]">
                   About &ldquo;Impact-Resistant&rdquo; Products
                 </p>
-                <p className="text-base text-white/40 font-light leading-relaxed">
+                <p className="text-base text-[#567090] font-light leading-relaxed">
                   Impact ratings (Class 3, Class 4) are laboratory classifications —
                   not a guarantee that hail will never cause damage. We will be specific
                   about what any product actually offers.
@@ -174,7 +174,7 @@ export function A06WarrantyImpact({ session, onUpdate, onNext, onBack }: Props) 
                   exit={{ opacity: 0, height: 0 }}
                   className="w-full bg-white/[0.02] border border-white/5 p-8 rounded-[32px] overflow-hidden"
                 >
-                  <p className="text-sm text-white/30 font-light leading-relaxed">
+                  <p className="text-sm text-[#3F5878] font-light leading-relaxed">
                     Final warranty terms depend on the manufacturer, product family, required accessories,
                     contractor credentials, and registration. Specific terms, workmanship duration, and
                     eligibility will be confirmed in your proposal. Do not rely on warranty labels until
@@ -195,8 +195,8 @@ export function A06WarrantyImpact({ session, onUpdate, onNext, onBack }: Props) 
       <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-6">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
-            <ArrowLeft className="w-4 h-4 text-white/40 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-white/60">Previous</span>
+            <ArrowLeft className="w-4 h-4 text-[#567090] group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-display font-medium text-[#8BA5C5]">Previous</span>
           </button>
           <StarButton 
             onClick={onNext} 
@@ -263,10 +263,10 @@ export function A07WhyHustad({ session, onUpdate, onNext, onBack }: Props) {
         </motion.div>
       </div>
 
-      <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none text-white">
+      <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none text-[#E8EDF8]">
         <div className="flex items-baseline gap-2.5">
           <span className="font-display font-bold text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-white/20 uppercase tracking-[0.3em]">Madison Residential</span>
+          <span className="text-[10px] font-mono text-[#2D4060] uppercase tracking-[0.3em]">Madison Residential</span>
         </div>
       </div>
 
@@ -277,7 +277,7 @@ export function A07WhyHustad({ session, onUpdate, onNext, onBack }: Props) {
       <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56">
         <div className="max-w-5xl mx-auto space-y-16">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
               Madison roots.
               <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">Local accountability.</span>
@@ -290,16 +290,16 @@ export function A07WhyHustad({ session, onUpdate, onNext, onBack }: Props) {
             className="relative bg-white/[0.03] backdrop-blur-2xl p-12 rounded-[48px] border border-white/10 overflow-hidden group"
           >
             <div className="absolute top-0 right-0 p-12 opacity-5">
-              <Quote className="w-32 h-32 text-white" />
+              <Quote className="w-32 h-32 text-[#E8EDF8]" />
             </div>
             <div className="relative z-10 space-y-8 max-w-2xl">
-              <p className="text-3xl md:text-4xl font-display font-medium text-white/90 leading-tight tracking-tight italic">
+              <p className="text-3xl md:text-4xl font-display font-medium text-[#DDE5F5] leading-tight tracking-tight italic">
                 &ldquo;We are here after the weather clears. Our phone still works,
                 our crew is still local, and our name is on the work.&rdquo;
               </p>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-px bg-indigo-500/50" />
-                <p className="font-mono text-xs text-white/40 uppercase tracking-[0.3em]">Lee Hustad, Founder</p>
+                <p className="font-mono text-xs text-[#567090] uppercase tracking-[0.3em]">Lee Hustad, Founder</p>
               </div>
             </div>
           </motion.div>
@@ -322,14 +322,14 @@ export function A07WhyHustad({ session, onUpdate, onNext, onBack }: Props) {
                   transition={{ delay: 0.1 * i }}
                   className="bg-white/[0.02] border border-white/[0.05] p-8 rounded-[32px] space-y-4"
                 >
-                  <div className="text-4xl font-display font-bold text-white tracking-tight">
+                  <div className="text-4xl font-display font-bold text-[#E8EDF8] tracking-tight">
                     {metric.value}
                   </div>
                   <div className="space-y-1">
                     <div className="text-sm font-medium text-indigo-300 uppercase tracking-wider">
                       {metric.label}
                     </div>
-                    <div className="text-xs text-white/30 font-light leading-relaxed">
+                    <div className="text-xs text-[#3F5878] font-light leading-relaxed">
                       {metric.detail}
                     </div>
                   </div>
@@ -350,8 +350,8 @@ export function A07WhyHustad({ session, onUpdate, onNext, onBack }: Props) {
                 <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center mb-6">
                   <p.icon className="w-6 h-6 text-indigo-300" />
                 </div>
-                <h3 className="text-lg font-display font-medium text-white mb-2">{p.label}</h3>
-                <p className="text-sm text-white/30 font-light leading-relaxed group-hover:text-white/50 transition-colors">{p.detail}</p>
+                <h3 className="text-lg font-display font-medium text-[#E8EDF8] mb-2">{p.label}</h3>
+                <p className="text-sm text-[#3F5878] font-light leading-relaxed group-hover:text-[#7090B0] transition-colors">{p.detail}</p>
               </motion.div>
             ))}
           </div>
@@ -360,9 +360,9 @@ export function A07WhyHustad({ session, onUpdate, onNext, onBack }: Props) {
             whileHover={{ y: -5 }}
             className="bg-white/[0.02] border border-white/[0.05] p-10 rounded-[40px]"
           >
-            <p className="text-lg text-white/30 font-light leading-relaxed italic text-center">
-              When the honest finding is <span className="text-white font-medium not-italic">monitor only</span> or{" "}
-              <span className="text-white font-medium not-italic">no meaningful damage</span>, we say that — and we leave
+            <p className="text-lg text-[#3F5878] font-light leading-relaxed italic text-center">
+              When the honest finding is <span className="text-[#E8EDF8] font-medium not-italic">monitor only</span> or{" "}
+              <span className="text-[#E8EDF8] font-medium not-italic">no meaningful damage</span>, we say that — and we leave
               you with documentation, not pressure.
             </p>
           </motion.div>
@@ -372,8 +372,8 @@ export function A07WhyHustad({ session, onUpdate, onNext, onBack }: Props) {
       <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-6">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
-            <ArrowLeft className="w-4 h-4 text-white/40 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-white/60">Previous</span>
+            <ArrowLeft className="w-4 h-4 text-[#567090] group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-display font-medium text-[#8BA5C5]">Previous</span>
           </button>
           <StarButton 
             onClick={onNext} 
@@ -419,10 +419,10 @@ export function A08WhatYouReceive({ session, onUpdate, onNext, onBack }: Props) 
         </motion.div>
       </div>
 
-      <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none text-white">
+      <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none text-[#E8EDF8]">
         <div className="flex items-baseline gap-2.5">
           <span className="font-display font-bold text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-white/20 uppercase tracking-[0.3em]">Madison Residential</span>
+          <span className="text-[10px] font-mono text-[#2D4060] uppercase tracking-[0.3em]">Madison Residential</span>
         </div>
       </div>
 
@@ -433,12 +433,12 @@ export function A08WhatYouReceive({ session, onUpdate, onNext, onBack }: Props) 
       <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56">
         <div className="max-w-5xl mx-auto space-y-16">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
               Here is exactly what
               <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">the rep will bring back.</span>
             </h1>
-            <p className="text-xl text-white/30 font-light leading-relaxed mt-8 max-w-2xl">When the exterior review is complete, you will receive a structured findings package — not a verbal summary.</p>
+            <p className="text-xl text-[#3F5878] font-light leading-relaxed mt-8 max-w-2xl">When the exterior review is complete, you will receive a structured findings package — not a verbal summary.</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -452,11 +452,11 @@ export function A08WhatYouReceive({ session, onUpdate, onNext, onBack }: Props) 
               >
                 <div className="flex items-start gap-6">
                   <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center shrink-0">
-                    <d.icon className="w-7 h-7 text-white/70 group-hover:text-white transition-colors" />
+                    <d.icon className="w-7 h-7 text-[#AABDCF] group-hover:text-[#E8EDF8] transition-colors" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-display font-medium text-white mb-2">{d.title}</h3>
-                    <p className="text-base text-white/30 font-light leading-relaxed group-hover:text-white/50 transition-colors">{d.detail}</p>
+                    <h3 className="text-xl font-display font-medium text-[#E8EDF8] mb-2">{d.title}</h3>
+                    <p className="text-base text-[#3F5878] font-light leading-relaxed group-hover:text-[#7090B0] transition-colors">{d.detail}</p>
                   </div>
                 </div>
                 <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -468,7 +468,7 @@ export function A08WhatYouReceive({ session, onUpdate, onNext, onBack }: Props) 
 
           <div className="bg-white/[0.02] border border-white/10 p-10 rounded-[40px] flex items-center gap-6">
             <Send className="w-6 h-6 text-indigo-400 shrink-0" />
-            <p className="text-base text-white/40 font-light leading-relaxed italic">
+            <p className="text-base text-[#567090] font-light leading-relaxed italic">
               If another decision-maker is not present today, a shareable summary
               can be sent to them before any agreement is considered.
             </p>
@@ -484,8 +484,8 @@ export function A08WhatYouReceive({ session, onUpdate, onNext, onBack }: Props) 
       <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-6">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
-            <ArrowLeft className="w-4 h-4 text-white/40 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-white/60">Previous</span>
+            <ArrowLeft className="w-4 h-4 text-[#567090] group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-display font-medium text-[#8BA5C5]">Previous</span>
           </button>
           <StarButton 
             onClick={onNext} 

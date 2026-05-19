@@ -79,8 +79,8 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
 
       <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-white text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-white/70 uppercase tracking-[0.3em]">Madison Residential</span>
+          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
+          <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em]">Madison Residential</span>
         </div>
       </div>
 
@@ -88,7 +88,7 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
       <div className="absolute bottom-10 left-10 z-50">
         <button 
           onClick={onBack}
-          className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 border border-white/10 text-white/30 hover:text-white/60 hover:bg-white/10 transition-all text-[10px] font-mono uppercase tracking-widest cursor-pointer active:scale-95"
+          className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 border border-white/10 text-[#3F5878] hover:text-[#8BA5C5] hover:bg-white/10 transition-all text-[10px] font-mono uppercase tracking-widest cursor-pointer active:scale-95"
         >
           <ArrowLeft className="w-3 h-3" />
           Rep: Return to Prep
@@ -120,12 +120,12 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
           </motion.div>
 
           <div className="space-y-4">
-            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
               The rep is finishing
               <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">the exterior review.</span>
             </h1>
-            <p className="text-lg text-white/50 font-light leading-relaxed max-w-lg mx-auto">
+            <p className="text-lg text-[#7090B0] font-light leading-relaxed max-w-lg mx-auto">
               They will return with documented findings, one recommendation,
               and the correct next step.
             </p>
@@ -138,7 +138,7 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
           {!showRepReturn ? (
             <button
               onClick={() => setShowRepReturn(true)}
-              className="w-full py-5 rounded-3xl bg-white/10 border border-white/20 text-white font-display text-sm hover:bg-white/20 transition-all active:scale-[0.98]"
+              className="w-full py-5 rounded-3xl bg-white/10 border border-white/20 text-[#E8EDF8] font-display text-sm hover:bg-white/20 transition-all active:scale-[0.98]"
             >
               I am ready for the review
             </button>
@@ -378,11 +378,11 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
       <div className="relative z-40 flex items-center justify-between px-12 pt-10 pb-6 border-b border-white/[0.05] bg-[#0A0A0A]/80 backdrop-blur-2xl">
         <div className="flex flex-col items-start gap-1">
           <div className="flex items-center gap-3">
-            <span className="font-display font-bold text-white text-2xl tracking-[0.15em]">HUSTAD</span>
+            <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.15em]">HUSTAD</span>
             <div className="h-4 w-[1px] bg-white/20 mx-1" />
             <span className="text-[10px] font-mono text-indigo-400 uppercase tracking-[0.4em] font-medium pt-1">Forensic Analysis Hub</span>
           </div>
-          <div className="flex items-center gap-2 text-white/30 font-mono text-[9px] uppercase tracking-widest mt-1">
+          <div className="flex items-center gap-2 text-[#3F5878] font-mono text-[9px] uppercase tracking-widest mt-1">
             <Scan className="w-3 h-3" />
             <span>S11 Control Terminal // Active Session: {session.sessionId.slice(-6)}</span>
           </div>
@@ -390,8 +390,8 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
         
         <div className="flex items-center gap-6">
           <div className="hidden md:flex flex-col items-end gap-1">
-            <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">Lead Inspector</span>
-            <span className="text-sm font-display font-medium text-white/90">{session.repName}</span>
+            <span className="text-[10px] font-mono text-[#567090] uppercase tracking-widest">Lead Inspector</span>
+            <span className="text-sm font-display font-medium text-[#DDE5F5]">{session.repName}</span>
           </div>
           <div className="px-4 py-2 rounded-xl bg-amber-500/[0.08] border border-amber-500/30 flex items-center gap-3">
             <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
@@ -413,7 +413,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                   <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
                     <Database className="w-4 h-4 text-indigo-400" />
                   </div>
-                  <h2 className="text-xs font-mono font-bold text-white/80 uppercase tracking-[0.3em]">Result Classification</h2>
+                  <h2 className="text-xs font-mono font-bold text-[#C2D0E4] uppercase tracking-[0.3em]">Result Classification</h2>
                 </div>
                 <div className="h-[1px] flex-1 bg-gradient-to-r from-white/10 to-transparent ml-6" />
               </div>
@@ -438,15 +438,15 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                       <div className="relative z-10 flex items-center justify-between mb-4">
                         <div className={cn(
                           "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500",
-                          isSelected ? "bg-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.4)]" : "bg-white/[0.05] text-white/30"
+                          isSelected ? "bg-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.4)]" : "bg-white/[0.05] text-[#3F5878]"
                         )}>
-                          <opt.icon className={cn("w-6 h-6", isSelected ? "text-white" : "text-white/40")} />
+                          <opt.icon className={cn("w-6 h-6", isSelected ? "text-[#E8EDF8]" : "text-[#567090]")} />
                         </div>
                         {isSelected && <Check className="w-5 h-5 text-indigo-400" />}
                       </div>
                       <div className="relative z-10">
-                        <p className={cn("font-display font-medium text-lg tracking-tight mb-1", isSelected ? "text-white" : "text-white/60")}>{opt.label}</p>
-                        <p className="text-xs font-light text-white/30 leading-relaxed uppercase tracking-widest">{opt.description}</p>
+                        <p className={cn("font-display font-medium text-lg tracking-tight mb-1", isSelected ? "text-[#E8EDF8]" : "text-[#8BA5C5]")}>{opt.label}</p>
+                        <p className="text-xs font-light text-[#3F5878] leading-relaxed uppercase tracking-widest">{opt.description}</p>
                       </div>
                     </button>
                   );
@@ -460,7 +460,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                 <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
                   <Activity className="w-4 h-4 text-rose-400" />
                 </div>
-                <h2 className="text-xs font-mono font-bold text-white/80 uppercase tracking-[0.3em]">Forensic Data Points</h2>
+                <h2 className="text-xs font-mono font-bold text-[#C2D0E4] uppercase tracking-[0.3em]">Forensic Data Points</h2>
                 <div className="h-[1px] flex-1 bg-gradient-to-r from-white/10 to-transparent ml-6" />
               </div>
 
@@ -468,21 +468,21 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                 {[
                   { label: "Urgent", value: urgentCount, set: setUrgentCount, color: "text-rose-500", bg: "bg-rose-500/5" },
                   { label: "Storm", value: stormCount, set: setStormCount, color: "text-indigo-400", bg: "bg-indigo-500/5" },
-                  { label: "Monitor", value: monitorCount, set: setMonitorCount, color: "text-white/50", bg: "bg-white/5" },
+                  { label: "Monitor", value: monitorCount, set: setMonitorCount, color: "text-[#7090B0]", bg: "bg-white/5" },
                 ].map((item) => (
                   <div key={item.label} className="relative group p-8 rounded-[40px] bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] transition-all duration-300 flex flex-col items-center">
-                    <div className="absolute top-4 right-6 text-[10px] font-mono text-white/10 uppercase tracking-widest">{item.label} Metric</div>
+                    <div className="absolute top-4 right-6 text-[10px] font-mono text-[#1F2E48] uppercase tracking-widest">{item.label} Metric</div>
                     <p className={cn("text-6xl font-display font-medium tracking-tighter mb-6", item.color)}>{item.value}</p>
                     <div className="flex items-center gap-3 w-full max-w-[140px]">
                       <button 
                         onClick={() => item.set(Math.max(0, item.value - 1))}
-                        className="flex-1 h-12 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] text-white/50 flex items-center justify-center transition-all active:scale-90"
+                        className="flex-1 h-12 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] text-[#7090B0] flex items-center justify-center transition-all active:scale-90"
                       >
                         <Minus className="w-4 h-4" />
                       </button>
                       <button 
                         onClick={() => item.set(item.value + 1)}
-                        className="flex-1 h-12 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] text-white/50 flex items-center justify-center transition-all active:scale-90"
+                        className="flex-1 h-12 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] text-[#7090B0] flex items-center justify-center transition-all active:scale-90"
                       >
                         <Plus className="w-4 h-4" />
                       </button>
@@ -494,18 +494,18 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
               {/* Technical Property Metrics */}
               <div className="p-10 rounded-[40px] bg-white/[0.02] border border-white/[0.05] grid grid-cols-1 md:grid-cols-2 gap-10">
                 <div className="space-y-4">
-                  <p className="text-[9px] font-mono text-white/30 uppercase tracking-[0.4em] pl-1 font-bold">Roofing Area (SF)</p>
+                  <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-[0.4em] pl-1 font-bold">Roofing Area (SF)</p>
                   <input
-                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl py-5 px-6 text-white text-xl font-display placeholder:text-white/10 outline-none focus:border-indigo-500/40 focus:bg-white/[0.05] transition-all"
+                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl py-5 px-6 text-[#E8EDF8] text-xl font-display placeholder:text-[#1F2E48] outline-none focus:border-indigo-500/40 focus:bg-white/[0.05] transition-all"
                     placeholder="e.g. 3,200"
                     value={roofingArea}
                     onChange={(e) => setRoofingArea(e.target.value)}
                   />
                 </div>
                 <div className="space-y-4">
-                  <p className="text-[9px] font-mono text-white/30 uppercase tracking-[0.4em] pl-1 font-bold">Estimated Claim Value</p>
+                  <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-[0.4em] pl-1 font-bold">Estimated Claim Value</p>
                   <input
-                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl py-5 px-6 text-indigo-400 text-xl font-display placeholder:text-white/10 outline-none focus:border-indigo-500/40 focus:bg-white/[0.05] transition-all"
+                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl py-5 px-6 text-indigo-400 text-xl font-display placeholder:text-[#1F2E48] outline-none focus:border-indigo-500/40 focus:bg-white/[0.05] transition-all"
                     placeholder="e.g. $28,800"
                     value={estimatedValue}
                     onChange={(e) => setEstimatedValue(e.target.value)}
@@ -519,7 +519,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                   <div className="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center border border-sky-500/20">
                     <Zap className="w-4 h-4 text-sky-400" />
                   </div>
-                  <h2 className="text-xs font-mono font-bold text-white/80 uppercase tracking-[0.3em]">Forensic Weather Validation</h2>
+                  <h2 className="text-xs font-mono font-bold text-[#C2D0E4] uppercase tracking-[0.3em]">Forensic Weather Validation</h2>
                   <div className="h-[1px] flex-1 bg-gradient-to-r from-white/10 to-transparent ml-6" />
                   <button 
                     onClick={fetchLiveWeather}
@@ -539,7 +539,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                     {weatherEvents.map((ev, i) => (
                       <div key={i} className="grid grid-cols-1 md:grid-cols-12 gap-4">
                         <input 
-                          className="md:col-span-2 bg-white/[0.03] border border-white/[0.08] rounded-xl py-3 px-4 text-white/60 text-[10px] font-mono outline-none focus:border-sky-500/30"
+                          className="md:col-span-2 bg-white/[0.03] border border-white/[0.08] rounded-xl py-3 px-4 text-[#8BA5C5] text-[10px] font-mono outline-none focus:border-sky-500/30"
                           value={ev.time}
                           onChange={(e) => {
                             const n = [...weatherEvents];
@@ -548,7 +548,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                           }}
                         />
                         <input 
-                          className="md:col-span-6 bg-white/[0.03] border border-white/[0.08] rounded-xl py-3 px-4 text-white/90 text-xs outline-none focus:border-sky-500/30"
+                          className="md:col-span-6 bg-white/[0.03] border border-white/[0.08] rounded-xl py-3 px-4 text-[#DDE5F5] text-xs outline-none focus:border-sky-500/30"
                           value={ev.reference}
                           onChange={(e) => {
                             const n = [...weatherEvents];
@@ -557,7 +557,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                           }}
                         />
                         <input 
-                          className="md:col-span-4 bg-white/[0.03] border border-white/[0.08] rounded-xl py-3 px-4 text-white/60 text-xs outline-none focus:border-sky-500/30"
+                          className="md:col-span-4 bg-white/[0.03] border border-white/[0.08] rounded-xl py-3 px-4 text-[#8BA5C5] text-xs outline-none focus:border-sky-500/30"
                           value={ev.relevance}
                           onChange={(e) => {
                             const n = [...weatherEvents];
@@ -570,9 +570,9 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                   </div>
 
                   <div className="pt-6 border-t border-white/5 space-y-4">
-                    <p className="text-[9px] font-mono text-white/30 uppercase tracking-[0.4em] pl-1 font-bold">Storm Data Summary</p>
+                    <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-[0.4em] pl-1 font-bold">Storm Data Summary</p>
                     <textarea
-                      className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6 text-white/60 text-[11px] leading-relaxed outline-none focus:border-sky-500/30 resize-none h-24"
+                      className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6 text-[#8BA5C5] text-[11px] leading-relaxed outline-none focus:border-sky-500/30 resize-none h-24"
                       value={stormSummary}
                       onChange={(e) => setStormSummary(e.target.value)}
                     />
@@ -587,13 +587,13 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                     <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
                       <Camera className="w-4 h-4 text-amber-400" />
                     </div>
-                    <h2 className="text-xs font-mono font-bold text-white/80 uppercase tracking-[0.3em]">Forensic Dossier Capture</h2>
+                    <h2 className="text-xs font-mono font-bold text-[#C2D0E4] uppercase tracking-[0.3em]">Forensic Dossier Capture</h2>
                   </div>
                   <div className="flex items-center gap-4">
-                     <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.05]">
+                     <span className="text-[9px] font-mono text-[#2D4060] uppercase tracking-widest bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.05]">
                       {session.photos?.length || 0} Forensic Shots
                     </span>
-                    <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.05]">
+                    <span className="text-[9px] font-mono text-[#2D4060] uppercase tracking-widest bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.05]">
                       {session.photoAssets?.length || 0} Supplemental Assets
                     </span>
                   </div>
@@ -616,12 +616,12 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                 <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
                   <Activity className="w-4 h-4 text-indigo-400" />
                 </div>
-                <h2 className="text-xs font-mono font-bold text-white/80 uppercase tracking-[0.3em]">AI Findings Support</h2>
+                <h2 className="text-xs font-mono font-bold text-[#C2D0E4] uppercase tracking-[0.3em]">AI Findings Support</h2>
               </div>
               
               {/* Finding Categories Multi-Select */}
               <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/[0.05] space-y-4">
-                <p className="text-[9px] font-mono text-white/30 uppercase tracking-[0.4em] pl-1 font-bold">Documented Forensic Categories</p>
+                <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-[0.4em] pl-1 font-bold">Documented Forensic Categories</p>
                 <div className="flex flex-wrap gap-2">
                   {COMMON_CATEGORIES.map(cat => (
                     <button
@@ -630,8 +630,8 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                       className={cn(
                         "px-3 py-1.5 rounded-full text-[9px] font-mono uppercase tracking-wider border transition-all",
                         findingCategories.includes(cat)
-                          ? "bg-indigo-500 border-indigo-400 text-white shadow-[0_0_15px_rgba(99,102,241,0.3)]"
-                          : "bg-white/5 border-white/10 text-white/40 hover:border-white/20"
+                          ? "bg-indigo-500 border-indigo-400 text-[#E8EDF8] shadow-[0_0_15px_rgba(99,102,241,0.3)]"
+                          : "bg-white/5 border-white/10 text-[#567090] hover:border-white/20"
                       )}
                     >
                       {cat}
@@ -666,23 +666,23 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                 <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
                   <FileText className="w-4 h-4 text-emerald-400" />
                 </div>
-                <h2 className="text-xs font-mono font-bold text-white/80 uppercase tracking-[0.3em]">Buyer Briefing</h2>
+                <h2 className="text-xs font-mono font-bold text-[#C2D0E4] uppercase tracking-[0.3em]">Buyer Briefing</h2>
               </div>
 
               <div className="p-8 rounded-[40px] bg-white/[0.02] border border-white/[0.05] space-y-8 backdrop-blur-xl">
                 <div className="space-y-4">
-                  <p className="text-[9px] font-mono text-white/30 uppercase tracking-[0.4em] pl-1 font-bold">Executive Headline</p>
+                  <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-[0.4em] pl-1 font-bold">Executive Headline</p>
                   <input
-                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl py-5 px-6 text-white text-lg font-display placeholder:text-white/10 outline-none focus:border-indigo-500/40 focus:bg-white/[0.05] transition-all"
+                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl py-5 px-6 text-[#E8EDF8] text-lg font-display placeholder:text-[#1F2E48] outline-none focus:border-indigo-500/40 focus:bg-white/[0.05] transition-all"
                     placeholder="E.g. Documented Forensic Storm File"
                     value={headline}
                     onChange={(e) => { setHeadline(e.target.value); setErrors((err) => { const n = { ...err }; delete n.headline; return n; }); }}
                   />
                 </div>
                 <div className="space-y-4">
-                  <p className="text-[9px] font-mono text-white/30 uppercase tracking-[0.4em] pl-1 font-bold">Technical Summary</p>
+                  <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-[0.4em] pl-1 font-bold">Technical Summary</p>
                   <textarea
-                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded-3xl p-6 text-white/80 text-sm font-light leading-relaxed placeholder:text-white/10 outline-none focus:border-indigo-500/40 focus:bg-white/[0.05] transition-all resize-none min-h-[160px] custom-scrollbar"
+                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded-3xl p-6 text-[#C2D0E4] text-sm font-light leading-relaxed placeholder:text-[#1F2E48] outline-none focus:border-indigo-500/40 focus:bg-white/[0.05] transition-all resize-none min-h-[160px] custom-scrollbar"
                     placeholder="Input detailed findings summary here..."
                     value={body}
                     onChange={(e) => { setBody(e.target.value); setErrors((err) => { const n = { ...err }; delete n.body; return n; }); }}
@@ -696,16 +696,16 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/10">
-                    <Upload className="w-4 h-4 text-white/40" />
+                    <Upload className="w-4 h-4 text-[#567090]" />
                   </div>
-                  <h2 className="text-xs font-mono font-bold text-white/40 uppercase tracking-[0.3em]">Supplemental Evidence</h2>
+                  <h2 className="text-xs font-mono font-bold text-[#567090] uppercase tracking-[0.3em]">Supplemental Evidence</h2>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 gap-4">
                 <label className="h-24 rounded-3xl border border-dashed border-white/10 bg-white/[0.01] hover:bg-white/[0.03] hover:border-indigo-500/30 flex items-center justify-center gap-3 cursor-pointer transition-all duration-500 group overflow-hidden">
-                  <Upload className="w-5 h-5 text-white/20 group-hover:text-indigo-400" />
-                  <span className="text-[9px] font-mono text-white/20 uppercase tracking-[0.3em] font-bold">Add Supplemental Assets</span>
+                  <Upload className="w-5 h-5 text-[#2D4060] group-hover:text-indigo-400" />
+                  <span className="text-[9px] font-mono text-[#2D4060] uppercase tracking-[0.3em] font-bold">Add Supplemental Assets</span>
                   <input type="file" accept="image/*" multiple capture="environment" className="hidden" onChange={handleFileChange} />
                 </label>
 
@@ -727,11 +727,11 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             {photo.tags?.map(t => (
-                              <span key={t} className="px-1.5 py-0.5 rounded-md bg-white/5 text-[7px] font-mono text-white/40 uppercase tracking-widest">{t}</span>
+                              <span key={t} className="px-1.5 py-0.5 rounded-md bg-white/5 text-[7px] font-mono text-[#567090] uppercase tracking-widest">{t}</span>
                             ))}
                             {photo.isSensitive && <EyeOff className="w-3 h-3 text-rose-500" />}
                           </div>
-                          <p className="text-[10px] font-display font-medium text-white/70 truncate">{photo.caption}</p>
+                          <p className="text-[10px] font-display font-medium text-[#AABDCF] truncate">{photo.caption}</p>
                           <div className="flex items-center gap-3 mt-1">
                             {photo.severity && (
                               <div className="flex items-center gap-1">
@@ -739,10 +739,10 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                                   photo.severity === 'critical' ? 'bg-rose-500' : 
                                   photo.severity === 'high' ? 'bg-amber-500' : 'bg-emerald-500'
                                 )} />
-                                <span className="text-[7px] font-mono text-white/20 uppercase tracking-widest">{photo.severity}</span>
+                                <span className="text-[7px] font-mono text-[#2D4060] uppercase tracking-widest">{photo.severity}</span>
                               </div>
                             )}
-                            <span className="text-[7px] font-mono text-white/20 uppercase tracking-widest">
+                            <span className="text-[7px] font-mono text-[#2D4060] uppercase tracking-widest">
                               {photo.annotations?.length || 0} Markups
                             </span>
                           </div>
@@ -774,8 +774,8 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
         <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/80 to-transparent pt-32" />
         <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-8 pointer-events-auto">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
-            <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-white">Back</span>
+            <ArrowLeft className="w-4 h-4 text-[#DDE5F5] group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-display font-medium text-[#E8EDF8]">Back</span>
           </button>
           <StarButton 
             onClick={handleLock}
@@ -792,13 +792,13 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                 {Object.keys(errors).length > 0 ? (
                   <AlertCircle className="w-7 h-7 text-rose-500 animate-pulse" />
                 ) : (
-                  <Lock className={cn("w-7 h-7 transition-colors", outcomeType ? "text-indigo-400" : "text-white/20")} />
+                  <Lock className={cn("w-7 h-7 transition-colors", outcomeType ? "text-indigo-400" : "text-[#2D4060]")} />
                 )}
               </div>
-              <span className="text-xl font-display font-medium text-white tracking-wide">
+              <span className="text-xl font-display font-medium text-[#E8EDF8] tracking-wide">
                 {!outcomeType ? "Classification Required" : "Execute Immutable Lock & Finalize"}
               </span>
-              <ChevronRight className="w-6 h-6 text-white/30 group-hover:translate-x-1 transition-transform" />
+              <ChevronRight className="w-6 h-6 text-[#3F5878] group-hover:translate-x-1 transition-transform" />
             </div>
           </StarButton>
         </div>

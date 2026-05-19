@@ -99,13 +99,13 @@ export function StarButton({
         }
       />
       <div
-        className="absolute inset-0 dark:border-white/15 border-black/10 z-[4] overflow-hidden rounded-[inherit] dark:text-black text-white"
+        className="absolute inset-0 dark:border-white/15 border-black/10 z-[4] overflow-hidden rounded-[inherit] dark:text-black text-[#E8EDF8]"
         style={{ borderWidth: "var(--border-width)" }}
         aria-hidden="true"
       >
         <StarBackground color={backgroundColor} />
       </div>
-      <div className="z-10 relative flex items-center justify-center gap-2 text-white">
+      <div className="z-10 relative flex items-center justify-center gap-2 text-[#E8EDF8]">
         {children}
       </div>
     </button>

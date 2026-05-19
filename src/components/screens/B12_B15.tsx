@@ -97,8 +97,8 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
 
       <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-white text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-white/70 uppercase tracking-[0.3em]">Madison Residential</span>
+          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
+          <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em]">Madison Residential</span>
         </div>
       </div>
 
@@ -119,7 +119,7 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
                 <CheckCircle2 className="w-3 h-3 text-indigo-400" />
                 <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest pt-0.5">Summary Locked & Audited</span>
               </div>
-              <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
+              <h1 className="text-6xl md:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
                 {findings.summaryHeadline || "Reviewing your findings."}
               </h1>
             </motion.div>
@@ -127,7 +127,7 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
             {session.mode === "rep" && (
               <button 
                 onClick={() => setShowUnlockConfirm(true)}
-                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/70 hover:text-amber-400 hover:border-amber-500/30 transition-all group active:scale-95 mb-1"
+                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-[#AABDCF] hover:text-amber-400 hover:border-amber-500/30 transition-all group active:scale-95 mb-1"
               >
                 <Unlock className="w-4 h-4" />
                 <span className="text-xs font-mono uppercase tracking-widest">Unlock for Edit</span>
@@ -143,12 +143,12 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
                   <Shield className="w-32 h-32 text-indigo-500" />
                 </div>
                 <div className="relative z-10 space-y-6">
-                  <p className="font-mono text-[10px] text-white/70 uppercase tracking-[0.3em]">Official Recommendation</p>
+                  <p className="font-mono text-[10px] text-[#AABDCF] uppercase tracking-[0.3em]">Official Recommendation</p>
                   <div className="space-y-2">
-                    <p className="text-3xl font-display font-medium text-white tracking-tight capitalize">
+                    <p className="text-3xl font-display font-medium text-[#E8EDF8] tracking-tight capitalize">
                       {outcome.replace(/_/g, " ")}
                     </p>
-                    <p className="text-lg text-white/90 font-light leading-relaxed max-w-md">
+                    <p className="text-lg text-[#DDE5F5] font-light leading-relaxed max-w-md">
                       {findings.summaryBody}
                     </p>
                   </div>
@@ -160,14 +160,14 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
                 {[
                   { label: "Urgent", value: findings.urgentItemsCount, icon: AlertTriangle, color: "text-rose-400", bg: "bg-rose-500/10" },
                   { label: "Storm", value: findings.stormRelatedItemsCount, icon: Zap, color: "text-indigo-400", bg: "bg-indigo-500/10" },
-                  { label: "Monitor", value: findings.monitorItemsCount, icon: Eye, color: "text-white/80", bg: "bg-white/10" },
+                  { label: "Monitor", value: findings.monitorItemsCount, icon: Eye, color: "text-[#C2D0E4]", bg: "bg-white/10" },
                 ].map((item) => (
                   <div key={item.label} className="bg-white/[0.02] border border-white/[0.05] rounded-[32px] p-8 text-center group hover:bg-white/[0.05] transition-all">
                     <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center mx-auto mb-4", item.bg)}>
                       <item.icon className={cn("w-5 h-5", item.color)} />
                     </div>
                     <p className={cn("text-4xl font-display font-medium mb-1", item.color)}>{item.value}</p>
-                    <p className="text-[10px] font-mono text-white/50 uppercase tracking-[0.2em]">{item.label}</p>
+                    <p className="text-[10px] font-mono text-[#7090B0] uppercase tracking-[0.2em]">{item.label}</p>
                   </div>
                 ))}
               </div>
@@ -178,10 +178,10 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
               <section className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Camera className="w-4 h-4 text-white/70" />
-                    <h2 className="text-sm font-display font-medium text-white/90 uppercase tracking-[0.2em]">Documentation</h2>
+                    <Camera className="w-4 h-4 text-[#AABDCF]" />
+                    <h2 className="text-sm font-display font-medium text-[#DDE5F5] uppercase tracking-[0.2em]">Documentation</h2>
                   </div>
-                  <span className="text-[10px] font-mono text-white/70">{summaryPhotos.length} Findings</span>
+                  <span className="text-[10px] font-mono text-[#AABDCF]">{summaryPhotos.length} Findings</span>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
@@ -193,12 +193,12 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
                         <img src={(photo as any).url} alt="Documentation" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                        <p className="text-[8px] font-mono text-white uppercase tracking-widest">Captured • {new Date(photo.date).toLocaleDateString()}</p>
+                        <p className="text-[8px] font-mono text-[#E8EDF8] uppercase tracking-widest">Captured • {new Date(photo.date).toLocaleDateString()}</p>
                       </div>
                     </div>
                   )) : [1, 2, 3, 4].map(i => (
                     <div key={i} className="aspect-[4/3] rounded-3xl border border-dashed border-white/10 bg-white/[0.01] flex items-center justify-center">
-                      <Camera className="w-6 h-6 text-white/10" />
+                      <Camera className="w-6 h-6 text-[#1F2E48]" />
                     </div>
                   ))}
                 </div>
@@ -208,11 +208,11 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
               <div className="p-8 rounded-[32px] bg-white/[0.02] border border-white/[0.05] space-y-4">
                 <div className="flex items-center gap-3">
                   <MapPin className="w-4 h-4 text-indigo-400" />
-                  <p className="text-[10px] font-mono text-white/70 uppercase tracking-[0.2em]">Property Anchor</p>
+                  <p className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.2em]">Property Anchor</p>
                 </div>
                 <div>
-                  <p className="text-lg font-display font-medium text-white">{session.property.address}</p>
-                  <p className="text-sm text-white/70 font-light mt-1">{session.property.homeownerPrimaryName}</p>
+                  <p className="text-lg font-display font-medium text-[#E8EDF8]">{session.property.address}</p>
+                  <p className="text-sm text-[#AABDCF] font-light mt-1">{session.property.homeownerPrimaryName}</p>
                 </div>
               </div>
             </div>
@@ -223,8 +223,8 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
       <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-6">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
-            <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-white">Previous</span>
+            <ArrowLeft className="w-4 h-4 text-[#DDE5F5] group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-display font-medium text-[#E8EDF8]">Previous</span>
           </button>
           <StarButton 
             onClick={onNext} 
@@ -259,13 +259,13 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
                 <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center">
                   <Unlock className="w-8 h-8 text-amber-500" />
                 </div>
-                <h2 className="text-2xl font-display font-medium text-white">Unlock findings summary?</h2>
-                <p className="text-white/70 font-light leading-relaxed">
+                <h2 className="text-2xl font-display font-medium text-[#E8EDF8]">Unlock findings summary?</h2>
+                <p className="text-[#AABDCF] font-light leading-relaxed">
                   This will return you to findings prep. The buyer-facing summary will be editable again. <br/><span className="text-amber-500/60 text-xs font-mono uppercase tracking-widest">Security Log Entry Required</span>
                 </p>
               </div>
               <div className="flex gap-4">
-                <button onClick={() => setShowUnlockConfirm(false)} className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/10 text-white/90 font-display font-medium hover:bg-white/10 transition-all">Cancel</button>
+                <button onClick={() => setShowUnlockConfirm(false)} className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/10 text-[#DDE5F5] font-display font-medium hover:bg-white/10 transition-all">Cancel</button>
                 <button onClick={handleUnlock} className="flex-1 py-4 rounded-2xl bg-amber-500 text-black font-display font-bold hover:bg-amber-400 transition-all shadow-[0_0_20px_rgba(245,158,11,0.2)]">Unlock & Edit</button>
               </div>
             </motion.div>
@@ -306,8 +306,8 @@ export function B13RecommendedPath({ session, onNext, onBack }: Props) {
 
       <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-white text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-white/70 uppercase tracking-[0.3em]">Madison Residential</span>
+          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
+          <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em]">Madison Residential</span>
         </div>
       </div>
 
@@ -322,10 +322,10 @@ export function B13RecommendedPath({ session, onNext, onBack }: Props) {
               <Clock className="w-3.5 h-3.5 text-indigo-400" />
               <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-[0.2em] pt-0.5">Recommended Strategy</span>
             </div>
-            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
               {config.headline}
             </h1>
-            <p className="text-xl text-white/70 font-light leading-relaxed max-w-2xl mx-auto">
+            <p className="text-xl text-[#AABDCF] font-light leading-relaxed max-w-2xl mx-auto">
               {config.explanation}
             </p>
           </motion.div>
@@ -346,11 +346,11 @@ export function B13RecommendedPath({ session, onNext, onBack }: Props) {
                   className="w-24 h-24 rounded-[32px] flex items-center justify-center shadow-2xl"
                   style={{ background: config.cardColor }}
                 >
-                  <config.icon className="w-12 h-12 text-white" />
+                  <config.icon className="w-12 h-12 text-[#E8EDF8]" />
                 </div>
                 <div className="text-center md:text-left">
-                  <p className="text-2xl font-display font-medium text-white">{config.pathLabel}</p>
-                  <p className="text-white/70 font-light text-sm uppercase tracking-widest mt-1">Hustad Certified Path</p>
+                  <p className="text-2xl font-display font-medium text-[#E8EDF8]">{config.pathLabel}</p>
+                  <p className="text-[#AABDCF] font-light text-sm uppercase tracking-widest mt-1">Hustad Certified Path</p>
                 </div>
               </div>
               <div className="md:col-span-8 space-y-8 border-l border-white/5 pl-0 md:pl-12">
@@ -366,7 +366,7 @@ export function B13RecommendedPath({ session, onNext, onBack }: Props) {
                         className="flex items-start gap-4 group"
                       >
                         <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-500/40 group-hover:bg-indigo-400 transition-colors shrink-0" />
-                        <p className="text-white/90 font-light text-base leading-relaxed group-hover:text-white/80 transition-colors">{step}</p>
+                        <p className="text-[#DDE5F5] font-light text-base leading-relaxed group-hover:text-[#C2D0E4] transition-colors">{step}</p>
                       </motion.div>
                     ))}
                   </div>
@@ -380,8 +380,8 @@ export function B13RecommendedPath({ session, onNext, onBack }: Props) {
       <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-6">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
-            <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-white">Previous</span>
+            <ArrowLeft className="w-4 h-4 text-[#DDE5F5] group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-display font-medium text-[#E8EDF8]">Previous</span>
           </button>
           <StarButton 
             onClick={onNext} 
@@ -503,8 +503,8 @@ export function B14PathDecision({ session, onUpdate, onNext, onBack }: Props) {
 
       <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-white text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-white/70 uppercase tracking-[0.3em]">Madison Residential</span>
+          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
+          <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em]">Madison Residential</span>
         </div>
       </div>
 
@@ -519,7 +519,7 @@ export function B14PathDecision({ session, onUpdate, onNext, onBack }: Props) {
               <LayoutGrid className="w-3.5 h-3.5 text-indigo-400" />
               <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-[0.2em] pt-0.5">Selection Matrix</span>
             </div>
-            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
               Two legitimate paths exist.
               <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">Which fits your situation?</span>
@@ -564,7 +564,7 @@ export function B14PathDecision({ session, onUpdate, onNext, onBack }: Props) {
                     <div className="flex items-start justify-between">
                       <div className={cn(
                         "w-12 h-12 rounded-2xl flex items-center justify-center transition-colors",
-                        isSelected ? "bg-indigo-500 text-white" : "bg-white/[0.05] text-white/60 group-hover:text-white/50"
+                        isSelected ? "bg-indigo-500 text-[#E8EDF8]" : "bg-white/[0.05] text-[#8BA5C5] group-hover:text-[#7090B0]"
                       )}>
                         <opt.icon className="w-6 h-6" />
                       </div>
@@ -572,7 +572,7 @@ export function B14PathDecision({ session, onUpdate, onNext, onBack }: Props) {
                         "text-[8px] font-mono uppercase tracking-[0.3em] px-3 py-1 rounded-full border",
                         opt.id === "claim_review" 
                           ? "bg-indigo-500/20 border-indigo-500/30 text-indigo-300"
-                          : "bg-white/5 border-white/10 text-white/60"
+                          : "bg-white/5 border-white/10 text-[#8BA5C5]"
                       )}>
                         {opt.badge}
                       </span>
@@ -580,11 +580,11 @@ export function B14PathDecision({ session, onUpdate, onNext, onBack }: Props) {
                     <div>
                       <p className={cn(
                         "text-2xl font-display font-medium transition-colors",
-                        isSelected ? "text-white" : "text-white/90 group-hover:text-white/80"
+                        isSelected ? "text-[#E8EDF8]" : "text-[#DDE5F5] group-hover:text-[#C2D0E4]"
                       )}>
                         {opt.label}
                       </p>
-                      <p className="text-sm text-white/60 font-light leading-relaxed mt-2 group-hover:text-white/70 transition-colors">
+                      <p className="text-sm text-[#8BA5C5] font-light leading-relaxed mt-2 group-hover:text-[#AABDCF] transition-colors">
                         {opt.detail}
                       </p>
                     </div>
@@ -604,8 +604,8 @@ export function B14PathDecision({ session, onUpdate, onNext, onBack }: Props) {
       <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-6">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
-            <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-white">Back</span>
+            <ArrowLeft className="w-4 h-4 text-[#DDE5F5] group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-display font-medium text-[#E8EDF8]">Back</span>
           </button>
           <StarButton 
             onClick={handleContinue} 
@@ -663,8 +663,8 @@ export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props
 
       <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-white text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-white/70 uppercase tracking-[0.3em]">Madison Residential</span>
+          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
+          <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em]">Madison Residential</span>
         </div>
       </div>
 
@@ -679,7 +679,7 @@ export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props
               <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
               <span className="text-[10px] font-mono text-rose-500 uppercase tracking-[0.2em] pt-0.5">Critical Protection Required</span>
             </div>
-            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
               <span className="text-rose-500">{session.findings.urgentItemsCount} urgent item{session.findings.urgentItemsCount !== 1 ? "s" : ""}</span> need
               <br />immediate attention.
             </h1>
@@ -691,14 +691,14 @@ export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props
                 <div className="w-12 h-12 rounded-2xl bg-rose-500/20 flex items-center justify-center">
                   <AlertTriangle className="w-6 h-6 text-rose-500" />
                 </div>
-                <p className="text-lg font-display font-medium text-white">Loss Containment Recommended</p>
+                <p className="text-lg font-display font-medium text-[#E8EDF8]">Loss Containment Recommended</p>
               </div>
-              <p className="text-white/70 font-light leading-relaxed">
+              <p className="text-[#AABDCF] font-light leading-relaxed">
                 {session.findings.summaryBody ? session.findings.summaryBody.slice(0, 150) + "..." : "Urgent stabilization or narrow-scope immediate work is recommended."}
               </p>
               <div className="p-4 rounded-2xl bg-black/40 border border-white/5 flex items-start gap-3">
-                <ShieldCheck className="w-4 h-4 text-white/50 mt-1" />
-                <p className="text-[10px] font-mono text-white/70 uppercase tracking-widest leading-relaxed">This is loss containment, not upsell. Scope is limited to documented urgent items.</p>
+                <ShieldCheck className="w-4 h-4 text-[#7090B0] mt-1" />
+                <p className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-widest leading-relaxed">This is loss containment, not upsell. Scope is limited to documented urgent items.</p>
               </div>
             </div>
 
@@ -724,16 +724,16 @@ export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props
                     <div className="relative z-10 flex items-start gap-4">
                       <div className={cn(
                         "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-                        isSelected ? (opt.val ? "bg-rose-500 text-white" : "bg-white text-black") : "bg-white/5 text-white/50"
+                        isSelected ? (opt.val ? "bg-rose-500 text-[#E8EDF8]" : "bg-white text-black") : "bg-white/5 text-[#7090B0]"
                       )}>
                         <opt.icon className="w-5 h-5" />
                       </div>
                       <div>
                         <p className={cn(
                           "font-display font-medium text-lg",
-                          isSelected ? "text-white" : "text-white/90 group-hover:text-white"
+                          isSelected ? "text-[#E8EDF8]" : "text-[#DDE5F5] group-hover:text-[#E8EDF8]"
                         )}>{opt.label}</p>
-                        <p className="text-xs text-white/50 font-light mt-1 group-hover:text-white/70 transition-colors leading-relaxed">{opt.detail}</p>
+                        <p className="text-xs text-[#7090B0] font-light mt-1 group-hover:text-[#AABDCF] transition-colors leading-relaxed">{opt.detail}</p>
                       </div>
                     </div>
                   </motion.button>
@@ -747,8 +747,8 @@ export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props
       <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-6">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
-            <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-white">Back</span>
+            <ArrowLeft className="w-4 h-4 text-[#DDE5F5] group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-display font-medium text-[#E8EDF8]">Back</span>
           </button>
           <StarButton 
             onClick={handleContinue} 

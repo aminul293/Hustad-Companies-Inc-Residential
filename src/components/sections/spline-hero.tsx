@@ -30,7 +30,7 @@ export function SplineHero() {
             <button className="px-8 py-3 rounded-full bg-white text-black font-medium hover:bg-neutral-200 transition-all active:scale-95">
               Initialize H-Unit
             </button>
-            <button className="px-8 py-3 rounded-full bg-white/5 border border-white/10 text-white font-medium hover:bg-white/10 transition-all active:scale-95">
+            <button className="px-8 py-3 rounded-full bg-white/5 border border-white/10 text-[#E8EDF8] font-medium hover:bg-white/10 transition-all active:scale-95">
               Guardian Diagnostics
             </button>
           </div>

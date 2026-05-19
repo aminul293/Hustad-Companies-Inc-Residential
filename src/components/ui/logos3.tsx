@@ -101,7 +101,7 @@ const Logos3 = ({
   return (
     <section className="py-12 md:py-20 bg-transparent">
       <div className="container flex flex-col items-center text-center px-4">
-        <h2 className="mb-10 text-xs font-mono uppercase tracking-[0.4em] text-white/40">
+        <h2 className="mb-10 text-xs font-mono uppercase tracking-[0.4em] text-[#567090]">
           {heading}
         </h2>
       </div>
@@ -125,7 +125,7 @@ const Logos3 = ({
                         className={logo.className}
                       />
                       {/* Tooltip for Company Name */}
-                      <div className="absolute -bottom-14 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-[#060606]/90 backdrop-blur-xl rounded-lg text-[10px] font-bold text-white opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap border border-white/10 pointer-events-none shadow-2xl z-20 uppercase tracking-widest">
+                      <div className="absolute -bottom-14 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-[#060606]/90 backdrop-blur-xl rounded-lg text-[10px] font-bold text-[#E8EDF8] opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap border border-white/10 pointer-events-none shadow-2xl z-20 uppercase tracking-widest">
                         {logo.description}
                       </div>
                     </div>

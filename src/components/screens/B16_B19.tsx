@@ -109,8 +109,8 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
 
       <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-white text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-white/70 uppercase tracking-[0.3em]">Madison Residential</span>
+          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
+          <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em]">Madison Residential</span>
         </div>
       </div>
 
@@ -125,7 +125,7 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
               <Shield className="w-3 h-3 text-indigo-400" />
               <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest pt-0.5">System Configuration</span>
             </div>
-            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
               Choose your system
               <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">and protection level.</span>
@@ -136,7 +136,7 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
             <div className="lg:col-span-7 space-y-10">
               {/* Manufacturer Grid */}
               <section className="space-y-6">
-                <p className="text-[10px] font-mono text-white/70 uppercase tracking-[0.3em] pl-2">Precision Manufacturer</p>
+                <p className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em] pl-2">Precision Manufacturer</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {Object.values(PRODUCT_CONFIG).map((m) => (
                     <button
@@ -149,7 +149,7 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
                           : "bg-white/[0.03] border-white/[0.05] hover:border-white/20"
                       )}
                     >
-                      <p className={cn("text-lg font-display font-medium", manufacturer === m.id ? "text-white" : "text-white/90")}>
+                      <p className={cn("text-lg font-display font-medium", manufacturer === m.id ? "text-[#E8EDF8]" : "text-[#DDE5F5]")}>
                         {m.label}
                       </p>
                     </button>
@@ -160,7 +160,7 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
               {/* Warranty Bento */}
               {manufacturer && (
                 <section className="space-y-6">
-                  <p className="text-[10px] font-mono text-white/70 uppercase tracking-[0.3em] pl-2">Protection Tier</p>
+                  <p className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em] pl-2">Protection Tier</p>
                   <div className="grid grid-cols-1 gap-3">
                     {warrantyOptions.map((opt) => (
                       <button
@@ -173,7 +173,7 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
                             : "bg-white/[0.02] border-white/[0.05] hover:bg-white/[0.05]"
                         )}
                       >
-                        <span className={cn("text-base font-display font-medium", warranty === opt ? "text-white" : "text-white/70")}>{opt}</span>
+                        <span className={cn("text-base font-display font-medium", warranty === opt ? "text-[#E8EDF8]" : "text-[#AABDCF]")}>{opt}</span>
                         {warranty === opt && <CheckCircle2 className="w-5 h-5 text-indigo-400" />}
                       </button>
                     ))}
@@ -187,8 +187,8 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
               <div className="p-8 rounded-[40px] bg-white/[0.03] border border-white/[0.1] backdrop-blur-3xl space-y-6">
                 <div className="flex items-start justify-between">
                   <div className="space-y-2">
-                    <p className="text-xl font-display font-medium text-white">Impact-Resistant Upgrade</p>
-                    <p className="text-xs text-white/70 font-light leading-relaxed">Class 3 or Class 4 high-velocity impact rating.</p>
+                    <p className="text-xl font-display font-medium text-[#E8EDF8]">Impact-Resistant Upgrade</p>
+                    <p className="text-xs text-[#AABDCF] font-light leading-relaxed">Class 3 or Class 4 high-velocity impact rating.</p>
                   </div>
                   <button
                     onClick={() => setImpactUpgrade(!impactUpgrade)}
@@ -203,7 +203,7 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
                 {impactUpgrade && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="p-4 rounded-2xl bg-black/40 border border-white/5 flex items-start gap-3">
                     <Info className="w-4 h-4 text-indigo-400 mt-1 shrink-0" />
-                    <p className="text-[10px] font-mono text-white/70 uppercase tracking-widest leading-relaxed">{IMPACT_DISCLAIMER}</p>
+                    <p className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-widest leading-relaxed">{IMPACT_DISCLAIMER}</p>
                   </motion.div>
                 )}
               </div>
@@ -216,8 +216,8 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
         <div className="absolute inset-0 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20" />
         <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-6 pointer-events-auto">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
-            <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-white">Back</span>
+            <ArrowLeft className="w-4 h-4 text-[#DDE5F5] group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-display font-medium text-[#E8EDF8]">Back</span>
           </button>
           <StarButton 
             onClick={handleContinue} 
@@ -292,8 +292,8 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
 
       <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-white text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-white/70 uppercase tracking-[0.3em]">Madison Residential</span>
+          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
+          <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em]">Madison Residential</span>
         </div>
       </div>
 
@@ -304,7 +304,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
               <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
               <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-[0.2em] pt-0.5">Authorization Terms</span>
             </div>
-            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
               Before the signature —
               <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">here is what you are authorizing.</span>
@@ -329,7 +329,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
                 <div className="flex gap-4">
                   <button 
                     onClick={() => onBack()} // Should probably go back to the photo screen, but onBack is standard
-                    className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/10 text-white text-xs font-mono uppercase tracking-widest hover:bg-white/10"
+                    className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/10 text-[#E8EDF8] text-xs font-mono uppercase tracking-widest hover:bg-white/10"
                   >
                     Go Back & Capture
                   </button>
@@ -346,12 +346,12 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 text-left">
             <div className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.1] backdrop-blur-3xl space-y-8">
-              <p className="font-mono text-[10px] text-white/70 uppercase tracking-[0.3em]">Official Strategy</p>
+              <p className="font-mono text-[10px] text-[#AABDCF] uppercase tracking-[0.3em]">Official Strategy</p>
               <div className="space-y-6">
                 {(isClaimPath ? CLAIM_TERMS : REPAIR_TERMS).map((t, i) => (
                   <div key={i} className="flex items-start gap-4 group">
                     <ChevronRight className="w-4 h-4 text-indigo-400 mt-1 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity" />
-                    <p className="text-white/90 font-light text-sm leading-relaxed group-hover:text-white/80 transition-colors">{t}</p>
+                    <p className="text-[#DDE5F5] font-light text-sm leading-relaxed group-hover:text-[#C2D0E4] transition-colors">{t}</p>
                   </div>
                 ))}
               </div>
@@ -360,7 +360,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
             <div className="space-y-10">
               {isClaimPath && (
                 <section className="space-y-6">
-                  <p className="text-[10px] font-mono text-white/70 uppercase tracking-[0.3em] pl-2">Insurance Status</p>
+                  <p className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em] pl-2">Insurance Status</p>
                   <div className="flex gap-4">
                     {[
                       { val: true, label: "Claim Related", icon: Zap },
@@ -376,8 +376,8 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
                             : "bg-white/[0.02] border-white/[0.05] hover:border-white/20"
                         )}
                       >
-                        <opt.icon className={cn("w-6 h-6", claimRelated === opt.val ? "text-indigo-400" : "text-white/50")} />
-                        <span className={cn("text-xs font-display font-medium", claimRelated === opt.val ? "text-white" : "text-white/70")}>{opt.label}</span>
+                        <opt.icon className={cn("w-6 h-6", claimRelated === opt.val ? "text-indigo-400" : "text-[#7090B0]")} />
+                        <span className={cn("text-xs font-display font-medium", claimRelated === opt.val ? "text-[#E8EDF8]" : "text-[#AABDCF]")}>{opt.label}</span>
                       </button>
                     ))}
                   </div>
@@ -395,9 +395,9 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
                   "w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 mt-1 transition-all",
                   acknowledged ? "bg-indigo-500 border-indigo-500" : "border-white/20"
                 )}>
-                  {acknowledged && <CheckCircle2 className="w-4 h-4 text-white" />}
+                  {acknowledged && <CheckCircle2 className="w-4 h-4 text-[#E8EDF8]" />}
                 </div>
-                <p className="text-sm text-white/50 font-light leading-relaxed">
+                <p className="text-sm text-[#7090B0] font-light leading-relaxed">
                   I have read and understood this agreement summary. I understand what I am authorizing and what it does not promise.
                 </p>
               </button>
@@ -410,8 +410,8 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
         <div className="absolute inset-0 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20" />
         <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-6 pointer-events-auto">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
-            <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-white">Back</span>
+            <ArrowLeft className="w-4 h-4 text-[#DDE5F5] group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-display font-medium text-[#E8EDF8]">Back</span>
           </button>
           <StarButton 
             onClick={handleContinue} 
@@ -517,8 +517,8 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
 
       <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-white text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-white/70 uppercase tracking-[0.3em]">Madison Residential</span>
+          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
+          <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em]">Madison Residential</span>
         </div>
       </div>
 
@@ -529,7 +529,7 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
               <PenTool className="w-3.5 h-3.5 text-indigo-400" />
               <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-[0.2em] pt-0.5">Authorization</span>
             </div>
-            <h1 className="text-6xl md:text-8xl font-display font-medium text-white tracking-tight leading-[1.05]">
+            <h1 className="text-6xl md:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
               Ready to authorize,
               <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">or send for review?</span>
@@ -551,12 +551,12 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
                     : "bg-white/[0.02] border-white/[0.05] hover:border-white/20"
                 )}
               >
-                <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center", mode === opt.id ? "bg-indigo-500 text-white" : "bg-white/5 text-white/60")}>
+                <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center", mode === opt.id ? "bg-indigo-500 text-[#E8EDF8]" : "bg-white/5 text-[#8BA5C5]")}>
                   <opt.icon className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className={cn("font-display font-medium text-lg", mode === opt.id ? "text-white" : "text-white/90")}>{opt.label}</p>
-                  <p className="text-xs text-white/60 font-light mt-1">{opt.detail}</p>
+                  <p className={cn("font-display font-medium text-lg", mode === opt.id ? "text-[#E8EDF8]" : "text-[#DDE5F5]")}>{opt.label}</p>
+                  <p className="text-xs text-[#8BA5C5] font-light mt-1">{opt.detail}</p>
                 </div>
               </button>
             ))}
@@ -567,16 +567,16 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <p className="text-[10px] font-mono text-white/70 uppercase tracking-widest pl-2">Signer Name</p>
-                    <input className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-white placeholder:text-white/50 outline-none focus:border-indigo-500/50" value={signerName} onChange={(e) => setSignerName(e.target.value)} />
+                    <p className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-widest pl-2">Signer Name</p>
+                    <input className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-[#E8EDF8] placeholder:text-[#7090B0] outline-none focus:border-indigo-500/50" value={signerName} onChange={(e) => setSignerName(e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <p className="text-[10px] font-mono text-white/70 uppercase tracking-widest pl-2">Signer Email</p>
-                    <input className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-white placeholder:text-white/50 outline-none focus:border-indigo-500/50" type="email" value={signerEmail} onChange={(e) => setSignerEmail(e.target.value)} />
+                    <p className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-widest pl-2">Signer Email</p>
+                    <input className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-[#E8EDF8] placeholder:text-[#7090B0] outline-none focus:border-indigo-500/50" type="email" value={signerEmail} onChange={(e) => setSignerEmail(e.target.value)} />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-[10px] font-mono text-white/70 uppercase tracking-widest pl-2">Digital Signature</p>
+                  <p className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-widest pl-2">Digital Signature</p>
                   <div 
                     onClick={() => setSigned(true)}
                     className={cn(
@@ -585,9 +585,9 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
                     )}
                   >
                     {signed ? (
-                      <p className="text-3xl font-display italic text-white/90 drop-shadow-lg tracking-wider">{signerName || "Authorized"}</p>
+                      <p className="text-3xl font-display italic text-[#DDE5F5] drop-shadow-lg tracking-wider">{signerName || "Authorized"}</p>
                     ) : (
-                      <p className="text-[10px] font-mono text-white/50 uppercase tracking-[0.2em]">Tap to Sign</p>
+                      <p className="text-[10px] font-mono text-[#7090B0] uppercase tracking-[0.2em]">Tap to Sign</p>
                     )}
                   </div>
                 </div>
@@ -597,12 +597,12 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
             {mode === "defer" && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="max-w-md mx-auto text-left space-y-4">
                 <div className="space-y-2">
-                  <p className="text-[10px] font-mono text-white/70 uppercase tracking-widest pl-2">Recipient Email</p>
-                  <input className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-white placeholder:text-white/50 outline-none focus:border-indigo-500/50" type="email" value={deferEmail} onChange={(e) => setDeferEmail(e.target.value)} placeholder="Decision maker's email" />
+                  <p className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-widest pl-2">Recipient Email</p>
+                  <input className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-[#E8EDF8] placeholder:text-[#7090B0] outline-none focus:border-indigo-500/50" type="email" value={deferEmail} onChange={(e) => setDeferEmail(e.target.value)} placeholder="Decision maker's email" />
                 </div>
                 <div className="p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/10 flex items-start gap-3">
                   <Info className="w-4 h-4 text-indigo-400 mt-1" />
-                  <p className="text-[10px] font-mono text-white/60 uppercase tracking-widest leading-relaxed">System will auto-generate a follow-up task for coordination.</p>
+                  <p className="text-[10px] font-mono text-[#8BA5C5] uppercase tracking-widest leading-relaxed">System will auto-generate a follow-up task for coordination.</p>
                 </div>
               </motion.div>
             )}
@@ -614,8 +614,8 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
         <div className="absolute inset-0 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20" />
         <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-6 pointer-events-auto">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
-            <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-white">Back</span>
+            <ArrowLeft className="w-4 h-4 text-[#DDE5F5] group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-display font-medium text-[#E8EDF8]">Back</span>
           </button>
           <StarButton 
             onClick={handleSubmit} 
@@ -1006,8 +1006,8 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
 
       <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-white text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-white/70 uppercase tracking-[0.3em]">Madison Residential</span>
+          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
+          <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em]">Madison Residential</span>
         </div>
       </div>
 
@@ -1020,10 +1020,10 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
                 {isSigned ? "✓ Authorization Complete" : "✓ Session Finalized"}
               </span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-display font-medium text-white tracking-tighter leading-[1.05]">
+            <h1 className="text-5xl md:text-7xl font-display font-medium text-[#E8EDF8] tracking-tighter leading-[1.05]">
               {config.headline}
             </h1>
-            <p className="text-xl text-white/70 font-light leading-relaxed max-w-2xl mx-auto">
+            <p className="text-xl text-[#AABDCF] font-light leading-relaxed max-w-2xl mx-auto">
               {config.detail}
             </p>
           </motion.div>
@@ -1032,14 +1032,14 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
             <div className="lg:col-span-7 space-y-8">
               {/* Roadmap Bento */}
               <div className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.1] backdrop-blur-3xl space-y-8">
-                <p className="font-mono text-[10px] text-white/70 uppercase tracking-[0.3em]">Operational Roadmap</p>
+                <p className="font-mono text-[10px] text-[#AABDCF] uppercase tracking-[0.3em]">Operational Roadmap</p>
                 <div className="space-y-8">
                   {config.steps.map((step, i) => (
                     <div key={i} className="flex items-start gap-6 group">
                       <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-indigo-500/50 transition-colors">
-                        <span className="text-sm font-mono text-white/70 group-hover:text-white transition-colors">{i + 1}</span>
+                        <span className="text-sm font-mono text-[#AABDCF] group-hover:text-[#E8EDF8] transition-colors">{i + 1}</span>
                       </div>
-                      <p className="text-white/90 font-light text-base leading-relaxed pt-1.5 group-hover:text-white/80 transition-colors">{step}</p>
+                      <p className="text-[#DDE5F5] font-light text-base leading-relaxed pt-1.5 group-hover:text-[#C2D0E4] transition-colors">{step}</p>
                     </div>
                   ))}
                 </div>
@@ -1056,7 +1056,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
                       <div className="w-8 h-8 rounded-xl bg-indigo-500/10 flex items-center justify-center shrink-0">
                         <ShieldCheck className="w-4 h-4 text-indigo-400" />
                       </div>
-                      <p className="text-white/90 text-sm font-light group-hover:text-white transition-colors">{d}</p>
+                      <p className="text-[#DDE5F5] text-sm font-light group-hover:text-[#E8EDF8] transition-colors">{d}</p>
                     </div>
                   ))}
                 </div>
@@ -1095,12 +1095,12 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
                             isSending && opt.id === "email" && "animate-pulse"
                           )}
                         >
-                          <opt.icon className={cn("w-5 h-5", deliverySent === opt.id ? "text-indigo-400" : "text-white/50")} />
-                          <span className={cn("text-[10px] font-mono uppercase tracking-widest", deliverySent === opt.id ? "text-white" : "text-white/70")}>
+                          <opt.icon className={cn("w-5 h-5", deliverySent === opt.id ? "text-indigo-400" : "text-[#7090B0]")} />
+                          <span className={cn("text-[10px] font-mono uppercase tracking-widest", deliverySent === opt.id ? "text-[#E8EDF8]" : "text-[#AABDCF]")}>
                             {isSending && opt.id === "email" ? "Sending..." : deliverySent === opt.id ? "Sent ✓" : opt.label}
                           </span>
                         </button>
-                        <p className="text-[9px] font-mono text-white/30 truncate px-2 text-center uppercase tracking-tighter">
+                        <p className="text-[9px] font-mono text-[#3F5878] truncate px-2 text-center uppercase tracking-tighter">
                           {recipient}
                         </p>
                       </div>
@@ -1123,7 +1123,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
                           placeholder="Email Address"
                           value={quickEmail}
                           onChange={(e) => setQuickEmail(e.target.value)}
-                          className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white placeholder:text-white/20 focus:border-indigo-400/50 outline-none transition-all text-sm"
+                          className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-[#E8EDF8] placeholder:text-[#2D4060] focus:border-indigo-400/50 outline-none transition-all text-sm"
                         />
                       </div>
                       <div className="relative group">
@@ -1133,7 +1133,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
                           placeholder="Phone Number"
                           value={quickPhone}
                           onChange={(e) => setQuickPhone(e.target.value)}
-                          className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white placeholder:text-white/20 focus:border-indigo-400/50 outline-none transition-all text-sm"
+                          className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-[#E8EDF8] placeholder:text-[#2D4060] focus:border-indigo-400/50 outline-none transition-all text-sm"
                         />
                       </div>
                     </div>
@@ -1158,8 +1158,8 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
                 onClick={handleDownloadPDF}
                 className="w-full p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/5 transition-all flex items-center justify-center gap-3 group"
               >
-                <Download className="w-4 h-4 text-white/50 group-hover:text-indigo-400 transition-colors" />
-                <span className="text-[10px] font-mono text-white/50 uppercase tracking-widest group-hover:text-white/70 transition-colors">
+                <Download className="w-4 h-4 text-[#7090B0] group-hover:text-indigo-400 transition-colors" />
+                <span className="text-[10px] font-mono text-[#7090B0] uppercase tracking-widest group-hover:text-[#AABDCF] transition-colors">
                   {exported ? "Summary Downloaded ✓" : "Download Summary (PDF)"}
                 </span>
               </button>
@@ -1178,7 +1178,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
                         "w-2 h-2 rounded-full",
                         session.officeDispatchStatus === "sent" ? "bg-green-400" : "bg-rose-400 animate-pulse"
                       )} />
-                      <p className="text-[10px] font-mono text-white/50 uppercase tracking-[0.2em]">Office Dispatch</p>
+                      <p className="text-[10px] font-mono text-[#7090B0] uppercase tracking-[0.2em]">Office Dispatch</p>
                     </div>
                     {session.officeDispatchStatus === "sent" ? (
                       <span className="text-[10px] font-mono text-green-400 uppercase tracking-widest">Sent ✓</span>
@@ -1194,16 +1194,16 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
                       className="w-full py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex items-center justify-center gap-2"
                     >
                       {isDispatching ? (
-                        <RefreshCw className="w-3 h-3 text-white/50 animate-spin" />
+                        <RefreshCw className="w-3 h-3 text-[#7090B0] animate-spin" />
                       ) : (
-                        <RefreshCw className="w-3 h-3 text-white/50" />
+                        <RefreshCw className="w-3 h-3 text-[#7090B0]" />
                       )}
-                      <span className="text-[10px] font-mono text-white/70 uppercase tracking-[0.1em]">Retry Dispatch</span>
+                      <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.1em]">Retry Dispatch</span>
                     </button>
                   )}
                   
                   {session.officeDispatchedAt && (
-                    <p className="text-[9px] font-mono text-white/20 text-center uppercase tracking-tighter">
+                    <p className="text-[9px] font-mono text-[#2D4060] text-center uppercase tracking-tighter">
                       Timestamp: {new Date(session.officeDispatchedAt).toLocaleString()}
                     </p>
                   )}
@@ -1218,8 +1218,8 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
         <div className="absolute inset-0 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20" />
         <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-6 pointer-events-auto">
           <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
-            <ArrowLeft className="w-4 h-4 text-white/90 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-white">Back</span>
+            <ArrowLeft className="w-4 h-4 text-[#DDE5F5] group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-display font-medium text-[#E8EDF8]">Back</span>
           </button>
           <StarButton onClick={handleFinish} lightColor="#FAFAFA" backgroundColor="#060606" className="flex-1 max-w-md h-18 rounded-full active:scale-95 transition-transform disabled:opacity-50 disabled:pointer-events-none" disabled={isSyncing}>
             <div className="flex items-center gap-4">
@@ -1231,7 +1231,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
               ) : (
                 <>
                   <span className="text-lg font-display font-medium tracking-wide">Finish Session</span>
-                  <ChevronRight className="w-5 h-5 text-white/90" />
+                  <ChevronRight className="w-5 h-5 text-[#DDE5F5]" />
                 </>
               )}
             </div>
