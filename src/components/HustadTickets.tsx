@@ -148,11 +148,7 @@ export function HustadTickets() {
   const handleAddTouch = async (ticket: HustadTicket) => {
     setSavingTouch(true);
     try {
-      const res = await fetch(`/api/tickets/${ticket.id}/touches`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(touchForm),
-      });
+      const res = await addTicketTouch(ticket.id, touchForm);
       if (res.ok) {
         const data = await res.json();
         setTickets(prev => prev.map(t =>

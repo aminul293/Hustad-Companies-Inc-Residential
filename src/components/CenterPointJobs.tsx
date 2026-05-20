@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchCenterpointJobs, fetchCenterpointSyncStatus, triggerCenterpointSync, patchCenterpointJob, createPipelineLead } from "@/lib/api";
+import { fetchCenterpointJobs, fetchCenterpointSyncStatus, triggerCenterpointSync, patchCenterpointJob, createPipelineLead, unlinkPipelineByTicket } from "@/lib/api";
 import { useState, useEffect, useCallback } from "react";
 import { Search, ChevronRight, RefreshCw, Building2, ArrowRight, CloudDownload, CheckCircle2, ArrowLeft, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -510,10 +510,7 @@ export function CenterPointJobs() {
                                         e.stopPropagation();
                                         setUnlinkingId(job.id);
                                         try {
-                                          const res = await fetch(
-                                            `/api/pipeline?cpc_ticket_id=${encodeURIComponent(job.attributes.name)}`,
-                                            { method: "DELETE" }
-                                          );
+                                          const res = await unlinkPipelineByTicket(job.attributes.name);
                                           if (res.ok) {
                                             setJobs(prev => prev.map(j =>
                                               j.id === job.id ? { ...j, inbox_status: '' } : j

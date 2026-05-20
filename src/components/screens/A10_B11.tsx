@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { fetchWeatherNws } from "@/lib/api";
 import type { SessionState, OutcomeType } from "@/types/session";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { StarButton } from "@/components/ui/star-button";
@@ -247,11 +248,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
 
     try {
       const coords = await getCoords();
-      const url = coords 
-        ? `/api/weather/nws?lat=${coords.lat}&lon=${coords.lon}`
-        : "/api/weather/nws?office=MKX";
-
-      const res = await fetch(url);
+      const res = await fetchWeatherNws(coords);
       const data = await res.json();
       
       if (data.reports && data.reports.length > 0) {

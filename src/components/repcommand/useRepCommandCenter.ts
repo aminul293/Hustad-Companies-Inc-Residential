@@ -340,10 +340,7 @@ export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart
     setPendingImport(null);
     if (currentRep.email) {
       const captureUrl = `${window.location.origin}/rep-capture?s=${session.sessionId}`;
-      fetch("/api/send-email", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ to: currentRep.email, subject: `📸 Your inspection camera link — ${session.property.address}`, sessionId: session.sessionId, html: buildRepCaptureEmail({ captureUrl, address: session.property.address, homeownerName: session.property.homeownerPrimaryName || "", repName: currentRep.name, sessionId: session.sessionId }) }),
-      }).catch(() => {});
+      sendEmail({ to: currentRep.email, subject: `📸 Your inspection camera link — ${session.property.address}`, sessionId: session.sessionId, html: buildRepCaptureEmail({ captureUrl, address: session.property.address, homeownerName: session.property.homeownerPrimaryName || "", repName: currentRep.name, sessionId: session.sessionId }) }).catch(() => {});
       const appointmentId = importApptId ?? session.appointmentId;
       if (appointmentId) {
         try {

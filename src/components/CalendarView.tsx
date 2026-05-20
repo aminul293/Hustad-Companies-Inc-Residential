@@ -270,11 +270,7 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
   const patchAppt = async (id: string, updates: Record<string, unknown>) => {
     setActionLoading(id);
     try {
-      await fetch(`/api/appointments/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updates),
-      });
+      await patchAppointment(id, updates);
       await fetchAppointments();
       if (selectedAppt?.id === id) setSelectedAppt(null);
     } finally {

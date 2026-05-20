@@ -139,11 +139,7 @@ export default function RemoteReviewPage() {
         ]
       };
 
-      const res = await fetch("/api/session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedSession)
-      });
+      const res = await syncSession(updatedSession);
 
       if (!res.ok) throw new Error("Failed to submit authorization.");
       setSuccess(true);

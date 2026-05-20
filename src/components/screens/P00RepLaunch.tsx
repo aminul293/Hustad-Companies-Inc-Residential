@@ -319,22 +319,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
     // Fire-and-forget: email the rep capture link to their Outlook the moment the session starts
     if (authRep.email) {
       const captureUrl = `${window.location.origin}/rep-capture?s=${updated.sessionId}`;
-      fetch("/api/send-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          to: authRep.email,
-          subject: `📸 Your inspection camera link — ${form.address}`,
-          sessionId: updated.sessionId,
-          html: buildRepCaptureEmail({
-            captureUrl,
-            address: form.address,
-            homeownerName: form.homeownerName,
-            repName: authRep.name,
-            sessionId: updated.sessionId,
-          }),
-        }),
-      }).catch(() => {}); // non-critical — never block the session start
+      sendEmail({ to: authRep.email, subject: `📸 Your inspection camera link — ${form.address}`, sessionId: updated.sessionId, html: buildRepCaptureEmail({ captureUrl, address: form.address, homeownerName: form.homeownerName, repName: authRep.name, sessionId: updated.sessionId }) }).catch(() => {}); // non-critical — never block the session start
     }
   };
 

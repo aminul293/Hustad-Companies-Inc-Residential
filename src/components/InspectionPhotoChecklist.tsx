@@ -13,6 +13,7 @@ import { INSPECTION_SHOT_LIST, ShotListItem } from "@/lib/inspectionShotList";
 import { InspectionPhoto, SessionState } from "@/types/session";
 import { compressImage } from "@/lib/images";
 import { savePhotoBlob, base64ToBlob, deletePhotoBlob } from "@/lib/photoStorage";
+import { fetchRepUploads } from "@/lib/api";
 import { retryPhotoSync } from "@/lib/sync";
 import { supabase } from "@/lib/supabase";
 
@@ -135,7 +136,7 @@ export function InspectionPhotoChecklist({ session, onUpdate }: Props) {
   useEffect(() => {
     const poll = async () => {
       try {
-        const res = await fetch(`/api/rep-upload?session_id=${session.sessionId}`);
+        const res = await fetchRepUploads(session.sessionId);
         if (!res.ok) return;
         const { photos: rows } = await res.json();
         if (rows?.length) mergeNewPhotos(rows);

@@ -5,3 +5,5 @@ export * from "./centerpoint";
 export * from "./comms";
 export * from "./tickets";
 export * from "./reps";
+export * from "./uploads";
+export * from "./weather";

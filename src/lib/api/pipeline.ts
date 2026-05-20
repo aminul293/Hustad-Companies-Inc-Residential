@@ -28,3 +28,9 @@ export async function createPipelineLead(body: Record<string, unknown>): Promise
     body: JSON.stringify(body),
   });
 }
+
+export async function unlinkPipelineByTicket(cpcTicketId: string): Promise<Response> {
+  return fetch(`${BASE}?cpc_ticket_id=${encodeURIComponent(cpcTicketId)}`, {
+    method: "DELETE",
+  });
+}
