@@ -3,7 +3,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import {
   Search,
-  Clock,
   ChevronRight,
   LayoutGrid,
   CheckCircle2,
@@ -840,57 +839,88 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
 
         {view === "dashboard" && (
           <>
+            {/* ── Stripi-style KPI balance cards ── */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               {[
-                { label: "Active", value: stats.active, icon: Clock, color: "text-indigo-400", bg: "bg-indigo-500/5" },
-                { label: "Pending", value: stats.pending, icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/5" },
-                { label: "Missing", value: stats.missing, icon: AlertCircle, color: "text-rose-400", bg: "bg-rose-500/5" },
-                { label: "Recon", value: stats.reconciliation, icon: AlertTriangle, color: "text-amber-400", bg: "bg-amber-500/5" },
+                { label: "Active sessions", value: stats.active,         sub: "in field or drafting",      dot: "#533afd", dotBg: "rgba(83,58,253,0.12)"  },
+                { label: "Pending review",  value: stats.pending,        sub: "deferred or locked",        dot: "#29b572", dotBg: "rgba(41,181,114,0.12)" },
+                { label: "Needs attention", value: stats.missing,        sub: "missing required fields",   dot: "#d24c47", dotBg: "rgba(210,76,71,0.12)"  },
+                { label: "Reconciliation",  value: stats.reconciliation, sub: "discrepancies to resolve",  dot: "#d6a800", dotBg: "rgba(214,168,0,0.12)"  },
               ].map((s, i) => (
-                <div key={i} className={cn("p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-white/[0.08] backdrop-blur-xl transition-all hover:border-white/20 hover:bg-white/[0.02] group", s.bg)}>
-                  <div className="flex items-center justify-between mb-3 md:mb-4">
-                    <div className={cn("p-1.5 md:p-2 rounded-xl bg-white/5", s.color)}>
-                      <s.icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                    </div>
-                    <span className="hidden md:block text-[9px] font-mono text-[#3F5878] uppercase tracking-[0.2em] group-hover:text-[#7090B0] transition-colors">Live</span>
+                <div
+                  key={i}
+                  className="rounded-xl border border-white/[0.08] bg-white/[0.025] backdrop-blur-xl p-4 md:p-5 hover:border-white/[0.16] hover:bg-white/[0.04] transition-all duration-200"
+                  style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span
+                      className="text-[10px] font-inter font-normal uppercase tracking-[0.1px]"
+                      style={{ color: "#8BA5C5", letterSpacing: "0.1px" }}
+                    >
+                      {s.label}
+                    </span>
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ background: s.dot, boxShadow: `0 0 6px ${s.dot}80` }}
+                    />
                   </div>
-                  <p className="text-2xl md:text-3xl font-display font-semibold tracking-tight mb-0.5 md:mb-1">
-                    {isLoading ? <span className="inline-block w-5 h-5 border-2 border-white/10 border-t-white/40 rounded-full animate-spin" /> : s.value}
+                  <p
+                    className="font-inter font-light leading-none mb-1.5"
+                    style={{
+                      fontSize: 32,
+                      letterSpacing: "-0.64px",
+                      fontFeatureSettings: '"ss01" 1, "tnum" 1',
+                      color: "#E8EDF8",
+                    }}
+                  >
+                    {isLoading
+                      ? <span className="inline-block w-5 h-5 border-2 border-white/10 border-t-white/40 rounded-full animate-spin" />
+                      : s.value}
                   </p>
-                  <p className="text-[9px] md:text-[10px] font-mono text-[#567090] uppercase tracking-widest">{s.label}</p>
+                  <p className="text-[11px] font-inter font-light" style={{ color: "#567090" }}>{s.sub}</p>
                 </div>
               ))}
             </div>
 
-            <div className="flex flex-col gap-3">
-              <div className="relative w-full">
+            {/* ── Search + Stripi tab-bar filter ── */}
+            <div className="flex flex-col gap-0">
+              <div className="relative w-full mb-0">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#3F5878]" />
                 <input
                   type="text"
                   placeholder="Search address or homeowner..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/[0.1] rounded-2xl py-3 md:py-3.5 pl-11 pr-6 text-sm outline-none focus:border-indigo-500/50 transition-all"
+                  className="w-full bg-white/[0.03] border border-white/[0.1] rounded-t-2xl rounded-b-none py-3 md:py-3.5 pl-11 pr-6 text-sm outline-none focus:border-indigo-500/50 transition-all"
                 />
               </div>
-              <div className="flex items-center gap-2 overflow-x-auto pb-1">
+              {/* Stripi tab-bar filter */}
+              <div
+                className="flex items-center overflow-x-auto border border-t-0 border-white/[0.1] rounded-b-2xl px-2"
+                style={{ background: "rgba(255,255,255,0.015)" }}
+              >
                 {[
-                  { id: "all", label: "All" },
-                  { id: "missing", label: "Attention" },
+                  { id: "all",                        label: "All" },
+                  { id: "missing",                    label: "Attention" },
                   { id: "full_restoration_candidate", label: "Restoration" },
-                  { id: "claim_review_candidate", label: "Claims" },
-                  { id: "repair_only", label: "Repairs" },
-                  { id: "no_damage", label: "No Damage" }
+                  { id: "claim_review_candidate",     label: "Claims" },
+                  { id: "repair_only",                label: "Repairs" },
+                  { id: "no_damage",                  label: "No Damage" },
                 ].map(f => (
                   <button
                     key={f.id}
                     onClick={() => setFilter(f.id)}
-                    className={cn(
-                      "px-3 py-1.5 rounded-full border text-xs font-display transition-all whitespace-nowrap",
-                      filter === f.id
-                        ? "bg-white text-black border-white"
-                        : "bg-white/5 border-white/10 text-[#8BA5C5] hover:bg-white/10"
-                    )}
+                    className="px-3 py-2.5 text-xs font-inter whitespace-nowrap transition-all duration-150"
+                    style={{
+                      color:        filter === f.id ? "#533afd" : "#567090",
+                      borderTop:    "none",
+                      borderLeft:   "none",
+                      borderRight:  "none",
+                      borderBottom: filter === f.id ? "2px solid #533afd" : "2px solid transparent",
+                      marginBottom: -1,
+                      background:   "transparent",
+                      fontWeight:   filter === f.id ? 500 : 300,
+                    }}
                   >
                     {f.label}
                   </button>

@@ -51,6 +51,11 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606] selection:bg-indigo-500/30">
       {/* Background HUD Layer */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-20">
+        {/* Stripi gradient mesh — warm interlude variant for technical/innovation screens */}
+        <div
+          className="absolute top-0 inset-x-0 h-[40%]"
+          style={{ backgroundImage: "url('/images/gradient-mesh-warm.svg')", backgroundSize: "cover", backgroundPosition: "center top", opacity: 0.35 }}
+        />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.1),transparent_70%)]" />
         <motion.div 
           animate={{ opacity: [0.1, 0.2, 0.1], scale: [1, 1.05, 1] }}

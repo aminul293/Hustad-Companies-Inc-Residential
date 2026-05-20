@@ -6,18 +6,25 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
 // ─── Stage pipeline ────────────────────────────────────────────────────────────
-const STAGES: Record<string, { label: string; next: string | null; color: string; ring: string }> = {
-  lead_opened:   { label: "New Lead",    next: "lead_pending",  color: "bg-sky-500/20 text-sky-300 border-sky-500/30",      ring: "bg-sky-500" },
-  lead_pending:  { label: "Pending",     next: "lead_quoted",   color: "bg-blue-500/20 text-blue-300 border-blue-500/30",    ring: "bg-blue-500" },
-  lead_quoted:   { label: "Quoted",      next: "lead_sold",     color: "bg-amber-500/20 text-amber-300 border-amber-500/30", ring: "bg-amber-500" },
-  lead_sold:     { label: "Sold",        next: "opened",        color: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30", ring: "bg-emerald-500" },
-  dead_lead:     { label: "Dead Lead",   next: null,            color: "bg-rose-500/20 text-rose-300 border-rose-500/30",    ring: "bg-rose-500" },
-  opened:        { label: "Opened",      next: "scheduled",     color: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30", ring: "bg-indigo-500" },
-  scheduled:     { label: "Scheduled",   next: "started",       color: "bg-violet-500/20 text-violet-300 border-violet-500/30", ring: "bg-violet-500" },
-  started:       { label: "In Progress", next: "completed",     color: "bg-purple-500/20 text-purple-300 border-purple-500/30", ring: "bg-purple-500" },
-  completed:     { label: "Completed",   next: "invoiced",      color: "bg-teal-500/20 text-teal-300 border-teal-500/30",    ring: "bg-teal-500" },
-  invoiced:      { label: "Invoiced",    next: "closed",        color: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",    ring: "bg-cyan-500" },
-  closed:        { label: "Closed Out",  next: null,            color: "bg-white/10 text-[#567090] border-white/10",          ring: "bg-white/30" },
+// Stripi-style chip config: bg/fg match Stripi semantic tokens; dot is a colored indicator
+const STAGES: Record<string, {
+  label: string;
+  next: string | null;
+  color: string;
+  ring: string;
+  chip: { bg: string; fg: string; dot: string };
+}> = {
+  lead_opened:   { label: "New Lead",    next: "lead_pending",  color: "bg-sky-500/20 text-sky-300 border-sky-500/30",               ring: "bg-sky-500",     chip: { bg: "#dbeafe", fg: "#1e40af", dot: "#3b82f6" } },
+  lead_pending:  { label: "Pending",     next: "lead_quoted",   color: "bg-blue-500/20 text-blue-300 border-blue-500/30",             ring: "bg-blue-500",    chip: { bg: "#e0f2fe", fg: "#0369a1", dot: "#0ea5e9" } },
+  lead_quoted:   { label: "Quoted",      next: "lead_sold",     color: "bg-amber-500/20 text-amber-300 border-amber-500/30",          ring: "bg-amber-500",   chip: { bg: "#fff5cc", fg: "#6a4e00", dot: "#d6a800" } },
+  lead_sold:     { label: "Sold",        next: "opened",        color: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",    ring: "bg-emerald-500", chip: { bg: "#d7f7c2", fg: "#0d6a3f", dot: "#29b572" } },
+  dead_lead:     { label: "Dead Lead",   next: null,            color: "bg-rose-500/20 text-rose-300 border-rose-500/30",             ring: "bg-rose-500",    chip: { bg: "#fde2e1", fg: "#983705", dot: "#d24c47" } },
+  opened:        { label: "Opened",      next: "scheduled",     color: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",       ring: "bg-indigo-500",  chip: { bg: "#ede9fe", fg: "#4c1d95", dot: "#7c3aed" } },
+  scheduled:     { label: "Scheduled",   next: "started",       color: "bg-violet-500/20 text-violet-300 border-violet-500/30",       ring: "bg-violet-500",  chip: { bg: "#f3e8ff", fg: "#6b21a8", dot: "#a855f7" } },
+  started:       { label: "In Progress", next: "completed",     color: "bg-purple-500/20 text-purple-300 border-purple-500/30",       ring: "bg-purple-500",  chip: { bg: "#faf5ff", fg: "#7e22ce", dot: "#9333ea" } },
+  completed:     { label: "Completed",   next: "invoiced",      color: "bg-teal-500/20 text-teal-300 border-teal-500/30",             ring: "bg-teal-500",    chip: { bg: "#d7f7c2", fg: "#0d6a3f", dot: "#29b572" } },
+  invoiced:      { label: "Invoiced",    next: "closed",        color: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",             ring: "bg-cyan-500",    chip: { bg: "#cffafe", fg: "#155e75", dot: "#06b6d4" } },
+  closed:        { label: "Closed Out",  next: null,            color: "bg-white/10 text-[#567090] border-white/10",                  ring: "bg-white/30",    chip: { bg: "#f6f9fc", fg: "#64748d", dot: "#94a3b8" } },
 };
 
 const STAGE_ORDER = ["lead_opened","lead_pending","lead_quoted","lead_sold","dead_lead","opened","scheduled","started","completed","invoiced","closed"];
@@ -356,20 +363,34 @@ export function CenterPointJobs() {
                     className="w-full p-6 text-left flex items-center justify-between gap-4"
                   >
                     <div className="flex items-center gap-5 min-w-0">
-                      {/* Stage dot */}
-                      <div className={cn("w-2.5 h-2.5 rounded-full shrink-0", stage.ring)} />
+                      {/* Stripi-style status chip replacing the colored dot + dark badge */}
+                      <span
+                        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded shrink-0"
+                        style={{
+                          background: stage.chip.bg,
+                          color: stage.chip.fg,
+                          fontSize: 11,
+                          fontFamily: "'Inter', system-ui, sans-serif",
+                          fontWeight: 400,
+                          fontFeatureSettings: '"ss01" 1, "tnum" 1',
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        <span
+                          className="w-1.5 h-1.5 rounded-full shrink-0"
+                          style={{ background: stage.chip.dot }}
+                        />
+                        {stage.label}
+                      </span>
 
                       <div className="min-w-0">
-                        <div className="flex items-center gap-3 mb-1 flex-wrap">
+                        <div className="flex items-center gap-3 mb-0.5 flex-wrap">
                           <span className="text-base font-display font-medium text-[#E8EDF8] truncate">
                             {attr.propertyName || attr.name || `Job #${job.id}`}
                           </span>
                           <span className="text-[9px] font-mono text-[#3F5878] tracking-widest">#{attr.name}</span>
                         </div>
                         <div className="flex items-center gap-4 flex-wrap">
-                          <span className={cn("px-2.5 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest border", stage.color)}>
-                            {stage.label}
-                          </span>
                           {attr.domain && (
                             <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-wider">{attr.domain}</span>
                           )}
@@ -384,7 +405,11 @@ export function CenterPointJobs() {
                       {attr.price > 0 && (
                         <div className="text-right hidden md:block">
                           <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-widest mb-0.5">Value</p>
-                          <p className="text-sm font-display font-medium text-[#E8EDF8]">
+                          {/* Tabular figures — Stripi financial data treatment */}
+                          <p
+                            className="text-sm font-inter font-normal text-[#E8EDF8]"
+                            style={{ fontFeatureSettings: '"ss01" 1, "tnum" 1', letterSpacing: "-0.42px" }}
+                          >
                             ${attr.price.toLocaleString()}
                           </p>
                         </div>
@@ -438,14 +463,19 @@ export function CenterPointJobs() {
                               { label: "Domain", value: attr.domain },
                               { label: "Type", value: attr.opportunityType || attr.workType || "—" },
                               { label: "Start Date", value: attr.startDate ? new Date(attr.startDate).toLocaleDateString() : "—" },
-                              { label: "Price", value: attr.price > 0 ? `$${attr.price.toLocaleString()}` : "—" },
+                              { label: "Price", value: attr.price > 0 ? `$${attr.price.toLocaleString()}` : "—", isMoney: attr.price > 0 },
                               { label: "Last Updated", value: new Date(attr.updatedAt).toLocaleDateString() },
                               { label: "Hustad Type", value: attr.customWithLabels?.serviceTypeHustad || "—" },
                               { label: "Created", value: new Date(attr.createdAt).toLocaleDateString() },
-                            ].map(item => (
+                            ].map((item: { label: string; value: string; isMoney?: boolean }) => (
                               <div key={item.label} className="space-y-1">
                                 <p className="text-[9px] font-mono text-[#354D6F] uppercase tracking-widest">{item.label}</p>
-                                <p className="text-xs text-[#AABDCF] font-display">{item.value}</p>
+                                <p
+                                  className="text-xs text-[#AABDCF] font-display"
+                                  style={item.isMoney ? { fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: '"ss01" 1, "tnum" 1', letterSpacing: "-0.39px", fontWeight: 400 } : undefined}
+                                >
+                                  {item.value}
+                                </p>
                               </div>
                             ))}
                           </div>

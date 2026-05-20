@@ -30,6 +30,11 @@ export function A02WhyInspection({ session, onUpdate, onNext, onBack }: Props) {
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606] selection:bg-indigo-500/30 selection:text-[#E8EDF8]">
       {/* Background Assets: Forensic Rapid Deployment Cloud */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Stripi gradient mesh — atmospheric hero backdrop */}
+        <div
+          className="absolute top-0 inset-x-0 h-[45%] opacity-[0.06]"
+          style={{ backgroundImage: "url('/images/gradient-mesh-purple.svg')", backgroundSize: "cover", backgroundPosition: "center top" }}
+        />
         {/* Ambient Gradient Lift - Softer */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.04),transparent_70%)]" />
 

@@ -43,6 +43,11 @@ export function A01Welcome({ session, onUpdate, onNext, onBack, onSkip }: Props)
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606] selection:bg-indigo-500/30 selection:text-[#E8EDF8]">
       {/* Background Assets: Forensic Rapid Deployment Cloud */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Stripi gradient mesh — atmospheric color wash (cream → lavender → indigo → ruby) */}
+        <div
+          className="absolute top-0 inset-x-0 h-[55%] opacity-[0.07]"
+          style={{ backgroundImage: "url('/images/gradient-mesh-hero.svg')", backgroundSize: "cover", backgroundPosition: "center top" }}
+        />
         {/* Ambient Gradient Lift - Cleaner & Softer */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(99,102,241,0.04),transparent_60%)]" />
 

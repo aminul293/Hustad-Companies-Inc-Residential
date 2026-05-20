@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -200,4 +200,174 @@ html, body {
   .text-tx3 { color: var(--tx3); }
   .text-tx4 { color: var(--tx4); }
   .text-tx5 { color: var(--tx5); }
+
+  /* Tabular figures for money / numeric data — Stripi convention */
+  .tnum {
+    font-feature-settings: "ss01" 1, "tnum" 1;
+    letter-spacing: -0.42px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   STRIPI DESIGN SYSTEM — design tokens (Stripe-inspired)
+   Used in dashboard, pipeline, and CRM data surfaces.
+   ───────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Brand — indigo CTA */
+  --stripi-primary:            #533afd;
+  --stripi-primary-deep:       #4434d4;
+  --stripi-primary-press:      #2e2b8c;
+  --stripi-primary-soft:       #665efd;
+  --stripi-primary-subdued:    #b9b9f9;
+  --stripi-brand-dark:         #1c1e54;
+
+  /* Gradient mesh accents */
+  --stripi-ruby:               #ea2261;
+  --stripi-magenta:            #f96bee;
+  --stripi-sherbet:            #ffb56e;
+  --stripi-lavender:           #b6a5ff;
+  --stripi-cream:              #f5e9d4;
+
+  /* Surfaces — light mode */
+  --stripi-canvas:             #ffffff;
+  --stripi-canvas-soft:        #f6f9fc;
+  --stripi-canvas-cream:       #f5e9d4;
+  --stripi-hairline:           #e3e8ee;
+  --stripi-hairline-input:     #a8c3de;
+
+  /* Text — light mode */
+  --stripi-ink:                #0d253d;
+  --stripi-ink-secondary:      #273951;
+  --stripi-ink-mute:           #64748d;
+  --stripi-on-primary:         #ffffff;
+
+  /* Semantic status */
+  --stripi-success-bg:         #d7f7c2;
+  --stripi-success-fg:         #0d6a3f;
+  --stripi-danger-bg:          #fde2e1;
+  --stripi-danger-fg:          #983705;
+  --stripi-warn-bg:            #fff5cc;
+  --stripi-warn-fg:            #6a4e00;
+
+  /* Shadows */
+  --stripi-shadow-1: 0 1px 3px rgba(0, 55, 112, 0.08);
+  --stripi-shadow-2: 0 8px 24px rgba(0, 55, 112, 0.08), 0 2px 6px rgba(0, 55, 112, 0.04);
+
+  /* Radii */
+  --stripi-radius-sm:   6px;
+  --stripi-radius-md:   8px;
+  --stripi-radius-lg:   12px;
+  --stripi-radius-xl:   16px;
+  --stripi-radius-pill: 9999px;
+
+  /* Type scale */
+  --stripi-fs-display: 32px;  --stripi-ls-display: -0.64px;
+  --stripi-fs-heading: 22px;  --stripi-ls-heading: -0.22px;
+  --stripi-fs-body:    15px;
+  --stripi-fs-caption: 13px;  --stripi-ls-caption: -0.39px;
+  --stripi-fs-micro:   11px;
+  --stripi-fs-label:   10px;  --stripi-ls-label:    0.1px;
+}
+
+/* ── Stripi component utilities ─────────────────────────────────────────── */
+@layer components {
+  /* Status chip — Stripi pill with colored background + dot indicator */
+  .stripi-chip {
+    @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-feature-settings: "ss01" 1, "tnum" 1;
+  }
+  .stripi-chip-dot {
+    @apply w-1.5 h-1.5 rounded-full shrink-0;
+  }
+  .stripi-chip-success { background: var(--stripi-success-bg); color: var(--stripi-success-fg); }
+  .stripi-chip-danger  { background: var(--stripi-danger-bg);  color: var(--stripi-danger-fg); }
+  .stripi-chip-warn    { background: var(--stripi-warn-bg);     color: var(--stripi-warn-fg); }
+  .stripi-chip-neutral { background: var(--stripi-canvas-soft); color: var(--stripi-ink-mute); }
+
+  /* Stat card — Stripi-style KPI balance card */
+  .stripi-stat-card {
+    @apply rounded-xl border p-4;
+    background: var(--stripi-canvas);
+    border-color: var(--stripi-hairline);
+    box-shadow: var(--stripi-shadow-1);
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  .stripi-stat-label {
+    font-size: var(--stripi-fs-caption);
+    color: var(--stripi-ink);
+    font-weight: 400;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  .stripi-stat-value {
+    font-size: 32px;
+    font-weight: 300;
+    letter-spacing: var(--stripi-ls-display);
+    color: var(--stripi-ink);
+    font-feature-settings: "ss01" 1, "tnum" 1;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  .stripi-stat-sub {
+    font-size: var(--stripi-fs-caption);
+    color: var(--stripi-ink-mute);
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Pill button — Stripi primary CTA */
+  .stripi-btn-primary {
+    @apply inline-flex items-center gap-2 px-4 py-2 border-none cursor-pointer transition-all duration-150;
+    border-radius: var(--stripi-radius-pill);
+    background: var(--stripi-primary);
+    color: var(--stripi-on-primary);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: var(--stripi-fs-body);
+    font-weight: 400;
+  }
+  .stripi-btn-primary:hover  { background: var(--stripi-primary-soft); }
+  .stripi-btn-primary:active { background: var(--stripi-primary-press); }
+
+  /* Filter tab bar — Stripi tabbed filter */
+  .stripi-tab-bar {
+    @apply flex gap-0 border-b;
+    border-color: var(--stripi-hairline);
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  .stripi-tab {
+    @apply px-3 py-2 text-sm cursor-pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    color: var(--stripi-ink-mute);
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .stripi-tab-active {
+    color: var(--stripi-primary);
+    border-bottom-color: var(--stripi-primary);
+  }
+
+  /* Table chrome — Stripi data table */
+  .stripi-table {
+    @apply w-full;
+    border-collapse: collapse;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: var(--stripi-fs-caption);
+  }
+  .stripi-table th {
+    text-align: left;
+    font-weight: 400;
+    color: var(--stripi-ink-mute);
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--stripi-hairline);
+  }
+  .stripi-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f3f7;
+    color: var(--stripi-ink);
+  }
+  .stripi-table tbody tr:hover { background: #fafbfd; }
+  .stripi-table tbody tr:last-child td { border-bottom: none; }
+  .stripi-money {
+    font-feature-settings: "ss01" 1, "tnum" 1;
+    color: var(--stripi-ink);
+    font-weight: 400;
+  }
 }
