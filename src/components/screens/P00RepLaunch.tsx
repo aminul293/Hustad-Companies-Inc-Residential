@@ -5,6 +5,7 @@ import type { SessionState, ScreenId } from "@/types/session";
 import { SCREEN_FLOW } from "@/types/session";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { SplineScene } from "@/components/ui/splite";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { StarButton } from "@/components/ui/star-button";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -440,6 +441,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
           <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em]">Madison Residential</span>
         </div>
         <div className="flex items-center gap-4">
+          <ThemeToggle />
           <div className="px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 backdrop-blur-md flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse shadow-[0_0_8px_rgba(129,140,248,0.6)]" />
             <span className="text-[10px] font-mono uppercase tracking-widest">The Hustad: Online</span>
