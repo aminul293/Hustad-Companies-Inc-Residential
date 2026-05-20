@@ -343,7 +343,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
   };
 
   return (
-    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
+    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[var(--bg-base)] transition-colors duration-300">
       {/* All-Weather Operational Atmosphere */}
       <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
         {/* Subtle Cinematic Rain/Particle System */}
@@ -432,13 +432,13 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
         />
       </div>
 
-      <div className="absolute inset-0 bg-gradient-to-r from-[#060606] via-[#060606]/80 to-transparent z-0" />
+      <div className="absolute inset-0 bg-gradient-to-r dark:from-[#060606] dark:via-[#060606]/80 from-hustad-cream via-hustad-cream/80 to-transparent z-0 transition-colors duration-300" />
 
       {/* Header — in flex flow so content never overlaps it */}
       <div className="relative z-30 flex-shrink-0 flex items-center justify-between px-10 pt-10 pb-6">
         <div className="flex items-baseline gap-2.5 pointer-events-none">
-          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em]">Madison Residential</span>
+          <span className="font-display font-bold text-[var(--tx1)] text-2xl tracking-[0.1em] transition-colors duration-300">HUSTAD</span>
+          <span className="text-[10px] font-mono text-[var(--tx3)] uppercase tracking-[0.3em] transition-colors duration-300">Madison Residential</span>
         </div>
         <div className="flex items-center gap-4">
           <ThemeToggle />
@@ -464,11 +464,11 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-6 w-fit">
                 <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest">Autonomous Property Guardian: ACTIVE</span>
               </div>
-              <h1 className="text-5xl md:text-7xl font-display font-medium bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 leading-[1.1] tracking-tighter">
+              <h1 className="text-5xl md:text-7xl font-display font-medium leading-[1.1] tracking-tighter text-[var(--tx1)] dark:bg-clip-text dark:text-transparent dark:bg-gradient-to-b dark:from-neutral-50 dark:to-neutral-400 transition-colors duration-300">
                 Always Ready.<br />
                 <span className="text-indigo-400">Launch Shield.</span>
               </h1>
-              <p className="mt-6 text-neutral-400 max-w-lg text-lg font-light leading-relaxed">
+              <p className="mt-6 text-[var(--tx3)] max-w-lg text-lg font-light leading-relaxed transition-colors duration-300">
                 The Hustad stands ready in any condition. From severe storms to routine maintenance, our autonomous system is always ahead, protecting your home from damage and ensuring forensic-grade restoration.
               </p>
             </motion.div>
@@ -478,7 +478,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
               <div className="flex items-center justify-between px-2">
                 <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest">Production Identity Layer</p>
                 {(authStatus === "authenticated" || !!mockId) && (
-                  <button onClick={() => signOut({ callbackUrl: "/login" })} className="text-[9px] font-mono text-[#3F5878] hover:text-[#E8EDF8] uppercase tracking-widest">Switch Account</button>
+                  <button onClick={() => signOut({ callbackUrl: "/login" })} className="text-[9px] font-mono text-[var(--tx4)] hover:text-[var(--tx1)] uppercase tracking-widest transition-colors duration-150">Switch Account</button>
                 )}
               </div>
 
@@ -490,8 +490,8 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                     </div>
                     <div>
                       <p className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest mb-1">Authenticated Operative</p>
-                      <h3 className="text-2xl font-display font-medium text-[#E8EDF8]">{authRep.name}</h3>
-                      <p className="text-xs text-[#567090]">{authRep.email}</p>
+                      <h3 className="text-2xl font-display font-medium text-[var(--tx1)] transition-colors duration-300">{authRep.name}</h3>
+                      <p className="text-xs text-[var(--tx4)] transition-colors duration-300">{authRep.email}</p>
                     </div>
                   </div>
                   <button onClick={() => setShowDashboard(true)} className="h-14 w-14 rounded-2xl bg-white text-black flex items-center justify-center hover:scale-105 transition-all">
@@ -692,8 +692,8 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
             {/* Compliance Banner */}
             <div className="p-6 rounded-3xl bg-indigo-500/5 border border-indigo-500/10 flex items-start gap-4">
               <Shield className="w-5 h-5 text-indigo-400 mt-0.5" />
-              <p className="text-xs text-[#AABDCF] leading-relaxed font-light">
-                <span className="text-[#E8EDF8] font-medium uppercase tracking-widest text-[9px] mr-2">Advisory</span>
+              <p className="text-xs text-[var(--tx2)] leading-relaxed font-light transition-colors duration-300">
+                <span className="text-[var(--tx1)] font-medium uppercase tracking-widest text-[9px] mr-2 transition-colors duration-300">Advisory</span>
                 Strictly forensic session. No claim promises or deductible guarantees during the buyer walkthrough.
               </p>
             </div>
@@ -701,7 +701,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
       </div>
 
       {/* Footer CTA */}
-      <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-24">
+      <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t dark:from-[#060606] dark:via-[#060606]/90 from-hustad-cream via-hustad-cream/90 to-transparent pt-24 transition-colors duration-300">
         <div className="max-w-3xl mx-auto">
           <div className="flex justify-center gap-4">
             {(authStatus === "authenticated" || !!mockId) && (
@@ -712,8 +712,8 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                       onClick={() => setShowDashboard(true)}
                       className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all"
                     >
-                      <LayoutGrid className="w-4 h-4 text-[#AABDCF]" />
-                      <span className="text-sm font-display font-medium text-[#E8EDF8]">Command Center</span>
+                      <LayoutGrid className="w-4 h-4 text-[var(--tx2)]" />
+                      <span className="text-sm font-display font-medium text-[var(--tx1)]">Command Center</span>
                     </button>
                     <button
                       onClick={() => setShowCompanyModal(true)}
@@ -729,8 +729,8 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                       onClick={() => setIsPreFlightMode(false)}
                       className="group flex items-center gap-3 px-8 py-6 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
                     >
-                      <X className="w-5 h-5 text-[#7090B0]" />
-                      <span className="text-sm font-display font-medium text-[#AABDCF]">Cancel / Back to Hub</span>
+                      <X className="w-5 h-5 text-[var(--tx4)]" />
+                      <span className="text-sm font-display font-medium text-[var(--tx2)]">Cancel / Back to Hub</span>
                     </button>
                     <button 
                       onClick={handleStart}
