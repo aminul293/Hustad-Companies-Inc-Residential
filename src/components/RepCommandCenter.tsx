@@ -11,7 +11,6 @@ import {
   CalendarDays,
   User,
   ArrowLeft,
-  ArrowRight,
   AlertCircle,
   Settings,
   UserPlus,
@@ -25,6 +24,10 @@ import {
   LogOut,
   Shield,
   AlertTriangle,
+  MoreHorizontal,
+  Activity,
+  Inbox,
+  X,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
@@ -156,6 +159,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
   const [draftRefreshKey, setDraftRefreshKey] = useState(0);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [copiedSessionId, setCopiedSessionId] = useState<string | null>(null);
+  const [moreOpen, setMoreOpen] = useState(false);
 
   useEffect(() => {
     if (!confirmDeleteId) return;
@@ -768,37 +772,37 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
       </AnimatePresence>
 
       {/* Header */}
-      <div className="p-8 pb-0 space-y-8">
+      <div className="px-4 pt-4 pb-0 space-y-4 md:px-8 md:pt-8 md:space-y-8">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {onBack && (
               <button
                 onClick={onBack}
-                className="p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all shrink-0"
+                className="p-2.5 md:p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all shrink-0"
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
               </button>
             )}
-            <div className="space-y-1">
-              <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-display font-medium tracking-tight">
-                  {{ dashboard: "Rep Command Center", pipeline: "Sales Pipeline", schedule: "My Schedule", calendar: "Calendar", centerpoint: "CP Inbox", tickets: "Hustad Tickets", manager: "Manager Dashboard", settings: "System Settings" }[view]}
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl md:text-3xl font-display font-medium tracking-tight">
+                  {{ dashboard: "Inspections", pipeline: "Pipeline", schedule: "My Schedule", calendar: "Calendar", centerpoint: "CP Inbox", tickets: "Tickets", manager: "Manager", settings: "Settings" }[view]}
                 </h1>
                 {pendingCompletions > 0 && (
-                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/25 text-[9px] font-mono text-amber-400 uppercase tracking-widest">
-                    <AlertCircle className="w-3 h-3" />
-                    {pendingCompletions} pending sync
+                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/25 text-[9px] font-mono text-amber-400 uppercase tracking-widest">
+                    <AlertCircle className="w-2.5 h-2.5" />
+                    {pendingCompletions}
                   </span>
                 )}
               </div>
-              <p className="text-sm text-[#7090B0] font-light">
+              <p className="hidden md:block text-sm text-[#7090B0] font-light">
                 {{ dashboard: "Field intelligence and session management.", pipeline: "Manage leads from reach-out to appointment scheduling.", schedule: "Appointments, conflicts, and daily work queue.", calendar: "Day and week view with conflict detection and route navigation.", centerpoint: "Jobs synced from CenterPoint Connect.", tickets: "Your managed pipeline — stages, touches, and write-back.", manager: "All-rep activity, no-shows, follow-ups, and queue health.", settings: "Manage field identities and operational parameters." }[view]}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {/* Tab switcher */}
-            <div className="flex items-center gap-1 p-1 bg-white/5 border border-white/10 rounded-full">
+            {/* Tab switcher — tablet/desktop only */}
+            <div className="hidden md:flex items-center gap-1 p-1 bg-white/5 border border-white/10 rounded-full">
               {([
                 { id: "dashboard", label: "Inspections" },
                 { id: "pipeline", label: "Pipeline" },
@@ -819,48 +823,57 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                 >{tab.label}</button>
               ))}
             </div>
-            {view === "dashboard" && (
-              <></>
-            )}
+            {/* Mobile: settings icon shortcut */}
+            <button
+              onClick={() => setView("settings")}
+              className={cn(
+                "md:hidden p-2.5 rounded-2xl border transition-all",
+                view === "settings"
+                  ? "bg-white/10 border-white/20 text-white"
+                  : "bg-white/5 border-white/10 text-[#567090]"
+              )}
+            >
+              <Settings className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
         {view === "dashboard" && (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               {[
-                { label: "Active Drafts", value: stats.active, icon: Clock, color: "text-indigo-400", bg: "bg-indigo-500/5" },
-                { label: "Pending Auth", value: stats.pending, icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/5" },
-                { label: "Missing Data", value: stats.missing, icon: AlertCircle, color: "text-rose-400", bg: "bg-rose-500/5" },
-                { label: "Needs Recon", value: stats.reconciliation, icon: AlertTriangle, color: "text-amber-400", bg: "bg-amber-500/5" },
+                { label: "Active", value: stats.active, icon: Clock, color: "text-indigo-400", bg: "bg-indigo-500/5" },
+                { label: "Pending", value: stats.pending, icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/5" },
+                { label: "Missing", value: stats.missing, icon: AlertCircle, color: "text-rose-400", bg: "bg-rose-500/5" },
+                { label: "Recon", value: stats.reconciliation, icon: AlertTriangle, color: "text-amber-400", bg: "bg-amber-500/5" },
               ].map((s, i) => (
-                <div key={i} className={cn("p-6 rounded-[32px] border border-white/[0.08] backdrop-blur-xl transition-all hover:border-white/20 hover:bg-white/[0.02] group", s.bg)}>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={cn("p-2 rounded-xl bg-white/5", s.color)}>
-                      <s.icon className="w-4 h-4" />
+                <div key={i} className={cn("p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-white/[0.08] backdrop-blur-xl transition-all hover:border-white/20 hover:bg-white/[0.02] group", s.bg)}>
+                  <div className="flex items-center justify-between mb-3 md:mb-4">
+                    <div className={cn("p-1.5 md:p-2 rounded-xl bg-white/5", s.color)}>
+                      <s.icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
                     </div>
-                    <span className="text-[9px] font-mono text-[#3F5878] uppercase tracking-[0.2em] group-hover:text-[#7090B0] transition-colors">Live Status</span>
+                    <span className="hidden md:block text-[9px] font-mono text-[#3F5878] uppercase tracking-[0.2em] group-hover:text-[#7090B0] transition-colors">Live</span>
                   </div>
-                  <p className="text-3xl font-display font-semibold tracking-tight mb-1">
-                    {isLoading ? <span className="inline-block w-6 h-6 border-2 border-white/10 border-t-white/40 rounded-full animate-spin" /> : s.value}
+                  <p className="text-2xl md:text-3xl font-display font-semibold tracking-tight mb-0.5 md:mb-1">
+                    {isLoading ? <span className="inline-block w-5 h-5 border-2 border-white/10 border-t-white/40 rounded-full animate-spin" /> : s.value}
                   </p>
-                  <p className="text-[10px] font-mono text-[#567090] uppercase tracking-widest">{s.label}</p>
+                  <p className="text-[9px] md:text-[10px] font-mono text-[#567090] uppercase tracking-widest">{s.label}</p>
                 </div>
               ))}
             </div>
 
-            <div className="flex flex-col md:flex-row items-center gap-4">
-              <div className="relative flex-1 w-full">
+            <div className="flex flex-col gap-3">
+              <div className="relative w-full">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#3F5878]" />
-                <input 
-                  type="text" 
-                  placeholder="Search by address or homeowner..." 
+                <input
+                  type="text"
+                  placeholder="Search address or homeowner..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/[0.1] rounded-2xl py-3.5 pl-12 pr-6 text-sm outline-none focus:border-indigo-500/50 transition-all"
+                  className="w-full bg-white/[0.03] border border-white/[0.1] rounded-2xl py-3 md:py-3.5 pl-11 pr-6 text-sm outline-none focus:border-indigo-500/50 transition-all"
                 />
               </div>
-              <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1">
                 {[
                   { id: "all", label: "All" },
                   { id: "missing", label: "Attention" },
@@ -873,9 +886,9 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                     key={f.id}
                     onClick={() => setFilter(f.id)}
                     className={cn(
-                      "px-4 py-2 rounded-full border text-xs font-display transition-all whitespace-nowrap",
-                      filter === f.id 
-                        ? "bg-white text-black border-white" 
+                      "px-3 py-1.5 rounded-full border text-xs font-display transition-all whitespace-nowrap",
+                      filter === f.id
+                        ? "bg-white text-black border-white"
                         : "bg-white/5 border-white/10 text-[#8BA5C5] hover:bg-white/10"
                     )}
                   >
@@ -888,7 +901,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
         )}
       </div>
 
-      <div className={cn("flex-1 min-h-0 overflow-hidden", ["calendar", "manager"].includes(view) ? "flex flex-col" : "overflow-y-auto p-8")}>
+      <div className={cn("flex-1 min-h-0 overflow-hidden", ["calendar", "manager"].includes(view) ? "flex flex-col" : "overflow-y-auto px-4 py-4 md:p-8 pb-24 md:pb-8")}>
         {view === "calendar" ? (
           <CalendarView currentRep={currentRep} managerMode={view === "calendar"} />
         ) : view === "manager" ? (
@@ -963,14 +976,14 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                   <div
                     key={d.sessionId}
                     onClick={() => onLoadDraft(d.sessionId)}
-                    className="w-full group p-6 rounded-[32px] bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/20 transition-all text-left relative overflow-hidden cursor-pointer"
+                    className="w-full group p-4 md:p-6 rounded-[24px] md:rounded-[32px] bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/20 transition-all text-left relative overflow-hidden cursor-pointer active:scale-[0.99]"
                   >
                     {/* Subtle hover gradient */}
                     <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-indigo-500/0 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-                      <div className="grow space-y-4">
-                        <div className="flex items-center gap-3">
+
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 relative z-10">
+                      <div className="grow space-y-3 md:space-y-4">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <div className={cn(
                             "px-3 py-1 rounded-full font-mono text-[9px] uppercase tracking-widest border",
                             d.syncStatus === "synced"
@@ -1013,14 +1026,15 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                           )}
                         </div>
                         <div className="space-y-1">
-                          <p className="text-xl font-display font-medium tracking-tight group-hover:text-indigo-300 transition-colors">{d.address}</p>
-                          <div className="flex items-center gap-6 text-[11px] font-mono text-[#567090] uppercase tracking-wider">
-                            <span className="flex items-center gap-2"><User className="w-3.5 h-3.5 text-indigo-400/50" /> {d.homeownerName || "No Owner Listed"}</span>
-                            <span className="flex items-center gap-2"><Calendar className="w-3.5 h-3.5 text-indigo-400/50" /> {new Date(d.lastSavedAt).toLocaleDateString()}</span>
+                          <p className="text-base md:text-xl font-display font-medium tracking-tight group-hover:text-indigo-300 transition-colors">{d.address}</p>
+                          <div className="flex items-center gap-3 md:gap-6 text-[10px] md:text-[11px] font-mono text-[#567090] uppercase tracking-wider flex-wrap">
+                            <span className="flex items-center gap-1.5"><User className="w-3 h-3 md:w-3.5 md:h-3.5 text-indigo-400/50" /> {d.homeownerName || "No Owner Listed"}</span>
+                            <span className="flex items-center gap-1.5"><Calendar className="w-3 h-3 md:w-3.5 md:h-3.5 text-indigo-400/50" /> {new Date(d.lastSavedAt).toLocaleDateString()}</span>
+                            <span className="md:hidden text-[9px] text-[#567090]">{d.sessionStatus.replace(/_/g, " ").toUpperCase()}</span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-8 shrink-0">
+                      <div className="flex items-center gap-4 md:gap-8 shrink-0">
                         <div className="text-right hidden md:block">
                           <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-[0.2em] mb-1.5">Operational Phase</p>
                           <p className="text-[10px] font-mono font-medium text-[#8BA5C5] tracking-widest">
@@ -1067,28 +1081,28 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                           <Trash className="w-4 h-4 shrink-0" />
                           {confirmDeleteId === d.sessionId && <span>Confirm</span>}
                         </button>
-                        <div className="h-14 w-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:scale-105 transition-all">
-                          <ChevronRight className="w-6 h-6 text-[#E8EDF8] group-hover:text-black transition-colors" />
+                        <div className="h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:scale-105 transition-all">
+                          <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-[#E8EDF8] group-hover:text-black transition-colors" />
                         </div>
                       </div>
                     </div>
 
                     {/* Rep Camera Link */}
                     <div
-                      className="mt-5 pt-5 border-t border-white/[0.05] flex items-center gap-4 relative z-10"
+                      className="mt-4 pt-4 border-t border-white/[0.05] flex items-center gap-3 relative z-10"
                       onClick={e => e.stopPropagation()}
                     >
                       <img
                         src={`https://api.qrserver.com/v1/create-qr-code/?size=64x64&data=${encodeURIComponent(`${typeof window !== "undefined" ? window.location.origin : ""}/rep-capture?s=${d.sessionId}`)}&bgcolor=0d0d1a&color=a5b4fc&qzone=1&format=png`}
                         alt="Rep capture QR"
-                        className="w-16 h-16 rounded-xl border border-indigo-500/20 shrink-0"
+                        className="hidden md:block w-16 h-16 rounded-xl border border-indigo-500/20 shrink-0"
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-1.5 mb-0.5">
                           <Smartphone className="w-3 h-3 text-indigo-400/50" />
                           <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-[0.2em]">Rep Camera Link</p>
                         </div>
-                        <p className="text-[11px] font-mono text-indigo-300/60 truncate">/rep-capture?s={d.sessionId}</p>
+                        <p className="text-[10px] font-mono text-indigo-300/60 truncate">/rep-capture?s={d.sessionId.slice(0, 16)}…</p>
                       </div>
                       <button
                         onClick={() => {
@@ -1101,7 +1115,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                       >
                         {copiedSessionId === d.sessionId
                           ? <><CheckIcon className="w-3.5 h-3.5" /> Copied!</>
-                          : <><Copy className="w-3.5 h-3.5" /> Copy Link</>
+                          : <><Copy className="w-3.5 h-3.5" /> Copy</>
                         }
                       </button>
                     </div>
@@ -1211,6 +1225,107 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
           </div>
         )}
       </div>
+
+      {/* ── Mobile Bottom Nav (hidden on md+) ─────────────────────────────────── */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around bg-[#0a0f1a]/95 backdrop-blur-xl border-t border-white/[0.08] pb-safe">
+        {([
+          { id: "dashboard",   label: "Inspect",  icon: LayoutGrid },
+          { id: "pipeline",    label: "Pipeline", icon: Activity },
+          { id: "schedule",    label: "Schedule", icon: Calendar },
+          { id: "centerpoint", label: "CP Inbox", icon: Inbox },
+        ] as const).map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => { setView(tab.id); setMoreOpen(false); }}
+            className={cn(
+              "flex flex-col items-center gap-1 py-3 px-4 min-w-[56px] transition-all active:scale-95",
+              view === tab.id ? "text-indigo-400" : "text-[#3F5878]"
+            )}
+          >
+            <tab.icon className={cn("w-5 h-5 transition-all", view === tab.id && "drop-shadow-[0_0_6px_rgba(129,140,248,0.6)]")} />
+            <span className="text-[9px] font-mono uppercase tracking-wider">{tab.label}</span>
+            {view === tab.id && <span className="absolute bottom-0 w-5 h-0.5 rounded-full bg-indigo-400" />}
+          </button>
+        ))}
+        <button
+          onClick={() => setMoreOpen(prev => !prev)}
+          className={cn(
+            "flex flex-col items-center gap-1 py-3 px-4 min-w-[56px] transition-all active:scale-95 relative",
+            moreOpen || ["calendar","tickets","manager"].includes(view) ? "text-indigo-400" : "text-[#3F5878]"
+          )}
+        >
+          <MoreHorizontal className="w-5 h-5" />
+          <span className="text-[9px] font-mono uppercase tracking-wider">More</span>
+        </button>
+      </nav>
+
+      {/* ── Mobile "More" Drawer ───────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {moreOpen && (
+          <>
+            <motion.div
+              className="md:hidden fixed inset-0 z-30 bg-black/50 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMoreOpen(false)}
+            />
+            <motion.div
+              className="md:hidden fixed bottom-16 left-3 right-3 z-40 rounded-[28px] bg-[#111827] border border-white/[0.1] p-2 overflow-hidden"
+              initial={{ opacity: 0, y: 16, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 16, scale: 0.96 }}
+              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <div className="flex items-center justify-between px-3 py-2 mb-1">
+                <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-[0.2em]">More Sections</p>
+                <button onClick={() => setMoreOpen(false)} className="p-1 rounded-lg text-[#3F5878] hover:text-white transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              {([
+                { id: "calendar", label: "Calendar",         icon: CalendarDays, sub: "Day & week view" },
+                { id: "tickets",  label: "Hustad Tickets",   icon: CheckCircle2, sub: "Pipeline write-back" },
+                { id: "manager",  label: "Manager Dashboard",icon: Activity,     sub: "All-rep activity" },
+                { id: "settings", label: "Settings",         icon: Settings,     sub: "Reps & configuration" },
+              ] as const).map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => { setView(item.id); setMoreOpen(false); }}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-3 py-3 rounded-2xl transition-all active:scale-[0.98] text-left",
+                    view === item.id ? "bg-indigo-500/15 text-indigo-300" : "text-[#C2D0E4] hover:bg-white/5"
+                  )}
+                >
+                  <div className={cn("p-2 rounded-xl", view === item.id ? "bg-indigo-500/20" : "bg-white/5")}>
+                    <item.icon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-display font-medium">{item.label}</p>
+                    <p className="text-[10px] font-mono text-[#567090]">{item.sub}</p>
+                  </div>
+                  {view === item.id && <CheckIcon className="w-4 h-4 ml-auto text-indigo-400" />}
+                </button>
+              ))}
+
+              {onNewSession && (
+                <>
+                  <div className="h-px bg-white/[0.06] my-2" />
+                  <button
+                    onClick={() => { onNewSession(); setMoreOpen(false); }}
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 hover:bg-indigo-500/20 transition-all active:scale-[0.98]"
+                  >
+                    <div className="p-2 rounded-xl bg-indigo-500/20">
+                      <PlayCircle className="w-4 h-4" />
+                    </div>
+                    <p className="text-sm font-display font-medium">New Inspection</p>
+                  </button>
+                </>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Import confirmation modal */}
       <AnimatePresence>
