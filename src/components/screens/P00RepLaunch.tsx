@@ -433,29 +433,28 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
 
       <div className="absolute inset-0 bg-gradient-to-r from-[#060606] via-[#060606]/80 to-transparent z-0" />
 
-      {/* Header */}
-      <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
-        <div className="flex items-baseline gap-2.5">
+      {/* Header — in flex flow so content never overlaps it */}
+      <div className="relative z-30 flex-shrink-0 flex items-center justify-between px-10 pt-10 pb-6">
+        <div className="flex items-baseline gap-2.5 pointer-events-none">
           <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
           <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em]">Madison Residential</span>
         </div>
+        <div className="flex items-center gap-4">
+          <div className="px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 backdrop-blur-md flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse shadow-[0_0_8px_rgba(129,140,248,0.6)]" />
+            <span className="text-[10px] font-mono uppercase tracking-widest">The Hustad: Online</span>
+          </div>
+          <div className={cn(
+            "px-4 py-1.5 rounded-full border flex items-center gap-2 transition-all duration-500 backdrop-blur-md",
+            isOnline ? "bg-green-500/10 border-green-500/20 text-green-400" : "bg-rose-500/10 border-rose-500/20 text-rose-400"
+          )}>
+            <span className={cn("w-1.5 h-1.5 rounded-full", isOnline ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "bg-rose-500 animate-pulse")} />
+            <span className="text-[10px] font-mono uppercase tracking-widest">{isOnline ? "Sync Active" : "Offline"}</span>
+          </div>
+        </div>
       </div>
 
-      <div className="absolute top-10 right-10 z-30 flex items-center gap-4">
-        <div className="px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 backdrop-blur-md flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse shadow-[0_0_8px_rgba(129,140,248,0.6)]" />
-          <span className="text-[10px] font-mono uppercase tracking-widest">The Hustad: Online</span>
-        </div>
-        <div className={cn(
-          "px-4 py-1.5 rounded-full border flex items-center gap-2 transition-all duration-500 backdrop-blur-md",
-          isOnline ? "bg-green-500/10 border-green-500/20 text-green-400" : "bg-rose-500/10 border-rose-500/20 text-rose-400"
-        )}>
-          <span className={cn("w-1.5 h-1.5 rounded-full", isOnline ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "bg-rose-500 animate-pulse")} />
-          <span className="text-[10px] font-mono uppercase tracking-widest">{isOnline ? "Sync Active" : "Offline"}</span>
-        </div>
-      </div>
-
-      <div className="relative z-10 flex-1 overflow-y-auto px-10 pt-44 pb-48">
+      <div className="relative z-10 flex-1 overflow-y-auto px-10 pt-8 pb-48">
         <div className="max-w-3xl mx-auto space-y-12">
           
           {/* Launch Area */}
