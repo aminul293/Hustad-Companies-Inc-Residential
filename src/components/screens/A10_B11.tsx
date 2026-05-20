@@ -266,7 +266,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
         alert(`No official NWS storm reports found for the ${data.office || "local"} region in the last 48 hours. The area is currently "Forensic Clear" according to official records.`);
       }
     } catch (err) {
-      console.error("Failed to fetch weather:", err);
+      /* non-fatal */
       alert("Weather Sync Error: Could not connect to NWS Forensic Terminal. Please check your connection or enter data manually.");
     } finally {
       setIsWeatherLoading(false);

@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchCenterpointMe } from "@/lib/api";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -323,7 +324,7 @@ function RequestForm({
   const [isFetchingManager, setIsFetchingManager] = useState(true);
 
   useEffect(() => {
-    fetch("/api/centerpoint/me")
+    fetchCenterpointMe()
       .then((res) => res.json())
       .then((data) => {
         if (data.employeeId) {

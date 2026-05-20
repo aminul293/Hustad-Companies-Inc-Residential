@@ -1,5 +1,6 @@
 "use client";
 
+import { sendEmail } from "@/lib/api";
 import { useState, useEffect } from "react";
 import type { SessionState, ScreenId } from "@/types/session";
 import { SCREEN_FLOW } from "@/types/session";
@@ -189,7 +190,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
         });
         setSuggestions(formatted);
       } catch (e) {
-        console.error("Geo-Engine Failure", e);
+        /* non-fatal */
       } finally {
         setIsSearching(false);
       }

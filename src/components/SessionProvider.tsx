@@ -151,7 +151,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       if (authStatus !== "authenticated" && !authRep) return;
       // Process offline sync queue when we come back online
       processSyncQueue().then((count) => {
-        if (count > 0) console.log(`Synced ${count} queued session(s)`);
       });
     };
     const handleOffline = () => setIsOnline(false);

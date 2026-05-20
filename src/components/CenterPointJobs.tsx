@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchCenterpointJobs, fetchCenterpointSyncStatus, triggerCenterpointSync, patchCenterpointJob, createPipelineLead } from "@/lib/api";
 import { useState, useEffect, useCallback } from "react";
 import { Search, ChevronRight, RefreshCw, Building2, ArrowRight, CloudDownload, CheckCircle2, ArrowLeft, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -106,7 +107,7 @@ export function CenterPointJobs() {
       if (search) params.set("search", search);
       if (statusFilter) params.set("status", statusFilter);
 
-      const res = await fetch(`/api/centerpoint?${params.toString()}&t=${Date.now()}`);
+      const res = await fetchCenterpointJobs(Object.fromEntries(params.entries()));
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error || `Server responded with status ${res.status}`);
@@ -124,7 +125,7 @@ export function CenterPointJobs() {
         }
       }
     } catch (e: any) {
-      console.error("CenterPoint fetch error:", e);
+      /* non-fatal */
       // We could set an error state here if needed
     } finally {
       setLoading(false);
@@ -134,7 +135,7 @@ export function CenterPointJobs() {
 
   const fetchSyncStatus = useCallback(async () => {
     try {
-      const res = await fetch("/api/centerpoint/sync");
+      const res = await fetchCenterpointSyncStatus();
       const data = await res.json();
       const lastCompleted = (data.logs ?? []).find((l: any) => l.status === "completed");
       setSyncStatus(prev => ({
@@ -148,7 +149,7 @@ export function CenterPointJobs() {
   const handleSync = async () => {
     setSyncStatus(prev => ({ ...prev, syncing: true, result: null }));
     try {
-      const res = await fetch("/api/centerpoint/sync", { method: "POST" });
+      const res = await triggerCenterpointSync();
       const data = await res.json();
       if (data.ok) {
         setSyncStatus(prev => ({
@@ -191,11 +192,7 @@ export function CenterPointJobs() {
   const handleStageTransition = async (job: CPJob, nextStatus: string) => {
     setTransitioningId(job.id);
     try {
-      const res = await fetch(`/api/centerpoint/${job.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: nextStatus }),
-      });
+      const res = await patchCenterpointJob(job.id, { status: nextStatus });
 
       if (res.ok) {
         setJobs(prev => prev.map(j =>
@@ -205,7 +202,7 @@ export function CenterPointJobs() {
         ));
       }
     } catch (e) {
-      console.error("Stage transition failed", e);
+      /* non-fatal */
     } finally {
       setTransitioningId(null);
     }
@@ -523,7 +520,7 @@ export function CenterPointJobs() {
                                             ));
                                           }
                                         } catch (e) {
-                                          console.error("Unlink failed", e);
+                                          /* non-fatal */
                                         } finally {
                                           setUnlinkingId(null);
                                         }
@@ -543,11 +540,7 @@ export function CenterPointJobs() {
                                       setPromotingId(job.id);
                                       setImportError(null);
                                       try {
-                                        const res = await fetch("/api/pipeline", {
-                                          method: "POST",
-                                          headers: { "Content-Type": "application/json" },
-                                          body: JSON.stringify({ job }),
-                                        });
+                                        const res = await createPipelineLead({ job });
                                         if (res.ok) {
                                           setJobs(prev => prev.map(j =>
                                             j.id === job.id ? { ...j, inbox_status: 'imported_to_pipeline' } : j

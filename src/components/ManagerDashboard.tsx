@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchManagerAppointments, fetchReps, processQueue, patchAppointment } from "@/lib/api";
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -121,20 +122,16 @@ export function ManagerDashboard({ currentRep }: Props) {
   const fetchData = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const [apptRes, repsRes] = await Promise.all([
-        fetch(`/api/appointments/manager?t=${Date.now()}`),
-        fetch(`/api/reps?t=${Date.now()}`),
+      const [apptData, repsRes] = await Promise.all([
+        fetchManagerAppointments(),
+        fetchReps(),
       ]);
-      if (!apptRes.ok) throw new Error(`HTTP ${apptRes.status}`);
-      const json = await apptRes.json();
-      if (json.error) throw new Error(json.error);
-      setData(json);
+      if (apptData.error) throw new Error(apptData.error);
+      setData(apptData);
       if (repsRes.ok) {
         const repsJson = await repsRes.json();
-        console.log("[ManagerDashboard] /api/reps response:", JSON.stringify(repsJson));
         if (repsJson.reps) setDbReps(repsJson.reps);
       } else {
-        console.error("[ManagerDashboard] /api/reps failed:", repsRes.status, await repsRes.text());
       }
     } catch (e: any) {
       setError(e.message);
@@ -416,7 +413,7 @@ export function ManagerDashboard({ currentRep }: Props) {
                 onClick={async () => {
                   setRetryCooldown(true);
                   try {
-                    await fetch("/api/centerpoint/process-queue", { method: "POST" });
+                    await processQueue();
                     await fetchData();
                   } finally {
                     setTimeout(() => setRetryCooldown(false), 5000);
@@ -483,15 +480,11 @@ function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
   const handleReassign = async (newRepId: string) => {
     setReassigning(true);
     try {
-      await fetch(`/api/appointments/${appt.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assigned_rep_id: newRepId }),
-      });
+      await patchAppointment(appt.id, { assigned_rep_id: newRepId });
       setShowReassign(false);
       onReassigned();
     } catch (err) {
-      console.error("[REASSIGN]", err);
+      /* non-fatal */
     } finally {
       setReassigning(false);
     }

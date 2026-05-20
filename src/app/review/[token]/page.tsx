@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchSessionByToken, syncSession, postReviewAction } from "@/lib/api";
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import type { SessionState, SelectedPath, Annotation } from "@/types/session";
@@ -40,7 +41,7 @@ export default function RemoteReviewPage() {
   useEffect(() => {
     async function fetchSession() {
       try {
-        const res = await fetch(`/api/session?token=${token}`);
+        const res = await fetchSessionByToken(token);
         
         if (res.status === 409) {
           const data = await res.json();
@@ -60,7 +61,7 @@ export default function RemoteReviewPage() {
         setSignerName(data.property.homeownerPrimaryName || "");
         setSelectedPath(data.pathData.selectedPath);
         // Track opened status
-        fetch('/api/review/action', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({token, action:'opened'}) });
+        postReviewAction(token, 'opened');
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -71,13 +72,13 @@ export default function RemoteReviewPage() {
   }, [token]);
 
   const trackViewed = () => {
-    fetch('/api/review/action', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({token, action:'viewed'}) });
+    postReviewAction(token, 'viewed');
   };
 
   const sendAction = async (action: string, payload: any) => {
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/review/action', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({token, action, payload}) });
+      const res = await postReviewAction(token, action, payload);
       if (!res.ok) throw new Error('Failed');
       setActionSent(action);
     } catch { alert('Failed to submit. Please try again.'); }

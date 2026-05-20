@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchLeads, fetchAppointments, patchAppointment, createAppointment } from "@/lib/api";
 import { useState, useEffect, useCallback } from "react";
 import {
   CalendarDays, Clock, MapPin, Phone, PlayCircle, CheckCircle2,
@@ -111,7 +112,7 @@ export function MySchedule({ currentRep }: Props) {
     setLoading(true);
     try {
       if (filter === "followups") {
-        const res = await fetch(`/api/pipeline?t=${Date.now()}`);
+        const res = { json: async () => await fetchLeads() };
         const data = await res.json();
         if (Array.isArray(data)) {
           const now = new Date().toISOString();
@@ -121,7 +122,7 @@ export function MySchedule({ currentRep }: Props) {
           ));
         }
       } else if (filter === "unscheduled") {
-        const res = await fetch(`/api/pipeline?t=${Date.now()}`);
+        const res = { json: async () => await fetchLeads() };
         const data = await res.json();
         if (Array.isArray(data)) {
           setUnscheduled(data.filter((l: any) =>
@@ -129,12 +130,11 @@ export function MySchedule({ currentRep }: Props) {
           ));
         }
       } else {
-        const res = await fetch(`/api/appointments?repId=${encodeURIComponent(currentRep.id)}&filter=${filter}&t=${Date.now()}`);
-        const data = await res.json();
+        const data = await fetchAppointments({ repId: currentRep.id, filter });
         setAppointments(Array.isArray(data) ? data : []);
       }
     } catch (e) {
-      console.error("[SCHEDULE]", e);
+      /* non-fatal */
     } finally {
       setLoading(false);
     }
@@ -165,17 +165,13 @@ export function MySchedule({ currentRep }: Props) {
     if (!force && reschedModal.leadId) {
       setActionLoading(reschedModal.apptId);
       try {
-        const clashRes = await fetch("/api/appointments", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+        const clashRes = await createAppointment({
             pipeline_lead_id:    reschedModal.leadId,
             rep_id:              currentRep.id,
             appointment_start_at: start.toISOString(),
             appointment_end_at:   end.toISOString(),
             _dry_run: true,
-          }),
-        });
+          });
         if (clashRes.status === 409) {
           const data = await clashRes.json();
           setReschedClash(data.message || "Schedule conflict detected.");

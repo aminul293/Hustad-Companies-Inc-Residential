@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchSessionByToken } from "@/lib/api";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
@@ -37,7 +38,7 @@ export function RemoteStatusTracker({ token, recipientEmail, recipientName }: Pr
   const fetchStatus = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/session?token=${token}`);
+      const res = await fetchSessionByToken(token);
       if (!res.ok) return;
       const data = await res.json();
       if (data.remoteReview) {

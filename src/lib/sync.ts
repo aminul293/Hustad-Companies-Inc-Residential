@@ -32,14 +32,7 @@ function getAuthHeaders(): Record<string, string> {
   return { "Content-Type": "application/json" };
 }
 
-function getAuthToken(): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    return localStorage.getItem("hustad_token");
-  } catch {
-    return null;
-  }
-}
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SESSION SYNC
@@ -110,10 +103,9 @@ export async function uploadPhoto(
   formData.append("caption", caption);
   formData.append("display_order", String(displayOrder));
 
-  const token = getAuthToken();
   const res = await fetch(`${API_BASE}/api/photos`, {
     method: "POST",
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers: getAuthHeaders(),
     body: formData,
   });
 

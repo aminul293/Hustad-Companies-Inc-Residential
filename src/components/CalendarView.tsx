@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchAppointments as apiFetchAppointments, fetchReps, patchAppointment, deleteAppointment } from "@/lib/api";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -219,24 +220,20 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
     try {
       if (calView === "day") {
         const dateStr = isoDate(selectedDate);
-        const url = repFilter === "all"
-          ? `/api/appointments?from=${dateStr}&includeAll=true&t=${Date.now()}`
-          : `/api/appointments?from=${dateStr}&repId=${encodeURIComponent(repFilter)}&includeAll=true&t=${Date.now()}`;
-        const res = await fetch(url);
-        const data = await res.json();
+        const params: Record<string, string> = { from: dateStr, includeAll: "true" };
+        if (repFilter !== "all") params.repId = repFilter;
+        const data = await apiFetchAppointments(params);
         setAppointments(Array.isArray(data) ? data : []);
       } else {
         const from = isoDate(selectedDate);
         const to   = isoDate(addDays(selectedDate, 6));
-        const url  = repFilter === "all"
-          ? `/api/appointments?from=${from}&to=${to}T23:59:59&includeAll=true&t=${Date.now()}`
-          : `/api/appointments?from=${from}&to=${to}T23:59:59&repId=${encodeURIComponent(repFilter)}&includeAll=true&t=${Date.now()}`;
-        const res = await fetch(url);
-        const data = await res.json();
+        const params: Record<string, string> = { from, to: `${to}T23:59:59`, includeAll: "true" };
+        if (repFilter !== "all") params.repId = repFilter;
+        const data = await apiFetchAppointments(params);
         setAppointments(Array.isArray(data) ? data : []);
       }
     } catch (e) {
-      console.error("[CALENDAR]", e);
+      /* non-fatal */
     } finally {
       setLoading(false);
     }
@@ -247,7 +244,7 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
   // Fetch DB reps once for manager mode; supplement with any unseen IDs from appointments
   useEffect(() => {
     if (!managerMode) return;
-    fetch("/api/reps")
+    fetchReps()
       .then(r => r.json())
       .then(({ reps: dbReps }: { reps: { id: string; name: string }[] }) => {
         setAvailableReps(dbReps ?? []);
@@ -507,7 +504,7 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
                 }}
                 onRemove={async () => {
                   setActionLoading(selectedAppt.id);
-                  await fetch(`/api/appointments/${selectedAppt.id}`, { method: "DELETE" });
+                  await deleteAppointment(selectedAppt.id);
                   setActionLoading(null);
                   setSelectedAppt(null);
                   fetchAppointments();

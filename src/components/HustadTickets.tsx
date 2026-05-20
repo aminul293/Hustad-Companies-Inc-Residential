@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchTickets as apiFetchTickets, patchTicket, addTicketTouch, deleteTicket } from "@/lib/api";
 import { useState, useEffect, useCallback } from "react";
 import { Search, ChevronRight, RefreshCw, Ticket, ArrowRight, Phone, Mail, MessageSquare, User, Plus, CheckCircle2, AlertCircle, ArrowLeft, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -107,7 +108,7 @@ export function HustadTickets() {
       if (search) params.set("search", search);
       if (stageFilter) params.set("stage", stageFilter);
 
-      const res = await fetch(`/api/tickets?${params}`);
+      const res = await apiFetchTickets(Object.fromEntries(params.entries()));
       const data = await res.json();
 
       if (data?.data) {
@@ -116,7 +117,7 @@ export function HustadTickets() {
         setTotal(data.meta?.page?.total ?? 0);
       }
     } catch (e) {
-      console.error("Tickets fetch error", e);
+      /* non-fatal */
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -131,18 +132,14 @@ export function HustadTickets() {
   const handleAdvanceStage = async (ticket: HustadTicket, nextStage: string) => {
     setAdvancingId(ticket.id);
     try {
-      const res = await fetch(`/api/tickets/${ticket.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stage: nextStage }),
-      });
+      const res = await patchTicket(ticket.id, { stage: nextStage });
       if (res.ok) {
         setTickets(prev => prev.map(t =>
           t.id === ticket.id ? { ...t, stage: nextStage } : t
         ));
       }
     } catch (e) {
-      console.error("Stage advance failed", e);
+      /* non-fatal */
     } finally {
       setAdvancingId(null);
     }
@@ -167,7 +164,7 @@ export function HustadTickets() {
         setTouchForm({ method: "call", outcome: "reached", notes: "", rep_name: "" });
       }
     } catch (e) {
-      console.error("Touch failed", e);
+      /* non-fatal */
     } finally {
       setSavingTouch(false);
     }
@@ -175,16 +172,12 @@ export function HustadTickets() {
 
   const handleSaveNotes = async (ticket: HustadTicket) => {
     try {
-      await fetch(`/api/tickets/${ticket.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notes: notesValue }),
-      });
+      await patchTicket(ticket.id, { notes: notesValue });
       setTickets(prev => prev.map(t =>
         t.id === ticket.id ? { ...t, notes: notesValue } : t
       ));
     } catch (e) {
-      console.error("Notes save failed", e);
+      /* non-fatal */
     } finally {
       setEditingNotes(null);
     }
@@ -194,14 +187,14 @@ export function HustadTickets() {
     if (!deleteModal) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/tickets/${deleteModal.id}`, { method: "DELETE" });
+      const res = await deleteTicket(deleteModal.id);
       if (res.ok) {
         setTickets(prev => prev.filter(t => t.id !== deleteModal.id));
         setTotal(prev => prev - 1);
         setExpandedId(null);
       }
     } catch (e) {
-      console.error("Delete failed", e);
+      /* non-fatal */
     } finally {
       setDeleting(false);
       setDeleteModal(null);

@@ -43,7 +43,7 @@ async function seed() {
     if (error) {
       console.error("Failed to create admin:", error.message);
     } else {
-      console.log("Created admin rep: admin@hustad.com / hustad2026 (PIN: 1234)");
+      console.log("Created admin rep: admin@hustad.com — CHANGE THIS PASSWORD BEFORE GOING LIVE.");
     }
   }
 
@@ -69,7 +69,7 @@ async function seed() {
     if (error) {
       console.error("Failed to create rep:", error.message);
     } else {
-      console.log("Created field rep: rep@hustad.com / field2026 (PIN: 5678)");
+      console.log("Created field rep: rep@hustad.com — CHANGE THIS PASSWORD BEFORE GOING LIVE.");
     }
   }
 
