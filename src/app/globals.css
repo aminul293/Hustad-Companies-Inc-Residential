@@ -5,6 +5,7 @@
 @tailwind utilities;
 
 :root {
+  /* ── Brand / accent (static, no theme flip) ─────────────────────────── */
   --navy: #0f1d35;
   --navy-light: #1a2d4f;
   --blue: #1e4d8c;
@@ -15,13 +16,39 @@
   --cream-dark: #ebe4d6;
   --amber: #c8923a;
   --mist: #e8eff7;
+  --fog: #d0dcea;
 
-  /* Dark-screen text hierarchy — blue-tinted for navy brand cohesion */
-  --tx1: #E8EDF8;  /* Headlines, primary labels         */
-  --tx2: #C2D0E4;  /* Body text, descriptions           */
-  --tx3: #8BA5C5;  /* Secondary — timestamps, meta      */
+  /* ── Semantic theme tokens — Light mode defaults ─────────────────────── */
+  --bg-base:       #f5f0e8;   /* page background           */
+  --bg-surface:    #ffffff;   /* card / panel              */
+  --bg-elevated:   #ffffff;   /* modal / popover           */
+  --bg-subtle:     #eef2f8;   /* inset / muted zone        */
+  --border-color:  #d0dcea;   /* hairline dividers         */
+  --ring-color:    rgba(37, 99, 186, 0.12);
+
+  /* Text hierarchy — Light */
+  --tx1: #0f1d35;  /* Headlines, primary labels         */
+  --tx2: #1a2d4f;  /* Body text, descriptions           */
+  --tx3: #3d5278;  /* Secondary — timestamps, meta      */
   --tx4: #567090;  /* Muted — labels, placeholders      */
-  --tx5: #2D4060;  /* Faint — disabled, very subtle     */
+  --tx5: #a0b0c8;  /* Faint — disabled, very subtle     */
+}
+
+/* ── Dark mode overrides ────────────────────────────────────────────────── */
+.dark {
+  --bg-base:       #06090F;
+  --bg-surface:    #0d1525;
+  --bg-elevated:   #141f33;
+  --bg-subtle:     #0a1020;
+  --border-color:  #1e3050;
+  --ring-color:    rgba(74, 143, 212, 0.15);
+
+  /* Text hierarchy — Dark (original blue-tinted palette) */
+  --tx1: #E8EDF8;
+  --tx2: #C2D0E4;
+  --tx3: #8BA5C5;
+  --tx4: #567090;
+  --tx5: #2D4060;
 }
 
 * {
@@ -33,8 +60,9 @@ html, body {
   min-height: 100%;
   width: 100%;
   height: 100%;
-  background-color: #06090F;
+  background-color: var(--bg-base);
   overflow: hidden;
+  transition: background-color 0.3s ease;
 }
 
 #__next {
@@ -44,8 +72,8 @@ html, body {
 
 @layer components {
   .screen-container {
-    @apply flex flex-col h-screen w-full overflow-hidden;
-    background-color: var(--cream);
+    @apply flex flex-col h-screen w-full overflow-hidden transition-colors duration-300;
+    background-color: var(--bg-base);
   }
 
   .screen-content {
@@ -54,7 +82,9 @@ html, body {
   }
 
   .screen-footer {
-    @apply flex-shrink-0 px-8 py-5 border-t border-hustad-cream-dark bg-white/60 backdrop-blur-sm;
+    @apply flex-shrink-0 px-8 py-5 border-t backdrop-blur-sm transition-colors duration-300;
+    border-color: var(--border-color);
+    background-color: color-mix(in srgb, var(--bg-surface) 80%, transparent);
   }
 
   .btn-primary {
@@ -69,8 +99,8 @@ html, body {
 
   .btn-secondary {
     @apply w-full py-4 px-6 rounded-2xl font-body font-normal text-base transition-all duration-150 active:scale-[0.98] border;
-    color: var(--navy);
-    border-color: var(--navy);
+    color: var(--tx1);
+    border-color: var(--border-color);
     background: transparent;
   }
 
@@ -91,7 +121,9 @@ html, body {
   }
 
   .card {
-    @apply rounded-2xl p-5 bg-white shadow-card;
+    @apply rounded-2xl p-5 shadow-card transition-colors duration-300;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
   }
 
   .card-navy {
@@ -100,45 +132,45 @@ html, body {
   }
 
   .card-mist {
-    @apply rounded-2xl p-5;
-    background-color: var(--mist);
+    @apply rounded-2xl p-5 transition-colors duration-300;
+    background-color: var(--bg-subtle);
   }
 
   .input-field {
     @apply w-full rounded-xl px-4 py-3 text-base font-body border transition-all duration-150 outline-none;
-    border-color: #d0dcea;
-    background: white;
-    color: var(--navy);
+    border-color: var(--border-color);
+    background-color: var(--bg-surface);
+    color: var(--tx1);
   }
 
   .input-field:focus {
     border-color: var(--blue-light);
-    box-shadow: 0 0 0 3px rgba(37, 99, 186, 0.08);
+    box-shadow: 0 0 0 3px var(--ring-color);
   }
 
   .label-text {
     @apply block text-sm font-body font-medium mb-1.5;
-    color: var(--navy);
+    color: var(--tx1);
     letter-spacing: 0.01em;
   }
 
   .screen-title {
     @apply font-display font-semibold leading-tight;
-    color: var(--navy);
+    color: var(--tx1);
     font-size: clamp(1.5rem, 4vw, 2rem);
   }
 
   .screen-subtitle {
     @apply font-body font-light leading-relaxed mt-2;
-    color: #3d5278;
+    color: var(--tx3);
     font-size: clamp(0.9rem, 2.5vw, 1.05rem);
   }
 
   .compliance-banner {
-    @apply rounded-xl px-4 py-3 border-l-4 text-sm font-body font-light leading-relaxed;
-    background: #f0f4fa;
+    @apply rounded-xl px-4 py-3 border-l-4 text-sm font-body font-light leading-relaxed transition-colors duration-300;
+    background-color: var(--bg-subtle);
     border-color: var(--blue);
-    color: #3d5278;
+    color: var(--tx3);
   }
 
   .outcome-badge {
@@ -147,14 +179,14 @@ html, body {
   }
 
   .priority-tile {
-    @apply flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-150 cursor-pointer;
-    border-color: var(--fog, #d0dcea);
-    background: white;
+    @apply flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer;
+    border-color: var(--border-color);
+    background-color: var(--bg-surface);
   }
 
   .priority-tile.selected {
     border-color: var(--blue-light);
-    background: var(--mist);
+    background-color: var(--bg-subtle);
   }
 
   .phase-badge {

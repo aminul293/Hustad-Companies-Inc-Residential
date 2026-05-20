@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
+  darkMode: "class",
   theme: {
     extend: {
       fontFamily: {
@@ -54,12 +55,12 @@ module.exports = {
           green: "#27774a",
           mist: "#e8eff7",
           fog: "#d0dcea",
-          /* Dark-screen text hierarchy */
-          tx1: "#E8EDF8",
-          tx2: "#C2D0E4",
-          tx3: "#8BA5C5",
-          tx4: "#567090",
-          tx5: "#2D4060",
+          /* Theme-aware text hierarchy — resolves via CSS variables */
+          tx1: "var(--tx1)",
+          tx2: "var(--tx2)",
+          tx3: "var(--tx3)",
+          tx4: "var(--tx4)",
+          tx5: "var(--tx5)",
         },
       },
       boxShadow: {
