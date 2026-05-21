@@ -104,7 +104,7 @@ export function A03WhatWeInspect({ onNext, onBack }: Props) {
         <ProgressBar currentScreen="A03_what_we_inspect" phase="A" />
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-64">
+      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-64 min-h-0">
         <div className="max-w-6xl mx-auto space-y-12">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-md">
@@ -284,7 +284,7 @@ export function A04HowFindingsSorted({ session, onUpdate, onNext, onBack }: Prop
         <ProgressBar currentScreen="A04_how_findings_sorted" phase="A" />
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56">
+      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56 min-h-0">
         <div className="max-w-4xl mx-auto space-y-16">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <h1 className="text-3xl md:text-6xl lg:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
@@ -426,7 +426,7 @@ export function A05InsuranceClarity({ session, onUpdate, onNext, onBack }: Props
         <ProgressBar currentScreen="A05_insurance_clarity" phase="A" />
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56">
+      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56 min-h-0">
         <div className="max-w-5xl mx-auto space-y-16">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <h1 className="text-3xl md:text-6xl lg:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">

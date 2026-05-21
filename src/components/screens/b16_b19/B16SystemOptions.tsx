@@ -93,7 +93,7 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
         <ProgressBar currentScreen="B16_system_options" phase="B" />
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto px-10 pt-12 pb-40">
+      <div className="relative z-10 flex-1 overflow-y-auto px-10 pt-12 pb-40 min-h-0">
         <div className="max-w-5xl mx-auto space-y-12">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
             <div className="flex items-center gap-3 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-md w-fit">

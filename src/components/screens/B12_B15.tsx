@@ -106,7 +106,7 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
         <ProgressBar currentScreen="B12_findings_summary" phase="B" />
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto px-10 pt-12 pb-56">
+      <div className="relative z-10 flex-1 overflow-y-auto px-10 pt-12 pb-56 min-h-0">
         <div className="max-w-5xl mx-auto space-y-12">
           {/* Header & Status */}
           <div className="flex items-end justify-between border-b border-white/[0.05] pb-10">

@@ -56,7 +56,7 @@ export function A02WhyInspection({ onNext, onBack }: Props) {
         <ProgressBar currentScreen="A02_why_inspection" phase="A" />
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56">
+      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56 min-h-0">
         <div className="max-w-6xl mx-auto space-y-12">
 
           <motion.div

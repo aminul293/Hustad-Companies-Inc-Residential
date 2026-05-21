@@ -166,7 +166,7 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-[0.02] invert pointer-events-none" />
         {brandingAnchor}
 
-        <div className="relative z-10 flex flex-col flex-1 px-5 pt-24 pb-10 overflow-y-auto animate-in fade-in duration-700">
+        <div className="relative z-10 flex flex-col flex-1 px-5 pt-24 pb-10 overflow-y-auto animate-in fade-in duration-700 min-h-0">
           {/* Title */}
           <div className="text-center space-y-4 mb-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-white/[0.08] shadow-sm mx-auto">
@@ -220,7 +220,7 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
 
       <div className="relative z-10 flex-shrink-0 pt-12" />
 
-      <div className="relative z-10 flex-1 overflow-y-auto px-8 animate-in fade-in duration-1000">
+      <div className="relative z-10 flex-1 overflow-y-auto px-8 animate-in fade-in duration-1000 min-h-0">
         <ContainerScroll
           titleComponent={
             <div className="text-center space-y-8 mb-12">

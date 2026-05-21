@@ -123,7 +123,7 @@ export function A06WarrantyImpact({ session, onUpdate, onNext, onBack }: Props) 
         <ProgressBar currentScreen="A06_warranty_impact" phase="A" />
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56">
+      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56 min-h-0">
         <div className="max-w-4xl mx-auto space-y-16">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -311,7 +311,7 @@ export function A07WhyHustad({ session, onUpdate, onNext, onBack }: Props) {
         <ProgressBar currentScreen="A07_why_hustad" phase="A" />
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56">
+      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56 min-h-0">
         <div className="max-w-5xl mx-auto space-y-16">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <h1 className="text-3xl md:text-6xl lg:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
@@ -470,7 +470,7 @@ export function A08WhatYouReceive({ session, onUpdate, onNext, onBack }: Props) 
         <ProgressBar currentScreen="A08_what_you_receive" phase="A" />
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56">
+      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56 min-h-0">
         <div className="max-w-5xl mx-auto space-y-16">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <h1 className="text-3xl md:text-6xl lg:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">

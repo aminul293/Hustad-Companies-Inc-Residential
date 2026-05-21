@@ -230,7 +230,7 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
         <ProgressBar currentScreen="A09_buyer_priorities" phase="A" />
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56">
+      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56 min-h-0">
         <div className="max-w-4xl mx-auto space-y-16">
           <SplineSceneBasic />
 

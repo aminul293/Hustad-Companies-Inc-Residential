@@ -78,7 +78,7 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
         <ProgressBar currentScreen="A11_innovation" phase="A" />
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-64 custom-scrollbar">
+      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-64 custom-scrollbar min-h-0">
         <div className="max-w-7xl mx-auto">
           <motion.div 
             initial="hidden"

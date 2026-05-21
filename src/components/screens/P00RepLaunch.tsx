@@ -442,7 +442,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
         </div>
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto px-10 pt-8 pb-48">
+      <div className="relative z-10 flex-1 overflow-y-auto px-10 pt-8 pb-48 min-h-0">
         <div className="max-w-3xl mx-auto space-y-12">
           
           {/* Launch Area */}

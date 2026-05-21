@@ -81,7 +81,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
         </div>
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto px-10 pt-20 pb-40 text-center">
+      <div className="relative z-10 flex-1 overflow-y-auto px-10 pt-20 pb-40 text-center min-h-0">
         <div className="max-w-4xl mx-auto space-y-16">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-md w-fit mx-auto">
