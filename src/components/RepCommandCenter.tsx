@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 import { useState, useMemo, useEffect, useRef } from "react";
 import {
   Search,
@@ -67,6 +69,7 @@ interface Props {
 
 export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPrefillAndStart, onBack, onResetSession }: Props) {
   const r = useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart, onResetSession });
+  const router = useRouter();
 
   return (
     <div className="flex flex-col h-full bg-[#060606] text-[#E8EDF8]">
@@ -198,9 +201,9 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
             {onBack && (
               <button
                 onClick={onBack}
-                className="p-2.5 md:p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all shrink-0"
+                className="flex items-center justify-center w-[36px] h-[36px] rounded-full bg-[var(--color-background-secondary,rgba(255,255,255,0.05))] border border-[var(--color-border-tertiary,rgba(255,255,255,0.1))] hover:bg-white/10 transition-all shrink-0"
               >
-                <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
+                <ArrowLeft className="w-[18px] h-[18px]" />
               </button>
             )}
             <div className="space-y-0.5">
@@ -263,10 +266,11 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
             {/* ── Stripi-style KPI balance cards ── */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               {[
-                { label: "Active sessions", value: r.stats.active,         sub: "in field or drafting",      dot: "#533afd", dotBg: "rgba(83,58,253,0.12)"  },
-                { label: "Pending review",  value: r.stats.pending,        sub: "deferred or locked",        dot: "#29b572", dotBg: "rgba(41,181,114,0.12)" },
-                { label: "Needs attention", value: r.stats.missing,        sub: "missing required fields",   dot: "#d24c47", dotBg: "rgba(210,76,71,0.12)"  },
-                { label: "Reconciliation",  value: r.stats.reconciliation, sub: "discrepancies to resolve",  dot: "#d6a800", dotBg: "rgba(214,168,0,0.12)"  },
+              {[
+                { label: "Active sessions", value: r.stats.active,         sub: "in field or drafting",      dot: "#1D9E75", dotBg: "rgba(29,158,117,0.12)"  },
+                { label: "Pending review",  value: r.stats.pending,        sub: "deferred or locked",        dot: "#EF9F27", dotBg: "rgba(239,159,39,0.12)" },
+                { label: "Needs attention", value: r.stats.missing,        sub: "missing required fields",   dot: "#E24B4A", dotBg: "rgba(226,75,74,0.12)"  },
+                { label: "Reconciliation",  value: r.stats.reconciliation, sub: "discrepancies to resolve",  dot: "#EF9F27", dotBg: "rgba(239,159,39,0.12)"  },
               ].map((s, i) => (
                 <div
                   key={i}
@@ -285,20 +289,33 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                       style={{ background: s.dot, boxShadow: `0 0 6px ${s.dot}80` }}
                     />
                   </div>
-                  <p
-                    className="font-inter font-light leading-none mb-1.5"
-                    style={{
-                      fontSize: 32,
-                      letterSpacing: "-0.64px",
-                      fontFeatureSettings: '"ss01" 1, "tnum" 1',
-                      color: "#E8EDF8",
-                    }}
-                  >
-                    {r.isLoading
-                      ? <span className="inline-block w-5 h-5 border-2 border-white/10 border-t-white/40 rounded-full animate-spin" />
-                      : s.value}
+                  <div className="flex items-end gap-3 mb-1.5">
+                    <p
+                      className="font-inter font-light leading-none"
+                      style={{
+                        fontSize: 32,
+                        letterSpacing: "-0.64px",
+                        fontFeatureSettings: '"ss01" 1, "tnum" 1',
+                        color: "#E8EDF8",
+                      }}
+                    >
+                      {r.isLoading
+                        ? <span className="inline-block w-5 h-5 border-2 border-white/10 border-t-white/40 rounded-full animate-spin" />
+                        : s.value}
+                    </p>
+                    {!r.isLoading && (
+                      <div className="w-[1px] h-[24px]" style={{ background: "var(--color-border-tertiary, rgba(255,255,255,0.1))" }} />
+                    )}
+                  </div>
+                  <p className="text-[11px] font-inter font-light" style={{ color: "var(--color-text-secondary, #567090)" }}>
+                    {s.sub}
+                    {!r.isLoading && s.value === 0 && (
+                      <>
+                        <br />
+                        <span className="text-[11px]" style={{ color: "var(--color-text-secondary, #7090B0)" }}>No data yet</span>
+                      </>
+                    )}
                   </p>
-                  <p className="text-[11px] font-inter font-light" style={{ color: "#567090" }}>{s.sub}</p>
                 </div>
               ))}
             </div>
@@ -318,7 +335,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
               {/* Stripi tab-bar r.filter */}
               <div
                 className="flex items-center overflow-x-auto border border-t-0 border-white/[0.1] rounded-b-2xl px-2"
-                style={{ background: "rgba(255,255,255,0.015)" }}
+                style={{ background: "rgba(255,255,255,0.015)", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}
               >
                 {[
                   { id: "all",                        label: "All" },
@@ -341,6 +358,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                       marginBottom: -1,
                       background:   "transparent",
                       fontWeight:   r.filter === f.id ? 500 : 300,
+                      scrollSnapAlign: "start",
                     }}
                   >
                     {f.label}
@@ -443,9 +461,18 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                 ))}
               </div>
             ) : (
-              <div className="py-20 text-center opacity-30">
-                <Search className="w-12 h-12 mx-auto mb-4" />
-                <p className="font-display">No sessions found</p>
+              <div className="py-20 text-center">
+                <div className="opacity-30">
+                  <Search className="w-12 h-12 mx-auto mb-4" />
+                  <p className="font-display">No sessions found</p>
+                </div>
+                <button
+                  onClick={() => router.push('/rep-capture')}
+                  className="mt-6 mx-auto flex items-center justify-center px-6 rounded-full bg-indigo-500 text-white text-sm font-medium hover:bg-indigo-400 transition-colors"
+                  style={{ height: 44 }}
+                >
+                  + Start inspection
+                </button>
               </div>
             )}
           </div>
@@ -558,8 +585,10 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
             key={tab.id}
             onClick={() => { r.setView(tab.id); r.setMoreOpen(false); }}
             className={cn(
-              "flex flex-col items-center gap-1 py-3 px-4 min-w-[56px] transition-all active:scale-95",
-              r.view === tab.id ? "text-indigo-400" : "text-[#3F5878]"
+              "flex flex-col items-center gap-1 transition-all active:scale-95",
+              r.view === tab.id 
+                ? "text-[var(--color-text-primary,#fff)] bg-[var(--color-background-secondary,rgba(255,255,255,0.05))] rounded-[20px] px-[14px] py-1" 
+                : "text-[var(--color-text-secondary,#8BA5C5)] px-[14px] py-1"
             )}
           >
             <tab.icon className={cn("w-5 h-5 transition-all", r.view === tab.id && "drop-shadow-[0_0_6px_rgba(129,140,248,0.6)]")} />
@@ -570,8 +599,10 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
         <button
           onClick={() => r.setMoreOpen(prev => !prev)}
           className={cn(
-            "flex flex-col items-center gap-1 py-3 px-4 min-w-[56px] transition-all active:scale-95 relative",
-            r.moreOpen || ["calendar","tickets","manager"].includes(r.view) ? "text-indigo-400" : "text-[#3F5878]"
+            "flex flex-col items-center gap-1 transition-all active:scale-95 relative",
+            r.moreOpen || ["calendar","tickets","manager"].includes(r.view)
+              ? "text-[var(--color-text-primary,#fff)] bg-[var(--color-background-secondary,rgba(255,255,255,0.05))] rounded-[20px] px-[14px] py-1"
+              : "text-[var(--color-text-secondary,#8BA5C5)] px-[14px] py-1"
           )}
         >
           <MoreHorizontal className="w-5 h-5" />

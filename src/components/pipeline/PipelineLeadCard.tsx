@@ -103,6 +103,9 @@ export function PipelineLeadCard({
             );
           })}
         </div>
+        <p className="text-[11px] mb-5" style={{ color: "var(--color-text-secondary, #7090B0)" }}>
+          Stage {stageIdx + 1} of 5 — {["New Lead", "Contacted", "Inspection Scheduled", "Proposal Sent", "Closed"][stageIdx] || "Unknown"}
+        </p>
 
         {/* Status badge row */}
         <div className="flex items-center justify-between mb-5">
@@ -206,11 +209,17 @@ export function PipelineLeadCard({
                   {apptDurationMin !== null ? (apptDurationMin < 60 ? `${apptDurationMin} min` : `${apptDurationMin / 60} hr`) : "—"}
                 </p>
               </div>
-            ) : (
+            ) : lead.pipeline_status === "follow_up_needed" && lead.next_follow_up_at ? (
               <p className={cn("text-xs font-display leading-tight", isUrgent ? "text-rose-400/80" : isWarning ? "text-amber-400/70" : "text-[#7E9DBE]")}>
-                {lead.pipeline_status === "follow_up_needed" && lead.next_follow_up_at
-                  ? fmtDate(lead.next_follow_up_at)
-                  : idleDays !== null ? `${idleDays}d` : "New"}
+                {fmtDate(lead.next_follow_up_at)}
+              </p>
+            ) : idleDays !== null ? (
+              <p className={cn("text-xs font-display leading-tight", isUrgent ? "text-rose-400/80" : isWarning ? "text-amber-400/70" : "text-[#7E9DBE]")}>
+                {`${idleDays}d`}
+              </p>
+            ) : (
+              <p className="text-[11px] px-2 py-0.5 rounded-full font-display leading-tight inline-block" style={{ background: "var(--color-background-secondary, rgba(255,255,255,0.05))", color: "var(--color-text-secondary, #8BA5C5)" }}>
+                New
               </p>
             )}
           </div>
@@ -236,7 +245,7 @@ export function PipelineLeadCard({
         })()}
 
         {/* Primary actions */}
-        <div className="flex flex-wrap gap-2.5 mt-auto">
+        <div className="flex gap-2.5 mt-auto">
           {isScheduled ? (
             <button onClick={() => onStartInspection(lead)}
               className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-indigo-500 hover:bg-indigo-400 active:scale-95 text-[#E8EDF8] transition-all text-sm font-medium shadow-lg shadow-indigo-500/20">
@@ -263,25 +272,25 @@ export function PipelineLeadCard({
 
         {/* Secondary actions */}
         {lead.pipeline_status !== "dead_lead" && (
-          <div className="mt-2.5 pt-2.5 border-t border-white/[0.05] flex flex-wrap items-center justify-center gap-1 md:gap-2">
-            <button onClick={() => onNotes(lead)} className="flex-1 min-w-[30%] md:min-w-0 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[#354D6F] hover:text-[#8BA5C5] hover:bg-white/[0.04] transition-all text-[11px] font-medium">
+          <div className="mt-2.5 pt-2.5 border-t border-white/[0.05] flex items-center gap-1">
+            <button onClick={() => onNotes(lead)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[#354D6F] hover:text-[#8BA5C5] hover:bg-white/[0.04] transition-all text-[11px] font-medium">
               <MessageSquare className="w-3.5 h-3.5" />Notes
               {lead.lead_notes && <div className="w-1.5 h-1.5 rounded-full bg-indigo-400/60" />}
             </button>
-            <button onClick={() => onDraftEmail(lead)} className="flex-1 min-w-[30%] md:min-w-0 flex items-center justify-center gap-1.5 py-2 rounded-xl text-indigo-400/30 hover:text-indigo-400/80 hover:bg-indigo-500/[0.06] transition-all text-[11px] font-medium">
+            <button onClick={() => onDraftEmail(lead)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-indigo-400/30 hover:text-indigo-400/80 hover:bg-indigo-500/[0.06] transition-all text-[11px] font-medium">
               <Mail className="w-3.5 h-3.5" />Email
               {lead.lead_notes?.includes("Email sent") && <div className="w-1.5 h-1.5 rounded-full bg-indigo-400/60" />}
             </button>
             {isScheduled && (
-              <button onClick={() => onSchedule(lead)} className="flex-1 min-w-[30%] md:min-w-0 flex items-center justify-center gap-1.5 py-2 rounded-xl text-emerald-400/40 hover:text-emerald-400/80 hover:bg-emerald-500/[0.06] transition-all text-[11px] font-medium">
+              <button onClick={() => onSchedule(lead)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-emerald-400/40 hover:text-emerald-400/80 hover:bg-emerald-500/[0.06] transition-all text-[11px] font-medium">
                 <Calendar className="w-3.5 h-3.5" />Reschedule
               </button>
             )}
-            <button onClick={() => onDeadLead(lead)} className="flex-1 min-w-[30%] md:min-w-0 flex items-center justify-center gap-1.5 py-2 rounded-xl text-rose-400/30 hover:text-rose-400/70 hover:bg-rose-500/[0.06] transition-all text-[11px] font-medium">
+            <button onClick={() => onDeadLead(lead)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-rose-400/30 hover:text-rose-400/70 hover:bg-rose-500/[0.06] transition-all text-[11px] font-medium">
               <XCircle className="w-3.5 h-3.5" />Dead Lead
             </button>
             <button onClick={e => onRemove(e, lead)} disabled={removing}
-              className={cn("flex-1 min-w-[30%] md:min-w-0 flex items-center justify-center gap-1.5 py-2 rounded-xl transition-all text-[11px] font-medium",
+              className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl transition-all text-[11px] font-medium",
                 isBlocked ? "text-[#1F2E48] cursor-not-allowed" : "text-[#2D4060] hover:text-[#7090B0] hover:bg-white/[0.04]"
               )}>
               <MinusCircle className="w-3.5 h-3.5" />{removing ? "Removing…" : "Remove"}
