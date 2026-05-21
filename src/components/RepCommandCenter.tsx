@@ -266,7 +266,6 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
             {/* ── Stripi-style KPI balance cards ── */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               {[
-              {[
                 { label: "Active sessions", value: r.stats.active,         sub: "in field or drafting",      dot: "#1D9E75", dotBg: "rgba(29,158,117,0.12)"  },
                 { label: "Pending review",  value: r.stats.pending,        sub: "deferred or locked",        dot: "#EF9F27", dotBg: "rgba(239,159,39,0.12)" },
                 { label: "Needs attention", value: r.stats.missing,        sub: "missing required fields",   dot: "#E24B4A", dotBg: "rgba(226,75,74,0.12)"  },
