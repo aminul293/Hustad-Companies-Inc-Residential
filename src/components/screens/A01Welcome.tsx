@@ -3,11 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import type { SessionState } from "@/types/session";
-import { HustadHeader } from "@/components/ui/HustadHeader";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
-import { ElegantShape } from "@/components/ui/shape-landing-hero";
 import { StarButton } from "@/components/ui/star-button";
-import { CheckCircle2, Clock, ArrowRight, ArrowLeft } from "lucide-react";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
@@ -29,14 +27,14 @@ interface Props {
   dark?: boolean;
 }
 
-export function A01Welcome({ session, onUpdate, onNext, onBack, onSkip }: Props) {
+export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
   const rawName = session.property.homeownerPrimaryName;
   const name = rawName && rawName !== "Unknown Homeowner" ? rawName : "";
   const isMobile = useIsMobile();
 
   const [titleNumber, setTitleNumber] = useState(0);
   const titles = useMemo(
-    () => ["clear", "productive", "brief", "meaningful", "helpful"],
+    () => ["clear", "useful", "brief", "honest", "helpful"],
     []
   );
 
