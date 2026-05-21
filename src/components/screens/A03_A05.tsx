@@ -246,6 +246,8 @@ const CATEGORIES = [
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function A04HowFindingsSorted({ session, onUpdate, onNext, onBack }: Props) {
+  const [currentStep, setCurrentStep] = useState(0);
+
   return (
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
       {/* Background Assets: Rapid Deployment Cloud */}
@@ -293,23 +295,47 @@ export function A04HowFindingsSorted({ session, onUpdate, onNext, onBack }: Prop
             <p className="text-xl text-[#3F5878] font-light leading-relaxed mt-8 max-w-2xl">No surprises. No sales pressure. Just a structured walk through what was actually found on your property.</p>
           </motion.div>
 
-          <div className="space-y-4">
+          <div className="relative space-y-4">
             {STEPS.map((step, i) => (
-              <motion.div 
-                key={i}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className="group flex items-start gap-8 bg-white/[0.02] backdrop-blur-xl p-8 rounded-[32px] border border-white/[0.05] hover:border-white/20 transition-all duration-500"
-              >
-                <div className="w-10 h-10 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 font-mono text-sm shrink-0">
-                  0{i + 1}
-                </div>
-                <div>
-                  <h3 className="text-xl font-display font-medium text-[#E8EDF8] mb-2">{step.title}</h3>
-                  <p className="text-base text-[#3F5878] font-light leading-relaxed group-hover:text-[#7090B0] transition-colors">{step.detail}</p>
-                </div>
-              </motion.div>
+              <AnimatePresence key={i}>
+                {i <= currentStep && (
+                  <motion.div 
+                    initial={{ opacity: 0, x: -20, height: 0 }}
+                    animate={{ opacity: 1, x: 0, height: "auto" }}
+                    transition={{ duration: 0.4 }}
+                    className={cn(
+                      "group flex items-start gap-8 backdrop-blur-xl p-8 rounded-[32px] border transition-all duration-500 cursor-pointer",
+                      i === currentStep 
+                        ? "bg-indigo-500/[0.05] border-indigo-500/40 shadow-[0_0_40px_rgba(99,102,241,0.08)]"
+                        : "bg-white/[0.02] border-white/[0.05] hover:border-white/20 opacity-60"
+                    )}
+                    onClick={() => {
+                      if (i === currentStep && currentStep < STEPS.length - 1) {
+                        setCurrentStep(prev => prev + 1);
+                      }
+                    }}
+                  >
+                    <div className="flex flex-col items-center mt-1">
+                      <div className={cn(
+                        "w-10 h-10 rounded-full border flex items-center justify-center font-mono text-sm shrink-0 transition-colors",
+                        i === currentStep ? "bg-indigo-500/20 border-indigo-500/30 text-indigo-400" : "bg-white/5 border-white/10 text-[#567090]"
+                      )}>
+                        {i < currentStep ? <CheckCircle2 className="w-5 h-5 text-emerald-400" /> : `0${i + 1}`}
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-display font-medium text-[#E8EDF8] mb-2">{step.title}</h3>
+                      <p className="text-base text-[#3F5878] font-light leading-relaxed">{step.detail}</p>
+                      
+                      {i === currentStep && currentStep < STEPS.length - 1 && (
+                         <div className="mt-4 flex items-center gap-2 text-indigo-400 text-xs font-mono uppercase tracking-widest animate-pulse">
+                           Tap to reveal next step <ChevronRight className="w-3 h-3" />
+                         </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             ))}
           </div>
         </div>
@@ -350,6 +376,8 @@ const STEPS = [
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function A05InsuranceClarity({ session, onUpdate, onNext, onBack }: Props) {
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+
   return (
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[radial-gradient(circle_at_50%_0%,#1e1b4b_0%,#060606_70%)]">
       {/* Background Assets: Forensic Rapid Deployment Cloud */}
@@ -409,22 +437,55 @@ export function A05InsuranceClarity({ session, onUpdate, onNext, onBack }: Props
             <p className="text-xl text-[#3F5878] font-light leading-relaxed mt-8 max-w-2xl">A few things that are worth knowing before the review — so nothing feels like a surprise later.</p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {CLARITY_ITEMS.map((item, i) => (
-              <motion.div 
-                key={item.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className="group bg-white/[0.02] backdrop-blur-xl p-8 rounded-[32px] border border-white/[0.05] hover:border-white/20 transition-all duration-500"
-              >
-                <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center mb-6">
-                  <item.icon className="w-6 h-6 text-indigo-300" />
-                </div>
-                <h3 className="text-xl font-display font-medium text-[#E8EDF8] mb-2">{item.title}</h3>
-                <p className="text-sm text-[#3F5878] font-light leading-relaxed group-hover:text-[#7090B0] transition-colors">{item.detail}</p>
-              </motion.div>
-            ))}
+          <div className="space-y-4">
+            {CLARITY_ITEMS.map((item, i) => {
+              const isExpanded = expandedIndex === i;
+              return (
+                <motion.div 
+                  key={item.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  onClick={() => setExpandedIndex(isExpanded ? null : i)}
+                  className={cn(
+                    "group relative backdrop-blur-xl p-6 md:p-8 rounded-[32px] border transition-all duration-500 cursor-pointer overflow-hidden",
+                    isExpanded 
+                      ? "bg-indigo-500/[0.05] border-indigo-500/40 shadow-[0_0_40px_rgba(99,102,241,0.08)]" 
+                      : "bg-white/[0.02] border-white/[0.05] hover:border-white/20 hover:bg-white/[0.04]"
+                  )}
+                >
+                  <div className="flex items-center gap-6">
+                    <div className={cn(
+                      "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors",
+                      isExpanded ? "bg-indigo-500/20 border border-indigo-500/30 text-indigo-400" : "bg-white/[0.03] border border-white/5 text-indigo-300"
+                    )}>
+                      <item.icon className="w-6 h-6" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-display font-medium text-[#E8EDF8] tracking-tight">{item.title}</h3>
+                    </div>
+                    <div className="shrink-0">
+                      <ChevronRight className={cn("w-5 h-5 text-[#567090] transition-transform duration-300", isExpanded ? "rotate-90 text-indigo-400" : "")} />
+                    </div>
+                  </div>
+
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="mt-6 pt-6 border-t border-white/10 md:pl-[72px]">
+                          <p className="text-base text-[#7090B0] font-light leading-relaxed">{item.detail}</p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
           </div>
 
           <div className="bg-gradient-to-br from-indigo-500/[0.05] to-transparent border border-white/10 p-10 rounded-[40px]">

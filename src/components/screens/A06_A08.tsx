@@ -5,7 +5,8 @@ import type { SessionState } from "@/types/session";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { ElegantShape } from "@/components/ui/shape-landing-hero";
 import { StarButton } from "@/components/ui/star-button";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useSpring, useInView } from "framer-motion";
+import { useEffect, useRef } from "react";
 import { 
   Package, 
   Wrench, 
@@ -32,6 +33,42 @@ interface Props {
   onNext: () => void;
   onBack: () => void;
   onUpdate: (s: SessionState) => void;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Counter Component (for A07)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function Counter({ value, suffix = "", prefix = "" }: { value: number; suffix?: string; prefix?: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const motionValue = useMotionValue(0);
+  const springValue = useSpring(motionValue, {
+    damping: 60,
+    stiffness: 100,
+  });
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
+  useEffect(() => {
+    if (isInView) {
+      motionValue.set(value);
+    }
+  }, [motionValue, isInView, value]);
+
+  useEffect(() => {
+    springValue.on("change", (latest) => {
+      if (ref.current) {
+        ref.current.textContent = Intl.NumberFormat("en-US").format(Math.floor(latest));
+      }
+    });
+  }, [springValue]);
+
+  return (
+    <span className="inline-flex items-baseline">
+      {prefix}
+      <span ref={ref}>0</span>
+      {suffix}
+    </span>
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -323,7 +360,8 @@ export function A07WhyHustad({ session, onUpdate, onNext, onBack }: Props) {
                   className="bg-white/[0.02] border border-white/[0.05] p-8 rounded-[32px] space-y-4"
                 >
                   <div className="text-4xl font-display font-bold text-[#E8EDF8] tracking-tight">
-                    {metric.value}
+                    {metric.value === "$100M+" ? <Counter value={100} prefix="$" suffix="M+" /> : 
+                     metric.value === "1973" ? <Counter value={1973} /> : metric.value}
                   </div>
                   <div className="space-y-1">
                     <div className="text-sm font-medium text-indigo-300 uppercase tracking-wider">
@@ -404,6 +442,8 @@ const LOCAL_POINTS = [
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function A08WhatYouReceive({ session, onUpdate, onNext, onBack }: Props) {
+  const [checkedItems, setCheckedItems] = useState<number[]>([]);
+
   return (
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
       {/* Background Assets: Forensic Intelligence Cloud */}
@@ -441,29 +481,66 @@ export function A08WhatYouReceive({ session, onUpdate, onNext, onBack }: Props) 
             <p className="text-xl text-[#3F5878] font-light leading-relaxed mt-8 max-w-2xl">When the exterior review is complete, you will receive a structured findings package — not a verbal summary.</p>
           </motion.div>
 
+          {/* Top Progress Bar */}
+          <div className="flex items-center gap-4">
+            <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+              <motion.div 
+                className="h-full bg-indigo-500 rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${(checkedItems.length / DELIVERABLES.length) * 100}%` }}
+                transition={{ duration: 0.3 }}
+              />
+            </div>
+            <div className="text-sm font-mono text-indigo-400">
+              {checkedItems.length}/{DELIVERABLES.length} Selected
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {DELIVERABLES.map((d, i) => (
+            {DELIVERABLES.map((d, i) => {
+              const isChecked = checkedItems.includes(i);
+              return (
               <motion.div 
                 key={i}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.1 }}
-                className="group relative bg-white/[0.02] backdrop-blur-xl p-8 rounded-[32px] border border-white/[0.05] hover:border-white/20 transition-all duration-500"
+                onClick={() => {
+                  if (isChecked) {
+                    setCheckedItems(prev => prev.filter(item => item !== i));
+                  } else {
+                    setCheckedItems(prev => [...prev, i]);
+                  }
+                }}
+                className={cn(
+                  "group relative backdrop-blur-xl p-8 rounded-[32px] border transition-all duration-500 cursor-pointer",
+                  isChecked 
+                    ? "bg-indigo-500/[0.08] border-indigo-500/40 shadow-[0_0_40px_rgba(99,102,241,0.12)]"
+                    : "bg-white/[0.02] border-white/[0.05] hover:border-white/20"
+                )}
               >
                 <div className="flex items-start gap-6">
-                  <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center shrink-0">
-                    <d.icon className="w-7 h-7 text-[#AABDCF] group-hover:text-[#E8EDF8] transition-colors" />
+                  <div className={cn(
+                    "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-colors",
+                    isChecked ? "bg-indigo-500/20 border-indigo-500/30 text-indigo-400" : "bg-white/[0.03] border-white/5 text-[#AABDCF] group-hover:text-[#E8EDF8]"
+                  )}>
+                    <d.icon className="w-7 h-7" />
                   </div>
                   <div>
                     <h3 className="text-xl font-display font-medium text-[#E8EDF8] mb-2">{d.title}</h3>
                     <p className="text-base text-[#3F5878] font-light leading-relaxed group-hover:text-[#7090B0] transition-colors">{d.detail}</p>
                   </div>
                 </div>
-                <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <ArrowRight className="w-5 h-5 text-indigo-400" />
+                <div className="absolute top-6 right-6 transition-opacity">
+                  <div className={cn(
+                    "w-6 h-6 rounded-full border flex items-center justify-center transition-colors",
+                    isChecked ? "bg-indigo-500 border-indigo-500 text-white" : "border-white/20 text-transparent"
+                  )}>
+                    <CheckSquare className="w-3 h-3" />
+                  </div>
                 </div>
               </motion.div>
-            ))}
+            )})}
           </div>
 
           <div className="bg-white/[0.02] border border-white/10 p-10 rounded-[40px] flex items-center gap-6">
