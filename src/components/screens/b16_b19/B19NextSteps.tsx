@@ -329,7 +329,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
   };
 
   return (
-    <div className="relative flex flex-col min-h-screen w-full bg-[#060606]">
+    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
       {/* Background Assets: Rapid Deployment Cloud */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Forensic Inspection Drone - Hovering Top Left */}
@@ -360,7 +360,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
         </div>
       </div>
 
-      <div className="relative z-10 flex-1 px-6 md:px-10 pt-20 pb-64 text-center">
+      <div className="relative z-10 flex-1 overflow-y-auto min-h-0 px-6 md:px-10 pt-20 pb-64 text-center">
         <div className="max-w-[1400px] mx-auto space-y-16">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-md w-fit mx-auto">
@@ -563,7 +563,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
         </div>
       </div>
 
-      <div className="fixed bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30 pointer-events-none">
+      <div className="absolute bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20" />
         <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-3 md:gap-6 pointer-events-auto">
           <button onClick={onBack} className="group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 shrink-0">

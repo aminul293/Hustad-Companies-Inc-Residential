@@ -61,7 +61,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
   };
 
   return (
-    <div className="relative flex flex-col min-h-screen w-full bg-[#060606]">
+    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Forensic Inspection Drone - Hovering Background */}
         <motion.div 
@@ -210,7 +210,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
         </div>
       </div>
 
-      <div className="fixed bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30 pointer-events-none">
+      <div className="absolute bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20" />
         <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-3 md:gap-6 pointer-events-auto">
           <button onClick={onBack} className="group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 shrink-0">
