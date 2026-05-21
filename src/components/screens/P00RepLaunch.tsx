@@ -421,12 +421,12 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
       <div className="absolute inset-0 bg-gradient-to-r dark:from-[#060606] dark:via-[#060606]/80 from-hustad-cream via-hustad-cream/80 to-transparent z-0 transition-colors duration-300" />
 
       {/* Header — in flex flow so content never overlaps it */}
-      <div className="relative z-30 flex-shrink-0 flex items-center justify-between px-10 pt-10 pb-6">
+      <div className="relative z-30 flex-shrink-0 flex flex-col md:flex-row items-start md:items-center justify-between px-4 md:px-10 pt-6 md:pt-10 pb-6 gap-4 md:gap-0">
         <div className="flex items-baseline gap-2.5 pointer-events-none">
-          <span className="font-display font-bold text-[var(--tx1)] text-2xl tracking-[0.1em] transition-colors duration-300">HUSTAD</span>
+          <span className="font-display font-bold text-[var(--tx1)] text-xl md:text-2xl tracking-[0.1em] transition-colors duration-300">HUSTAD</span>
           <span className="text-[10px] font-mono text-[var(--tx3)] uppercase tracking-[0.3em] transition-colors duration-300">Madison Residential</span>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-2 md:gap-4">
           <ThemeToggle />
           <div className="px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 backdrop-blur-md flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse shadow-[0_0_8px_rgba(129,140,248,0.6)]" />
@@ -442,8 +442,8 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
         </div>
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto px-10 pt-8 pb-48">
-        <div className="max-w-3xl mx-auto space-y-12">
+      <div className="relative z-10 flex-1 overflow-y-auto px-4 md:px-10 pt-4 md:pt-8 pb-48">
+        <div className="max-w-3xl mx-auto space-y-8 md:space-y-12">
           
           {/* Launch Area */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
@@ -469,9 +469,9 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
               </div>
 
               {(authStatus === "authenticated" || !!mockId) && authRep ? (
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-8 rounded-[40px] bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-between group">
-                  <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 rounded-3xl bg-indigo-500 flex items-center justify-center text-[#E8EDF8] shadow-[0_0_30px_rgba(99,102,241,0.4)]">
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-6 md:p-8 rounded-[32px] md:rounded-[40px] bg-indigo-500/10 border border-indigo-500/30 flex flex-col md:flex-row items-center justify-between group gap-4 md:gap-0 text-center md:text-left">
+                  <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+                    <div className="w-16 h-16 rounded-3xl bg-indigo-500 flex items-center justify-center text-[#E8EDF8] shadow-[0_0_30px_rgba(99,102,241,0.4)] shrink-0">
                       <User className="w-8 h-8" />
                     </div>
                     <div>
@@ -488,10 +488,10 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                 <div className="space-y-6">
                   <button 
                     onClick={() => signIn("azure-ad", { callbackUrl: "/" }, { prompt: "select_account" })}
-                    className="w-full p-8 rounded-[40px] bg-white text-black flex items-center justify-between hover:bg-neutral-200 transition-all group shadow-[0_20px_50px_rgba(255,255,255,0.1)]"
+                    className="w-full p-6 md:p-8 rounded-[32px] md:rounded-[40px] bg-white text-black flex items-center justify-between hover:bg-neutral-200 transition-all group shadow-[0_20px_50px_rgba(255,255,255,0.1)]"
                   >
-                    <div className="flex items-center gap-6">
-                      <div className="w-12 h-12 rounded-2xl bg-black/5 flex items-center justify-center">
+                    <div className="flex items-center gap-4 md:gap-6">
+                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-black/5 flex items-center justify-center shrink-0">
                         {authStatus === "loading" ? (
                           <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
                         ) : (
@@ -529,9 +529,9 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                       </div>
                     </div>
                   )}
-                  <div className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl space-y-8">
+                  <div className="p-6 md:p-10 rounded-[32px] md:rounded-[48px] bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl space-y-8 overflow-hidden">
                     {/* Property Identification */}
-                    <div className="space-y-6">
+                    <div className="space-y-4 md:space-y-6">
                       <div className="flex items-center gap-3 px-2">
                         <div className="h-px flex-1 bg-white/[0.05]" />
                         <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-[0.2em]">Property Identification</span>
@@ -599,7 +599,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                         <div className="h-px flex-1 bg-white/[0.05]" />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 pl-2">
                             <p className="text-[10px] font-mono text-[#7090B0] uppercase tracking-widest">Homeowner Name</p>
@@ -649,7 +649,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                     {/* Carrier & Storm Context */}
                     <div className="space-y-4">
                       <p className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest pl-2">Carrier & Storm Context</p>
-                      <div className="grid grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                         <div className="space-y-1">
                           <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest pl-2">Insurance Carrier</p>
                           <input value={form.insurerName} onChange={(e) => set("insurerName", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-[#E8EDF8] placeholder:text-[#3F5878] outline-none focus:border-indigo-500/50" placeholder="e.g. State Farm" />
@@ -659,7 +659,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                           <input value={form.claimNumber} onChange={(e) => set("claimNumber", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-[#E8EDF8] placeholder:text-[#3F5878] outline-none focus:border-indigo-500/50" placeholder="e.g. 123-456-789" />
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                         <div className="space-y-1">
                           <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest pl-2">Date of Loss</p>
                           <input value={form.workingDateOfLoss} onChange={(e) => set("workingDateOfLoss", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-[#E8EDF8] placeholder:text-[#3F5878] outline-none focus:border-indigo-500/50" placeholder="MM/DD/YYYY" />
@@ -687,40 +687,40 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
       </div>
 
       {/* Footer CTA */}
-      <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t dark:from-[#060606] dark:via-[#060606]/90 from-hustad-cream via-hustad-cream/90 to-transparent pt-24 transition-colors duration-300">
+      <div className="absolute bottom-0 inset-x-0 p-4 md:p-8 z-30 bg-gradient-to-t dark:from-[#060606] dark:via-[#060606]/90 from-hustad-cream via-hustad-cream/90 to-transparent pt-24 transition-colors duration-300">
         <div className="max-w-3xl mx-auto">
-          <div className="flex justify-center gap-4">
+          <div className="flex flex-col md:flex-row justify-center gap-3 md:gap-4">
             {(authStatus === "authenticated" || !!mockId) && (
               <>
                 {!isPreFlightMode ? (
                   <>
                     <button
                       onClick={() => setShowDashboard(true)}
-                      className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all"
+                      className="group flex items-center justify-center gap-3 px-6 md:px-8 py-4 md:py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all w-full md:w-auto"
                     >
                       <LayoutGrid className="w-4 h-4 text-[var(--tx2)]" />
                       <span className="text-sm font-display font-medium text-[var(--tx1)]">Command Center</span>
                     </button>
                     <button
                       onClick={() => setShowCompanyModal(true)}
-                      className="group flex items-center gap-3 px-8 py-5 rounded-full bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all"
+                      className="group flex items-center justify-center gap-3 px-6 md:px-8 py-4 md:py-5 rounded-full bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all w-full md:w-auto"
                     >
                       <Building2 className="w-4 h-4 text-emerald-400" />
-                      <span className="text-sm font-display font-medium text-emerald-300">New Company</span>
+                      <span className="text-sm font-display font-medium text-emerald-300">New Home Owner!</span>
                     </button>
                   </>
                 ) : (
                   <>
                     <button
                       onClick={() => setIsPreFlightMode(false)}
-                      className="group flex items-center gap-3 px-8 py-6 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+                      className="group flex items-center justify-center gap-3 px-6 md:px-8 py-4 md:py-6 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all w-full md:w-auto"
                     >
                       <X className="w-5 h-5 text-[var(--tx4)]" />
                       <span className="text-sm font-display font-medium text-[var(--tx2)]">Cancel / Back to Hub</span>
                     </button>
                     <button 
                       onClick={handleStart}
-                      className="group flex items-center gap-4 px-12 py-6 rounded-full bg-white text-black transition-all hover:bg-neutral-200 active:scale-95 shadow-[0_20px_50px_rgba(255,255,255,0.1)]"
+                      className="group flex items-center justify-center gap-4 px-8 md:px-12 py-4 md:py-6 rounded-full bg-white text-black transition-all hover:bg-neutral-200 active:scale-95 shadow-[0_20px_50px_rgba(255,255,255,0.1)] w-full md:w-auto"
                     >
                       <span className="text-lg font-display font-semibold tracking-tight">Launch Inspection</span>
                       <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
@@ -731,7 +731,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
             )}
           </div>
           
-          <div className="flex items-center justify-center gap-4 mt-6">
+          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4 mt-4 md:mt-6">
             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20">
               <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
               <span className="text-[9px] font-mono text-indigo-300 uppercase tracking-wider">Weather Shield: ACTIVE</span>

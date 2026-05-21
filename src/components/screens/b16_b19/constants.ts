@@ -47,3 +47,14 @@ export const DELIVERABLES: Record<string, string[]> = {
   claim_review_candidate:      ["Claim-ready package (PDF)", "Coordination authorization"],
   full_restoration_candidate:  ["Restoration authorization (PDF)", "Warranty & Selections"],
 };
+
+export const WISCONSIN_CLAIM_NOTICE = {
+  heading: "Wisconsin notice — insurance claim work",
+  lines: [
+    "Under Wisconsin law, a contractor may not pay, waive, or rebate all or part of an insurance deductible.",
+    "You have the right to cancel this agreement within 3 business days of signing.",
+    "Hustad Companies is not a licensed public adjuster and cannot negotiate your claim with your insurer.",
+    "Coverage decisions are made solely by your insurance carrier. Hustad makes no guarantee of claim approval.",
+    "This notice is required by the Wisconsin Department of Agriculture, Trade and Consumer Protection (DATCP).",
+  ],
+};

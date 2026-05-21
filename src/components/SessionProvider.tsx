@@ -69,6 +69,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const authRep = getAuthenticatedRep(authSession, mockId);
   const [session, setSession] = useState<SessionState | null>(null);
   const [isOnline, setIsOnline] = useState(true);
+  const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
     if (authStatus === "loading") return;
@@ -108,7 +109,19 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    setSession(createSession("rep_001", "Hustad Rep"));
+    // Explicit demo mode — only activate when ?demo=true is in the URL
+    const isDemoUrl = typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("demo") === "true";
+
+    if (isDemoUrl) {
+      setIsDemo(true);
+      setSession(createSession("rep_001", "Hustad Demo Rep"));
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      window.location.href = "/api/auth/signin";
+    }
   }, [authStatus, authRep?.id, authRep?.name, authRep?.email]);
 
   // Autosave locally + sync to server (debounced)
@@ -253,13 +266,22 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   if (!session) return null;
 
   return (
-    <Ctx.Provider
-      value={{
-        session, updateSession, goNext, goBack, jumpTo,
-        repJumpTo, resetSession, loadDraft, isOnline,
-      }}
-    >
-      {children}
-    </Ctx.Provider>
+    <>
+      {isDemo && (
+        <div className="fixed top-0 inset-x-0 z-50 py-2 px-4 bg-amber-500/90 backdrop-blur-sm text-center">
+          <span className="text-[11px] font-mono text-black uppercase tracking-widest font-bold">
+            ⚠ Demo Mode — No data will be saved
+          </span>
+        </div>
+      )}
+      <Ctx.Provider
+        value={{
+          session, updateSession, goNext, goBack, jumpTo,
+          repJumpTo, resetSession, loadDraft, isOnline,
+        }}
+      >
+        {children}
+      </Ctx.Provider>
+    </>
   );
 }

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getMissingRequiredShots } from "@/lib/inspectionShotList";
-import { CLAIM_TERMS, REPAIR_TERMS } from "./constants";
+import { CLAIM_TERMS, REPAIR_TERMS, WISCONSIN_CLAIM_NOTICE } from "./constants";
 
 interface Props {
   session: SessionState;
@@ -132,6 +132,26 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
             <div className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.1] backdrop-blur-3xl space-y-8">
               <p className="font-mono text-[10px] text-[#AABDCF] uppercase tracking-[0.3em]">Official Strategy</p>
               <div className="space-y-6">
+                {session.pathData.claimRelatedWork && (
+                  <div className="wisconsin-notice-block" style={{
+                    border: '1px solid #f59e0b',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    marginBottom: '16px',
+                    background: 'rgba(245,158,11,0.06)'
+                  }}>
+                    <p style={{ fontWeight: 600, marginBottom: '8px', fontSize: '13px' }}>
+                      {WISCONSIN_CLAIM_NOTICE.heading}
+                    </p>
+                    <ul style={{ paddingLeft: '16px', margin: 0 }}>
+                      {WISCONSIN_CLAIM_NOTICE.lines.map((line, i) => (
+                        <li key={i} style={{ fontSize: '12px', marginBottom: '6px', lineHeight: 1.5 }}>
+                          {line}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 {(isClaimPath ? CLAIM_TERMS : REPAIR_TERMS).map((t, i) => (
                   <div key={i} className="flex items-start gap-4 group">
                     <ChevronRight className="w-4 h-4 text-indigo-400 mt-1 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity" />

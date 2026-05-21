@@ -16,6 +16,9 @@ export async function GET(request: NextRequest) {
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ reps: data ?? [] });
   } catch (err: any) {
+    if (err.status === 401) {
+      return NextResponse.json({ error: "Unauthorized", message: "Valid session required." }, { status: 401 });
+    }
     return NextResponse.json({ error: err.message || "Internal Server Error" }, { status: err.status || 500 });
   }
 }

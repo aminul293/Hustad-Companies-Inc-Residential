@@ -77,6 +77,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, lead });
   } catch (error: any) {
     console.error('[PIPELINE_POST_ERROR]', error);
+    if (error.status === 401) {
+      return NextResponse.json({ error: "Unauthorized", message: "Valid session required." }, { status: 401 });
+    }
     return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: error.status || 500 });
   }
 }
@@ -134,6 +137,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data ?? []);
   } catch (error: any) {
     console.error('[PIPELINE_GET_ERROR]', error);
+    if (error.status === 401) {
+      return NextResponse.json({ error: "Unauthorized", message: "Valid session required." }, { status: 401 });
+    }
     return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: error.status || 500 });
   }
 }
@@ -183,6 +189,9 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('[PIPELINE_DELETE_BY_TICKET_ERROR]', error);
+    if (error.status === 401) {
+      return NextResponse.json({ error: "Unauthorized", message: "Valid session required." }, { status: 401 });
+    }
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }

@@ -22,11 +22,11 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
   const p = usePipelineLeads(repId, repEmail);
 
   return (
-    <div className="p-8 space-y-8 overflow-y-auto h-full bg-black/20">
+    <div className="p-4 md:p-8 space-y-6 md:space-y-8 overflow-y-auto h-full bg-black/20">
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="flex items-center gap-6">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6">
+        <div className="flex flex-row items-center gap-4 md:gap-6">
           <button
             onClick={() => window.dispatchEvent(new CustomEvent("changeView", { detail: "dashboard" }))}
             className="p-4 rounded-3xl bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all shadow-2xl"
@@ -34,12 +34,12 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
             <ArrowLeft className="w-6 h-6" />
           </button>
           <div>
-            <h2 className="text-4xl font-display font-medium tracking-tight">Sales Pipeline</h2>
+            <h2 className="text-3xl md:text-4xl font-display font-medium tracking-tight">Sales Pipeline</h2>
             <p className="text-[#567090] text-sm mt-1 font-light tracking-wide">Lead lifecycle and field conversion intelligence</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-row overflow-x-auto pb-4 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 md:overflow-visible items-center gap-3 no-scrollbar shrink-0">
           {[
             { label: "Active Leads", value: p.stats.total,       sub: `${p.stats.urgent} need attention`, icon: Activity, color: "text-indigo-400" },
             { label: "Scheduled",    value: p.stats.scheduled,   sub: "upcoming inspections",            icon: CalendarDays, color: "text-emerald-400" },

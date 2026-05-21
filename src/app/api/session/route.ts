@@ -60,7 +60,8 @@ export async function POST(request: NextRequest) {
     let repId = "00000000-0000-0000-0000-000000000000";
     let payloadRole = "";
     const bypass = request.headers.get("x-demo-bypass");
-    if (bypass !== process.env.DEMO_BYPASS_SECRET) {
+    const demoSecret = process.env.DEMO_BYPASS_SECRET;
+    if (!demoSecret || bypass !== demoSecret) {
       const payload = await requireAuth(request) as any;
       repId = payload.repId;
       payloadRole = payload.role;
@@ -184,6 +185,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('[SUPABASE_RELAY] POST Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error instanceof Response) return error;
+    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: error.status || 500 });
   }
 }
