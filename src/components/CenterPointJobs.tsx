@@ -5,7 +5,6 @@ import { useState, useEffect, useCallback } from "react";
 import { Search, ChevronRight, RefreshCw, Building2, ArrowRight, CloudDownload, CheckCircle2, ArrowLeft, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { formatDistanceToNow } from "date-fns";
 
 // ─── Stage pipeline ────────────────────────────────────────────────────────────
 // Stripi-style chip config: bg/fg match Stripi semantic tokens; dot is a colored indicator
@@ -16,14 +15,14 @@ const STAGES: Record<string, {
   ring: string;
   chip: { bg: string; fg: string; dot: string };
 }> = {
-  lead_opened:   { label: "New Lead",    next: "lead_pending",  color: "bg-sky-500/20 text-sky-300 border-sky-500/30",               ring: "bg-sky-500",     chip: { bg: "#E6F1FB", fg: "#185FA5", dot: "#185FA5" } },
-  lead_pending:  { label: "Pending",     next: "lead_quoted",   color: "bg-blue-500/20 text-blue-300 border-blue-500/30",             ring: "bg-blue-500",    chip: { bg: "#EEEDFE", fg: "#534AB7", dot: "#534AB7" } },
+  lead_opened:   { label: "New Lead",    next: "lead_pending",  color: "bg-sky-500/20 text-sky-300 border-sky-500/30",               ring: "bg-sky-500",     chip: { bg: "#dbeafe", fg: "#1e40af", dot: "#3b82f6" } },
+  lead_pending:  { label: "Pending",     next: "lead_quoted",   color: "bg-blue-500/20 text-blue-300 border-blue-500/30",             ring: "bg-blue-500",    chip: { bg: "#e0f2fe", fg: "#0369a1", dot: "#0ea5e9" } },
   lead_quoted:   { label: "Quoted",      next: "lead_sold",     color: "bg-amber-500/20 text-amber-300 border-amber-500/30",          ring: "bg-amber-500",   chip: { bg: "#fff5cc", fg: "#6a4e00", dot: "#d6a800" } },
   lead_sold:     { label: "Sold",        next: "opened",        color: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",    ring: "bg-emerald-500", chip: { bg: "#d7f7c2", fg: "#0d6a3f", dot: "#29b572" } },
   dead_lead:     { label: "Dead Lead",   next: null,            color: "bg-rose-500/20 text-rose-300 border-rose-500/30",             ring: "bg-rose-500",    chip: { bg: "#fde2e1", fg: "#983705", dot: "#d24c47" } },
-  opened:        { label: "Opened",      next: "scheduled",     color: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",       ring: "bg-indigo-500",  chip: { bg: "#EAF3DE", fg: "#3B6D11", dot: "#3B6D11" } },
+  opened:        { label: "Opened",      next: "scheduled",     color: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",       ring: "bg-indigo-500",  chip: { bg: "#ede9fe", fg: "#4c1d95", dot: "#7c3aed" } },
   scheduled:     { label: "Scheduled",   next: "started",       color: "bg-violet-500/20 text-violet-300 border-violet-500/30",       ring: "bg-violet-500",  chip: { bg: "#f3e8ff", fg: "#6b21a8", dot: "#a855f7" } },
-  started:       { label: "In Progress", next: "completed",     color: "bg-purple-500/20 text-purple-300 border-purple-500/30",       ring: "bg-purple-500",  chip: { bg: "#FAEEDA", fg: "#854F0B", dot: "#854F0B" } },
+  started:       { label: "In Progress", next: "completed",     color: "bg-purple-500/20 text-purple-300 border-purple-500/30",       ring: "bg-purple-500",  chip: { bg: "#faf5ff", fg: "#7e22ce", dot: "#9333ea" } },
   completed:     { label: "Completed",   next: "invoiced",      color: "bg-teal-500/20 text-teal-300 border-teal-500/30",             ring: "bg-teal-500",    chip: { bg: "#d7f7c2", fg: "#0d6a3f", dot: "#29b572" } },
   invoiced:      { label: "Invoiced",    next: "closed",        color: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",             ring: "bg-cyan-500",    chip: { bg: "#cffafe", fg: "#155e75", dot: "#06b6d4" } },
   closed:        { label: "Closed Out",  next: null,            color: "bg-white/10 text-[#567090] border-white/10",                  ring: "bg-white/30",    chip: { bg: "#f6f9fc", fg: "#64748d", dot: "#94a3b8" } },
@@ -55,7 +54,6 @@ interface CPJob {
     propertyName: string | null;
     opportunityType: string | null;
     workType: string | null;
-    contactName?: string | null;
     domain: string;
     status: string;
     displayStatus: string;
@@ -250,21 +248,25 @@ export function CenterPointJobs() {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => window.dispatchEvent(new CustomEvent('changeView', { detail: 'dashboard' }))}
-            className="flex items-center justify-center w-[36px] h-[36px] rounded-full bg-[var(--color-background-secondary,rgba(255,255,255,0.05))] border border-[var(--color-border-tertiary,rgba(255,255,255,0.1))] hover:bg-white/10 transition-all shrink-0"
+            className="p-3 rounded-full bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all"
           >
-            <ArrowLeft className="w-[18px] h-[18px]" />
+            <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="min-w-0">
             <h2 className="text-2xl font-display font-medium tracking-tight">CenterPoint Jobs</h2>
             <div className="flex items-center gap-3 mt-1 flex-wrap">
               <p className="text-sm text-[#567090]">
                 {totalJobs.toLocaleString()} jobs
+                {syncStatus.totalCached > 0 && ` · ${syncStatus.totalCached.toLocaleString()} cached`}
               </p>
               {syncStatus.lastSync && (
-                <span className="flex items-center gap-1.5 text-xs text-[#567090]">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                  Synced · {formatDistanceToNow(new Date(syncStatus.lastSync))} ago
+                <span className="flex items-center gap-1 text-[10px] font-mono text-[#354D6F] uppercase tracking-widest">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-500/50" />
+                  synced {new Date(syncStatus.lastSync).toLocaleString()}
                 </span>
+              )}
+              {syncStatus.result && (
+                <span className="text-[10px] font-mono text-indigo-400/70">{syncStatus.result}</span>
               )}
             </div>
           </div>
@@ -309,7 +311,7 @@ export function CenterPointJobs() {
         </form>
 
         {/* Stage filter */}
-        <div className="flex items-center gap-3 overflow-x-auto pb-1" style={{ scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}>
+        <div className="flex items-center gap-3 overflow-x-auto pb-1">
           <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest shrink-0">Stage</span>
           {STATUS_FILTERS.map(f => (
             <button
@@ -319,7 +321,6 @@ export function CenterPointJobs() {
                 "px-4 py-2 rounded-full border text-xs font-display transition-all whitespace-nowrap shrink-0",
                 statusFilter === f.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-[#7090B0] hover:bg-white/10"
               )}
-              style={{ scrollSnapAlign: "start" }}
             >{f.label}</button>
           ))}
         </div>
@@ -386,9 +387,6 @@ export function CenterPointJobs() {
                           </span>
                           <span className="text-[9px] font-mono text-[#3F5878] tracking-widest">#{attr.name}</span>
                         </div>
-                        <p className="text-[12px] text-[#7090B0] truncate mb-1">
-                          {attr.contactName ? `${attr.contactName} · Homeowner` : "Homeowner TBD"}
-                        </p>
                         <div className="flex items-center gap-4 flex-wrap">
                           {attr.domain && (
                             <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-wider">{attr.domain}</span>

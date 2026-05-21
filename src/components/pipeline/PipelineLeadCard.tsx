@@ -103,9 +103,6 @@ export function PipelineLeadCard({
             );
           })}
         </div>
-        <p className="text-[11px] mb-5" style={{ color: "var(--color-text-secondary, #7090B0)" }}>
-          Stage {stageIdx + 1} of 5 — {["New Lead", "Contacted", "Inspection Scheduled", "Proposal Sent", "Closed"][stageIdx] || "Unknown"}
-        </p>
 
         {/* Status badge row */}
         <div className="flex items-center justify-between mb-5">
@@ -209,17 +206,11 @@ export function PipelineLeadCard({
                   {apptDurationMin !== null ? (apptDurationMin < 60 ? `${apptDurationMin} min` : `${apptDurationMin / 60} hr`) : "—"}
                 </p>
               </div>
-            ) : lead.pipeline_status === "follow_up_needed" && lead.next_follow_up_at ? (
-              <p className={cn("text-xs font-display leading-tight", isUrgent ? "text-rose-400/80" : isWarning ? "text-amber-400/70" : "text-[#7E9DBE]")}>
-                {fmtDate(lead.next_follow_up_at)}
-              </p>
-            ) : idleDays !== null ? (
-              <p className={cn("text-xs font-display leading-tight", isUrgent ? "text-rose-400/80" : isWarning ? "text-amber-400/70" : "text-[#7E9DBE]")}>
-                {`${idleDays}d`}
-              </p>
             ) : (
-              <p className="text-[11px] px-2 py-0.5 rounded-full font-display leading-tight inline-block" style={{ background: "var(--color-background-secondary, rgba(255,255,255,0.05))", color: "var(--color-text-secondary, #8BA5C5)" }}>
-                New
+              <p className={cn("text-xs font-display leading-tight", isUrgent ? "text-rose-400/80" : isWarning ? "text-amber-400/70" : "text-[#7E9DBE]")}>
+                {lead.pipeline_status === "follow_up_needed" && lead.next_follow_up_at
+                  ? fmtDate(lead.next_follow_up_at)
+                  : idleDays !== null ? `${idleDays}d` : "New"}
               </p>
             )}
           </div>

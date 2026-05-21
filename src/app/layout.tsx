@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { HomeScreenPrompt } from "@/components/ui/HomeScreenPrompt";
 
 export const metadata: Metadata = {
   title: "Hustad Residential | Storm Inspection Platform",
@@ -25,10 +24,7 @@ export default function RootLayout({
       </head>
       <body className="font-body h-screen overflow-hidden" style={{ backgroundColor: "var(--bg-base)" }}>
         <ThemeProvider>
-          <AuthProvider>
-            {children}
-            <HomeScreenPrompt />
-          </AuthProvider>
+          <AuthProvider>{children}</AuthProvider>
         </ThemeProvider>
       </body>
     </html>
