@@ -167,7 +167,7 @@ export function A02WhyInspection({ onNext, onBack }: Props) {
       </div>
 
       {/* Fixed Premium Footer Actions */}
-      <div className="absolute bottom-0 inset-x-0 px-4 md:px-8 pb-4 md:pb-8 pt-12 md:pt-20 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent">
+      <div className="absolute bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3 md:gap-6">
           <button
             onClick={onBack}
