@@ -88,7 +88,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
               <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
               <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-[0.2em] pt-0.5">Authorization Terms</span>
             </div>
-            <h1 className="text-6xl md:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
+            <h1 className="text-3xl md:text-6xl lg:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
               Before the signature —
               <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">here is what you are authorizing.</span>
@@ -210,10 +210,10 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
         </div>
       </div>
 
-      <div className="fixed bottom-0 inset-x-0 p-8 z-30 pointer-events-none">
+      <div className="fixed bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20" />
-        <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-6 pointer-events-auto">
-          <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
+        <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-3 md:gap-6 pointer-events-auto">
+          <button onClick={onBack} className="group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 shrink-0">
             <ArrowLeft className="w-4 h-4 text-[#DDE5F5] group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-[#E8EDF8]">Back</span>
           </button>
@@ -221,11 +221,11 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
             onClick={handleContinue} 
             lightColor="#FAFAFA" 
             backgroundColor="#060606" 
-            className="flex-1 max-w-md h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+            className="flex-1 h-14 md:h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
           >
             <div className="flex items-center justify-center gap-4">
-              <span className="text-xl font-display font-semibold tracking-tight">Continue to Signature</span>
-              <ChevronRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
+              <span className="text-sm md:text-xl font-display font-semibold tracking-tight">Continue to Signature</span>
+              <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-indigo-400 group-hover:translate-x-1 transition-transform shrink-0" />
             </div>
           </StarButton>
         </div>

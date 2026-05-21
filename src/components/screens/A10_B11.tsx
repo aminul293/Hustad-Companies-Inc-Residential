@@ -121,7 +121,7 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
           </motion.div>
 
           <div className="space-y-4">
-            <h1 className="text-6xl md:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
+            <h1 className="text-3xl md:text-6xl lg:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
               The rep is finishing
               <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">the exterior review.</span>
@@ -767,10 +767,10 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
       </div>
 
       {/* Control Surface (Footer) */}
-      <div className="fixed bottom-0 inset-x-0 p-10 z-50 pointer-events-none">
+      <div className="fixed bottom-0 inset-x-0 px-4 md:px-10 pb-8 pt-12 md:pt-20 z-50 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/80 to-transparent pt-32" />
-        <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-8 pointer-events-auto">
-          <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300">
+        <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-3 md:gap-8 pointer-events-auto">
+          <button onClick={onBack} className="group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 shrink-0">
             <ArrowLeft className="w-4 h-4 text-[#DDE5F5] group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-[#E8EDF8]">Back</span>
           </button>
@@ -780,7 +780,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
             lightColor="#FAFAFA"
             backgroundColor="#0A0A0A"
             className={cn(
-              "flex-1 h-20 rounded-[40px] transition-all duration-500 group",
+              "flex-1 h-14 md:h-20 rounded-[40px] transition-all duration-500 group",
               !outcomeType ? "opacity-20 grayscale cursor-not-allowed" : "active:scale-95 shadow-[0_20px_60px_rgba(99,102,241,0.2)]"
             )}
           >
@@ -792,7 +792,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                   <Lock className={cn("w-7 h-7 transition-colors", outcomeType ? "text-indigo-400" : "text-[#2D4060]")} />
                 )}
               </div>
-              <span className="text-xl font-display font-medium text-[#E8EDF8] tracking-wide">
+              <span className="text-sm md:text-xl font-display font-medium text-[#E8EDF8] tracking-wide">
                 {!outcomeType ? "Classification Required" : "Execute Immutable Lock & Finalize"}
               </span>
               <ChevronRight className="w-6 h-6 text-[#3F5878] group-hover:translate-x-1 transition-transform" />

@@ -44,7 +44,7 @@ function SplineSceneBasic() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-6 w-fit">
               <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest">Active Protection System</span>
             </div>
-            <h1 className="text-6xl md:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
+            <h1 className="text-3xl md:text-6xl lg:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
               What matters <br /> most to you?
             </h1>
             <p className="mt-6 text-neutral-400 text-lg font-light max-w-md leading-relaxed">
@@ -405,9 +405,9 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
         </div>
       </div>
 
-      <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-6">
-          <button onClick={onBack} className="group flex items-center gap-3 px-8 py-5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
+      <div className="absolute bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-3 md:gap-6">
+          <button onClick={onBack} className="group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300 shrink-0">
             <ArrowLeft className="w-4 h-4 text-[#567090] group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-[#8BA5C5]">Previous</span>
           </button>
@@ -415,11 +415,11 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
             onClick={handleSave} 
             lightColor="#FAFAFA" 
             backgroundColor="#060606" 
-            className="flex-1 max-w-md h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+            className="flex-1 h-14 md:h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
           >
             <div className="flex items-center justify-center gap-4">
-              <span className="text-xl font-display font-semibold tracking-tight">Save My Priorities</span>
-              <ChevronRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
+              <span className="text-sm md:text-xl font-display font-semibold tracking-tight">Save My Priorities</span>
+              <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-indigo-400 group-hover:translate-x-1 transition-transform shrink-0" />
             </div>
           </StarButton>
         </div>
