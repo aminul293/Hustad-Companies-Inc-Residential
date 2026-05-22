@@ -142,10 +142,15 @@ function RepCaptureInner() {
     (s, sec) => s + sec.items.reduce((is, i) => is + i.requiredCount, 0), 0
   );
   const photosUploaded = captured.filter(c => c.status === "done").length;
-  const naCount = naCategories.size;
-  const effectiveRequired = Math.max(0, totalRequired - naCount);
-  // N/A items count as completed — progress = (photos + na) / total
-  const pct = totalRequired > 0 ? Math.min(100, Math.round(((photosUploaded + naCount) / totalRequired) * 100)) : 100;
+  const naCount = naCategories.size; // number of items (for display)
+  // Sum the actual requiredCount of N/A'd items — items like best_hail_hit_closeups
+  // need 3 photos each, so marking them N/A must subtract 3, not 1
+  const naRequiredCount = INSPECTION_SHOT_LIST
+    .flatMap(s => s.items)
+    .filter(i => naCategories.has(i.id))
+    .reduce((sum, i) => sum + i.requiredCount, 0);
+  const effectiveRequired = Math.max(0, totalRequired - naRequiredCount);
+  const pct = totalRequired > 0 ? Math.min(100, Math.round(((photosUploaded + naRequiredCount) / totalRequired) * 100)) : 100;
 
   const toggleNa = useCallback((categoryId: string) => {
     setNaCategories(prev => {
