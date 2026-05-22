@@ -130,7 +130,8 @@ function RepCaptureInner() {
   const photosUploaded = captured.filter(c => c.status === "done").length;
   const naCount = naCategories.size;
   const effectiveRequired = Math.max(0, totalRequired - naCount);
-  const pct = effectiveRequired > 0 ? Math.min(100, Math.round((photosUploaded / effectiveRequired) * 100)) : 100;
+  // N/A items count as completed — progress = (photos + na) / total
+  const pct = totalRequired > 0 ? Math.min(100, Math.round(((photosUploaded + naCount) / totalRequired) * 100)) : 100;
 
   const toggleNa = useCallback((categoryId: string) => {
     setNaCategories(prev => {
@@ -256,8 +257,8 @@ function RepCaptureInner() {
                 pct === 100 ? "text-emerald-400" : "text-indigo-400"
               )}>{pct}%</span>
               <p className="text-[9px] font-mono text-[#354D6F] uppercase tracking-widest mt-0.5">
-                {photosUploaded}/{effectiveRequired}
-                {naCount > 0 && <span className="text-[#293A58]"> +{naCount}n/a</span>}
+                {photosUploaded}/{effectiveRequired} photos
+                {naCount > 0 && <span className="text-[#293A58]"> · {naCount} n/a</span>}
               </p>
             </div>
           </div>
@@ -421,7 +422,10 @@ function RepCaptureInner() {
           )}
         >
           <CheckCircle2 className="w-5 h-5" />
-          {pct === 100 ? "Done — All Photos Captured" : `Done for Now (${photosUploaded}/${effectiveRequired} photos)`}
+          {pct === 100
+            ? `Done — All Complete${naCount > 0 ? ` · ${naCount} N/A` : ""}`
+            : `Done for Now · ${photosUploaded}/${effectiveRequired} photos${naCount > 0 ? ` · ${naCount} N/A` : ""}`
+          }
         </button>
       </div>
 
