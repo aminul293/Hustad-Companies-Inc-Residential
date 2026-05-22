@@ -86,7 +86,7 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
         <ElegantShape delay={0.2} width={600} height={140} rotate={12} gradient="from-indigo-500/[0.12]" className="left-[-5%] top-[10%]" />
       </div>
 
-      <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
+      <div className="absolute top-10 left-10 z-30 hidden lg:flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
           <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
           <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em]">Madison Residential</span>

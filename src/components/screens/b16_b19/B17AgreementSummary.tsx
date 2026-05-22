@@ -74,7 +74,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
         </motion.div>
       </div>
 
-      <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
+      <div className="absolute top-10 left-10 z-30 hidden lg:flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
           <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
           <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em]">Madison Residential</span>

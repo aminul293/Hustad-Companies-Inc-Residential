@@ -107,7 +107,7 @@ export function A06WarrantyImpact({ session, onUpdate, onNext, onBack }: Props) 
       </div>
 
       {/* Persistent Branding Anchor */}
-      <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none text-[var(--tx1)]">
+      <div className="absolute top-10 left-10 z-30 hidden lg:flex flex-col items-start pointer-events-none text-[var(--tx1)]">
         <div className="flex items-baseline gap-2.5">
           <span className="font-display font-bold text-2xl tracking-[0.1em]">
             HUSTAD
@@ -308,7 +308,7 @@ export function A07WhyHustad({ session, onUpdate, onNext, onBack }: Props) {
         </motion.div>
       </div>
 
-      <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none text-[var(--tx1)]">
+      <div className="absolute top-10 left-10 z-30 hidden lg:flex flex-col items-start pointer-events-none text-[var(--tx1)]">
         <div className="flex items-baseline gap-2.5">
           <span className="font-display font-bold text-2xl tracking-[0.1em]">HUSTAD</span>
           <span className="text-[10px] font-mono text-[var(--tx3)] uppercase tracking-[0.3em]">Madison Residential</span>
@@ -491,7 +491,7 @@ export function A08WhatYouReceive({ session, onUpdate, onNext, onBack }: Props) 
         </motion.div>
       </div>
 
-      <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none text-[var(--tx1)]">
+      <div className="absolute top-10 left-10 z-30 hidden lg:flex flex-col items-start pointer-events-none text-[var(--tx1)]">
         <div className="flex items-baseline gap-2.5">
           <span className="font-display font-bold text-2xl tracking-[0.1em]">HUSTAD</span>
           <span className="text-[10px] font-mono text-[var(--tx3)] uppercase tracking-[0.3em]">Madison Residential</span>

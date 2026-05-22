@@ -227,7 +227,7 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
       </div>
 
       {/* Persistent Branding Anchor */}
-      <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none text-[var(--tx1)]">
+      <div className="absolute top-10 left-10 z-30 hidden lg:flex flex-col items-start pointer-events-none text-[var(--tx1)]">
         <div className="flex items-baseline gap-2.5">
           <span className="font-display font-bold text-2xl tracking-[0.1em]">
             HUSTAD
