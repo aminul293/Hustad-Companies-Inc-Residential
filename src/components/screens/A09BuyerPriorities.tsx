@@ -3,7 +3,6 @@
 import { useState } from "react";
 import type { SessionState, BuyerPriority, InsurerContactStatus } from "@/types/session";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import { ElegantShape } from "@/components/ui/shape-landing-hero";
 import { StarButton } from "@/components/ui/star-button";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -17,19 +16,22 @@ import {
   ChevronRight,
   UserPlus,
   MessageSquare,
-  Check,
-  LayoutGrid
+  Check
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SplineScene } from "@/components/ui/splite";
 import { Card } from "@/components/ui/card";
 import { Spotlight } from "@/components/ui/spotlight";
+import { useTheme } from "@/components/ThemeProvider";
 
 function SplineSceneBasic() {
+  const { theme } = useTheme();
+  const isHighContrast = theme === "high-contrast";
+
   return (
-    <Card className="w-full h-[500px] bg-white/[0.02] backdrop-blur-3xl relative overflow-hidden border-white/[0.05] rounded-[48px] mb-12">
+    <Card className="w-full h-[500px] bg-[var(--bg-surface)] backdrop-blur-3xl relative overflow-hidden border border-[var(--border-color)] rounded-[48px] mb-12">
       <Spotlight
-        className="-top-40 left-0 md:left-60 md:-top-20"
+        className="-top-40 left-0 md:left-60 md:-top-20 theme-graphic"
         fill="white"
       />
       
@@ -41,20 +43,20 @@ function SplineSceneBasic() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-6 w-fit">
-              <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest">Active Protection System</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--bg-subtle)] border border-[var(--border-color)] mb-6 w-fit">
+              <span className="text-[10px] font-mono text-indigo-600 dark:text-indigo-300 uppercase tracking-widest">Active Protection System</span>
             </div>
-            <h1 className="text-3xl md:text-6xl lg:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
+            <h1 className="text-3xl md:text-6xl lg:text-8xl font-display font-medium text-[var(--tx1)] tracking-tight leading-[1.05]">
               What matters <br /> most to you?
             </h1>
-            <p className="mt-6 text-neutral-400 text-lg font-light max-w-md leading-relaxed">
-              The Hustad is standing by. Tell us what you value most, and we will tailor the forensic review to your home's unique protection needs.
+            <p className="mt-6 text-[var(--tx3)] text-lg font-light max-w-md leading-relaxed">
+              Tell us what matters most. Your rep will focus the live review on the concerns that matter to you.
             </p>
           </motion.div>
         </div>
 
         {/* Right content: Interactive 3D Robot with Protected Holographic Home */}
-        <div className="flex-1 relative min-h-[500px] group">
+        <div className="flex-1 relative min-h-[500px] group theme-graphic">
           <div className="absolute inset-0 z-0">
             <SplineScene 
               scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
@@ -97,7 +99,7 @@ function SplineSceneBasic() {
               <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 px-5 py-2 rounded-full bg-indigo-500/20 border border-indigo-500/40 backdrop-blur-2xl shadow-[0_0_20px_rgba(129,140,248,0.2)]">
                 <div className="flex items-center gap-2.5">
                   <div className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_12px_rgba(74,222,128,1)] animate-pulse" />
-                  <span className="text-[10px] font-mono text-indigo-100 uppercase tracking-[0.3em] whitespace-nowrap">Asset Fully Protected</span>
+                  <span className="text-[10px] font-mono text-indigo-100 uppercase tracking-[0.3em] whitespace-nowrap">Property Fully Protected</span>
                 </div>
               </div>
             </div>
@@ -106,12 +108,12 @@ function SplineSceneBasic() {
           {/* Interaction Hint */}
           <div className="absolute bottom-10 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center gap-3">
             <Shield className="w-3 h-3 text-indigo-400" />
-            <span className="text-[9px] font-mono text-indigo-300 uppercase tracking-[0.2em]">The Hustad is protecting your home</span>
+            <span className="text-[9px] font-mono text-indigo-300 uppercase tracking-[0.2em]">Hustad is ready to help</span>
           </div>
         </div>
       </div>
     </Card>
-  )
+  );
 }
 
 interface Props {
@@ -120,27 +122,53 @@ interface Props {
   onNext: () => void;
   onBack: () => void;
 }
-// ... rest of the component
 
 const PRIORITIES = [
-  { value: "roof_longevity" as BuyerPriority, label: "Roof Longevity", detail: "Durable solution that lasts.", icon: Shield },
-  { value: "insurance_process" as BuyerPriority, label: "Insurance Process", detail: "Help navigating the claim process.", icon: FileText },
-  { value: "repair_speed" as BuyerPriority, label: "Repair Speed", detail: "Addressed as quickly as possible.", icon: Zap },
-  { value: "cost_clarity" as BuyerPriority, label: "Cost Clarity", detail: "Understand actual out-of-pocket costs.", icon: DollarSign },
-  { value: "warranty_coverage" as BuyerPriority, label: "Warranty Coverage", detail: "Strong long-term protection.", icon: ShieldCheck },
-  { value: "minimal_disruption" as BuyerPriority, label: "Minimal Disruption", detail: "Done with as little interruption.", icon: Waves },
+  { value: "roof_longevity" as BuyerPriority, label: "Roof Longevity", detail: "Durable protection that lasts.", icon: Shield },
+  { value: "insurance_process" as BuyerPriority, label: "Insurance Process", detail: "Understanding documentation, carrier review, and next steps.", icon: FileText },
+  { value: "repair_speed" as BuyerPriority, label: "Repair Speed", detail: "Addressing urgent issues quickly.", icon: Zap },
+  { value: "cost_clarity" as BuyerPriority, label: "Cost Clarity", detail: "Clear scope, clear options, clear next step.", icon: DollarSign },
+  { value: "warranty_coverage" as BuyerPriority, label: "Warranty Coverage", detail: "Understanding what is covered and what is not.", icon: ShieldCheck },
+  { value: "minimal_disruption" as BuyerPriority, label: "Minimal Disruption", detail: "Clean work and clear communication.", icon: Waves },
 ];
 
-const INSURER_OPTIONS: { value: InsurerContactStatus; label: string }[] = [
-  { value: "not_yet", label: "Not yet — waiting for the inspection first" },
-  { value: "already_contacted", label: "Yes — already contacted my insurer" },
+type InsurerStatusLocal = "not_yet" | "already_contacted" | "questions_before" | "not_sure";
+
+const INSURER_OPTIONS: { value: InsurerStatusLocal; label: string }[] = [
+  { value: "not_yet", label: "No, waiting for the inspection first" },
+  { value: "already_contacted", label: "Yes, claim already opened" },
+  { value: "questions_before", label: "I have questions before contacting them" },
   { value: "not_sure", label: "Not sure yet" },
 ];
 
+const DM_OPTIONS = [
+  { val: "just_me", label: "No, just me", anotherPresent: false, relation: "" },
+  { val: "spouse_or_co_owner", label: "Yes, spouse or co-owner", anotherPresent: true, relation: "spouse_or_co_owner" },
+  { val: "property_manager_or_hoa", label: "Yes, property manager or HOA", anotherPresent: true, relation: "property_manager_or_hoa" },
+  { val: "not_present", label: "Yes, not present today", anotherPresent: true, relation: "not_present" },
+];
+
 export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props) {
+  const { theme } = useTheme();
+  const isHighContrast = theme === "high-contrast";
+
   const [priorities, setPriorities] = useState<BuyerPriority[]>(session.buyerData.buyerPriorities);
-  const [insurerStatus, setInsurerStatus] = useState<InsurerContactStatus | null>(session.buyerData.insurerContactStatus);
-  const [anotherDM, setAnotherDM] = useState<boolean | null>(session.buyerData.anotherDecisionMakerPresent);
+  const [insurerStatus, setInsurerStatus] = useState<InsurerStatusLocal | null>(
+    session.buyerData.insurerContactStatus as InsurerStatusLocal | null
+  );
+  
+  const getInitialDMVal = () => {
+    if (session.buyerData.anotherDecisionMakerPresent === false) return "just_me";
+    if (session.buyerData.anotherDecisionMakerPresent === true) {
+      const rel = session.buyerData.decisionMakerRelation;
+      if (rel === "spouse_or_co_owner" || rel === "property_manager_or_hoa" || rel === "not_present") {
+        return rel;
+      }
+      return "spouse_or_co_owner"; // default fallback
+    }
+    return null;
+  };
+  const [dmVal, setDmVal] = useState<string | null>(getInitialDMVal());
   const [dmName, setDmName] = useState(session.buyerData.decisionMakerName);
   const [dmEmail, setDmEmail] = useState(session.buyerData.decisionMakerEmail);
   const [questions, setQuestions] = useState(session.buyerData.buyerQuestions);
@@ -157,18 +185,23 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
     const e: Record<string, string> = {};
     if (!priorities.length) e.priorities = "Please select at least one priority.";
     if (insurerStatus === null) e.insurer = "Please select your insurer contact status.";
-    if (anotherDM === null) e.dm = "Please indicate whether another decision-maker is involved.";
+    if (dmVal === null) e.dm = "Please indicate whether another decision-maker is involved.";
     if (Object.keys(e).length) { setErrors(e); return; }
+
+    const selectedDMOption = DM_OPTIONS.find(o => o.val === dmVal);
+    const anotherPresentValue = selectedDMOption ? selectedDMOption.anotherPresent : null;
+    const relationValue = selectedDMOption ? selectedDMOption.relation : "";
 
     const updated: SessionState = {
       ...session,
       buyerData: {
         ...session.buyerData,
         buyerPriorities: priorities,
-        insurerContactStatus: insurerStatus,
-        anotherDecisionMakerPresent: anotherDM,
-        decisionMakerName: dmName,
-        decisionMakerEmail: dmEmail,
+        insurerContactStatus: insurerStatus === "questions_before" ? "not_sure" : insurerStatus,
+        anotherDecisionMakerPresent: anotherPresentValue,
+        decisionMakerRelation: relationValue,
+        decisionMakerName: anotherPresentValue ? dmName : "",
+        decisionMakerEmail: anotherPresentValue ? dmEmail : "",
         buyerQuestions: questions,
       },
     };
@@ -177,13 +210,13 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
   };
 
   return (
-    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606] selection:bg-indigo-500/30 selection:text-[#E8EDF8]">
-      {/* Background Assets: Forensic Rapid Deployment Cloud */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[var(--bg-base)] text-[var(--tx1)] selection:bg-indigo-500/30 selection:text-[var(--tx1)]">
+      {/* Background Assets: Rapid Deployment Cloud */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden theme-graphic">
         {/* Ambient Gradient Lift */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.08),transparent_70%)]" />
 
-        {/* Forensic HUD Data Layer */}
+        {/* HUD Data Layer */}
         <motion.div 
           animate={{ opacity: [0.05, 0.1, 0.05], scale: [1, 1.05, 1] }}
           transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
@@ -193,37 +226,17 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
         </motion.div>
       </div>
 
-      {/* Background Shapes */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <ElegantShape
-          delay={0.2}
-          width={600}
-          height={140}
-          rotate={12}
-          gradient="from-indigo-500/[0.12]"
-          className="left-[-10%] top-[10%]"
-        />
-        <ElegantShape
-          delay={0.4}
-          width={500}
-          height={120}
-          rotate={-15}
-          gradient="from-rose-500/[0.12]"
-          className="right-[-5%] top-[70%]"
-        />
-      </div>
-
       {/* Persistent Branding Anchor */}
-      <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
+      <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none text-[var(--tx1)]">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">
+          <span className="font-display font-bold text-2xl tracking-[0.1em]">
             HUSTAD
           </span>
-          <span className="text-[10px] font-mono text-[#2D4060] uppercase tracking-[0.3em] pt-0.5">
+          <span className="text-[10px] font-mono text-[var(--tx3)] uppercase tracking-[0.3em] pt-0.5">
             Madison Residential
           </span>
         </div>
-        <div className="mt-2 h-px w-12 bg-gradient-to-r from-white/20 to-transparent" />
+        <div className="mt-2 h-px w-12 bg-gradient-to-r from-[var(--border-color)] to-transparent" />
       </div>
 
       <div className="relative z-20 flex-shrink-0 pt-4">
@@ -237,8 +250,8 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
           {/* Priorities Section */}
           <div className="space-y-8">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-display font-medium text-[#C2D0E4] uppercase tracking-wider">
-                What matters most to you? <span className="text-indigo-400/60 lowercase">(select all that apply)</span>
+              <h2 className="text-lg font-display font-medium text-[var(--tx2)] uppercase tracking-wider">
+                What matters most to you? <span className="text-indigo-500 dark:text-indigo-400 lowercase">(select all that apply)</span>
               </h2>
             </div>
             
@@ -255,25 +268,34 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
                     className={cn(
                       "group relative text-left p-6 rounded-[32px] border transition-all duration-500 overflow-hidden",
                       isSelected 
-                        ? "bg-indigo-500/10 border-indigo-500/40 shadow-[0_0_20px_rgba(99,102,241,0.15)]" 
-                        : "bg-white/[0.02] border-white/[0.05] hover:border-white/20"
+                        ? (isHighContrast ? "bg-black text-white border-2 border-black" : "bg-indigo-500/10 border-indigo-500/40 shadow-[0_0_20px_rgba(99,102,241,0.15)]")
+                        : "bg-[var(--bg-surface)] border-[var(--border-color)] hover:border-indigo-500/20"
                     )}
                   >
                     <div className="relative z-10 flex flex-col gap-4">
                       <div className={cn(
                         "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
-                        isSelected ? "bg-indigo-500 text-[#E8EDF8]" : "bg-white/[0.05] text-[#567090] group-hover:text-[#8BA5C5]"
+                        isSelected 
+                          ? (isHighContrast ? "bg-white text-black" : "bg-indigo-500 text-white") 
+                          : "bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--tx3)] group-hover:text-[var(--tx1)]"
                       )}>
-                        <p.icon className="w-5 h-5" />
+                        <p.icon className={cn("w-5 h-5", isSelected && isHighContrast ? "text-black" : "")} />
                       </div>
                       <div>
                         <p className={cn(
                           "font-display font-medium text-lg transition-colors",
-                          isSelected ? "text-[#E8EDF8]" : "text-[#8BA5C5] group-hover:text-[#C2D0E4]"
+                          isSelected 
+                            ? (isHighContrast ? "text-white" : "text-[var(--tx1)]") 
+                            : "text-[var(--tx2)] group-hover:text-[var(--tx1)]"
                         )}>
                           {p.label}
                         </p>
-                        <p className="text-xs text-[#3F5878] font-light leading-snug mt-1 group-hover:text-[#567090] transition-colors">
+                        <p className={cn(
+                          "text-xs font-light leading-snug mt-1 transition-colors",
+                          isSelected
+                            ? (isHighContrast ? "text-white/90" : "text-[var(--tx3)]")
+                            : "text-[var(--tx3)]"
+                        )}>
                           {p.detail}
                         </p>
                       </div>
@@ -283,7 +305,7 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
                         layoutId="active-check"
                         className="absolute top-4 right-4"
                       >
-                        <Check className="w-5 h-5 text-indigo-400" />
+                        <Check className={cn("w-5 h-5", isHighContrast ? "text-white" : "text-indigo-500 dark:text-indigo-400")} />
                       </motion.div>
                     )}
                   </motion.button>
@@ -296,8 +318,8 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             {/* Insurer Status */}
             <div className="space-y-6">
-              <h2 className="text-lg font-display font-medium text-[#C2D0E4] uppercase tracking-wider">
-                Have you contacted your insurer yet?
+              <h2 className="text-lg font-display font-medium text-[var(--tx2)] uppercase tracking-wider">
+                Have you contacted your insurance carrier yet?
               </h2>
               <div className="space-y-3">
                 {INSURER_OPTIONS.map((opt) => {
@@ -309,11 +331,14 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
                       className={cn(
                         "w-full text-left px-6 py-4 rounded-2xl border transition-all duration-300",
                         isSelected 
-                          ? "bg-white/10 border-white/20 text-[#E8EDF8] shadow-xl" 
-                          : "bg-white/[0.02] border-white/[0.05] text-[#567090] hover:bg-white/[0.04]"
+                          ? (isHighContrast ? "bg-black text-white border-2 border-black" : "bg-[var(--bg-subtle)] border-2 border-indigo-500 text-[var(--tx1)] shadow-xl") 
+                          : "bg-[var(--bg-surface)] border-[var(--border-color)] text-[var(--tx3)] hover:bg-[var(--bg-subtle)]"
                       )}
                     >
-                      <span className="text-sm font-body">{opt.label}</span>
+                      <span className={cn(
+                        "text-sm font-body",
+                        isSelected && isHighContrast ? "text-white" : ""
+                      )}>{opt.label}</span>
                     </button>
                   );
                 })}
@@ -323,24 +348,30 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
 
             {/* Decision Maker */}
             <div className="space-y-6">
-              <h2 className="text-lg font-display font-medium text-[#C2D0E4] uppercase tracking-wider">
-                Another decision-maker involved?
+              <h2 className="text-lg font-display font-medium text-[var(--tx2)] uppercase tracking-wider">
+                Is another decision-maker involved?
               </h2>
-              <div className="flex gap-3">
-                {[{ val: false, label: "No, just me" }, { val: true, label: "Yes — not here today" }].map((opt) => {
-                  const isSelected = anotherDM === opt.val;
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {DM_OPTIONS.map((opt) => {
+                  const isSelected = dmVal === opt.val;
                   return (
                     <button
-                      key={String(opt.val)}
-                      onClick={() => { setAnotherDM(opt.val); setErrors((e) => { const n = { ...e }; delete n.dm; return n; }); }}
+                      key={opt.val}
+                      onClick={() => { 
+                        setDmVal(opt.val); 
+                        setErrors((e) => { const n = { ...e }; delete n.dm; return n; }); 
+                      }}
                       className={cn(
-                        "flex-1 px-6 py-4 rounded-2xl border transition-all duration-300 text-center",
+                        "w-full px-4 py-4 rounded-2xl border transition-all duration-300 text-center flex items-center justify-center min-h-[58px]",
                         isSelected 
-                          ? "bg-white/10 border-white/20 text-[#E8EDF8] shadow-xl" 
-                          : "bg-white/[0.02] border-white/[0.05] text-[#567090] hover:bg-white/[0.04]"
+                          ? (isHighContrast ? "bg-black text-white border-2 border-black" : "bg-[var(--bg-subtle)] border-2 border-indigo-500 text-[var(--tx1)] shadow-xl") 
+                          : "bg-[var(--bg-surface)] border-[var(--border-color)] text-[var(--tx3)] hover:bg-[var(--bg-subtle)]"
                       )}
                     >
-                      <span className="text-sm font-body">{opt.label}</span>
+                      <span className={cn(
+                        "text-sm font-body leading-tight",
+                        isSelected && isHighContrast ? "text-white" : ""
+                      )}>{opt.label}</span>
                     </button>
                   );
                 })}
@@ -348,7 +379,7 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
               {errors.dm && <p className="text-sm text-rose-500/80 pl-2">{errors.dm}</p>}
 
               <AnimatePresence>
-                {anotherDM && (
+                {dmVal !== "just_me" && dmVal !== null && (
                   <motion.div 
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -357,10 +388,10 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
                   >
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                        <UserPlus className="w-4 h-4 text-[#2D4060] group-focus-within:text-indigo-400 transition-colors" />
+                        <UserPlus className="w-4 h-4 text-[var(--tx3)] transition-colors" />
                       </div>
                       <input
-                        className="w-full bg-white/[0.03] border border-white/[0.1] rounded-xl py-3 pl-12 pr-4 text-[#E8EDF8] placeholder:text-[#2D4060] focus:border-indigo-500/50 outline-none transition-all"
+                        className="w-full bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl py-3 pl-12 pr-4 text-[var(--tx1)] placeholder-[var(--tx4)] focus:border-indigo-500 outline-none transition-all"
                         placeholder="Their name (optional)"
                         value={dmName}
                         onChange={(e) => setDmName(e.target.value)}
@@ -368,11 +399,11 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
                     </div>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                        <FileText className="w-4 h-4 text-[#2D4060] group-focus-within:text-indigo-400 transition-colors" />
+                        <FileText className="w-4 h-4 text-[var(--tx3)] transition-colors" />
                       </div>
                       <input
-                        className="w-full bg-white/[0.03] border border-white/[0.1] rounded-xl py-3 pl-12 pr-4 text-[#E8EDF8] placeholder:text-[#2D4060] focus:border-indigo-500/50 outline-none transition-all"
-                        placeholder="Their email — to receive a summary"
+                        className="w-full bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl py-3 pl-12 pr-4 text-[var(--tx1)] placeholder-[var(--tx4)] focus:border-indigo-500 outline-none transition-all"
+                        placeholder="Their email, to receive a summary"
                         type="email"
                         value={dmEmail}
                         onChange={(e) => setDmEmail(e.target.value)}
@@ -390,13 +421,13 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
             className="space-y-6"
           >
             <div className="flex items-center gap-3">
-              <MessageSquare className="w-5 h-5 text-indigo-400" />
-              <h2 className="text-lg font-display font-medium text-[#C2D0E4] uppercase tracking-wider">
-                Questions for the rep? <span className="text-[#2D4060] lowercase">(optional)</span>
+              <MessageSquare className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
+              <h2 className="text-lg font-display font-medium text-[var(--tx2)] uppercase tracking-wider">
+                Questions for the rep? <span className="text-[var(--tx3)] lowercase">(optional)</span>
               </h2>
             </div>
             <textarea
-              className="w-full bg-white/[0.02] border border-white/[0.1] rounded-[32px] p-8 text-[#E8EDF8] placeholder:text-[#1F2E48] focus:border-indigo-500/30 outline-none transition-all resize-none font-light leading-relaxed min-h-[160px]"
+              className="w-full bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-[32px] p-8 text-[var(--tx1)] placeholder-[var(--tx4)] focus:border-indigo-500 outline-none transition-all resize-none font-light leading-relaxed min-h-[160px]"
               placeholder="Anything specific you want the rep to address during the review..."
               value={questions}
               onChange={(e) => setQuestions(e.target.value)}
@@ -405,17 +436,21 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
         </div>
       </div>
 
-      <div className="absolute bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent">
+      <div className="absolute bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-6 z-30 bg-[var(--bg-base)]/90 backdrop-blur-md border-t border-[var(--border-color)]">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3 md:gap-6">
-          <button onClick={onBack} className="group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300 shrink-0">
-            <ArrowLeft className="w-4 h-4 text-[#567090] group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-[#8BA5C5]">Previous</span>
+          <button onClick={onBack} className="group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full bg-[var(--bg-surface)] border border-[var(--border-color)] hover:bg-[var(--bg-subtle)] transition-all duration-300 shrink-0">
+            <ArrowLeft className="w-4 h-4 text-[var(--tx3)] group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-display font-medium text-[var(--tx2)]">Previous</span>
           </button>
           <StarButton 
             onClick={handleSave} 
-            lightColor="#FAFAFA" 
-            backgroundColor="#060606" 
-            className="flex-1 h-14 md:h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+            lightColor={isHighContrast ? "#000000" : "#FAFAFA"} 
+            backgroundColor={isHighContrast ? "#000000" : "#060606"} 
+            className={`flex-1 h-14 md:h-20 rounded-full active:scale-95 transition-all group btn-primary ${
+              isHighContrast 
+                ? "bg-black text-white border-2 border-white" 
+                : "text-white shadow-[0_20px_60px_rgba(99,102,241,0.2)]"
+            }`}
           >
             <div className="flex items-center justify-center gap-4">
               <span className="text-sm md:text-xl font-display font-semibold tracking-tight">Save My Priorities</span>

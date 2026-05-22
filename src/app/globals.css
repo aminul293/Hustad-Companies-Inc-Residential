@@ -34,7 +34,6 @@
   --tx5: #a0b0c8;  /* Faint — disabled, very subtle     */
 }
 
-/* ── Dark mode overrides ────────────────────────────────────────────────── */
 .dark {
   --bg-base:       #06090F;
   --bg-surface:    #0d1525;
@@ -43,13 +42,80 @@
   --border-color:  #1e3050;
   --ring-color:    rgba(74, 143, 212, 0.15);
 
-  /* Text hierarchy — Dark (original blue-tinted palette) */
+  /* Text hierarchy — Dark (original blue-tinted palette with improved body contrast) */
   --tx1: #E8EDF8;
-  --tx2: #C2D0E4;
+  --tx2: #F3F4F6;
   --tx3: #8BA5C5;
   --tx4: #567090;
   --tx5: #2D4060;
 }
+
+.high-contrast {
+  --bg-base:       #FFFFFF;
+  --bg-surface:    #FFFFFF;
+  --bg-elevated:   #FFFFFF;
+  --bg-subtle:     #FFFFFF;
+  --border-color:  #000000;
+  --ring-color:    rgba(0, 0, 0, 0.2);
+
+  /* Text hierarchy — High Contrast */
+  --tx1: #000000;
+  --tx2: #000000;
+  --tx3: #000000;
+  --tx4: #000000;
+  --tx5: #000000;
+}
+
+/* Theme-specific graphic visibility controls */
+.light .theme-graphic,
+.high-contrast .theme-graphic {
+  display: none !important;
+}
+
+/* High Contrast overrides for buttons, cards, and interactive elements */
+.high-contrast .btn-primary,
+.high-contrast .btn-teal,
+.high-contrast .btn-amber {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  border: 2px solid #000000 !important;
+}
+
+.high-contrast .btn-secondary,
+.high-contrast .btn-ghost {
+  background-color: #FFFFFF !important;
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+}
+
+.high-contrast .card,
+.high-contrast .card-mist,
+.high-contrast .card-navy {
+  background-color: #FFFFFF !important;
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+}
+
+.high-contrast input,
+.high-contrast textarea,
+.high-contrast select,
+.high-contrast .input-field,
+.high-contrast .priority-tile {
+  background-color: #FFFFFF !important;
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+}
+
+.high-contrast .priority-tile.selected {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  border: 2px solid #000000 !important;
+}
+
+.high-contrast .priority-tile.selected * {
+  color: #FFFFFF !important;
+}
+
 
 * {
   -webkit-tap-highlight-color: transparent;

@@ -6,6 +6,12 @@ import type { SessionState } from "@/types/session";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { StarButton } from "@/components/ui/star-button";
 import { ArrowRight, ArrowLeft } from "lucide-react";
+import { useTheme } from "@/components/ThemeProvider";
+
+function toTitleCase(str?: string) {
+  if (!str) return "";
+  return str.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+}
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
@@ -28,9 +34,11 @@ interface Props {
 }
 
 export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
+  const { theme } = useTheme();
   const rawName = session.property.homeownerPrimaryName;
-  const name = rawName && rawName !== "Unknown Homeowner" ? rawName : "";
+  const name = rawName && rawName !== "Unknown Homeowner" ? toTitleCase(rawName) : "";
   const isMobile = useIsMobile();
+  const isHighContrast = theme === "high-contrast";
 
   const [titleNumber, setTitleNumber] = useState(0);
   const titles = useMemo(
@@ -50,7 +58,7 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
   }, [titleNumber, titles]);
 
   const backgroundAssets = (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    <div className="absolute inset-0 pointer-events-none overflow-hidden theme-graphic">
       <div
         className="absolute top-0 inset-x-0 h-[55%] opacity-[0.07]"
         style={{ backgroundImage: "url('/images/gradient-mesh-hero.svg')", backgroundSize: "cover", backgroundPosition: "center top" }}
@@ -94,10 +102,10 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
   const brandingAnchor = (
     <div className="absolute top-8 left-8 z-20 flex flex-col items-start pointer-events-none">
       <div className="flex items-baseline gap-2.5">
-        <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
-        <span className="text-[10px] font-mono text-[#2D4060] uppercase tracking-[0.3em] pt-0.5">Madison Residential</span>
+        <span className="font-display font-bold text-[var(--tx1)] text-2xl tracking-[0.1em]">HUSTAD</span>
+        <span className="text-[10px] font-mono text-[var(--tx3)] uppercase tracking-[0.3em] pt-0.5">Madison Residential</span>
       </div>
-      <div className="mt-2 h-px w-12 bg-gradient-to-r from-white/20 to-transparent" />
+      <div className="mt-2 h-px w-12 bg-gradient-to-r from-[var(--tx3)]/20 to-transparent" />
     </div>
   );
 
@@ -105,25 +113,25 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
     <>
       <div className="space-y-8 relative z-10">
         <div className="flex items-start gap-5 group/item">
-          <div className="w-11 h-11 rounded-full bg-white/10 flex items-center justify-center text-hustad-teal-light shrink-0 border border-white/5 shadow-inner mt-0.5">
+          <div className="w-11 h-11 rounded-full bg-[var(--bg-subtle)] flex items-center justify-center text-hustad-teal-light shrink-0 border border-[var(--border-color)] shadow-inner mt-0.5">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
           </div>
           <div>
-            <p className="font-body font-medium text-[#E8EDF8] text-lg tracking-wide">No commitment required.</p>
-            <p className="font-body font-light text-[#7090B0] text-sm mt-1.5 leading-relaxed max-w-lg">
-              Nothing you do here is binding. This walkthrough is simply for your information and peace of mind.
+            <p className="font-body font-medium text-[var(--tx1)] text-lg tracking-wide">No commitment required.</p>
+            <p className="font-body font-light text-[var(--tx3)] text-sm mt-1.5 leading-relaxed max-w-lg">
+              Nothing here is binding. This is simply to help you understand the review before your rep returns.
             </p>
           </div>
         </div>
-        <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-[var(--border-color)] to-transparent" />
         <div className="flex items-start gap-5 group/item">
-          <div className="w-11 h-11 rounded-full bg-white/10 flex items-center justify-center text-hustad-amber shrink-0 border border-white/5 shadow-inner mt-0.5">
+          <div className="w-11 h-11 rounded-full bg-[var(--bg-subtle)] flex items-center justify-center text-hustad-amber shrink-0 border border-[var(--border-color)] shadow-inner mt-0.5">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
           </div>
           <div>
-            <p className="font-body font-medium text-[#E8EDF8] text-lg tracking-wide">About 7–9 minutes at your own pace.</p>
-            <p className="font-body font-light text-[#7090B0] text-sm mt-1.5 leading-relaxed max-w-lg">
-              The rep will return when the exterior review is complete. Take your time.
+            <p className="font-body font-medium text-[var(--tx1)] text-lg tracking-wide">About 7 to 9 minutes at your pace.</p>
+            <p className="font-body font-light text-[var(--tx3)] text-sm mt-1.5 leading-relaxed max-w-lg">
+              Your rep will return when the exterior review is complete. Take your time.
             </p>
           </div>
         </div>
@@ -132,27 +140,31 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
       <div className="pt-8 flex flex-col items-center gap-4 relative z-10">
         <StarButton
           onClick={onNext}
-          lightColor="#FAFAFA"
-          backgroundColor="#060606"
-          className="w-full max-w-md h-16 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+          lightColor={isHighContrast ? "#000000" : "#FAFAFA"}
+          backgroundColor={isHighContrast ? "#000000" : "#060606"}
+          className={`w-full max-w-md h-16 rounded-full active:scale-95 transition-all group btn-primary ${
+            isHighContrast 
+              ? "bg-black text-white border-2 border-white" 
+              : "text-white shadow-[0_20px_60px_rgba(99,102,241,0.2)]"
+          }`}
         >
           <div className="flex items-center justify-center gap-3">
-            <span className="text-lg font-display font-semibold tracking-tight">Start My Walkthrough</span>
+            <span className="text-lg font-display font-semibold tracking-tight">Start My Review</span>
             <ArrowRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
           </div>
         </StarButton>
         <button
-          className="text-sm font-body text-[#3F5878] hover:text-[#8BA5C5] transition-colors duration-300 flex items-center gap-2"
+          className="text-sm font-body text-[var(--tx3)] hover:text-[var(--tx1)] transition-colors duration-300 flex items-center gap-2"
           onClick={onBack}
         >
           <ArrowLeft className="w-3 h-3" />
-          <span>Exit Walkthrough</span>
+          <span>Exit Review</span>
         </button>
         <button
-          className="text-sm font-body text-[#3F5878] hover:text-[#8BA5C5] transition-colors duration-300"
+          className="text-sm font-body text-[var(--tx3)] hover:text-[var(--tx1)] transition-colors duration-300"
           onClick={onSkip}
         >
-          I&rsquo;d rather wait for the live review
+          I prefer to wait for the live review
         </button>
       </div>
     </>
@@ -161,7 +173,7 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
   // ── Mobile portrait: flat scrollable layout, no 3D scroll animation ──
   if (isMobile) {
     return (
-      <div className="relative flex flex-col min-h-screen w-full bg-[#060606] selection:bg-indigo-500/30 selection:text-[#E8EDF8]">
+      <div className="relative flex flex-col min-h-screen w-full bg-[var(--bg-base)] selection:bg-indigo-500/30 selection:text-[var(--tx1)]">
         {backgroundAssets}
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-[0.02] invert pointer-events-none" />
         {brandingAnchor}
@@ -169,21 +181,21 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
         <div className="relative z-10 flex flex-col flex-1 px-5 pt-24 pb-10 overflow-y-auto animate-in fade-in duration-700 min-h-0">
           {/* Title */}
           <div className="text-center space-y-4 mb-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-white/[0.08] shadow-sm mx-auto">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--bg-subtle)] border border-[var(--border-color)] shadow-sm mx-auto">
               <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-              <p className="text-[10px] font-mono text-[#8BA5C5] uppercase tracking-[0.2em] pt-0.5">Client Portal Active</p>
+              <p className="text-[10px] font-mono text-[var(--tx3)] uppercase tracking-[0.2em] pt-0.5">Client Portal Active</p>
             </div>
-            <h1 className="font-display font-medium text-[#E8EDF8] text-4xl leading-[1.1] tracking-tight">
+            <h1 className="font-display font-medium text-[var(--tx1)] text-4xl leading-[1.1] tracking-tight">
               {name ? (
-                <><span className="text-[#7090B0]">Hello,</span> {name.split(" ")[0]}.<br /></>
+                <><span className="text-[var(--tx3)]">Hello,</span> {name.split(" ")[0]}.<br /></>
               ) : null}
-              <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40">Let&rsquo;s have a </span>
+              <span>Let&rsquo;s have a </span>
               <span className="relative inline-block overflow-hidden align-bottom" style={{ minWidth: "7ch" }}>
                 <span className="opacity-0 pointer-events-none select-none">brief</span>
                 {titles.map((title, index) => (
                   <motion.span
                     key={index}
-                    className="absolute inset-0 flex items-center justify-center font-semibold bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300 whitespace-nowrap"
+                    className="absolute inset-0 flex items-center justify-center font-semibold text-[var(--tx1)] whitespace-nowrap"
                     initial={{ opacity: 0, y: "100%" }}
                     transition={{ type: "spring", stiffness: 80, damping: 18 }}
                     animate={
@@ -196,12 +208,12 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
                   </motion.span>
                 ))}
               </span>
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-200 via-white to-indigo-200"> walkthrough.</span>
+              <span> review.</span>
             </h1>
           </div>
 
           {/* Card */}
-          <div className="relative bg-white/[0.02] backdrop-blur-3xl p-6 border border-white/10 flex flex-col gap-0 overflow-hidden rounded-[24px]">
+          <div className="relative bg-[var(--bg-surface)] backdrop-blur-3xl p-6 border border-[var(--border-color)] flex flex-col gap-0 overflow-hidden rounded-[24px]">
             <div className="absolute top-0 right-0 w-48 h-48 bg-hustad-teal-light/5 rounded-full blur-[80px] pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-hustad-blue/10 rounded-full blur-[80px] pointer-events-none" />
             {cardContent}
@@ -213,7 +225,7 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
 
   // ── Tablet / Desktop: original ContainerScroll 3D animation ──
   return (
-    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606] selection:bg-indigo-500/30 selection:text-[#E8EDF8]">
+    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[var(--bg-base)] selection:bg-indigo-500/30 selection:text-[var(--tx1)]">
       {backgroundAssets}
       <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-[0.02] invert pointer-events-none" />
       {brandingAnchor}
@@ -224,22 +236,22 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
         <ContainerScroll
           titleComponent={
             <div className="text-center space-y-8 mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-white/[0.08] shadow-sm mx-auto">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--bg-subtle)] border border-[var(--border-color)] shadow-sm mx-auto">
                 <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                <p className="text-[11px] font-mono text-[#8BA5C5] uppercase tracking-[0.2em] pt-0.5">Client Portal Active</p>
+                <p className="text-[11px] font-mono text-[var(--tx3)] uppercase tracking-[0.2em] pt-0.5">Client Portal Active</p>
               </div>
-              <h1 className="font-display font-medium text-[#E8EDF8] text-5xl md:text-8xl leading-[1.1] tracking-tight max-w-6xl mx-auto">
+              <h1 className="font-display font-medium text-[var(--tx1)] text-5xl md:text-8xl leading-[1.1] tracking-tight max-w-6xl mx-auto">
                 {name ? (
-                  <><span className="text-[#7090B0]">Hello,</span> {name.split(" ")[0]}.<br /></>
+                  <><span className="text-[var(--tx3)]">Hello,</span> {name.split(" ")[0]}.<br /></>
                 ) : "Welcome.\n"}
                 <div className="flex flex-col md:flex-row justify-center items-center md:items-baseline gap-x-4 py-8">
-                  <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40 whitespace-nowrap">Let&rsquo;s have a </span>
+                  <span className="text-[var(--tx1)] whitespace-nowrap">Let&rsquo;s have a </span>
                   <span className="relative inline-flex items-baseline overflow-hidden min-w-[300px] md:min-w-[420px]">
-                    <span className="opacity-0 pointer-events-none select-none pb-2">walkthrough</span>
+                    <span className="opacity-0 pointer-events-none select-none pb-2">review</span>
                     {titles.map((title, index) => (
                       <motion.div
                         key={index}
-                        className="absolute inset-0 flex items-center justify-center font-semibold bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300 whitespace-nowrap pb-2"
+                        className="absolute inset-0 flex items-center justify-center font-semibold text-[var(--tx1)] whitespace-nowrap pb-2"
                         initial={{ opacity: 0, y: "100%" }}
                         transition={{ type: "spring", stiffness: 80, damping: 18 }}
                         animate={
@@ -252,36 +264,36 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
                       </motion.div>
                     ))}
                   </span>
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-200 via-white to-indigo-200 whitespace-nowrap">walkthrough.</span>
+                  <span className="text-[var(--tx1)] whitespace-nowrap">review.</span>
                 </div>
               </h1>
             </div>
           }
         >
-          <div className="relative h-full bg-white/[0.02] backdrop-blur-3xl p-8 md:p-12 border border-white/10 flex flex-col justify-between overflow-hidden rounded-[30px]">
+          <div className="relative h-full bg-[var(--bg-surface)] backdrop-blur-3xl p-8 md:p-12 border border-[var(--border-color)] flex flex-col justify-between overflow-hidden rounded-[30px]">
             <div className="absolute top-0 right-0 w-64 h-64 bg-hustad-teal-light/5 rounded-full blur-[100px] pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-hustad-blue/10 rounded-full blur-[100px] pointer-events-none" />
             <div className="space-y-10 relative z-10">
               <div className="flex items-start gap-6 group/item transition-transform duration-300 hover:translate-x-1">
-                <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-hustad-teal-light shrink-0 border border-white/5 shadow-inner mt-0.5">
+                <div className="w-12 h-12 rounded-full bg-[var(--bg-subtle)] flex items-center justify-center text-hustad-teal-light shrink-0 border border-[var(--border-color)] shadow-inner mt-0.5">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
                 </div>
                 <div>
-                  <p className="font-body font-medium text-[#E8EDF8] text-xl tracking-wide">No commitment required.</p>
-                  <p className="font-body font-light text-[#7090B0] text-base mt-2 leading-relaxed max-w-lg">
-                    Nothing you do here is binding. This walkthrough is simply for your information and peace of mind.
+                  <p className="font-body font-medium text-[var(--tx1)] text-xl tracking-wide">No commitment required.</p>
+                  <p className="font-body font-light text-[var(--tx3)] text-base mt-2 leading-relaxed max-w-lg">
+                    Nothing here is binding. This is simply to help you understand the review before your rep returns.
                   </p>
                 </div>
               </div>
-              <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              <div className="h-px w-full bg-gradient-to-r from-transparent via-[var(--border-color)] to-transparent" />
               <div className="flex items-start gap-6 group/item transition-transform duration-300 hover:translate-x-1">
-                <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-hustad-amber shrink-0 border border-white/5 shadow-inner mt-0.5">
+                <div className="w-12 h-12 rounded-full bg-[var(--bg-subtle)] flex items-center justify-center text-hustad-amber shrink-0 border border-[var(--border-color)] shadow-inner mt-0.5">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
                 </div>
                 <div>
-                  <p className="font-body font-medium text-[#E8EDF8] text-xl tracking-wide">About 7–9 minutes at your own pace.</p>
-                  <p className="font-body font-light text-[#7090B0] text-base mt-2 leading-relaxed max-w-lg">
-                    The rep will return when the exterior review is complete. Take your time.
+                  <p className="font-body font-medium text-[var(--tx1)] text-xl tracking-wide">About 7 to 9 minutes at your pace.</p>
+                  <p className="font-body font-light text-[var(--tx3)] text-base mt-2 leading-relaxed max-w-lg">
+                    Your rep will return when the exterior review is complete. Take your time.
                   </p>
                 </div>
               </div>
@@ -289,27 +301,31 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
             <div className="pt-10 flex flex-col items-center gap-6 relative z-10">
               <StarButton
                 onClick={onNext}
-                lightColor="#FAFAFA"
-                backgroundColor="#060606"
-                className="w-full max-w-md h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+                lightColor={isHighContrast ? "#000000" : "#FAFAFA"}
+                backgroundColor={isHighContrast ? "#000000" : "#060606"}
+                className={`w-full max-w-md h-20 rounded-full active:scale-95 transition-all group btn-primary ${
+                  isHighContrast 
+                    ? "bg-black text-white border-2 border-white" 
+                    : "text-white shadow-[0_20px_60px_rgba(99,102,241,0.2)]"
+                }`}
               >
                 <div className="flex items-center justify-center gap-4">
-                  <span className="text-xl font-display font-semibold tracking-tight">Start My Walkthrough</span>
+                  <span className="text-xl font-display font-semibold tracking-tight">Start My Review</span>
                   <ArrowRight className="w-6 h-6 text-indigo-400 group-hover:translate-x-1 transition-transform" />
                 </div>
               </StarButton>
               <button
-                className="text-sm font-body text-[#3F5878] hover:text-[#8BA5C5] transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-px after:bg-white/20 after:origin-bottom-right after:scale-x-0 hover:after:origin-bottom-left hover:after:scale-x-100 after:transition-transform after:duration-300 flex items-center gap-2"
+                className="text-sm font-body text-[var(--tx3)] hover:text-[var(--tx1)] transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-px after:bg-white/20 after:origin-bottom-right after:scale-x-0 hover:after:origin-bottom-left hover:after:scale-x-100 after:transition-transform after:duration-300 flex items-center gap-2"
                 onClick={onBack}
               >
                 <ArrowLeft className="w-3 h-3" />
-                <span>Exit Walkthrough</span>
+                <span>Exit Review</span>
               </button>
               <button
-                className="text-sm font-body text-[#3F5878] hover:text-[#8BA5C5] transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-px after:bg-white/20 after:origin-bottom-right after:scale-x-0 hover:after:origin-bottom-left hover:after:scale-x-100 after:transition-transform after:duration-300 mt-2"
+                className="text-sm font-body text-[var(--tx3)] hover:text-[var(--tx1)] transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-px after:bg-white/20 after:origin-bottom-right after:scale-x-0 hover:after:origin-bottom-left hover:after:scale-x-100 after:transition-transform after:duration-300 mt-2"
                 onClick={onSkip}
               >
-                I&rsquo;d rather wait for the live review
+                I prefer to wait for the live review
               </button>
             </div>
           </div>

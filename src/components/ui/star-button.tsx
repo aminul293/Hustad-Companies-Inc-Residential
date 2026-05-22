@@ -105,7 +105,7 @@ export function StarButton({
       >
         <StarBackground color={backgroundColor} />
       </div>
-      <div className="z-10 relative flex items-center justify-center gap-2 text-[#E8EDF8]">
+      <div className="z-10 relative flex items-center justify-center gap-2 text-inherit">
         {children}
       </div>
     </button>

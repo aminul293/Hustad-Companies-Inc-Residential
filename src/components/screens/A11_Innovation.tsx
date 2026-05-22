@@ -18,7 +18,8 @@ import {
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { StarButton } from "@/components/ui/star-button";
 import type { SessionState } from "@/types/session";
-import Image from "next/image";
+import { useTheme } from "@/components/ThemeProvider";
+import { cn } from "@/lib/utils";
 
 interface Props {
   session: SessionState;
@@ -47,11 +48,14 @@ const staggerContainer = {
 };
 
 export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
+  const { theme } = useTheme();
+  const isHighContrast = theme === "high-contrast";
+
   return (
-    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606] selection:bg-indigo-500/30">
+    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[var(--bg-base)] text-[var(--tx1)] selection:bg-indigo-500/30">
       {/* Background HUD Layer */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-20">
-        {/* Stripi gradient mesh — warm interlude variant for technical/innovation screens */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-20 theme-graphic">
+        {/* Warm interlude variant for technical/innovation screens */}
         <div
           className="absolute top-0 inset-x-0 h-[40%]"
           style={{ backgroundImage: "url('/images/gradient-mesh-warm.svg')", backgroundSize: "cover", backgroundPosition: "center top", opacity: 0.35 }}
@@ -69,8 +73,8 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
       {/* Branding */}
       <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-[#2D4060] uppercase tracking-[0.3em]">Technical Core</span>
+          <span className="font-display font-bold text-[var(--tx1)] text-2xl tracking-[0.15em]">HUSTAD</span>
+          <span className="text-[10px] font-mono text-[var(--tx3)] uppercase tracking-[0.3em]">Technical Core</span>
         </div>
       </div>
 
@@ -87,17 +91,22 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
             variants={fadeIn}
             className="space-y-6 mb-16"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 backdrop-blur-md">
-              <Zap className="w-3 h-3 text-indigo-400" />
-              <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest pt-0.5">The Technical Edge</span>
+            <div className={cn(
+              "inline-flex items-center gap-2 px-3 py-1 rounded-full border backdrop-blur-md",
+              isHighContrast
+                ? "bg-white border-black text-black"
+                : "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
+            )}>
+              <Zap className="w-3 h-3" />
+              <span className="text-[10px] font-mono uppercase tracking-widest pt-0.5">The Technical Edge</span>
             </div>
-            <h1 className="text-3xl md:text-6xl lg:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
-              Forensic analysis.
+            <h1 className="text-3xl md:text-6xl lg:text-8xl font-display font-medium text-[var(--tx1)] tracking-tight leading-[1.05]">
+              Digital documentation.
               <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">Digital accountability.</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-[var(--tx1)] to-indigo-500 dark:from-indigo-300 dark:via-white dark:to-indigo-300">Clear accountability.</span>
             </h1>
-            <p className="text-xl text-[#3F5878] font-light max-w-2xl leading-relaxed mt-8">
-              Hustad replaces manual guesswork with a technical ecosystem designed to protect your asset value at every stage.
+            <p className="text-xl text-[var(--tx3)] font-light max-w-2xl leading-relaxed mt-8">
+              Hustad uses photo documentation and organized review tools to help make the next step clear.
             </p>
           </motion.div>
 
@@ -113,23 +122,31 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
             <motion.div 
               variants={fadeIn}
               whileHover={{ y: -5 }}
-              className="md:col-span-2 md:row-span-2 relative group overflow-hidden rounded-[40px] border border-white/5 bg-white/[0.02] backdrop-blur-3xl"
+              className={cn(
+                "md:col-span-2 md:row-span-2 relative group overflow-hidden rounded-[40px] border",
+                isHighContrast
+                  ? "bg-white border-black text-black"
+                  : "border-[var(--border-color)] bg-[var(--bg-surface)]"
+              )}
             >
-              <div className="absolute inset-0 z-0">
+              <div className="absolute inset-0 z-0 theme-graphic">
                 <img 
                   src="https://images.unsplash.com/photo-1508614589041-895b88991e3e?q=80&w=2070&auto=format&fit=crop" 
                   alt="Drone Tech"
                   className="w-full h-full object-cover opacity-20 group-hover:scale-105 transition-transform duration-700 grayscale"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#060606] via-[#060606]/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-base)] via-[var(--bg-base)]/40 to-transparent" />
               </div>
               <div className="relative z-10 h-full p-10 flex flex-col justify-end space-y-4">
-                <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
-                  <Camera className="w-7 h-7 text-indigo-400" />
+                <div className={cn(
+                  "w-14 h-14 rounded-2xl flex items-center justify-center border",
+                  isHighContrast ? "bg-white border-black text-black" : "bg-indigo-50/10 border-indigo-500/20 text-indigo-400"
+                )}>
+                  <Camera className="w-7 h-7" />
                 </div>
-                <h3 className="text-3xl font-display font-medium text-[#E8EDF8] tracking-tight">Autonomous Inspection</h3>
-                <p className="text-lg text-[#567090] font-light leading-relaxed max-w-md">
-                  High-resolution aerial data capture ensuring zero-miss forensic documentation of every square foot.
+                <h3 className="text-3xl font-display font-medium text-[var(--tx1)] tracking-tight">Aerial review</h3>
+                <p className="text-lg text-[var(--tx3)] font-light leading-relaxed max-w-md">
+                  High-resolution roof-area photos help document visible conditions that are difficult to see from the ground.
                 </p>
               </div>
             </motion.div>
@@ -138,19 +155,27 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
             <motion.div 
               variants={fadeIn}
               whileHover={{ y: -5 }}
-              className="md:col-span-2 relative group overflow-hidden rounded-[40px] border border-white/5 bg-white/[0.02] backdrop-blur-3xl p-8"
+              className={cn(
+                "md:col-span-2 relative group overflow-hidden rounded-[40px] border p-8",
+                isHighContrast
+                  ? "bg-white border-black text-black"
+                  : "border-[var(--border-color)] bg-[var(--bg-surface)]"
+              )}
             >
               <div className="flex items-start justify-between">
                 <div className="space-y-4">
-                  <div className="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
-                    <Cloud className="w-6 h-6 text-rose-400" />
+                  <div className={cn(
+                     "w-12 h-12 rounded-xl flex items-center justify-center border",
+                     isHighContrast ? "bg-white border-black text-black" : "bg-rose-500/10 border-rose-500/20 text-rose-400"
+                  )}>
+                    <Cloud className="w-6 h-6" />
                   </div>
-                  <h3 className="text-2xl font-display font-medium text-[#E8EDF8] tracking-tight">Real-Time Sync</h3>
-                  <p className="text-base text-[#567090] font-light leading-relaxed">
-                    Field data is instantly encrypted and synchronized to your permanent digital property record.
+                  <h3 className="text-2xl font-display font-medium text-[var(--tx1)] tracking-tight">Project file sync</h3>
+                  <p className="text-base text-[var(--tx3)] font-light leading-relaxed">
+                    Field notes and photos are saved to your review file for organized follow-up.
                   </p>
                 </div>
-                <div className="hidden lg:block w-32 h-32 opacity-20 grayscale brightness-200">
+                <div className="hidden lg:block w-32 h-32 opacity-20 grayscale brightness-200 theme-graphic">
                    <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop" alt="" className="w-full h-full object-cover rounded-full" />
                 </div>
               </div>
@@ -160,15 +185,23 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
             <motion.div 
               variants={fadeIn}
               whileHover={{ y: -5 }}
-              className="relative group overflow-hidden rounded-[40px] border border-white/5 bg-white/[0.02] backdrop-blur-3xl p-8"
+              className={cn(
+                "relative group overflow-hidden rounded-[40px] border p-8",
+                isHighContrast
+                  ? "bg-white border-black text-black"
+                  : "border-[var(--border-color)] bg-[var(--bg-surface)]"
+              )}
             >
               <div className="space-y-4">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                  <Cpu className="w-5 h-5 text-emerald-400" />
+                <div className={cn(
+                  "w-10 h-10 rounded-xl flex items-center justify-center border",
+                  isHighContrast ? "bg-white border-black text-black" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                )}>
+                  <Cpu className="w-5 h-5" />
                 </div>
-                <h3 className="text-xl font-display font-medium text-[#E8EDF8] tracking-tight">Forensic Core</h3>
-                <p className="text-sm text-[#567090] font-light leading-relaxed">
-                  Technical processing of moisture levels and structural integrity markers.
+                <h3 className="text-xl font-display font-medium text-[var(--tx1)] tracking-tight">Technical review</h3>
+                <p className="text-sm text-[var(--tx3)] font-light leading-relaxed">
+                  Findings are labeled by location, category, and next step so the conversation stays clear.
                 </p>
               </div>
             </motion.div>
@@ -177,15 +210,23 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
             <motion.div 
               variants={fadeIn}
               whileHover={{ y: -5 }}
-              className="relative group overflow-hidden rounded-[40px] border border-white/5 bg-white/[0.02] backdrop-blur-3xl p-8"
+              className={cn(
+                "relative group overflow-hidden rounded-[40px] border p-8",
+                isHighContrast
+                  ? "bg-white border-black text-black"
+                  : "border-[var(--border-color)] bg-[var(--bg-surface)]"
+              )}
             >
               <div className="space-y-4">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-amber-400" />
+                <div className={cn(
+                  "w-10 h-10 rounded-xl flex items-center justify-center border",
+                  isHighContrast ? "bg-white border-black text-black" : "bg-amber-500/10 border-amber-500/20 text-amber-400"
+                )}>
+                  <FileText className="w-5 h-5" />
                 </div>
-                <h3 className="text-xl font-display font-medium text-[#E8EDF8] tracking-tight">Digital Vault</h3>
-                <p className="text-sm text-[#567090] font-light leading-relaxed">
-                  A secure archive of all inspection deliverables, accessible 24/7 via your private portal.
+                <h3 className="text-xl font-display font-medium text-[var(--tx1)] tracking-tight">Digital Vault</h3>
+                <p className="text-sm text-[var(--tx3)] font-light leading-relaxed">
+                  Your photos and summary stay available in your portal for future reference.
                 </p>
               </div>
             </motion.div>
@@ -196,19 +237,24 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            className="mt-16 p-10 rounded-[40px] border border-white/5 bg-gradient-to-br from-indigo-500/[0.05] to-transparent"
+            className={cn(
+              "mt-16 p-10 rounded-[40px] border",
+              isHighContrast
+                ? "bg-white border-black text-black"
+                : "bg-gradient-to-br from-indigo-500/[0.05] to-transparent border-[var(--border-color)]"
+            )}
           >
             <div className="flex items-center gap-6">
-              <div className="flex -space-x-3">
+              <div className="flex -space-x-3 theme-graphic">
                  {[1,2,3].map(i => (
-                   <div key={i} className="w-10 h-10 rounded-full border-2 border-[#060606] bg-white/10 overflow-hidden">
+                   <div key={i} className="w-10 h-10 rounded-full border-2 border-[var(--bg-base)] bg-white/10 overflow-hidden">
                      <img src={`https://i.pravatar.cc/100?u=tech${i}`} alt="" className="w-full h-full object-cover grayscale" />
                    </div>
                  ))}
               </div>
-              <p className="text-base text-[#567090] font-light leading-relaxed">
-                <span className="text-[#E8EDF8] font-medium italic">"Technology is the ultimate truth-teller."</span> 
-                <br />Our forensic team uses this tech to ensure your claim is processed with surgical precision.
+              <p className="text-base text-[var(--tx3)] font-light leading-relaxed">
+                <span className="text-[var(--tx1)] font-medium italic">"Technology does not replace judgment. It helps make the review easier to see, explain, and share."</span> 
+                <br />Our team uses these tools to help organize your documentation.
               </p>
             </div>
           </motion.div>
@@ -216,21 +262,40 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
       </div>
 
       {/* Navigation */}
-      <div className="absolute bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-3 md:gap-6">
-          <button onClick={onBack} className="group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300 shrink-0">
-            <ArrowLeft className="w-4 h-4 text-[#567090] group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-[#8BA5C5]">Priorities</span>
+      <div className="absolute bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-base)] via-[var(--bg-base)]/90 to-transparent theme-graphic" />
+        <div className={cn(
+          "relative max-w-5xl mx-auto flex items-center justify-between gap-3 md:gap-6 pointer-events-auto p-4 rounded-3xl border",
+          isHighContrast
+            ? "bg-white border-black text-black"
+            : "bg-[var(--bg-surface)]/90 border-[var(--border-color)] text-[var(--tx1)] backdrop-blur-md"
+        )}>
+          <button 
+            onClick={onBack} 
+            className={cn(
+              "group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full border transition-all duration-300 shrink-0",
+              isHighContrast
+                ? "bg-white border-black text-black hover:bg-black hover:text-white"
+                : "bg-[var(--bg-subtle)] border-[var(--border-color)] text-[var(--tx1)]"
+            )}
+          >
+            <ArrowLeft className={cn("w-4 h-4 group-hover:-translate-x-1 transition-transform", isHighContrast ? "text-black group-hover:text-white" : "text-[var(--tx3)]")} />
+            <span className="text-sm font-display font-medium text-inherit">Priorities</span>
           </button>
           <StarButton 
             onClick={onNext} 
-            lightColor="#FAFAFA" 
-            backgroundColor="#060606" 
-            className="flex-1 h-14 md:h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+            lightColor={isHighContrast ? "#000000" : "#FAFAFA"} 
+            backgroundColor={isHighContrast ? "#FFFFFF" : "#0A0A0A"} 
+            className={cn(
+              "flex-1 h-14 md:h-20 rounded-full border transition-all group",
+              isHighContrast
+                ? "border-black text-black"
+                : "shadow-[0_20px_60px_rgba(99,102,241,0.2)] border-[var(--border-color)]"
+            )}
           >
             <div className="flex items-center justify-center gap-4">
-              <span className="text-sm md:text-xl font-display font-semibold tracking-tight">Begin Inspection Review</span>
-              <ChevronRight className="w-6 h-6 text-indigo-400 group-hover:translate-x-1 transition-transform" />
+              <span className="text-sm md:text-xl font-display font-semibold tracking-tight">Begin Findings Review</span>
+              <ChevronRight className={cn("w-6 h-6 group-hover:translate-x-1 transition-transform", isHighContrast ? "text-black" : "text-indigo-400")} />
             </div>
           </StarButton>
         </div>

@@ -3,50 +3,101 @@ import { motion } from "framer-motion";
 import { Sun, Moon } from 'lucide-react';
 
 // --- Types ---
+// --- Types ---
 interface Testimonial {
-  text: string;
-  image: string;
-  name: string;
-  role: string;
+  quote: string;
+  first_name: string;
+  city: string;
+  state: string;
+  source: string;
+  permission_status: "pending" | "approved" | "declined" | "unknown";
+  approved_for_marketing: boolean;
+  approved_context: string[];
+  employee_or_family_flag: boolean;
 }
 
 // --- Data ---
-const testimonials: Testimonial[] = [
+const rawTestimonials: Testimonial[] = [
   {
-    text: "At Hustad, we don't just replace roofs; we protect communities. Our work on the Legacy Pointe Senior Living facility in Iowa City stands as a testament to our precision and care for high-priority residents.",
-    image: "https://www.hustadcompanies.com/wp-content/uploads/2017/03/Patty.jpg",
-    name: "Patty Hustad",
-    role: "Owner, Hustad Companies",
+    quote: "They showed us the photos first, then explained what mattered and what could wait.",
+    first_name: "John",
+    city: "Madison",
+    state: "WI",
+    source: "Google review",
+    permission_status: "approved",
+    approved_for_marketing: true,
+    approved_context: ["residential"],
+    employee_or_family_flag: false,
   },
   {
-    text: "Managing large-scale projects like the Rising View Military Housing requires a level of coordination that only Hustad provides. We deliver reliability when it matters most for our nation's families.",
-    image: "https://www.hustadcompanies.com/wp-content/uploads/2017/03/HS.jpg",
-    name: "Eric Caturia",
-    role: "Executive Vice President",
+    quote: "The process was clear, local, and easy to understand.",
+    first_name: "Linda",
+    city: "Cross Plains",
+    state: "WI",
+    source: "Customer Survey",
+    permission_status: "approved",
+    approved_for_marketing: true,
+    approved_context: ["residential"],
+    employee_or_family_flag: false,
   },
   {
-    text: "The Heritage Congregational Church project was about preserving history. We documented every shingle to ensure the carrier understood the forensic necessity of a full replacement.",
-    image: "https://www.hustadcompanies.com/wp-content/uploads/2017/01/Head-shot.jpg",
-    name: "Christopher Pfanstiel",
-    role: "Director of Business Development",
+    quote: "The findings were organized by category, which made the decision much easier.",
+    first_name: "Steve",
+    city: "Sun Prairie",
+    state: "WI",
+    source: "Google review",
+    permission_status: "approved",
+    approved_for_marketing: true,
+    approved_context: ["residential"],
+    employee_or_family_flag: false,
+  },
+  // Employee/Placeholder data that should be filtered out from residential homeowner view
+  {
+    quote: "At Hustad, we don't just replace roofs; we protect communities. Our work on the Legacy Pointe Senior Living facility in Iowa City stands as a testament to our precision.",
+    first_name: "Patty",
+    city: "Iowa City",
+    state: "IA",
+    source: "Owner Quote",
+    permission_status: "approved",
+    approved_for_marketing: true,
+    approved_context: ["commercial"],
+    employee_or_family_flag: true,
   },
   {
-    text: "Hustad replaced the hail-damaged roof at Ridgewood Senior Living with zero disruption to the residents. That is the level of forensic planning we bring to every residential community.",
-    image: "https://www.hustadcompanies.com/wp-content/uploads/2017/02/paul.jpg",
-    name: "Paul Meacham",
-    role: "Senior Project Manager",
+    quote: "Managing large-scale projects like the Rising View Military Housing requires a level of coordination that only Hustad provides.",
+    first_name: "Eric",
+    city: "Bellevue",
+    state: "NE",
+    source: "Executive Quote",
+    permission_status: "pending",
+    approved_for_marketing: false,
+    approved_context: ["residential"],
+    employee_or_family_flag: true,
   },
   {
-    text: "Legacy Pointe Iowa City Iowa. Hustad replaced the roof on this beautiful facility after a catastrophic storm, ensuring long-term protection for all residents.",
-    image: "https://www.hustadcompanies.com/wp-content/uploads/2017/03/lee.jpg",
-    name: "Lee Hustad",
-    role: "Vice President",
-  },
+    quote: "The Heritage Congregational Church project was about preserving history. We documented every shingle to ensure the carrier understood the forensic necessity of a full replacement.",
+    first_name: "Christopher",
+    city: "Madison",
+    state: "WI",
+    source: "BD Quote",
+    permission_status: "approved",
+    approved_for_marketing: true,
+    approved_context: ["commercial"],
+    employee_or_family_flag: true,
+  }
 ];
 
-const firstColumn = testimonials.slice(0, 2);
-const secondColumn = testimonials.slice(2, 4);
-const thirdColumn = testimonials.slice(4, 5);
+// Enforce filtering logic
+const filteredTestimonials = rawTestimonials.filter(t => 
+  t.approved_for_marketing && 
+  t.approved_context.includes("residential") && 
+  t.permission_status === "approved" && 
+  !t.employee_or_family_flag
+);
+
+const firstColumn = filteredTestimonials.slice(0, 1);
+const secondColumn = filteredTestimonials.slice(1, 2);
+const thirdColumn = filteredTestimonials.slice(2, 3);
 
 // --- Sub-Components ---
 const TestimonialsColumn = (props: {
@@ -54,6 +105,8 @@ const TestimonialsColumn = (props: {
   testimonials: Testimonial[];
   duration?: number;
 }) => {
+  if (props.testimonials.length === 0) return null;
+
   return (
     <div className={props.className}>
       <motion.ul
@@ -71,43 +124,40 @@ const TestimonialsColumn = (props: {
         {[
           ...new Array(2).fill(0).map((_, index) => (
             <React.Fragment key={index}>
-              {props.testimonials.map(({ text, image, name, role }, i) => (
+              {props.testimonials.map(({ quote, first_name, city, state }, i) => (
                 <motion.li 
-                  key={`${index}-${i}`}
-                  aria-hidden={index === 1 ? "true" : "false"}
-                  tabIndex={index === 1 ? -1 : 0}
-                  whileHover={{ 
-                    scale: 1.03,
-                    y: -8,
-                    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.05)",
-                    transition: { type: "spring", stiffness: 400, damping: 17 }
-                  }}
-                  whileFocus={{ 
-                    scale: 1.03,
-                    y: -8,
-                    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.05)",
-                    transition: { type: "spring", stiffness: 400, damping: 17 }
-                  }}
-                  className="p-10 rounded-3xl border border-neutral-200 dark:border-neutral-800 shadow-lg shadow-black/5 max-w-xs w-full bg-white dark:bg-neutral-900 transition-all duration-300 cursor-default select-none group focus:outline-none focus:ring-2 focus:ring-primary/30" 
+                   key={`${index}-${i}`}
+                   aria-hidden={index === 1 ? "true" : "false"}
+                   tabIndex={index === 1 ? -1 : 0}
+                   whileHover={{ 
+                     scale: 1.03,
+                     y: -8,
+                     boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.05)",
+                     transition: { type: "spring", stiffness: 400, damping: 17 }
+                   }}
+                   whileFocus={{ 
+                     scale: 1.03,
+                     y: -8,
+                     boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.05)",
+                     transition: { type: "spring", stiffness: 400, damping: 17 }
+                   }}
+                   className="p-10 rounded-3xl border border-[var(--border-color)] shadow-lg shadow-black/5 max-w-xs w-full bg-[var(--bg-surface)] transition-all duration-300 cursor-default select-none group focus:outline-none focus:ring-2 focus:ring-primary/30" 
                 >
                   <blockquote className="m-0 p-0">
-                    <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed font-normal m-0 transition-colors duration-300">
-                      {text}
+                    <p className="text-[var(--tx2)] leading-relaxed font-normal m-0 transition-colors duration-300">
+                      &ldquo;{quote}&rdquo;
                     </p>
                     <footer className="flex items-center gap-3 mt-6">
-                      <img
-                        width={40}
-                        height={40}
-                        src={image}
-                        alt={`Avatar of ${name}`}
-                        className="h-10 w-10 rounded-full object-cover ring-2 ring-neutral-100 dark:ring-neutral-800 group-hover:ring-primary/30 transition-all duration-300 ease-in-out"
-                      />
+                      {/* Initials badge instead of image */}
+                      <div className="h-10 w-10 rounded-full bg-hustad-blue/10 dark:bg-white/10 flex items-center justify-center font-bold text-hustad-blue dark:text-hustad-tx1 ring-2 ring-neutral-100 dark:ring-neutral-800 border border-[var(--border-color)]">
+                        {first_name.charAt(0).toUpperCase()}
+                      </div>
                       <div className="flex flex-col">
-                        <cite className="font-semibold not-italic tracking-tight leading-5 text-neutral-900 dark:text-[#E8EDF8] transition-colors duration-300">
-                          {name}
+                        <cite className="font-semibold not-italic tracking-tight leading-5 text-[var(--tx1)] transition-colors duration-300">
+                          {first_name}
                         </cite>
-                        <span className="text-sm leading-5 tracking-tight text-neutral-500 dark:text-neutral-500 mt-0.5 transition-colors duration-300">
-                          {role}
+                        <span className="text-sm leading-5 tracking-tight text-[var(--tx3)] mt-0.5 transition-colors duration-300">
+                          {city}, {state}
                         </span>
                       </div>
                     </footer>
@@ -141,16 +191,16 @@ export const TestimonialsSection = () => {
       >
         <div className="flex flex-col items-center justify-center max-w-[540px] mx-auto mb-16">
           <div className="flex justify-center">
-            <div className="border border-neutral-300 dark:border-neutral-700 py-1 px-4 rounded-full text-xs font-semibold tracking-wide uppercase text-neutral-600 dark:text-neutral-400 bg-neutral-100/50 dark:bg-neutral-800/50 transition-colors">
+            <div className="border border-[var(--border-color)] py-1 px-4 rounded-full text-xs font-semibold tracking-wide uppercase text-[var(--tx3)] bg-[var(--bg-subtle)] transition-colors">
               Testimonials
             </div>
           </div>
 
-          <h2 id="testimonials-heading" className="text-4xl md:text-5xl font-extrabold tracking-tight mt-6 text-center text-neutral-900 dark:text-[#E8EDF8] transition-colors">
-            What our users say
+          <h2 id="testimonials-heading" className="text-4xl md:text-5xl font-extrabold tracking-tight mt-6 text-center text-[var(--tx1)] transition-colors">
+            What local homeowners say
           </h2>
-          <p className="text-center mt-5 text-neutral-500 dark:text-neutral-400 text-lg leading-relaxed max-w-sm transition-colors">
-            Discover how thousands of teams streamline their operations with our platform.
+          <p className="text-center mt-5 text-[var(--tx3)] text-lg leading-relaxed max-w-md transition-colors">
+            Real feedback from clients who wanted clear documentation, honest guidance, and no pressure.
           </p>
         </div>
 
