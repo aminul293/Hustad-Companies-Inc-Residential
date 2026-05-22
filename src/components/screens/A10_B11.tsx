@@ -336,7 +336,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
   const annotatingAsset = (session.photoAssets || []).find(p => p.assetId === annotatingAssetId);
 
   return (
-    <div className="relative flex flex-col min-h-screen w-full bg-[#0A0A0A]">
+    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#0A0A0A]">
       <AnimatePresence>
         {annotatingAsset && (
           <PhotoAnnotationLayer 
@@ -397,7 +397,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
         </div>
       </div>
 
-      <div className="relative z-10 flex-1 px-6 md:px-12 pt-10 pb-64">
+      <div className="relative z-10 flex-1 overflow-y-auto min-h-0 px-6 md:px-12 pt-10 pb-64">
         <div className="max-w-[1600px] mx-auto grid grid-cols-1 xl:grid-cols-12 gap-12">
           
           {/* Left Column: Outcome & Quantitative */}
@@ -767,7 +767,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
       </div>
 
       {/* Control Surface (Footer) */}
-      <div className="fixed bottom-0 inset-x-0 px-4 md:px-10 pb-8 pt-12 md:pt-20 z-50 pointer-events-none">
+      <div className="absolute bottom-0 inset-x-0 px-4 md:px-10 pb-8 pt-12 md:pt-20 z-50 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/80 to-transparent pt-32" />
         <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-3 md:gap-8 pointer-events-auto">
           <button onClick={onBack} className="group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 shrink-0">
