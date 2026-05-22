@@ -282,20 +282,20 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
             <ArrowLeft className={cn("w-4 h-4 group-hover:-translate-x-1 transition-transform", isHighContrast ? "text-black group-hover:text-white" : "text-[var(--tx3)]")} />
             <span className="text-sm font-display font-medium text-inherit">Priorities</span>
           </button>
-          <StarButton 
-            onClick={onNext} 
-            lightColor={isHighContrast ? "#000000" : "#FAFAFA"} 
-            backgroundColor={isHighContrast ? "#FFFFFF" : "#0A0A0A"} 
+          <StarButton
+            onClick={onNext}
+            lightColor={isHighContrast ? "#000000" : "#FAFAFA"}
+            backgroundColor={isHighContrast ? "#FFFFFF" : "#0A0A0A"}
             className={cn(
               "flex-1 h-14 md:h-20 rounded-full border transition-all group",
               isHighContrast
                 ? "border-black text-black"
-                : "shadow-[0_20px_60px_rgba(99,102,241,0.2)] border-[var(--border-color)]"
+                : "shadow-[0_20px_60px_rgba(99,102,241,0.2)] border-[var(--border-color)] text-white"
             )}
           >
             <div className="flex items-center justify-center gap-4">
-              <span className="text-sm md:text-xl font-display font-semibold tracking-tight">Begin Findings Review</span>
-              <ChevronRight className={cn("w-6 h-6 group-hover:translate-x-1 transition-transform", isHighContrast ? "text-black" : "text-indigo-400")} />
+              <span className="text-sm md:text-xl font-display font-semibold tracking-tight text-inherit">Begin Findings Review</span>
+              <ChevronRight className={cn("w-6 h-6 group-hover:translate-x-1 transition-transform", isHighContrast ? "text-black" : "text-indigo-300")} />
             </div>
           </StarButton>
         </div>

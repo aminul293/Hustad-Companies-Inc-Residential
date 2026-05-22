@@ -88,26 +88,15 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
         </div>
       </div>
 
-      {/* Discreet Rep Back Button */}
-      <div className="absolute bottom-10 left-10 z-50">
-        <button 
-          onClick={onBack}
-          className="flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--tx3)] hover:text-[var(--tx1)] hover:bg-[var(--bg-subtle)] transition-all text-[10px] font-mono uppercase tracking-widest cursor-pointer active:scale-95"
-        >
-          <ArrowLeft className="w-3 h-3" />
-          Rep: Return to Prep
-        </button>
-      </div>
-
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 text-center">
         <div className="max-w-4xl w-full space-y-12">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="relative w-full h-[350px] rounded-[48px] overflow-hidden bg-[var(--bg-surface)] border border-[var(--border-color)] backdrop-blur-3xl group"
           >
             <div className="absolute inset-0 z-0 theme-graphic">
-              <SplineScene 
+              <SplineScene
                 scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
                 className="w-full h-full opacity-60"
               />
@@ -136,45 +125,75 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
         </div>
       </div>
 
-      <div className="relative z-30 p-8 pt-0">
-        <div className="max-w-md mx-auto w-full">
-          {!showRepReturn ? (
-            <button
-              onClick={() => setShowRepReturn(true)}
-              className="w-full py-5 rounded-3xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--tx1)] font-display text-sm hover:bg-[var(--bg-subtle)] transition-all active:scale-[0.98]"
-            >
-              I am ready for the review
-            </button>
-          ) : (
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-4"
-            >
-              <div className="flex items-center justify-center gap-3">
-                <Clock className="w-4 h-4 text-amber-500" />
-                <p className="text-[10px] font-mono text-amber-500 uppercase tracking-widest pt-0.5">
-                  Rep Takeover Required
-                </p>
-              </div>
-              <StarButton 
-                onClick={onRepReturn}
-                lightColor={isHighContrast ? "#000000" : "#FAFAFA"}
-                backgroundColor={isHighContrast ? "#FFFFFF" : "#060606"}
-                className={cn(
-                  "w-full h-20 rounded-3xl active:scale-95 transition-transform group",
-                  isHighContrast
-                    ? "bg-white text-black border-2 border-black"
-                    : "shadow-[0_20px_60px_rgba(99,102,241,0.2)]"
-                )}
+      {/* Bottom Navigation — back button + action button in one row */}
+      <div className="absolute bottom-0 inset-x-0 px-4 pb-8 pt-16 z-30 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-base)] via-[var(--bg-base)]/80 to-transparent" />
+        <div className="relative max-w-2xl mx-auto pointer-events-auto">
+          <AnimatePresence mode="wait">
+            {!showRepReturn ? (
+              <motion.div
+                key="ready"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                className="flex items-center gap-3"
               >
-                <div className="flex items-center gap-4 text-inherit">
-                  <span className="text-xl font-display font-medium text-inherit">Begin Findings Review</span>
-                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform text-inherit" />
+                <button
+                  onClick={onBack}
+                  className="flex items-center gap-2 px-5 py-4 rounded-full bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--tx3)] hover:text-[var(--tx1)] hover:bg-[var(--bg-subtle)] transition-all text-[10px] font-mono uppercase tracking-widest active:scale-95 shrink-0"
+                >
+                  <ArrowLeft className="w-3 h-3" />
+                  Rep: Return to Prep
+                </button>
+                <button
+                  onClick={() => setShowRepReturn(true)}
+                  className="flex-1 py-5 rounded-full bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--tx1)] font-display text-sm hover:bg-[var(--bg-subtle)] transition-all active:scale-[0.98]"
+                >
+                  I am ready for the review
+                </button>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="takeover"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="space-y-3"
+              >
+                <div className="flex items-center justify-center gap-3">
+                  <Clock className="w-4 h-4 text-amber-500" />
+                  <p className="text-[10px] font-mono text-amber-500 uppercase tracking-widest pt-0.5">
+                    Rep Takeover Required
+                  </p>
                 </div>
-              </StarButton>
-            </motion.div>
-          )}
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={onBack}
+                    className="flex items-center gap-2 px-5 py-5 rounded-full bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--tx3)] hover:text-[var(--tx1)] hover:bg-[var(--bg-subtle)] transition-all text-[10px] font-mono uppercase tracking-widest active:scale-95 shrink-0"
+                  >
+                    <ArrowLeft className="w-3 h-3" />
+                    Rep: Return to Prep
+                  </button>
+                  <StarButton
+                    onClick={onRepReturn}
+                    lightColor={isHighContrast ? "#000000" : "#FAFAFA"}
+                    backgroundColor={isHighContrast ? "#FFFFFF" : "#060606"}
+                    className={cn(
+                      "flex-1 h-20 rounded-3xl active:scale-95 transition-transform group",
+                      isHighContrast
+                        ? "bg-white text-black border-2 border-black"
+                        : "shadow-[0_20px_60px_rgba(99,102,241,0.2)] text-white"
+                    )}
+                  >
+                    <div className="flex items-center gap-4 text-inherit">
+                      <span className="text-sm md:text-xl font-display font-semibold tracking-tight text-inherit">Begin Findings Review</span>
+                      <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform text-indigo-300 shrink-0" />
+                    </div>
+                  </StarButton>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
