@@ -516,6 +516,42 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
   const [findingCategories, setFindingCategories] = useState<string[]>(f.findingCategories || []);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showDecisionTree, setShowDecisionTree] = useState(false);
+  const [isAutoClassifying, setIsAutoClassifying] = useState(false);
+  const [autoClassifyResult, setAutoClassifyResult] = useState<{
+    classification: string; confidence: number; headline: string;
+    reasoning: string; signals: string[];
+  } | null>(null);
+  const [autoClassifyError, setAutoClassifyError] = useState<string | null>(null);
+
+  const handleAutoClassify = async () => {
+    const photos = session.photoAssets?.map(p => p.dataUrl).filter(Boolean) ?? [];
+    const inspectionPhotos = session.photos?.map(p => p.dataUrl).filter(Boolean) ?? [];
+    const allPhotos = [...photos, ...inspectionPhotos];
+
+    if (allPhotos.length === 0) {
+      setAutoClassifyError("Upload at least one inspection photo first.");
+      return;
+    }
+
+    setIsAutoClassifying(true);
+    setAutoClassifyError(null);
+    setAutoClassifyResult(null);
+
+    try {
+      const res = await fetch("/api/classify-photos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photos: allPhotos }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Classification failed");
+      setAutoClassifyResult(data);
+    } catch (err: any) {
+      setAutoClassifyError(err.message ?? "Something went wrong");
+    } finally {
+      setIsAutoClassifying(false);
+    }
+  };
 
   const COMMON_CATEGORIES = [
     "Hail Impact", "Wind Displacement", "Granule Loss", "Thermal Cracking",
@@ -677,6 +713,108 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
             isHighContrast={isHighContrast}
           />
         )}
+        {(autoClassifyResult || autoClassifyError) && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-4 bg-black/60 backdrop-blur-md"
+            onClick={() => { setAutoClassifyResult(null); setAutoClassifyError(null); }}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 40, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 40 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className={cn(
+                "w-full max-w-lg rounded-[40px] border p-8 space-y-6",
+                isHighContrast ? "bg-white border-black" : "bg-[var(--bg-surface)] border-[var(--border-color)]"
+              )}
+              onClick={e => e.stopPropagation()}
+            >
+              {autoClassifyError ? (
+                <div className="space-y-4">
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-rose-500">Analysis Error</p>
+                  <p className="text-base text-[var(--tx2)] font-light">{autoClassifyError}</p>
+                  <button onClick={() => setAutoClassifyError(null)} className="text-[10px] font-mono uppercase tracking-widest text-[var(--tx4)] hover:text-[var(--tx2)] transition-colors">Dismiss</button>
+                </div>
+              ) : autoClassifyResult && (
+                <div className="space-y-6">
+                  {/* Header */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center border", isHighContrast ? "bg-white border-black" : "bg-indigo-500/10 border-indigo-500/20")}>
+                        <Camera className="w-4 h-4 text-indigo-400" />
+                      </div>
+                      <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-[var(--tx3)]">AI Photo Analysis</span>
+                    </div>
+                    <span className={cn(
+                      "text-[10px] font-mono px-3 py-1 rounded-full border",
+                      autoClassifyResult.confidence >= 75
+                        ? "text-emerald-500 border-emerald-500/30 bg-emerald-500/5"
+                        : autoClassifyResult.confidence >= 50
+                        ? "text-amber-500 border-amber-500/30 bg-amber-500/5"
+                        : "text-rose-500 border-rose-500/30 bg-rose-500/5"
+                    )}>
+                      {autoClassifyResult.confidence}% confidence
+                    </span>
+                  </div>
+
+                  {/* Result */}
+                  <div className="p-6 rounded-3xl bg-indigo-500/[0.06] border border-indigo-500/20 space-y-3">
+                    <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-indigo-500">Recommended Classification</p>
+                    <p className="text-2xl font-display font-semibold text-[var(--tx1)]">
+                      {OUTCOME_OPTIONS.find(o => o.value === autoClassifyResult.classification)?.label ?? autoClassifyResult.classification}
+                    </p>
+                    <p className="text-sm text-[var(--tx3)] font-light leading-relaxed">{autoClassifyResult.reasoning}</p>
+                  </div>
+
+                  {/* Signals */}
+                  {autoClassifyResult.signals?.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-[var(--tx4)]">Damage signals detected</p>
+                      <ul className="space-y-1.5">
+                        {autoClassifyResult.signals.map((s, i) => (
+                          <li key={i} className="flex items-start gap-2 text-sm text-[var(--tx3)] font-light">
+                            <span className="mt-1.5 w-1 h-1 rounded-full bg-indigo-400 shrink-0" />
+                            {s}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => {
+                        const val = autoClassifyResult.classification as OutcomeType;
+                        setOutcome(val);
+                        setErrors((e) => { const n = { ...e }; delete n.outcome; return n; });
+                        setAutoClassifyResult(null);
+                      }}
+                      className={cn(
+                        "py-4 rounded-2xl border font-display font-semibold text-sm transition-all active:scale-95",
+                        isHighContrast ? "bg-black text-white border-black" : "bg-indigo-500 text-white border-indigo-500 hover:bg-indigo-600"
+                      )}
+                    >
+                      Accept
+                    </button>
+                    <button
+                      onClick={() => setAutoClassifyResult(null)}
+                      className={cn(
+                        "py-4 rounded-2xl border font-display font-semibold text-sm transition-all active:scale-95",
+                        isHighContrast ? "bg-white text-black border-black" : "bg-[var(--bg-subtle)] text-[var(--tx2)] border-[var(--border-color)] hover:bg-[var(--bg-base)]"
+                      )}
+                    >
+                      Choose Manually
+                    </button>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
       {/* HUD Background Layers */}
       <div className="absolute inset-0 pointer-events-none opacity-30 theme-graphic">
@@ -781,11 +919,25 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                 })}
               </div>
 
-              {/* Classification Guide trigger */}
-              <div className="flex justify-center pt-2">
+              {/* Classification helpers */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+                <button
+                  onClick={handleAutoClassify}
+                  disabled={isAutoClassifying}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-xl border text-[10px] font-mono uppercase tracking-widest transition-all active:scale-95",
+                    isAutoClassifying ? "opacity-50 cursor-not-allowed" : "",
+                    isHighContrast
+                      ? "bg-white border-black text-black hover:bg-black hover:text-white"
+                      : "bg-indigo-500/10 border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/20"
+                  )}
+                >
+                  <Camera className={cn("w-3 h-3", isAutoClassifying && "animate-pulse")} />
+                  {isAutoClassifying ? "Analyzing photos…" : "Auto-classify from photos"}
+                </button>
                 <button
                   onClick={() => setShowDecisionTree(true)}
-                  className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-indigo-500 dark:text-indigo-400 hover:text-indigo-400 transition-colors"
+                  className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-[var(--tx3)] hover:text-[var(--tx1)] transition-colors"
                 >
                   <Layers className="w-3 h-3" />
                   Not sure? Use Classification Guide
