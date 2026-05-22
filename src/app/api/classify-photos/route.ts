@@ -43,19 +43,24 @@ export async function POST(req: NextRequest) {
     // Build the content array — up to 10 photos to stay within token limits
     const imageContent: OpenAI.Chat.ChatCompletionContentPart[] = photos
       .slice(0, 10)
-      .map((dataUrl) => {
-        // dataUrl is either "data:image/jpeg;base64,..." or already a plain base64 string
-        const base64 = dataUrl.includes(",") ? dataUrl.split(",")[1] : dataUrl;
-        const mediaType = dataUrl.startsWith("data:image/png") ? "image/png"
-          : dataUrl.startsWith("data:image/webp") ? "image/webp"
-          : "image/jpeg";
+      .map((photo) => {
+        // Rep-camera photos arrive as plain https:// URLs (Supabase public URL).
+        // Tablet-captured photos arrive as "data:image/...;base64,..." strings.
+        // OpenAI vision accepts both formats — just pass the URL directly.
+        let imageUrl: string;
+        if (photo.startsWith("http://") || photo.startsWith("https://")) {
+          imageUrl = photo;
+        } else {
+          const base64 = photo.includes(",") ? photo.split(",")[1] : photo;
+          const mediaType = photo.startsWith("data:image/png") ? "image/png"
+            : photo.startsWith("data:image/webp") ? "image/webp"
+            : "image/jpeg";
+          imageUrl = `data:${mediaType};base64,${base64}`;
+        }
 
         return {
           type: "image_url",
-          image_url: {
-            url: `data:${mediaType};base64,${base64}`,
-            detail: "high",
-          },
+          image_url: { url: imageUrl, detail: "high" },
         } as OpenAI.Chat.ChatCompletionContentPartImage;
       });
 
