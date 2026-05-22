@@ -7,9 +7,12 @@ Analyze the photos and return a JSON object with this exact shape:
 {
   "classification": one of ["no_damage", "monitor_only", "repair_only", "claim_review_candidate", "full_restoration_candidate"],
   "confidence": a number 0-100,
-  "headline": a short 1-line summary of what you found,
+  "headline": a short 1-line summary of what you found (max 12 words),
   "reasoning": 2-3 sentences explaining why you chose this classification,
-  "signals": an array of strings, each describing a specific damage indicator you observed (e.g. "Hail bruising visible on ridge cap", "Dents on aluminum gutter flashing")
+  "signals": an array of strings, each describing a specific damage indicator you observed (e.g. "Hail bruising visible on ridge cap", "Dents on aluminum gutter flashing"),
+  "urgentCount": integer — number of items requiring immediate action (tarping, emergency repair). 0 for no_damage/monitor_only,
+  "stormCount": integer — number of storm-related damage items visible across all photos,
+  "monitorCount": integer — number of items to watch over time but not act on yet
 }
 
 Classification guide:
@@ -18,6 +21,11 @@ Classification guide:
 - repair_only: Localized damage present (cracked tabs, minor displacement) but does not meet claim threshold.
 - claim_review_candidate: Clear storm-related damage with impact marks on metal, bruising, or granule loss consistent with a hail or wind event.
 - full_restoration_candidate: Widespread damage across multiple slopes or surfaces (roof + siding/gutters/windows).
+
+Count guide:
+- urgentCount: only count items that need same-day or emergency attention (active leaks, missing sections, structural exposure).
+- stormCount: count distinct storm-related damage items visible (hail hits, wind displacement, gutter dents, etc.).
+- monitorCount: count items showing wear or minor issues that should be re-inspected in 6-12 months.
 
 Be conservative — only escalate to claim_review or full_restoration when clear evidence exists. If photo quality is too low to assess, set confidence below 50 and explain in reasoning.
 

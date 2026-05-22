@@ -520,6 +520,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
   const [autoClassifyResult, setAutoClassifyResult] = useState<{
     classification: string; confidence: number; headline: string;
     reasoning: string; signals: string[];
+    urgentCount?: number; stormCount?: number; monitorCount?: number;
   } | null>(null);
   const [autoClassifyError, setAutoClassifyError] = useState<string | null>(null);
 
@@ -557,6 +558,38 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
     "Hail Impact", "Wind Displacement", "Granule Loss", "Thermal Cracking",
     "Mechanical Damage", "Flashing Failure", "Gutter Compromise", "Collateral Metal Impact"
   ];
+
+  const SIGNAL_CATEGORY_MAP: [RegExp, string][] = [
+    [/hail/i, "Hail Impact"],
+    [/wind|displace/i, "Wind Displacement"],
+    [/granule/i, "Granule Loss"],
+    [/crack|thermal/i, "Thermal Cracking"],
+    [/mechanical|dent|bruise/i, "Mechanical Damage"],
+    [/flash/i, "Flashing Failure"],
+    [/gutter|downspout/i, "Gutter Compromise"],
+    [/metal|collateral/i, "Collateral Metal Impact"],
+  ];
+
+  const applyAutoClassify = () => {
+    if (!autoClassifyResult) return;
+    const cls = autoClassifyResult.classification as OutcomeType;
+    setOutcome(cls);
+    setUrgentCount(autoClassifyResult.urgentCount ?? 0);
+    setStormCount(autoClassifyResult.stormCount ?? 0);
+    setMonitorCount(autoClassifyResult.monitorCount ?? 0);
+    setHeadline(autoClassifyResult.headline);
+    setBody(autoClassifyResult.reasoning);
+    // Map signals to known categories
+    const matched = new Set<string>();
+    for (const signal of autoClassifyResult.signals ?? []) {
+      for (const [pattern, cat] of SIGNAL_CATEGORY_MAP) {
+        if (pattern.test(signal)) matched.add(cat);
+      }
+    }
+    if (matched.size > 0) setFindingCategories(Array.from(matched));
+    setErrors({});
+    setAutoClassifyResult(null);
+  };
 
   const toggleCategory = (cat: string) => {
     setFindingCategories(prev => 
@@ -769,6 +802,24 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                     <p className="text-sm text-[var(--tx3)] font-light leading-relaxed">{autoClassifyResult.reasoning}</p>
                   </div>
 
+                  {/* Auto-fill preview */}
+                  <div className="space-y-2">
+                    <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-[var(--tx4)]">Will auto-fill</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { label: "Urgent", value: autoClassifyResult.urgentCount ?? 0, color: "text-rose-500" },
+                        { label: "Storm", value: autoClassifyResult.stormCount ?? 0, color: "text-indigo-400" },
+                        { label: "Monitor", value: autoClassifyResult.monitorCount ?? 0, color: "text-[var(--tx2)]" },
+                      ].map(item => (
+                        <div key={item.label} className="p-3 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] text-center">
+                          <p className={cn("text-2xl font-display font-semibold", item.color)}>{item.value}</p>
+                          <p className="text-[9px] font-mono text-[var(--tx4)] uppercase tracking-widest mt-0.5">{item.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-[10px] text-[var(--tx4)] font-light pt-1">Headline, summary body, and damage categories will also be populated.</p>
+                  </div>
+
                   {/* Signals */}
                   {autoClassifyResult.signals?.length > 0 && (
                     <div className="space-y-2">
@@ -787,18 +838,13 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                   {/* Actions */}
                   <div className="grid grid-cols-2 gap-3">
                     <button
-                      onClick={() => {
-                        const val = autoClassifyResult.classification as OutcomeType;
-                        setOutcome(val);
-                        setErrors((e) => { const n = { ...e }; delete n.outcome; return n; });
-                        setAutoClassifyResult(null);
-                      }}
+                      onClick={applyAutoClassify}
                       className={cn(
                         "py-4 rounded-2xl border font-display font-semibold text-sm transition-all active:scale-95",
                         isHighContrast ? "bg-black text-white border-black" : "bg-indigo-500 text-white border-indigo-500 hover:bg-indigo-600"
                       )}
                     >
-                      Accept
+                      Accept & Auto-fill
                     </button>
                     <button
                       onClick={() => setAutoClassifyResult(null)}
