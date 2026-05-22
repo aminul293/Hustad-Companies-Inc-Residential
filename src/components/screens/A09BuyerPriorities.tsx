@@ -29,7 +29,7 @@ function SplineSceneBasic() {
   const isHighContrast = theme === "high-contrast";
 
   return (
-    <Card className="w-full h-[500px] bg-[var(--bg-surface)] backdrop-blur-3xl relative overflow-hidden border border-[var(--border-color)] rounded-[48px] mb-12">
+    <Card className="w-full h-auto md:h-[500px] bg-[var(--bg-surface)] backdrop-blur-3xl relative overflow-hidden border border-[var(--border-color)] rounded-[48px] mb-12">
       <Spotlight
         className="-top-40 left-0 md:left-60 md:-top-20 theme-graphic"
         fill="white"
@@ -56,8 +56,8 @@ function SplineSceneBasic() {
         </div>
 
         {/* Right content: Interactive 3D Robot with Protected Holographic Home */}
-        <div className="flex-1 relative min-h-[500px] group theme-graphic">
-          <div className="absolute inset-0 z-0">
+        <div className="flex-1 relative h-[500px] md:h-full min-h-[500px] md:min-h-[500px] group theme-graphic">
+          <div className="absolute inset-0 z-0 overflow-hidden">
             <SplineScene 
               scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
               className="w-full h-full"
@@ -77,7 +77,7 @@ function SplineSceneBasic() {
               repeat: Infinity,
               ease: "easeInOut"
             }}
-            className="absolute top-[55%] left-[11%] -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none"
+            className="absolute top-[55%] left-[12%] md:left-[11%] -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none"
           >
             <div className="relative flex items-center justify-center">
               {/* Primary Energy Shield Shielding the Property */}
