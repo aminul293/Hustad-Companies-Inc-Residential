@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useCallback, Suspense } from "react
 import { useSearchParams } from "next/navigation";
 import {
   Camera, CheckCircle2, RotateCcw, ChevronRight,
-  ArrowLeft, Home, Zap, Wind, Loader2, AlertCircle, Upload, Tablet, Ban, Undo2
+  ArrowLeft, Home, Zap, Wind, Loader2, AlertCircle, Upload, Tablet, Ban, Undo2, ArrowUp
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { INSPECTION_SHOT_LIST, ShotListItem } from "@/lib/inspectionShotList";
@@ -73,6 +73,20 @@ function RepCaptureInner() {
   const [done, setDone] = useState(false);
   const overlayRef = useRef<CaptureOverlay | null>(null);
   overlayRef.current = overlay;
+  const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToFirstRequired = useCallback(() => {
+    const firstId = INSPECTION_SHOT_LIST
+      .flatMap(s => s.items)
+      .find(i => i.requiredCount > 0 && !naCategories.has(i.id) && captured.filter(c => c.category === i.id && c.status === "done").length < i.requiredCount)
+      ?.id;
+    if (!firstId) return;
+    const el = itemRefs.current[firstId];
+    if (el && scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: el.offsetTop - 100, behavior: "smooth" });
+    }
+  }, [naCategories, captured]);
 
   // Unlock body scroll — layout.tsx sets overflow-hidden for tablet screens
   useEffect(() => {
@@ -240,8 +254,8 @@ function RepCaptureInner() {
       />
 
       {/* Fixed scroll container — bypasses body overflow-hidden set by root layout */}
-      <div style={{ position: "fixed", inset: 0, overflowY: "auto", WebkitOverflowScrolling: "touch" as any, backgroundColor: "#060606" }}>
-      <div className="pb-24">
+      <div ref={scrollContainerRef} style={{ position: "fixed", inset: 0, overflowY: "auto", WebkitOverflowScrolling: "touch" as any, backgroundColor: "#060606" }}>
+      <div className="pb-32">
         {/* ── Header ── */}
         <div className="sticky top-0 z-40 bg-[#060606]/95 backdrop-blur-xl border-b border-white/[0.06] px-5 py-4">
           <div className="flex items-center justify-between">
@@ -270,6 +284,19 @@ function RepCaptureInner() {
           </div>
         </div>
 
+        {/* ── Jump-to-required banner ── */}
+        {effectiveRequired > photosUploaded && (
+          <button
+            onClick={scrollToFirstRequired}
+            className="w-full flex items-center justify-between px-5 py-3 bg-indigo-500/10 border-b border-indigo-500/20 active:bg-indigo-500/20 transition-colors"
+          >
+            <span className="text-xs font-mono text-indigo-400 uppercase tracking-widest">
+              {effectiveRequired - photosUploaded} photo{effectiveRequired - photosUploaded !== 1 ? "s" : ""} still needed — tap to jump
+            </span>
+            <ArrowUp className="w-4 h-4 text-indigo-400 shrink-0" />
+          </button>
+        )}
+
         {/* ── Shot sections ── */}
         <div className="px-4 pt-6 space-y-6">
           {INSPECTION_SHOT_LIST.map(section => {
@@ -296,14 +323,18 @@ function RepCaptureInner() {
                   const needed = Math.max(0, item.requiredCount - itemDone);
 
                   return (
-                    <div key={item.id} className={cn(
-                      "rounded-2xl border p-4 transition-all",
-                      isNa ? "bg-white/[0.015] border-white/[0.04] opacity-50"
-                        : isComplete ? "bg-emerald-500/[0.05] border-emerald-500/20"
-                        : hasError ? "bg-rose-500/[0.05] border-rose-500/20"
-                        : isOptional ? "bg-white/[0.015] border-white/[0.04]"
-                        : "bg-white/[0.025] border-white/[0.08]"
-                    )}>
+                    <div
+                      key={item.id}
+                      ref={el => { if (!isOptional) itemRefs.current[item.id] = el; }}
+                      className={cn(
+                        "rounded-2xl border p-4 transition-all",
+                        isNa ? "bg-white/[0.015] border-white/[0.04] opacity-50"
+                          : isComplete ? "bg-emerald-500/[0.05] border-emerald-500/20"
+                          : hasError ? "bg-rose-500/[0.05] border-rose-500/20"
+                          : isOptional ? "bg-white/[0.015] border-white/[0.04]"
+                          : "bg-white/[0.025] border-white/[0.08]"
+                      )}
+                    >
                       <div className="flex items-start gap-3">
                         {/* Status icon */}
                         <div className={cn(
