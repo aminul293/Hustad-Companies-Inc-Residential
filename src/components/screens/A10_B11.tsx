@@ -219,6 +219,280 @@ const OUTCOME_OPTIONS: { value: OutcomeType; label: string; description: string;
   { value: "full_restoration_candidate", label: "Full Restoration", description: "Complete home restoration.", icon: LayoutGrid, color: "rose" },
 ];
 
+// ─── Decision Tree ────────────────────────────────────────────────────────────
+
+interface TreeNode {
+  id: string;
+  question: string;
+  detail: string;
+  yesLabel?: string;
+  noLabel?: string;
+  yes: string;
+  no: string;
+}
+
+const TREE_NODES: Record<string, TreeNode> = {
+  metal_impact: {
+    id: "metal_impact",
+    question: "Did you observe impact marks, bruising, or dents on metal surfaces?",
+    detail: "Check gutters, downspouts, A/C fins, vents, and flashing.",
+    yes: "widespread_damage",
+    no: "shingle_damage",
+  },
+  widespread_damage: {
+    id: "widespread_damage",
+    question: "Is the damage widespread across multiple slopes or surfaces?",
+    detail: "Roof + siding, gutters, or windows all showing consistent storm impact.",
+    yesLabel: "Yes, multiple surfaces",
+    noLabel: "No, localized area",
+    yes: "result_full_restoration",
+    no: "result_claim_review",
+  },
+  shingle_damage: {
+    id: "shingle_damage",
+    question: "Did you observe granule loss, cracking, or displaced shingles?",
+    detail: "Look for bare spots, tab cracks, lifted edges, or missing sections.",
+    yes: "storm_or_aging",
+    no: "result_no_damage",
+  },
+  storm_or_aging: {
+    id: "storm_or_aging",
+    question: "Does the wear appear storm-related or gradual aging?",
+    detail: "Storm damage is concentrated and consistent. Aging is gradual and uniform across the surface.",
+    yesLabel: "Storm-related",
+    noLabel: "Gradual aging",
+    yes: "result_repair_only",
+    no: "result_monitor_only",
+  },
+};
+
+const TREE_RESULTS: Record<string, { value: OutcomeType; label: string; reason: string }> = {
+  result_full_restoration: {
+    value: "full_restoration_candidate",
+    label: "Full Restoration Candidate",
+    reason: "Metal impact confirmed across multiple surfaces — consistent with a significant storm event requiring full exterior restoration.",
+  },
+  result_claim_review: {
+    value: "claim_review_candidate",
+    label: "Claim Review Candidate",
+    reason: "Metal impact confirmed with localized storm damage — document the findings and support an insurance claim review.",
+  },
+  result_repair_only: {
+    value: "repair_only",
+    label: "Repair Only",
+    reason: "Shingle damage is present and storm-related but localized — a targeted repair is the right path.",
+  },
+  result_monitor_only: {
+    value: "monitor_only",
+    label: "Monitor Only",
+    reason: "Wear observed is consistent with normal aging, not storm impact — set a baseline and monitor over time.",
+  },
+  result_no_damage: {
+    value: "no_damage",
+    label: "No Damage",
+    reason: "No significant damage indicators found — property integrity appears maintained.",
+  },
+};
+
+interface DecisionTreeModalProps {
+  onAccept: (outcome: OutcomeType) => void;
+  onDismiss: () => void;
+  isHighContrast: boolean;
+}
+
+function DecisionTreeModal({ onAccept, onDismiss, isHighContrast }: DecisionTreeModalProps) {
+  const [currentNodeId, setCurrentNodeId] = useState("metal_impact");
+  const [history, setHistory] = useState<string[]>([]);
+  const [result, setResult] = useState<string | null>(null);
+
+  const currentNode = TREE_NODES[currentNodeId];
+  const currentResult = result ? TREE_RESULTS[result] : null;
+  const currentStep = history.length + (result ? 1 : 0);
+  const totalSteps = 4;
+
+  const handleAnswer = (answer: "yes" | "no") => {
+    const next = answer === "yes" ? currentNode.yes : currentNode.no;
+    setHistory(prev => [...prev, currentNodeId]);
+    if (next.startsWith("result_")) {
+      setResult(next);
+    } else {
+      setCurrentNodeId(next);
+    }
+  };
+
+  const handleBack = () => {
+    if (result) { setResult(null); return; }
+    if (history.length > 0) {
+      const prev = history[history.length - 1];
+      setHistory(h => h.slice(0, -1));
+      setCurrentNodeId(prev);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-4 bg-black/60 backdrop-blur-md"
+      onClick={onDismiss}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 40, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 40, scale: 0.96 }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        className={cn(
+          "w-full max-w-lg rounded-[40px] border p-8 space-y-8",
+          isHighContrast
+            ? "bg-white border-black text-black"
+            : "bg-[var(--bg-surface)] border-[var(--border-color)] text-[var(--tx1)]"
+        )}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "w-8 h-8 rounded-lg flex items-center justify-center border",
+              isHighContrast ? "bg-white border-black" : "bg-indigo-500/10 border-indigo-500/20"
+            )}>
+              <Layers className="w-4 h-4 text-indigo-400" />
+            </div>
+            <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-[var(--tx3)]">
+              Classification Guide
+            </span>
+          </div>
+          <button
+            onClick={onDismiss}
+            className="text-[10px] font-mono uppercase tracking-widest text-[var(--tx4)] hover:text-[var(--tx2)] transition-colors"
+          >
+            Close
+          </button>
+        </div>
+
+        {/* Progress bar */}
+        <div className="flex items-center gap-1.5">
+          {Array.from({ length: totalSteps }).map((_, i) => (
+            <div
+              key={i}
+              className={cn(
+                "h-1 flex-1 rounded-full transition-all duration-300",
+                i < currentStep ? "bg-indigo-500" : "bg-[var(--border-color)]"
+              )}
+            />
+          ))}
+        </div>
+
+        {/* Question or Result */}
+        <AnimatePresence mode="wait">
+          {!currentResult ? (
+            <motion.div
+              key={currentNodeId}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-6"
+            >
+              <div className="space-y-3">
+                <p className="text-xl font-display font-medium text-[var(--tx1)] leading-snug">
+                  {currentNode.question}
+                </p>
+                <p className="text-sm text-[var(--tx3)] font-light leading-relaxed">
+                  {currentNode.detail}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => handleAnswer("yes")}
+                  className={cn(
+                    "py-4 rounded-2xl border font-display font-semibold text-sm transition-all active:scale-95",
+                    isHighContrast
+                      ? "bg-black text-white border-black"
+                      : "bg-indigo-500 text-white border-indigo-500 hover:bg-indigo-600"
+                  )}
+                >
+                  {currentNode.yesLabel || "Yes"}
+                </button>
+                <button
+                  onClick={() => handleAnswer("no")}
+                  className={cn(
+                    "py-4 rounded-2xl border font-display font-semibold text-sm transition-all active:scale-95",
+                    isHighContrast
+                      ? "bg-white text-black border-black"
+                      : "bg-[var(--bg-subtle)] text-[var(--tx2)] border-[var(--border-color)] hover:bg-[var(--bg-base)]"
+                  )}
+                >
+                  {currentNode.noLabel || "No"}
+                </button>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="result"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-6"
+            >
+              <div className="space-y-3 p-6 rounded-3xl bg-indigo-500/[0.06] border border-indigo-500/20">
+                <p className="text-[9px] font-mono uppercase tracking-[0.3em] text-indigo-500">
+                  Recommended Classification
+                </p>
+                <p className="text-2xl font-display font-semibold text-[var(--tx1)]">
+                  {currentResult.label}
+                </p>
+                <p className="text-sm text-[var(--tx3)] font-light leading-relaxed">
+                  {currentResult.reason}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => onAccept(currentResult.value)}
+                  className={cn(
+                    "py-4 rounded-2xl border font-display font-semibold text-sm transition-all active:scale-95",
+                    isHighContrast
+                      ? "bg-black text-white border-black"
+                      : "bg-indigo-500 text-white border-indigo-500 hover:bg-indigo-600"
+                  )}
+                >
+                  Accept
+                </button>
+                <button
+                  onClick={onDismiss}
+                  className={cn(
+                    "py-4 rounded-2xl border font-display font-semibold text-sm transition-all active:scale-95",
+                    isHighContrast
+                      ? "bg-white text-black border-black"
+                      : "bg-[var(--bg-subtle)] text-[var(--tx2)] border-[var(--border-color)] hover:bg-[var(--bg-base)]"
+                  )}
+                >
+                  Choose Manually
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Back */}
+        {(history.length > 0 || result) && (
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-[var(--tx4)] hover:text-[var(--tx2)] transition-colors"
+          >
+            <ArrowLeft className="w-3 h-3" />
+            Back
+          </button>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPrepProps) {
   const { theme } = useTheme();
   const isHighContrast = theme === "high-contrast";
@@ -241,6 +515,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
   const [urgentRecommended, setUrgentRecommended] = useState(f.urgentProtectionRecommended);
   const [findingCategories, setFindingCategories] = useState<string[]>(f.findingCategories || []);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showDecisionTree, setShowDecisionTree] = useState(false);
 
   const COMMON_CATEGORIES = [
     "Hail Impact", "Wind Displacement", "Granule Loss", "Thermal Cracking",
@@ -380,7 +655,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
           />
         )}
         {refiningAssetId && (
-          <ProofRefinementModal 
+          <ProofRefinementModal
             photo={photoAssets.find(p => p.assetId === refiningAssetId)!}
             allPhotos={photoAssets}
             onSave={(updated) => {
@@ -389,6 +664,17 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
               setRefiningAssetId(null);
             }}
             onCancel={() => setRefiningAssetId(null)}
+          />
+        )}
+        {showDecisionTree && (
+          <DecisionTreeModal
+            onAccept={(outcome) => {
+              setOutcome(outcome);
+              setErrors((e) => { const n = { ...e }; delete n.outcome; return n; });
+              setShowDecisionTree(false);
+            }}
+            onDismiss={() => setShowDecisionTree(false)}
+            isHighContrast={isHighContrast}
           />
         )}
       </AnimatePresence>
@@ -493,6 +779,17 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                     </button>
                   );
                 })}
+              </div>
+
+              {/* Classification Guide trigger */}
+              <div className="flex justify-center pt-2">
+                <button
+                  onClick={() => setShowDecisionTree(true)}
+                  className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-indigo-500 dark:text-indigo-400 hover:text-indigo-400 transition-colors"
+                >
+                  <Layers className="w-3 h-3" />
+                  Not sure? Use Classification Guide
+                </button>
               </div>
             </section>
 
