@@ -46,20 +46,18 @@ function Counter({ value, suffix = "", prefix = "" }: { value: number; suffix?: 
     damping: 60,
     stiffness: 100,
   });
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   useEffect(() => {
-    if (isInView) {
-      motionValue.set(value);
-    }
-  }, [motionValue, isInView, value]);
+    motionValue.set(value);
+  }, [motionValue, value]);
 
   useEffect(() => {
-    springValue.on("change", (latest) => {
+    const unsubscribe = springValue.on("change", (latest) => {
       if (ref.current) {
         ref.current.textContent = Intl.NumberFormat("en-US").format(Math.floor(latest));
       }
     });
+    return () => unsubscribe();
   }, [springValue]);
 
   return (
