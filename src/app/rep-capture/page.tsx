@@ -74,6 +74,16 @@ function RepCaptureInner() {
   const overlayRef = useRef<CaptureOverlay | null>(null);
   overlayRef.current = overlay;
 
+  // Unlock body scroll — layout.tsx sets overflow-hidden for tablet screens
+  useEffect(() => {
+    document.body.style.overflow = "auto";
+    document.body.style.height = "auto";
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.height = "";
+    };
+  }, []);
+
   // Load basic session info for display
   useEffect(() => {
     if (!sessionId) { setLoadError("No session ID in URL."); setLoading(false); return; }
@@ -202,7 +212,9 @@ function RepCaptureInner() {
         className="hidden"
       />
 
-      <div className="min-h-screen bg-[#060606] pb-24">
+      {/* Fixed scroll container — bypasses body overflow-hidden set by root layout */}
+      <div style={{ position: "fixed", inset: 0, overflowY: "auto", WebkitOverflowScrolling: "touch" as any, backgroundColor: "#060606" }}>
+      <div className="pb-24">
         {/* ── Header ── */}
         <div className="sticky top-0 z-40 bg-[#060606]/95 backdrop-blur-xl border-b border-white/[0.06] px-5 py-4">
           <div className="flex items-center justify-between">
@@ -386,6 +398,7 @@ function RepCaptureInner() {
           </div>
         )}
       </div>
+      </div>{/* end fixed scroll container */}
 
       {/* ── Full-screen done state ── */}
       {done && (

@@ -56,7 +56,7 @@ function SplineSceneBasic() {
         </div>
 
         {/* Right content: Interactive 3D Robot with Protected Holographic Home */}
-        <div className="flex-1 relative h-[500px] md:h-full min-h-[500px] md:min-h-[500px] group theme-graphic">
+        <div className="flex-1 relative h-[700px] md:h-full min-h-[700px] md:min-h-[500px] group theme-graphic">
           <div className="absolute inset-0 z-0 overflow-hidden">
             <SplineScene 
               scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
