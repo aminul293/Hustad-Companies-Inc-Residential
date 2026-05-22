@@ -103,7 +103,6 @@ function RepCaptureInner() {
   const photosUploaded = captured.filter(c => c.status === "done").length;
   const naCount = naCategories.size;
   const effectiveRequired = Math.max(0, totalRequired - naCount);
-  const doneCount = photosUploaded; // only real photos, used for display
   const pct = effectiveRequired > 0 ? Math.min(100, Math.round((photosUploaded / effectiveRequired) * 100)) : 100;
 
   const toggleNa = useCallback((categoryId: string) => {
@@ -380,25 +379,24 @@ function RepCaptureInner() {
           })}
         </div>
 
-        {/* Sticky done button — always visible at bottom once any photos taken */}
-        {doneCount > 0 && (
-          <div className="mx-4 mt-6 mb-2">
-            <button
-              onClick={() => setDone(true)}
-              className={cn(
-                "w-full h-14 rounded-2xl font-display font-semibold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
-                pct === 100
-                  ? "bg-emerald-500 text-[#E8EDF8] shadow-[0_0_24px_rgba(16,185,129,0.35)]"
-                  : "bg-white/[0.08] border border-white/[0.12] text-[#8BA5C5]"
-              )}
-            >
-              <CheckCircle2 className="w-5 h-5" />
-              {pct === 100 ? "Done — All Photos Captured" : `Done for Now (${photosUploaded}/${effectiveRequired} photos)`}
-            </button>
-          </div>
-        )}
       </div>
       </div>{/* end fixed scroll container */}
+
+      {/* Sticky done button — always visible at bottom of viewport */}
+      <div className="fixed bottom-0 inset-x-0 z-50 px-4 pb-6 pt-3 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent">
+        <button
+          onClick={() => setDone(true)}
+          className={cn(
+            "w-full h-14 rounded-2xl font-display font-semibold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
+            pct === 100
+              ? "bg-emerald-500 text-[#E8EDF8] shadow-[0_0_24px_rgba(16,185,129,0.35)]"
+              : "bg-indigo-500/20 border border-indigo-500/30 text-[#8BA5C5]"
+          )}
+        >
+          <CheckCircle2 className="w-5 h-5" />
+          {pct === 100 ? "Done — All Photos Captured" : `Done for Now (${photosUploaded}/${effectiveRequired} photos)`}
+        </button>
+      </div>
 
       {/* ── Full-screen done state ── */}
       {done && (
