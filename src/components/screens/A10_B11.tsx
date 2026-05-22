@@ -597,6 +597,36 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
     );
   };
   const [isWeatherLoading, setIsWeatherLoading] = useState(false);
+  const [isPropertyLoading, setIsPropertyLoading] = useState(false);
+  const [propertyDataNote, setPropertyDataNote] = useState<string | null>(null);
+
+  const fetchPropertyData = async () => {
+    const { address, cityStateZip } = session.property;
+    if (!address) {
+      setPropertyDataNote("No property address in session. Enter address first.");
+      return;
+    }
+    setIsPropertyLoading(true);
+    setPropertyDataNote(null);
+    try {
+      const res = await fetch(
+        `/api/property-data?address=${encodeURIComponent(address)}&cityStateZip=${encodeURIComponent(cityStateZip ?? "")}`
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Lookup failed");
+      if (data.roofingSqFt) {
+        setRoofingArea(data.roofingSqFt.toLocaleString());
+        setPropertyDataNote(`${data.note} (${data.confidence})`);
+      } else {
+        setPropertyDataNote(data.note ?? "No footprint data found for this address.");
+      }
+    } catch (err: any) {
+      setPropertyDataNote(err.message ?? "Property lookup failed.");
+    } finally {
+      setIsPropertyLoading(false);
+    }
+  };
+
   const [annotatingAssetId, setAnnotatingAssetId] = useState<string | null>(null);
   const [refiningAssetId, setRefiningAssetId] = useState<string | null>(null);
 
@@ -1037,13 +1067,32 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                 isHighContrast ? "bg-white border-black" : "bg-[var(--bg-surface)] border-[var(--border-color)]"
               )}>
                 <div className="space-y-4">
-                  <p className="text-[9px] font-mono text-[var(--tx3)] uppercase tracking-[0.4em] pl-1 font-bold">Roofing Area (SF)</p>
+                  <div className="flex items-center justify-between pl-1">
+                    <p className="text-[9px] font-mono text-[var(--tx3)] uppercase tracking-[0.4em] font-bold">Roofing Area (SF)</p>
+                    <button
+                      onClick={fetchPropertyData}
+                      disabled={isPropertyLoading}
+                      className={cn(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-xl border uppercase tracking-widest font-mono text-[9px] transition-all active:scale-95",
+                        isPropertyLoading ? "opacity-50 cursor-not-allowed" : "",
+                        isHighContrast
+                          ? "bg-white border-black text-black hover:bg-black hover:text-white"
+                          : "border-emerald-500/30 bg-emerald-500/5 text-emerald-500 hover:bg-emerald-500/10"
+                      )}
+                    >
+                      <Upload className={cn("w-3 h-3", isPropertyLoading && "animate-spin")} />
+                      {isPropertyLoading ? "Looking up…" : "Fetch Live"}
+                    </button>
+                  </div>
                   <input
                     className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl py-5 px-6 text-[var(--tx1)] text-xl font-display placeholder:text-[var(--tx4)] outline-none focus:border-indigo-500/40 focus:bg-[var(--bg-base)] transition-all"
                     placeholder="e.g. 3,200"
                     value={roofingArea}
                     onChange={(e) => setRoofingArea(e.target.value)}
                   />
+                  {propertyDataNote && (
+                    <p className="text-[10px] text-[var(--tx4)] font-light pl-1 leading-relaxed">{propertyDataNote}</p>
+                  )}
                 </div>
                 <div className="space-y-4">
                   <p className="text-[9px] font-mono text-[var(--tx3)] uppercase tracking-[0.4em] pl-1 font-bold">Estimated Claim Value</p>
