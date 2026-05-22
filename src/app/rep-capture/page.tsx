@@ -84,6 +84,33 @@ function RepCaptureInner() {
     };
   }, []);
 
+  // Restore progress from localStorage on mount
+  useEffect(() => {
+    if (!sessionId) return;
+    try {
+      const saved = localStorage.getItem(`rep_capture_${sessionId}`);
+      if (saved) {
+        const { captured: c, naCategories: na } = JSON.parse(saved);
+        if (Array.isArray(c)) {
+          // Blob URLs don't survive refresh — mark as done (already uploaded to server)
+          setCaptured(c.map((x: any) => ({ category: x.category, status: "done" as const, previewUrl: "" })));
+        }
+        if (Array.isArray(na)) setNaCategories(new Set(na));
+      }
+    } catch {}
+  }, [sessionId]);
+
+  // Persist progress to localStorage whenever it changes
+  useEffect(() => {
+    if (!sessionId) return;
+    try {
+      localStorage.setItem(`rep_capture_${sessionId}`, JSON.stringify({
+        captured: captured.map(({ category, status }) => ({ category, status })),
+        naCategories: [...naCategories],
+      }));
+    } catch {}
+  }, [captured, naCategories, sessionId]);
+
   // Load basic session info for display
   useEffect(() => {
     if (!sessionId) { setLoadError("No session ID in URL."); setLoading(false); return; }
