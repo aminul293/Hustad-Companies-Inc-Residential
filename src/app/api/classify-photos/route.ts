@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
 const SYSTEM_PROMPT = `You are an expert roofing damage assessor. You will be given one or more photos from a residential roof inspection.
 
 Analyze the photos and return a JSON object with this exact shape:
@@ -26,6 +24,7 @@ Be conservative — only escalate to claim_review or full_restoration when clear
 Return ONLY valid JSON. No markdown, no explanation outside the JSON.`;
 
 export async function POST(req: NextRequest) {
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   try {
     const { photos } = await req.json() as { photos: string[] };
 

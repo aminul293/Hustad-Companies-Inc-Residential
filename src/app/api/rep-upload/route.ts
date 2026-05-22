@@ -14,16 +14,6 @@ export async function GET(req: NextRequest) {
 
   const db = getServiceClient();
 
-  const { data: session } = await db
-    .from("inspection_sessions")
-    .select("session_id")
-    .eq("session_id", sessionId)
-    .single();
-
-  if (!session) {
-    return NextResponse.json({ error: "Session not found" }, { status: 404 });
-  }
-
   const { data: photos, error } = await db
     .from("photo_assets")
     .select("*")
@@ -57,18 +47,6 @@ export async function POST(req: NextRequest) {
     }
 
     const db = getServiceClient();
-
-    // Verify session exists and is not archived
-    const { data: session } = await db
-      .from("inspection_sessions")
-      .select("session_id, session_status")
-      .eq("session_id", sessionId)
-      .neq("session_status", "archived")
-      .single();
-
-    if (!session) {
-      return NextResponse.json({ error: "Session not found or expired" }, { status: 404 });
-    }
 
     // Upload to Supabase storage
     const photoId = `photo_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
@@ -120,4 +98,43 @@ export async function POST(req: NextRequest) {
     console.error("[REP_UPLOAD] Unhandled error:", err);
     return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
   }
+}
+
+/**
+ * DELETE /api/rep-upload?photo_id=…&session_id=…
+ * Removes a photo from storage and photo_assets.
+ * No auth required — session_id is the credential.
+ */
+export async function DELETE(req: NextRequest) {
+  const photoId   = req.nextUrl.searchParams.get("photo_id");
+  const sessionId = req.nextUrl.searchParams.get("session_id");
+
+  if (!photoId || !sessionId) {
+    return NextResponse.json({ error: "photo_id and session_id are required" }, { status: 400 });
+  }
+
+  const db = getServiceClient();
+
+  // Fetch the row so we can remove the file from storage too
+  const { data: row } = await db
+    .from("photo_assets")
+    .select("storage_path, session_id")
+    .eq("asset_id", photoId)
+    .single();
+
+  // Ensure the photo belongs to this session (prevents cross-session deletes)
+  if (!row || row.session_id !== sessionId) {
+    return NextResponse.json({ error: "Photo not found" }, { status: 404 });
+  }
+
+  if (row.storage_path) {
+    await db.storage.from("inspection-photos").remove([row.storage_path]);
+  }
+
+  const { error } = await db.from("photo_assets").delete().eq("asset_id", photoId);
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true });
 }

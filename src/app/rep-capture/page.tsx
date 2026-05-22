@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useCallback, Suspense } from "react
 import { useSearchParams } from "next/navigation";
 import {
   Camera, CheckCircle2, RotateCcw, ChevronRight,
-  ArrowLeft, Home, Zap, Wind, Loader2, AlertCircle, Upload, Tablet, Ban, Undo2, ArrowUp
+  ArrowLeft, Home, Zap, Wind, Loader2, AlertCircle, Upload, Tablet, Ban, Undo2, ArrowUp, X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { INSPECTION_SHOT_LIST, ShotListItem } from "@/lib/inspectionShotList";
@@ -15,6 +15,8 @@ import { compressImage } from "@/lib/images";
 interface CapturedLocal {
   category: string;
   previewUrl: string;
+  remoteUrl?: string;
+  photoId?: string;
   status: "uploading" | "done" | "error";
 }
 
@@ -106,8 +108,14 @@ function RepCaptureInner() {
       if (saved) {
         const { captured: c, naCategories: na } = JSON.parse(saved);
         if (Array.isArray(c)) {
-          // Blob URLs don't survive refresh — mark as done (already uploaded to server)
-          setCaptured(c.map((x: any) => ({ category: x.category, status: "done" as const, previewUrl: "" })));
+          // Blob URLs don't survive refresh — restore remoteUrl so thumbnails still show
+          setCaptured(c.map((x: any) => ({
+            category: x.category,
+            status: "done" as const,
+            previewUrl: "",
+            remoteUrl: x.remoteUrl,
+            photoId: x.photoId,
+          })));
         }
         if (Array.isArray(na)) setNaCategories(new Set(na));
       }
@@ -119,7 +127,7 @@ function RepCaptureInner() {
     if (!sessionId) return;
     try {
       localStorage.setItem(`rep_capture_${sessionId}`, JSON.stringify({
-        captured: captured.map(({ category, status }) => ({ category, status })),
+        captured: captured.map(({ category, status, remoteUrl, photoId }) => ({ category, status, remoteUrl, photoId })),
         naCategories: [...naCategories],
       }));
     } catch {}
@@ -216,10 +224,13 @@ function RepCaptureInner() {
         form.append("section", item.section);
 
         const res = await fetch("/api/rep-upload", { method: "POST", body: form });
+        const json = res.ok ? await res.json().catch(() => ({})) : {};
 
         setCaptured(prev =>
           prev.map(c =>
-            c === tempEntry ? { ...c, status: res.ok ? "done" : "error" } : c
+            c === tempEntry
+              ? { ...c, status: res.ok ? "done" : "error", photoId: json.photo?.asset_id, remoteUrl: json.photo?.storage_url }
+              : c
           )
         );
       } catch {
@@ -227,6 +238,19 @@ function RepCaptureInner() {
       }
     };
     reader.readAsDataURL(file);
+  }, [sessionId]);
+
+  // Delete an uploaded photo
+  const handleDelete = useCallback(async (entry: CapturedLocal) => {
+    if (!entry.photoId || !sessionId) {
+      // No server record yet — just remove locally
+      setCaptured(prev => prev.filter(c => c !== entry));
+      return;
+    }
+    try {
+      await fetch(`/api/rep-upload?photo_id=${entry.photoId}&session_id=${sessionId}`, { method: "DELETE" });
+    } catch {}
+    setCaptured(prev => prev.filter(c => c !== entry));
   }, [sessionId]);
 
   if (loading) {
@@ -401,7 +425,16 @@ function RepCaptureInner() {
                             <div className="flex gap-2 mt-3 flex-wrap">
                               {mine.map((c, i) => (
                                 <div key={i} className="relative w-14 h-14">
-                                  <img src={c.previewUrl} alt="" className="w-14 h-14 rounded-xl object-cover border border-white/10" />
+                                  <img src={c.previewUrl || c.remoteUrl || ""} alt="" className="w-14 h-14 rounded-xl object-cover border border-white/10 bg-white/5" />
+                                  {/* Delete button — only show when not uploading */}
+                                  {c.status !== "uploading" && (
+                                    <button
+                                      onClick={() => handleDelete(c)}
+                                      className="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-rose-500 border-2 border-[#060606] flex items-center justify-center active:scale-90 transition-transform"
+                                    >
+                                      <X className="w-2.5 h-2.5 text-white" />
+                                    </button>
+                                  )}
                                   <div className={cn(
                                     "absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-[#060606] flex items-center justify-center",
                                     c.status === "done" ? "bg-emerald-500"

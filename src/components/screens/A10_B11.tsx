@@ -525,7 +525,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
 
   const handleAutoClassify = async () => {
     const photos = session.photoAssets?.map(p => p.dataUrl).filter(Boolean) ?? [];
-    const inspectionPhotos = session.photos?.map(p => p.localUri).filter(Boolean) ?? [];
+    const inspectionPhotos = session.photos?.map(p => p.localUri || p.remoteUrl).filter(Boolean) ?? [];
     const allPhotos = [...photos, ...inspectionPhotos];
 
     if (allPhotos.length === 0) {
