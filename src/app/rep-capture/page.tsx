@@ -302,6 +302,20 @@ function RepCaptureInner() {
           {INSPECTION_SHOT_LIST.map(section => {
             const meta = SECTION_META[section.title];
             const SIcon = meta?.icon ?? Camera;
+            const requiredItems = section.items.filter(i => i.requiredCount > 0);
+            const allSectionNa = requiredItems.length > 0 && requiredItems.every(i => naCategories.has(i.id));
+
+            const toggleSectionNa = () => {
+              setNaCategories(prev => {
+                const next = new Set(prev);
+                if (allSectionNa) {
+                  requiredItems.forEach(i => next.delete(i.id));
+                } else {
+                  requiredItems.forEach(i => next.add(i.id));
+                }
+                return next;
+              });
+            };
 
             return (
               <div key={section.title} className="space-y-2">
@@ -310,6 +324,12 @@ function RepCaptureInner() {
                   <span className="text-xs font-mono text-[#567090] uppercase tracking-[0.25em]">
                     {meta?.label ?? section.title}
                   </span>
+                  <button
+                    onClick={toggleSectionNa}
+                    className="ml-auto flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-mono uppercase tracking-widest transition-all active:scale-95 border border-white/[0.06] text-[#2D4060] hover:text-[#7090B0]"
+                  >
+                    {allSectionNa ? <><Undo2 className="w-3 h-3" /> Undo All</> : <><Ban className="w-3 h-3" /> All N/A</>}
+                  </button>
                 </div>
 
                 {section.items.map(item => {
