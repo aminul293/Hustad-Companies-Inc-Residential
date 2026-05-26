@@ -439,7 +439,17 @@ export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart
         merged.push({ sessionId: s.session_id, address: addr, homeownerName: s.homeowner_name || "Unknown Owner", repName: s.rep_name || "Unknown Rep", lastSavedAt: s.updated_at, sessionStatus: s.session_status, outcomeType: s.outcome_type, syncStatus: "synced", hasFollowUp: false, missingFieldsCount: 0, emergencyOverride: s.emergency_override, reconciliationRequired: s.crm_reconciliation_required });
       }
     });
-    return merged
+    // Deduplicate by address — when the same property has multiple sessions,
+    // keep the most recent one so the dashboard doesn't show duplicate cards.
+    const byAddress = new Map<string, typeof merged[0]>();
+    for (const entry of merged) {
+      const key = entry.address.toLowerCase().trim();
+      const existing = byAddress.get(key);
+      if (!existing || new Date(entry.lastSavedAt).getTime() > new Date(existing.lastSavedAt).getTime()) {
+        byAddress.set(key, entry);
+      }
+    }
+    return Array.from(byAddress.values())
       .filter(d => { const a = d.address.toLowerCase().trim(); return a.length > 0 && a !== "untitled property"; })
       .sort((a, b) => new Date(b.lastSavedAt).getTime() - new Date(a.lastSavedAt).getTime());
   }, [serverSessions, draftRefreshKey, currentRep.id]);
