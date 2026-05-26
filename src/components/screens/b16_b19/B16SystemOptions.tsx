@@ -47,39 +47,9 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
 
   return (
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
-      {/* Background Assets: Forensic Rapid Deployment Cloud */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Ambient Gradient Lift */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.04),transparent_70%)]" />
-
-        {/* Forensic HUD Data Layer */}
-        <motion.div 
-          animate={{ opacity: [0.03, 0.05, 0.03], scale: [1, 1.02, 1] }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0"
-        >
-          <img src="/images/forensic_hud.png" alt="" className="w-full h-full object-cover mix-blend-screen opacity-20 grayscale" />
-        </motion.div>
-
-        {/* National Mobilization Map - Ultra Subtle Accountability */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 0.05, scale: 0.85, y: [0, -15, 0] }}
-          transition={{ duration: 2, y: { duration: 20, repeat: Infinity, ease: "easeInOut" } }}
-          className="absolute top-[10%] -left-32 w-[550px] h-[550px]"
-        >
-          <img src="/images/mobilization_map.png" alt="" className="w-full h-full object-contain mix-blend-screen grayscale" />
-        </motion.div>
-
-        {/* Forensic Inspection Drone - Far Top Right */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.5, x: 200 }}
-          animate={{ opacity: 0.08, scale: 0.7, x: 0, y: [0, -20, 0] }}
-          transition={{ duration: 2, y: { duration: 15, repeat: Infinity, ease: "easeInOut" } }}
-          className="absolute top-[2%] -right-48 w-[450px] h-[450px]"
-        >
-          <img src="/images/inspection_drone.png" alt="" className="w-full h-full object-contain mix-blend-screen opacity-70" />
-        </motion.div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(99,102,241,0.03),transparent_60%)]" />
       </div>
 
       <div className="absolute top-10 left-10 z-30 hidden lg:flex flex-col items-start pointer-events-none">

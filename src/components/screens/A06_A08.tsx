@@ -95,15 +95,6 @@ export function A06WarrantyImpact({ session, onUpdate, onNext, onBack }: Props) 
           <img src="/images/mobilization_map.png" alt="" className="w-full h-full object-contain mix-blend-screen grayscale" />
         </motion.div>
 
-        {/* Inspection Drone - Far Top Right */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.5, x: 200 }}
-          animate={{ opacity: 0.1, scale: 0.7, x: 0, y: [0, -20, 0] }}
-          transition={{ duration: 2, y: { duration: 15, repeat: Infinity, ease: "easeInOut" } }}
-          className="absolute top-[2%] -right-48 w-[450px] h-[450px]"
-        >
-          <img src="/images/inspection_drone.png" alt="" className="w-full h-full object-contain mix-blend-screen opacity-70" />
-        </motion.div>
       </div>
 
       {/* Persistent Branding Anchor */}
@@ -285,20 +276,9 @@ export function A07WhyHustad({ session, onUpdate, onNext, onBack }: Props) {
 
   return (
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[var(--bg-base)] text-[var(--tx1)]">
-      {/* Background Assets: Rapid Deployment Cloud */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden theme-graphic">
-        {/* Inspection Drone - Hovering Top Left */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.8, x: -100 }}
-          animate={{ opacity: 0.08, scale: 1, x: 0, y: [0, -20, 0] }}
-          transition={{ duration: 2, y: { duration: 10, repeat: Infinity, ease: "easeInOut" } }}
-          className="absolute top-[10%] -left-20 w-[500px] h-[500px]"
-        >
-          <img src="/images/inspection_drone.png" alt="" className="w-full h-full object-contain mix-blend-screen opacity-70" />
-        </motion.div>
-
-        {/* Rapid Response Vehicle - Rushing Bottom Right */}
-        <motion.div 
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.04),transparent_70%)]" />
+        <motion.div
           initial={{ opacity: 0, x: 200 }}
           animate={{ opacity: 0.1, x: 0 }}
           transition={{ duration: 1.5 }}
@@ -339,8 +319,8 @@ export function A07WhyHustad({ session, onUpdate, onNext, onBack }: Props) {
             </div>
             <div className="relative z-10 space-y-8 max-w-2xl">
               <p className="text-3xl md:text-4xl font-display font-medium text-[var(--tx2)] leading-tight tracking-tight italic">
-                &ldquo;We are here after the weather clears. Our phone still works,
-                our team is local, and our name stays on the work.&rdquo;
+                &ldquo;We are here after the weather clears. Our team is local,
+                our work is documented, and our name stays on the job.&rdquo;
               </p>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-px bg-indigo-500/50" />
@@ -349,38 +329,13 @@ export function A07WhyHustad({ session, onUpdate, onNext, onBack }: Props) {
             </div>
           </motion.div>
 
-          {/* The Hustad Difference - Authority Section */}
-          <div className="space-y-8">
+          {/* The Hustad Difference */}
+          <div className="space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--bg-surface)] border border-[var(--border-color)] backdrop-blur-md">
               <ShieldCheck className="w-3 h-3 text-emerald-500 dark:text-emerald-400" />
               <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-300 uppercase tracking-widest pt-0.5">
                 The Hustad Difference
               </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {AUTHORITY_METRICS.map((metric, i) => (
-                <motion.div
-                  key={metric.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * i }}
-                  className="bg-[var(--bg-surface)] border border-[var(--border-color)] p-8 rounded-[32px] space-y-4"
-                >
-                  <div className="text-4xl font-display font-bold text-[var(--tx1)] tracking-tight">
-                    {metric.value === "$100M+" ? <Counter value={100} prefix="$" suffix="M+" /> : 
-                     metric.value === "1973" ? <Counter value={1973} /> : metric.value}
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-sm font-medium text-indigo-600 dark:text-indigo-300 uppercase tracking-wider">
-                      {metric.label}
-                    </div>
-                    <div className="text-xs text-[var(--tx3)] font-light leading-relaxed">
-                      {metric.detail}
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
             </div>
           </div>
 
@@ -443,9 +398,9 @@ export function A07WhyHustad({ session, onUpdate, onNext, onBack }: Props) {
 }
 
 const LOCAL_POINTS = [
-  { icon: MapPin, label: "Madison-Based", detail: "Locally owned and operated in Madison, WI." },
-  { icon: Handshake, label: "Accountability", detail: "Local calls are answered by a team tied to the work." },
-  { icon: CheckSquare, label: "Honest Findings", detail: "If the finding is monitor-only, we say so." },
+  { icon: MapPin, label: "Madison Based", detail: "Locally owned and operated in Madison, WI." },
+  { icon: Handshake, label: "One Exterior Partner", detail: "Roofing, siding, gutters, windows, and storm restoration support." },
+  { icon: CheckSquare, label: "Honest Findings", detail: "If the right answer is monitor-only, we will say so." },
   { icon: FileText, label: "Clean Records", detail: "You keep organized documentation whether or not a project begins." },
 ];
 

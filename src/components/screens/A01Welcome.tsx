@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import type { SessionState } from "@/types/session";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
@@ -40,23 +40,6 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
   const isMobile = useIsMobile();
   const isHighContrast = theme === "high-contrast";
 
-  const [titleNumber, setTitleNumber] = useState(0);
-  const titles = useMemo(
-    () => ["clear", "useful", "brief", "honest", "helpful"],
-    []
-  );
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (titleNumber === titles.length - 1) {
-        setTitleNumber(0);
-      } else {
-        setTitleNumber(titleNumber + 1);
-      }
-    }, 2000);
-    return () => clearTimeout(timeoutId);
-  }, [titleNumber, titles]);
-
   const backgroundAssets = (
     <div className="absolute inset-0 pointer-events-none overflow-hidden theme-graphic">
       <div
@@ -65,36 +48,12 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
       />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(99,102,241,0.04),transparent_60%)]" />
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.05, scale: [1, 1.02, 1] }}
-        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-        className="absolute inset-0"
-      >
-        <img src="/images/forensic_hud.png" alt="" className="w-full h-full object-cover mix-blend-screen opacity-20 grayscale" />
-      </motion.div>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.5, x: 200 }}
-        animate={{ opacity: 0.12, scale: 0.7, x: 0, y: [0, -15, 0] }}
-        transition={{ duration: 2, y: { duration: 12, repeat: Infinity, ease: "easeInOut" } }}
-        className="absolute top-[2%] -right-48 w-[500px] h-[500px]"
-      >
-        <img src="/images/inspection_drone.png" alt="" className="w-full h-full object-contain mix-blend-screen opacity-80" />
-      </motion.div>
-      <motion.div
         initial={{ opacity: 0, x: -300 }}
         animate={{ opacity: 0.1, x: 0 }}
         transition={{ duration: 1.5, delay: 0.5 }}
         className="absolute -bottom-20 -left-64 w-[700px] h-[700px]"
       >
         <img src="/images/rapid_response.png" alt="" className="w-full h-full object-contain mix-blend-screen opacity-70" />
-      </motion.div>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.7, x: -200 }}
-        animate={{ opacity: 0.08, scale: 0.75, x: 0, y: [0, -10, 0] }}
-        transition={{ duration: 2, y: { duration: 15, repeat: Infinity, ease: "easeInOut" } }}
-        className="absolute top-[30%] -left-48 w-[450px] h-[450px]"
-      >
-        <img src="/images/holographic_home.png" alt="" className="w-full h-full object-contain mix-blend-screen opacity-80" />
       </motion.div>
     </div>
   );
@@ -117,9 +76,9 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
           </div>
           <div>
-            <p className="font-body font-medium text-[var(--tx1)] text-lg tracking-wide">No commitment required.</p>
+            <p className="font-body font-medium text-[var(--tx1)] text-lg tracking-wide">No decision required.</p>
             <p className="font-body font-light text-[var(--tx3)] text-sm mt-1.5 leading-relaxed max-w-lg">
-              Nothing here is binding. This is simply to help you understand the review before your rep returns.
+              Nothing here commits you to anything. It simply helps you understand the review before your rep returns.
             </p>
           </div>
         </div>
@@ -129,9 +88,9 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
           </div>
           <div>
-            <p className="font-body font-medium text-[var(--tx1)] text-lg tracking-wide">About 7 to 9 minutes at your pace.</p>
+            <p className="font-body font-medium text-[var(--tx1)] text-lg tracking-wide">About 5 to 7 minutes at your pace.</p>
             <p className="font-body font-light text-[var(--tx3)] text-sm mt-1.5 leading-relaxed max-w-lg">
-              Your rep will return when the exterior review is complete. Take your time.
+              You can move through the basics now or wait for the live review. Either works.
             </p>
           </div>
         </div>
@@ -149,7 +108,7 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
           }`}
         >
           <div className="flex items-center justify-center gap-3">
-            <span className="text-lg font-display font-semibold tracking-tight">Start My Review</span>
+            <span className="text-lg font-display font-semibold tracking-tight">Start My Brief Review</span>
             <ArrowRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
           </div>
         </StarButton>
@@ -164,7 +123,7 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
           className="text-sm font-body text-[var(--tx3)] hover:text-[var(--tx1)] transition-colors duration-300"
           onClick={onSkip}
         >
-          I prefer to wait for the live review
+          I will wait for the live review
         </button>
       </div>
     </>
@@ -185,31 +144,17 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
               <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
               <p className="text-[10px] font-mono text-[var(--tx3)] uppercase tracking-[0.2em] pt-0.5">Client Portal Active</p>
             </div>
-            <h1 className="font-display font-medium text-[var(--tx1)] text-4xl leading-[1.1] tracking-tight">
+            <h1 className="font-display font-medium text-[var(--tx1)] text-3xl leading-[1.15] tracking-tight px-2">
               {name ? (
                 <><span className="text-[var(--tx3)]">Hello,</span> {name.split(" ")[0]}.<br /></>
               ) : null}
-              <span>Let&rsquo;s have a </span>
-              <span className="relative inline-block overflow-hidden align-bottom" style={{ minWidth: "7ch" }}>
-                <span className="opacity-0 pointer-events-none select-none">brief</span>
-                {titles.map((title, index) => (
-                  <motion.span
-                    key={index}
-                    className="absolute inset-0 flex items-center justify-center font-semibold text-[var(--tx1)] whitespace-nowrap"
-                    initial={{ opacity: 0, y: "100%" }}
-                    transition={{ type: "spring", stiffness: 80, damping: 18 }}
-                    animate={
-                      titleNumber === index
-                        ? { y: 0, opacity: 1 }
-                        : { y: titleNumber > index ? "-150%" : "150%", opacity: 0 }
-                    }
-                  >
-                    {title}
-                  </motion.span>
-                ))}
-              </span>
-              <span> review.</span>
+              <span>While we inspect outside,</span>
+              <br />
+              <span className="font-semibold">here is what to expect.</span>
             </h1>
+            <p className="text-sm text-[var(--tx3)] font-light leading-relaxed max-w-sm mx-auto px-2">
+              This brief review helps you understand what we check, how we organize findings, and what your rep will review when they return.
+            </p>
           </div>
 
           {/* Card */}
@@ -243,30 +188,16 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
               <h1 className="font-display font-medium text-[var(--tx1)] text-5xl md:text-8xl leading-[1.1] tracking-tight max-w-6xl mx-auto">
                 {name ? (
                   <><span className="text-[var(--tx3)]">Hello,</span> {name.split(" ")[0]}.<br /></>
-                ) : "Welcome.\n"}
-                <div className="flex flex-col md:flex-row justify-center items-center md:items-baseline gap-x-4 py-8">
-                  <span className="text-[var(--tx1)] whitespace-nowrap">Let&rsquo;s have a </span>
-                  <span className="relative inline-flex items-baseline overflow-hidden min-w-[300px] md:min-w-[420px]">
-                    <span className="opacity-0 pointer-events-none select-none pb-2">review</span>
-                    {titles.map((title, index) => (
-                      <motion.div
-                        key={index}
-                        className="absolute inset-0 flex items-center justify-center font-semibold text-[var(--tx1)] whitespace-nowrap pb-2"
-                        initial={{ opacity: 0, y: "100%" }}
-                        transition={{ type: "spring", stiffness: 80, damping: 18 }}
-                        animate={
-                          titleNumber === index
-                            ? { y: 0, opacity: 1 }
-                            : { y: titleNumber > index ? "-150%" : "150%", opacity: 0 }
-                        }
-                      >
-                        {title}
-                      </motion.div>
-                    ))}
-                  </span>
-                  <span className="text-[var(--tx1)] whitespace-nowrap">review.</span>
+                ) : null}
+                <div className="py-4 leading-[1.15]">
+                  <span className="text-[var(--tx1)]">While we inspect outside,</span>
+                  <br />
+                  <span className="font-semibold text-[var(--tx1)]">here is what to expect.</span>
                 </div>
               </h1>
+              <p className="text-xl text-[var(--tx3)] font-light max-w-2xl mx-auto leading-relaxed">
+                This brief review helps you understand what we check, how we organize findings, and what your rep will review when they return.
+              </p>
             </div>
           }
         >
@@ -279,9 +210,9 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
                 </div>
                 <div>
-                  <p className="font-body font-medium text-[var(--tx1)] text-xl tracking-wide">No commitment required.</p>
+                  <p className="font-body font-medium text-[var(--tx1)] text-xl tracking-wide">No decision required.</p>
                   <p className="font-body font-light text-[var(--tx3)] text-base mt-2 leading-relaxed max-w-lg">
-                    Nothing here is binding. This is simply to help you understand the review before your rep returns.
+                    Nothing here commits you to anything. It simply helps you understand the review before your rep returns.
                   </p>
                 </div>
               </div>
@@ -291,9 +222,9 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
                 </div>
                 <div>
-                  <p className="font-body font-medium text-[var(--tx1)] text-xl tracking-wide">About 7 to 9 minutes at your pace.</p>
+                  <p className="font-body font-medium text-[var(--tx1)] text-xl tracking-wide">About 5 to 7 minutes at your pace.</p>
                   <p className="font-body font-light text-[var(--tx3)] text-base mt-2 leading-relaxed max-w-lg">
-                    Your rep will return when the exterior review is complete. Take your time.
+                    You can move through the basics now or wait for the live review. Either works.
                   </p>
                 </div>
               </div>
@@ -310,7 +241,7 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
                 }`}
               >
                 <div className="flex items-center justify-center gap-4">
-                  <span className="text-xl font-display font-semibold tracking-tight">Start My Review</span>
+                  <span className="text-xl font-display font-semibold tracking-tight">Start My Brief Review</span>
                   <ArrowRight className="w-6 h-6 text-indigo-400 group-hover:translate-x-1 transition-transform" />
                 </div>
               </StarButton>
@@ -325,7 +256,7 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
                 className="text-sm font-body text-[var(--tx3)] hover:text-[var(--tx1)] transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-px after:bg-white/20 after:origin-bottom-right after:scale-x-0 hover:after:origin-bottom-left hover:after:scale-x-100 after:transition-transform after:duration-300 mt-2"
                 onClick={onSkip}
               >
-                I prefer to wait for the live review
+                I will wait for the live review
               </button>
             </div>
           </div>

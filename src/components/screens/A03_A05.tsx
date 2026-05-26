@@ -1,29 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { SessionState } from "@/types/session";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { StarButton } from "@/components/ui/star-button";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   AlertTriangle,
+  AlertCircle,
   Search,
   Eye,
   ArrowLeft,
-  ArrowRight,
   ChevronRight,
   Camera,
   ClipboardCheck,
   Hammer,
   CreditCard,
   ShieldCheck,
+  ShieldAlert,
   LayoutGrid,
   CheckCircle2,
+  Package,
+  Wrench,
 } from "lucide-react";
+import React from "react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/ThemeProvider";
 
-import { TestimonialsSection } from "@/components/ui/testimonial-v2";
 import { Logos3 } from "@/components/ui/logos3";
 
 interface Props {
@@ -143,6 +146,34 @@ function getCategoryStyles(color: "rose" | "indigo" | "amber", isActive: boolean
   }
 }
 
+const TESTIMONIALS = [
+  "They showed us the photos first, then explained what mattered and what could wait.",
+  "The review was clear, local, and easy to understand.",
+  "The findings were organized by category, which made the decision easier.",
+];
+
+function RotatingTestimonial() {
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setIndex(i => (i + 1) % TESTIMONIALS.length), 4500);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <AnimatePresence mode="wait">
+      <motion.p
+        key={index}
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -6 }}
+        transition={{ duration: 0.4 }}
+        className="text-base md:text-lg text-[var(--tx2)] font-light leading-relaxed italic"
+      >
+        &ldquo;{TESTIMONIALS[index]}&rdquo;
+      </motion.p>
+    </AnimatePresence>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // A03 - What We Inspect
 // ─────────────────────────────────────────────────────────────────────────────
@@ -156,21 +187,6 @@ export function A03WhatWeInspect({ onNext, onBack }: Props) {
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[var(--bg-base)] selection:bg-indigo-500/30 selection:text-[var(--tx1)]">
       <div className="absolute inset-0 pointer-events-none overflow-hidden theme-graphic">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.08),transparent_70%)]" />
-        <motion.div
-          animate={{ opacity: [0.05, 0.1, 0.05], scale: [1, 1.05, 1] }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0"
-        >
-          <img src="/images/forensic_hud.png" alt="" className="w-full h-full object-cover mix-blend-screen opacity-30 grayscale" />
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8, x: 100 }}
-          animate={{ opacity: 0.2, scale: 1, x: 0, y: [0, -15, 0] }}
-          transition={{ duration: 2, y: { duration: 8, repeat: Infinity, ease: "easeInOut" } }}
-          className="absolute top-[5%] -right-20 w-[600px] h-[600px]"
-        >
-          <img src="/images/inspection_drone.png" alt="" className="w-full h-full object-contain mix-blend-screen opacity-90" />
-        </motion.div>
         <motion.div
           initial={{ opacity: 0, x: -200 }}
           animate={{ opacity: 0.15, x: 0 }}
@@ -276,11 +292,12 @@ export function A03WhatWeInspect({ onNext, onBack }: Props) {
             </p>
           </motion.div>
 
-          <div className="pt-6">
-            <TestimonialsSection />
-          </div>
-          <div className="pt-4">
-            <Logos3 heading="Certified installers for trusted manufacturers" />
+          <div className="bg-[var(--bg-subtle)] border border-[var(--border-color)] p-6 md:p-8 rounded-[40px] space-y-3">
+            <p className="text-[10px] font-mono text-[var(--tx4)] uppercase tracking-widest">What homeowners appreciate</p>
+            <RotatingTestimonial />
+            <p className="text-xs text-[var(--tx3)] font-light leading-relaxed">
+              Your review may result in no action, monitor-only, repair, documentation for carrier review, or a written scope. We will only recommend what the evidence supports.
+            </p>
           </div>
         </div>
       </div>
@@ -323,8 +340,8 @@ const CATEGORIES = [
   },
   {
     icon: Search,
-    label: "Storm-Related Damage",
-    description: "Documented conditions consistent with hail or wind impact. Your carrier and policy determine coverage.",
+    label: "Storm Related Conditions",
+    description: "Documented conditions that may be consistent with hail or wind impact. Your carrier determines coverage.",
     color: "indigo" as const,
     detail: "Hail and wind impacts documented with photos, measurements, and timestamps. This supports a carrier review when applicable.",
     examples: ["Hail bruising", "Wind-lifted edges", "Missing shingles"],
@@ -372,24 +389,15 @@ function getStepStyles(isActive: boolean, theme: string) {
 // A04 - How Findings Are Sorted
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function A04HowFindingsSorted({ session, onUpdate, onNext, onBack }: Props) {
-  const [currentStep, setCurrentStep] = useState(0);
+export function A04HowFindingsSorted({ onNext, onBack }: Props) {
   const { theme } = useTheme();
   const isHighContrast = theme === "high-contrast";
 
   return (
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[var(--bg-base)]">
       <div className="absolute inset-0 pointer-events-none overflow-hidden theme-graphic">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.8, x: -100 }}
-          animate={{ opacity: 0.08, scale: 1, x: 0, y: [0, -20, 0] }}
-          transition={{ duration: 2, y: { duration: 10, repeat: Infinity, ease: "easeInOut" } }}
-          className="absolute top-[10%] -left-20 w-[500px] h-[500px]"
-        >
-          <img src="/images/inspection_drone.png" alt="" className="w-full h-full object-contain mix-blend-screen opacity-70" />
-        </motion.div>
-
-        <motion.div 
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.04),transparent_70%)]" />
+        <motion.div
           initial={{ opacity: 0, x: 200 }}
           animate={{ opacity: 0.1, x: 0 }}
           transition={{ duration: 1.5 }}
@@ -414,57 +422,65 @@ export function A04HowFindingsSorted({ session, onUpdate, onNext, onBack }: Prop
         <div className="max-w-4xl mx-auto space-y-16">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <h1 className="text-3xl md:text-6xl lg:text-8xl font-display font-medium text-[var(--tx1)] tracking-tight leading-[1.05]">
-              When your rep returns,
+              When your rep returns, you will
               <br />
-              <span className="text-[var(--tx1)]">here is the sequence.</span>
+              <span className="text-[var(--tx1)]">review the evidence together.</span>
             </h1>
-            <p className="text-xl text-[var(--tx3)] font-light leading-relaxed mt-8 max-w-2xl">No surprises. No pressure. Just a structured review of what was actually documented at your home.</p>
+            <p className="text-xl text-[var(--tx3)] font-light leading-relaxed mt-8 max-w-2xl">No surprises. No pressure. Just a structured review of what was documented at your home.</p>
           </motion.div>
 
-          <div className="relative space-y-4">
+          <div className="space-y-4">
             {STEPS.map((step, i) => {
-              const styles = getStepStyles(i <= currentStep, theme);
-              const isCurrent = i === currentStep;
+              const styles = getStepStyles(true, theme);
               return (
-                <AnimatePresence key={i}>
-                  {i <= currentStep && (
-                    <motion.div 
-                      initial={{ opacity: 0, x: -20, height: 0 }}
-                      animate={{ opacity: 1, x: 0, height: "auto" }}
-                      transition={{ duration: 0.4 }}
-                      className={cn(
-                        "group flex items-start gap-8 backdrop-blur-xl p-8 rounded-[32px] border transition-all duration-500 cursor-pointer",
-                        styles.card
-                      )}
-                      onClick={() => {
-                        if (isCurrent && currentStep < STEPS.length - 1) {
-                          setCurrentStep(prev => prev + 1);
-                        }
-                      }}
-                    >
-                      <div className="flex flex-col items-center mt-1">
-                        <div className={cn(
-                          "w-10 h-10 rounded-full border flex items-center justify-center font-mono text-sm shrink-0 transition-colors",
-                          styles.badge
-                        )}>
-                          {i < currentStep ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : `0${i + 1}`}
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className={cn("text-xl font-display font-medium mb-2", styles.titleText)}>{step.title}</h3>
-                        <p className={cn("text-base font-light leading-relaxed", styles.descText)}>{step.detail}</p>
-                        
-                        {isCurrent && currentStep < STEPS.length - 1 && (
-                           <div className="mt-4 flex items-center gap-2 text-indigo-500 dark:text-indigo-400 text-xs font-mono uppercase tracking-widest animate-pulse">
-                             Tap to reveal next step <ChevronRight className="w-3 h-3" />
-                           </div>
-                        )}
-                      </div>
-                    </motion.div>
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: i * 0.08 }}
+                  className={cn(
+                    "flex items-start gap-8 backdrop-blur-xl p-8 rounded-[32px] border",
+                    styles.card
                   )}
-                </AnimatePresence>
+                >
+                  <div className={cn(
+                    "w-10 h-10 rounded-full border flex items-center justify-center font-mono text-sm shrink-0 mt-1",
+                    styles.badge
+                  )}>
+                    {`0${i + 1}`}
+                  </div>
+                  <div>
+                    <h3 className={cn("text-xl font-display font-medium mb-2", styles.titleText)}>{step.title}</h3>
+                    <p className={cn("text-base font-light leading-relaxed", styles.descText)}>{step.detail}</p>
+                  </div>
+                </motion.div>
               );
             })}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {INCLUDED_ITEMS.map((item, i) => (
+              <motion.div
+                key={item.label}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 + i * 0.07 }}
+                className="flex items-start gap-4 bg-[var(--bg-surface)] border border-[var(--border-color)] p-6 rounded-[24px]"
+              >
+                <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-display font-medium text-[var(--tx1)] mb-1">Included: {item.label}</p>
+                  <p className="text-xs text-[var(--tx3)] font-light leading-relaxed">{item.detail}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="bg-[var(--bg-subtle)] border border-[var(--border-color)] p-8 rounded-[32px] flex items-start gap-4">
+            <ChevronRight className="w-5 h-5 text-indigo-500 dark:text-indigo-400 shrink-0 mt-0.5" />
+            <p className="text-base text-[var(--tx3)] font-light leading-relaxed">
+              If another decision-maker is not present, we can provide a shareable summary before anything moves forward.
+            </p>
           </div>
         </div>
       </div>
@@ -498,9 +514,16 @@ export function A04HowFindingsSorted({ session, onUpdate, onNext, onBack }: Prop
 
 const STEPS = [
   { title: "Photos first", detail: "Your rep starts with actual photos from your property." },
-  { title: "Findings by category", detail: "Items are separated into urgent protection, storm-related damage, and monitor-only." },
+  { title: "Findings by category", detail: "Items are separated into urgent protection, storm-related conditions, and monitor-only." },
   { title: "Recommended next step", detail: "Your rep explains the recommended path and why it fits the evidence." },
   { title: "Questions before decisions", detail: "You can ask questions before any next step is considered." },
+];
+
+const INCLUDED_ITEMS: { label: string; detail: string }[] = [
+  { label: "Aerial Review", detail: "High-resolution exterior photos help document conditions that are difficult to see from the ground." },
+  { label: "Technical Labels", detail: "Findings are organized by location, category, and recommended next step." },
+  { label: "Digital File", detail: "Your photos and summary can be saved for future reference." },
+  { label: "Shareable Summary", detail: "Useful when a spouse, co-owner, HOA, or carrier needs a clear recap." },
 ];
 
 // Helper to get clarity styles dynamically based on theme
@@ -533,7 +556,8 @@ function getClarityStyles(isActive: boolean, theme: string) {
 // A05 - Insurance Clarity
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function A05InsuranceClarity({ session, onUpdate, onNext, onBack }: Props) {
+export function A05InsuranceClarity({ onNext, onBack }: Props) {
+  const [activeTab, setActiveTab] = useState<"insurance" | "warranty">("insurance");
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const { theme } = useTheme();
   const isHighContrast = theme === "high-contrast";
@@ -546,22 +570,7 @@ export function A05InsuranceClarity({ session, onUpdate, onNext, onBack }: Props
       <div className="absolute inset-0 pointer-events-none overflow-hidden theme-graphic">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.08),transparent_70%)]" />
 
-        <motion.div 
-          animate={{ opacity: [0.05, 0.1, 0.05], scale: [1, 1.03, 1] }}
-          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0"
-        >
-          <img src="/images/forensic_hud.png" alt="" className="w-full h-full object-cover mix-blend-screen opacity-30 grayscale" />
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.18, y: [0, -30, 0] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-10 left-[-5%] w-[600px] h-[600px]"
-        >
-          <img src="/images/thermal_scan.png" alt="" className="w-full h-full object-contain mix-blend-screen opacity-80 grayscale" />
-        </motion.div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(99,102,241,0.04),transparent_70%)]" />
 
         <motion.div 
           initial={{ opacity: 0, x: 200 }}
@@ -585,80 +594,108 @@ export function A05InsuranceClarity({ session, onUpdate, onNext, onBack }: Props
       </div>
 
       <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56 min-h-0">
-        <div className="max-w-5xl mx-auto space-y-16">
+        <div className="max-w-5xl mx-auto space-y-10">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <h1 className="text-3xl md:text-6xl lg:text-8xl font-display font-medium text-[var(--tx1)] tracking-tight leading-[1.05]">
-              Insurance basics
+              Insurance and warranty basics
               <br />
               <span className="text-[var(--tx1)]">before the review.</span>
             </h1>
-            <p className="text-xl text-[var(--tx3)] font-light leading-relaxed mt-8 max-w-2xl">A few simple boundaries help keep the conversation clear.</p>
+            <p className="text-xl text-[var(--tx3)] font-light leading-relaxed max-w-2xl">A few simple boundaries help keep the conversation clear.</p>
           </motion.div>
 
-          <div className="space-y-4">
-            {CLARITY_ITEMS.map((item, i) => {
-              const styles = getClarityStyles(expandedIndex === i, theme);
-              const isExpanded = expandedIndex === i;
-              return (
-                <motion.div 
-                  key={item.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  onClick={() => setExpandedIndex(isExpanded ? null : i)}
-                  className={cn(
-                    "group relative backdrop-blur-xl p-6 md:p-8 rounded-[32px] border transition-all duration-500 cursor-pointer overflow-hidden",
-                    styles.card
-                  )}
-                >
-                  <div className="flex items-center gap-6">
-                    <div className={cn(
-                      "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors",
-                      styles.icon
-                    )}>
-                      <item.icon className="w-6 h-6" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className={cn("text-xl font-display font-medium tracking-tight", styles.titleText)}>{item.title}</h3>
-                    </div>
-                    <div className="shrink-0">
-                      <ChevronRight className={cn("w-5 h-5 text-[#567090] transition-transform duration-300", isExpanded ? "rotate-90 text-indigo-500" : "")} />
-                    </div>
-                  </div>
+          {/* Tab switcher */}
+          <div className="flex gap-2">
+            {(["insurance", "warranty"] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => { setActiveTab(tab); setExpandedIndex(null); }}
+                className={cn(
+                  "px-6 py-3 rounded-full text-sm font-display font-medium transition-all duration-300 border",
+                  activeTab === tab
+                    ? (isHighContrast ? "bg-black text-white border-black" : "bg-[var(--bg-surface)] border-indigo-500/50 text-[var(--tx1)] shadow-sm")
+                    : "bg-transparent border-[var(--border-color)] text-[var(--tx3)] hover:text-[var(--tx1)] hover:border-[var(--tx3)]"
+                )}
+              >
+                {tab === "insurance" ? "Insurance Basics" : "Warranty Basics"}
+              </button>
+            ))}
+          </div>
 
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <div className="mt-6 pt-6 border-t border-[var(--border-color)] md:pl-[72px]">
-                          <p className={cn("text-base font-light leading-relaxed", styles.descText)}>{item.detail}</p>
+          <AnimatePresence mode="wait">
+            {activeTab === "insurance" ? (
+              <motion.div key="insurance" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }} className="space-y-4">
+                {CLARITY_ITEMS.map((item, i) => {
+                  const styles = getClarityStyles(expandedIndex === i, theme);
+                  const isExpanded = expandedIndex === i;
+                  return (
+                    <motion.div
+                      key={item.title}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.07 }}
+                      onClick={() => setExpandedIndex(isExpanded ? null : i)}
+                      className={cn("group relative backdrop-blur-xl p-6 md:p-8 rounded-[32px] border transition-all duration-500 cursor-pointer overflow-hidden", styles.card)}
+                    >
+                      <div className="flex items-center gap-6">
+                        <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors", styles.icon)}>
+                          <item.icon className="w-6 h-6" />
                         </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              );
-            })}
-          </div>
-
-          <div className="bg-[var(--bg-subtle)] border border-[var(--border-color)] p-10 rounded-[40px]">
-            <div className="flex items-start gap-4">
-              <ShieldCheck className="w-6 h-6 text-indigo-500 dark:text-indigo-400 shrink-0 mt-1" />
-              <p className="text-base text-[var(--tx2)] font-light leading-relaxed">
-                <span className="text-[var(--tx1)] font-medium">Note: </span>
-                Hustad can document conditions and coordinate with your permission. We cannot decide coverage, waive deductibles, or change policy terms.
-              </p>
-            </div>
-          </div>
-
-          {/* Trusted Partners Logo Bar */}
-          <div className="pt-10 pb-20">
-            <Logos3 heading="Certified installers for trusted manufacturers" />
-          </div>
+                        <div className="flex-1">
+                          <h3 className={cn("text-xl font-display font-medium tracking-tight", styles.titleText)}>{item.title}</h3>
+                        </div>
+                        <ChevronRight className={cn("w-5 h-5 text-[#567090] transition-transform duration-300 shrink-0", isExpanded ? "rotate-90 text-indigo-500" : "")} />
+                      </div>
+                      <AnimatePresence>
+                        {isExpanded && (
+                          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }}>
+                            <div className="mt-6 pt-6 border-t border-[var(--border-color)] md:pl-[72px]">
+                              <p className={cn("text-base font-light leading-relaxed", styles.descText)}>{item.detail}</p>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  );
+                })}
+                <div className="bg-[var(--bg-subtle)] border border-[var(--border-color)] p-8 rounded-[32px]">
+                  <div className="flex items-start gap-4">
+                    <ShieldCheck className="w-6 h-6 text-indigo-500 dark:text-indigo-400 shrink-0 mt-1" />
+                    <p className="text-base text-[var(--tx2)] font-light leading-relaxed">
+                      <span className="text-[var(--tx1)] font-medium">Note: </span>
+                      Hustad can document conditions and coordinate with your permission. We cannot decide coverage, waive deductibles, or change policy terms.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div key="warranty" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }} className="space-y-4">
+                {WARRANTY_ITEMS.map((item, i) => (
+                  <motion.div
+                    key={item.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.07 }}
+                    className="group bg-[var(--bg-surface)] backdrop-blur-xl p-6 md:p-8 rounded-[32px] border border-[var(--border-color)] transition-all duration-500"
+                  >
+                    <div className="flex items-start gap-6">
+                      <div className="w-12 h-12 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] flex items-center justify-center shrink-0">
+                        <item.icon className="w-6 h-6 text-[var(--tx3)] group-hover:text-[var(--tx1)] transition-colors" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-display font-medium text-[var(--tx1)] mb-2 tracking-tight">{item.title}</h3>
+                        <p className="text-base text-[var(--tx3)] font-light leading-relaxed group-hover:text-[var(--tx2)] transition-colors">{item.detail}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+                <div className="pt-4 pb-8">
+                  <Logos3 heading="Certified installers for trusted manufacturers" />
+                  <p className="text-xs text-[var(--tx4)] font-light text-center mt-3">Manufacturer credentials and warranty options are verified before final proposal presentation.</p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
@@ -693,21 +730,44 @@ const CLARITY_ITEMS = [
   {
     icon: Camera,
     title: "Documentation protects your options.",
-    detail: "Timely photos and notes help preserve what was found and when it was found.",
+    detail: "Photos, dates, and notes help create a clear record of what was found and when it was found.",
   },
   {
     icon: ClipboardCheck,
     title: "Coverage decisions belong to your carrier.",
-    detail: "Your policy and adjuster determine coverage. Hustad cannot promise claim approval or payment.",
+    detail: "Hustad can document conditions and explain what was observed. Your insurance carrier determines coverage based on your policy.",
   },
   {
     icon: Hammer,
     title: "Contractor choice belongs to you.",
-    detail: "Opening a claim does not require you to use a specific contractor.",
+    detail: "You decide who performs the work after you understand the findings and your options.",
   },
   {
     icon: CreditCard,
-    title: "Deductibles are your responsibility.",
-    detail: "Your deductible is the portion of an approved loss you are responsible for under your policy.",
+    title: "Deductibles and policy terms are your responsibility.",
+    detail: "We cannot waive deductibles, change policy terms, or decide what your carrier will pay.",
+  },
+];
+
+const WARRANTY_ITEMS: { icon: React.ElementType; title: string; detail: string }[] = [
+  {
+    icon: Package,
+    title: "Manufacturer Warranty",
+    detail: "Covers eligible defects in roofing materials. Terms vary by product and manufacturer.",
+  },
+  {
+    icon: Wrench,
+    title: "Workmanship Warranty",
+    detail: "Covers eligible installation workmanship issues. This is separate from manufacturer coverage and does not cover storm damage.",
+  },
+  {
+    icon: ShieldAlert,
+    title: "Enhanced Manufacturer Warranty Options",
+    detail: "Because Hustad installs approved systems through certified installer programs, some projects may qualify for enhanced or extended manufacturer warranty coverage. Eligibility depends on the selected system, required components, registration, and manufacturer approval.",
+  },
+  {
+    icon: AlertCircle,
+    title: "Impact Resistant Products",
+    detail: "Class 3 and Class 4 ratings are laboratory classifications. They may reduce risk, but they do not make a roof hail-proof or guarantee that future storm damage will not occur.",
   },
 ];

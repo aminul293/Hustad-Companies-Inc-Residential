@@ -28,6 +28,9 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
   const [signerName, setSignerName] = useState(session.signatureData.signerName || session.property.homeownerPrimaryName);
   const [signerEmail, setSignerEmail] = useState(session.signatureData.signerEmail || session.property.homeownerPrimaryEmail);
   const [deferEmail, setDeferEmail] = useState(session.signatureData.summarySendRecipient || session.buyerData.decisionMakerEmail);
+  const [deferReason, setDeferReason] = useState(session.signatureData.deferralReason || "");
+  const [deferFollowUpDate, setDeferFollowUpDate] = useState(session.signatureData.deferralFollowUpDate || "");
+  const [deferFollowUpTime, setDeferFollowUpTime] = useState(session.signatureData.deferralFollowUpTime || "");
   const [signed, setSigned] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -39,6 +42,9 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
       if (!signed) e.sig = "Signature required.";
     } else if (mode === "defer") {
       if (!deferEmail.trim()) e.deferEmail = "Delivery email required.";
+      if (!deferReason) e.deferReason = "Please select a reason.";
+      if (!deferFollowUpDate) e.deferDate = "Follow-up date required.";
+      if (!deferFollowUpTime) e.deferTime = "Follow-up time required.";
     } else {
       e.mode = "Choose a path.";
     }
@@ -65,9 +71,15 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
       updated = {
         ...updated,
         sessionStatus: "deferred",
-        signatureData: { ...updated.signatureData, summarySendRecipient: deferEmail },
+        signatureData: { 
+          ...updated.signatureData, 
+          summarySendRecipient: deferEmail,
+          deferralReason: deferReason,
+          deferralFollowUpDate: deferFollowUpDate,
+          deferralFollowUpTime: deferFollowUpTime
+        },
       };
-      updated = addAuditEvent(updated, "summary_sent", { recipient: deferEmail, token: updated.reviewToken });
+      updated = addAuditEvent(updated, "summary_sent", { recipient: deferEmail, token: updated.reviewToken, reason: deferReason, followUp: `${deferFollowUpDate} ${deferFollowUpTime}` });
       
       // Stage for Cloud Relay
       try {
@@ -169,10 +181,49 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="max-w-md mx-auto text-left space-y-4">
                 <div className="space-y-2">
                   <p className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-widest pl-2">Recipient Email</p>
-                  <input className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 px-6 text-[#E8EDF8] placeholder:text-[#7090B0] outline-none focus:border-indigo-500/50" type="email" value={deferEmail} onChange={(e) => setDeferEmail(e.target.value)} placeholder="Decision maker's email" />
+                  <input className={cn("w-full bg-white/[0.04] border rounded-2xl py-4 px-6 text-[#E8EDF8] placeholder:text-[#7090B0] outline-none focus:border-indigo-500/50", errors.deferEmail ? "border-rose-500/50" : "border-white/[0.1]")} type="email" value={deferEmail} onChange={(e) => setDeferEmail(e.target.value)} placeholder="Decision maker's email" />
                 </div>
-                <div className="p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/10 flex items-start gap-3">
-                  <Info className="w-4 h-4 text-indigo-400 mt-1" />
+                
+                <div className="space-y-2">
+                  <p className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-widest pl-2">What needs to be reviewed?</p>
+                  <select 
+                    value={deferReason} 
+                    onChange={(e) => setDeferReason(e.target.value)}
+                    className={cn("w-full bg-white/[0.04] border rounded-2xl py-4 px-6 text-[#E8EDF8] outline-none focus:border-indigo-500/50 appearance-none", errors.deferReason ? "border-rose-500/50" : "border-white/[0.1]")}
+                  >
+                    <option value="" disabled className="text-[#7090B0]">Select reason...</option>
+                    <option value="spouse_coowner" className="bg-[#060606] text-[#E8EDF8]">Spouse/Co-owner review</option>
+                    <option value="deductible" className="bg-[#060606] text-[#E8EDF8]">Deductible question</option>
+                    <option value="compare_options" className="bg-[#060606] text-[#E8EDF8]">Compare repair vs claim review</option>
+                    <option value="timing" className="bg-[#060606] text-[#E8EDF8]">Timing constraints</option>
+                    <option value="agreement_review" className="bg-[#060606] text-[#E8EDF8]">Agreement review</option>
+                    <option value="other" className="bg-[#060606] text-[#E8EDF8]">Other</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-widest pl-2">Follow-up Date</p>
+                    <input 
+                      type="date" 
+                      value={deferFollowUpDate} 
+                      onChange={(e) => setDeferFollowUpDate(e.target.value)}
+                      className={cn("w-full bg-white/[0.04] border rounded-2xl py-4 px-6 text-[#E8EDF8] outline-none focus:border-indigo-500/50", errors.deferDate ? "border-rose-500/50" : "border-white/[0.1]")}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-widest pl-2">Time</p>
+                    <input 
+                      type="time" 
+                      value={deferFollowUpTime} 
+                      onChange={(e) => setDeferFollowUpTime(e.target.value)}
+                      className={cn("w-full bg-white/[0.04] border rounded-2xl py-4 px-6 text-[#E8EDF8] outline-none focus:border-indigo-500/50", errors.deferTime ? "border-rose-500/50" : "border-white/[0.1]")}
+                    />
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/10 flex items-start gap-3 mt-4">
+                  <Info className="w-4 h-4 text-indigo-400 mt-1 shrink-0" />
                   <p className="text-[10px] font-mono text-[#8BA5C5] uppercase tracking-widest leading-relaxed">System will auto-generate a follow-up task for coordination.</p>
                 </div>
               </motion.div>

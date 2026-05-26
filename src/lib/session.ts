@@ -58,6 +58,7 @@ export function createSession(repId: string, repName: string, repEmail = ""): Se
       decisionMakerEmail: "",
       decisionMakerMobile: "",
       buyerQuestions: "",
+      decisionComfort: null,
     },
     findings: {
       outcomeType: null,

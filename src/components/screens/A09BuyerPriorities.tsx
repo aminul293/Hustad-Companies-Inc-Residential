@@ -5,116 +5,23 @@ import type { SessionState, BuyerPriority, InsurerContactStatus } from "@/types/
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { StarButton } from "@/components/ui/star-button";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Shield, 
-  Zap, 
-  ShieldCheck, 
-  FileText, 
-  DollarSign, 
+import {
+  Shield,
+  Zap,
+  ShieldCheck,
+  FileText,
+  DollarSign,
   Waves,
   ArrowLeft,
   ChevronRight,
   UserPlus,
   MessageSquare,
-  Check
+  Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SplineScene } from "@/components/ui/splite";
-import { Card } from "@/components/ui/card";
-import { Spotlight } from "@/components/ui/spotlight";
 import { useTheme } from "@/components/ThemeProvider";
+import type { DecisionComfortOption } from "@/types/session";
 
-function SplineSceneBasic() {
-  const { theme } = useTheme();
-  const isHighContrast = theme === "high-contrast";
-
-  return (
-    <Card className="w-full h-auto md:h-[500px] bg-[var(--bg-surface)] backdrop-blur-3xl relative overflow-hidden border border-[var(--border-color)] rounded-[48px] mb-12">
-      <Spotlight
-        className="-top-40 left-0 md:left-60 md:-top-20 theme-graphic"
-        fill="white"
-      />
-      
-      <div className="flex flex-col md:flex-row h-full">
-        {/* Left content */}
-        <div className="flex-1 p-12 relative z-10 flex flex-col justify-center">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--bg-subtle)] border border-[var(--border-color)] mb-6 w-fit">
-              <span className="text-[10px] font-mono text-indigo-600 dark:text-indigo-300 uppercase tracking-widest">Active Protection System</span>
-            </div>
-            <h1 className="text-3xl md:text-6xl lg:text-8xl font-display font-medium text-[var(--tx1)] tracking-tight leading-[1.05]">
-              What matters <br /> most to you?
-            </h1>
-            <p className="mt-6 text-[var(--tx3)] text-lg font-light max-w-md leading-relaxed">
-              Tell us what matters most. Your rep will focus the live review on the concerns that matter to you.
-            </p>
-          </motion.div>
-        </div>
-
-        {/* Right content: Interactive 3D Robot with Protected Holographic Home */}
-        <div className="flex-1 relative h-[700px] md:h-full min-h-[700px] md:min-h-[500px] group theme-graphic">
-          <div className="absolute inset-0 z-0 overflow-hidden">
-            <SplineScene 
-              scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
-              className="w-full h-full"
-            />
-          </div>
-          
-          {/* Holographic Home & Protection Shield (Definitive Fix) */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ 
-              opacity: [0.8, 1, 0.8],
-              scale: [0.85, 0.9, 0.85],
-              y: [0, -10, 0],
-            }}
-            transition={{ 
-              duration: 5,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            className="absolute top-[55%] left-[12%] md:left-[11%] -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none"
-          >
-            <div className="relative flex items-center justify-center">
-              {/* Primary Energy Shield Shielding the Property */}
-              <div className="absolute inset-0 rounded-full bg-indigo-500/10 border border-indigo-400/30 shadow-[0_0_100px_rgba(129,140,248,0.5)] scale-[2.2] animate-pulse" />
-              
-              <div className="relative w-80 h-80 flex items-center justify-center overflow-hidden">
-                <img 
-                  src="/images/holographic_house.png" 
-                  alt="Hustad Protection Target" 
-                  className="w-full h-full object-contain mix-blend-screen filter hue-rotate-[180deg] brightness-[1.8] contrast-[1.8] saturate-[1.6] drop-shadow-[0_0_50px_rgba(129,140,248,1)]"
-                  style={{
-                    clipPath: 'circle(42% at 50% 50%)',
-                    WebkitClipPath: 'circle(42% at 50% 50%)'
-                  }}
-                />
-              </div>
-              
-              {/* Active Protection Status Label */}
-              <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 px-5 py-2 rounded-full bg-indigo-500/20 border border-indigo-500/40 backdrop-blur-2xl shadow-[0_0_20px_rgba(129,140,248,0.2)]">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_12px_rgba(74,222,128,1)] animate-pulse" />
-                  <span className="text-[10px] font-mono text-indigo-100 uppercase tracking-[0.3em] whitespace-nowrap">Property Fully Protected</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-          
-          {/* Interaction Hint */}
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center gap-3">
-            <Shield className="w-3 h-3 text-indigo-400" />
-            <span className="text-[9px] font-mono text-indigo-300 uppercase tracking-[0.2em]">Hustad is ready to help</span>
-          </div>
-        </div>
-      </div>
-    </Card>
-  );
-}
 
 interface Props {
   session: SessionState;
@@ -135,8 +42,8 @@ const PRIORITIES = [
 type InsurerStatusLocal = "not_yet" | "already_contacted" | "questions_before" | "not_sure";
 
 const INSURER_OPTIONS: { value: InsurerStatusLocal; label: string }[] = [
-  { value: "not_yet", label: "No, waiting for the inspection first" },
-  { value: "already_contacted", label: "Yes, claim already opened" },
+  { value: "not_yet", label: "No, waiting for inspection findings first" },
+  { value: "already_contacted", label: "Yes, a claim has already been opened" },
   { value: "questions_before", label: "I have questions before contacting them" },
   { value: "not_sure", label: "Not sure yet" },
 ];
@@ -145,7 +52,19 @@ const DM_OPTIONS = [
   { val: "just_me", label: "No, just me", anotherPresent: false, relation: "" },
   { val: "spouse_or_co_owner", label: "Yes, spouse or co-owner", anotherPresent: true, relation: "spouse_or_co_owner" },
   { val: "property_manager_or_hoa", label: "Yes, property manager or HOA", anotherPresent: true, relation: "property_manager_or_hoa" },
-  { val: "not_present", label: "Yes, not present today", anotherPresent: true, relation: "not_present" },
+  { val: "not_present", label: "Yes, another decision-maker not here today", anotherPresent: true, relation: "not_present" },
+];
+
+
+
+const COMFORT_OPTIONS: { value: DecisionComfortOption; label: string }[] = [
+  { value: "clear_photos", label: "Seeing clear photos of the condition" },
+  { value: "urgent_vs_monitor", label: "Understanding whether this is urgent or monitor-only" },
+  { value: "insurance_boundaries", label: "Knowing what insurance does and does not decide" },
+  { value: "cost_options", label: "Understanding cost or scope options" },
+  { value: "warranty_coverage", label: "Reviewing warranty coverage" },
+  { value: "spouse_involvement", label: "Involving a spouse or co-owner" },
+  { value: "timeline", label: "Knowing how soon work could be completed" },
 ];
 
 export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props) {
@@ -171,21 +90,25 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
   const [dmVal, setDmVal] = useState<string | null>(getInitialDMVal());
   const [dmName, setDmName] = useState(session.buyerData.decisionMakerName);
   const [dmEmail, setDmEmail] = useState(session.buyerData.decisionMakerEmail);
+  const [decisionComfort, setDecisionComfort] = useState<DecisionComfortOption | null>(session.buyerData.decisionComfort || null);
   const [questions, setQuestions] = useState(session.buyerData.buyerQuestions);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const togglePriority = (p: BuyerPriority) => {
-    setPriorities((prev) =>
-      prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]
-    );
+    setPriorities((prev) => {
+      if (prev.includes(p)) return prev.filter((x) => x !== p);
+      if (prev.length >= 3) return prev;
+      return [...prev, p];
+    });
     setErrors((e) => { const n = { ...e }; delete n.priorities; return n; });
   };
 
   const handleSave = () => {
     const e: Record<string, string> = {};
     if (!priorities.length) e.priorities = "Please select at least one priority.";
-    if (insurerStatus === null) e.insurer = "Please select your insurer contact status.";
-    if (dmVal === null) e.dm = "Please indicate whether another decision-maker is involved.";
+    if (insurerStatus === null) e.insurer = "Please select your insurance status.";
+    if (dmVal === null) e.dm = "Please indicate decision-maker status.";
+    if (decisionComfort === null) e.comfort = "Please let us know what would help you feel comfortable.";
     if (Object.keys(e).length) { setErrors(e); return; }
 
     const selectedDMOption = DM_OPTIONS.find(o => o.val === dmVal);
@@ -203,6 +126,7 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
         decisionMakerName: anotherPresentValue ? dmName : "",
         decisionMakerEmail: anotherPresentValue ? dmEmail : "",
         buyerQuestions: questions,
+        decisionComfort,
       },
     };
     onUpdate(updated);
@@ -216,14 +140,6 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
         {/* Ambient Gradient Lift */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.08),transparent_70%)]" />
 
-        {/* HUD Data Layer */}
-        <motion.div 
-          animate={{ opacity: [0.05, 0.1, 0.05], scale: [1, 1.05, 1] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0"
-        >
-          <img src="/images/forensic_hud.png" alt="" className="w-full h-full object-cover mix-blend-screen opacity-30 grayscale" />
-        </motion.div>
       </div>
 
       {/* Persistent Branding Anchor */}
@@ -245,13 +161,23 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
 
       <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-16 pt-12 pb-56 min-h-0">
         <div className="max-w-4xl mx-auto space-y-16">
-          <SplineSceneBasic />
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--bg-subtle)] border border-[var(--border-color)] w-fit">
+              <span className="text-[10px] font-mono text-indigo-600 dark:text-indigo-300 uppercase tracking-widest">Your priorities</span>
+            </div>
+            <h1 className="text-3xl md:text-6xl lg:text-8xl font-display font-medium text-[var(--tx1)] tracking-tight leading-[1.05]">
+              What matters most today?
+            </h1>
+            <p className="text-xl text-[var(--tx3)] font-light max-w-2xl leading-relaxed">
+              Tell us what to focus on. Your rep will open the live review with your selected priorities and actual photos from your home.
+            </p>
+          </motion.div>
 
           {/* Priorities Section */}
           <div className="space-y-8">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-display font-medium text-[var(--tx2)] uppercase tracking-wider">
-                What matters most to you? <span className="text-indigo-500 dark:text-indigo-400 lowercase">(select all that apply)</span>
+                Select up to 3 priorities.
               </h2>
             </div>
             
@@ -413,6 +339,39 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
                 )}
               </AnimatePresence>
             </div>
+          </div>
+
+          {/* Decision Comfort Section */}
+          <div className="space-y-6">
+            <h2 className="text-lg font-display font-medium text-[var(--tx2)] uppercase tracking-wider">
+              What would help you feel comfortable with the next step today?
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {COMFORT_OPTIONS.map((opt) => {
+                const isSelected = decisionComfort === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => { 
+                      setDecisionComfort(opt.value); 
+                      setErrors((e) => { const n = { ...e }; delete n.comfort; return n; }); 
+                    }}
+                    className={cn(
+                      "w-full px-4 py-4 rounded-2xl border transition-all duration-300 text-center flex items-center justify-center min-h-[58px]",
+                      isSelected 
+                        ? (isHighContrast ? "bg-black text-white border-2 border-black" : "bg-indigo-500/10 border-2 border-indigo-500 text-[var(--tx1)] shadow-xl") 
+                        : "bg-[var(--bg-surface)] border-[var(--border-color)] text-[var(--tx3)] hover:bg-[var(--bg-subtle)]"
+                    )}
+                  >
+                    <span className={cn(
+                      "text-sm font-body leading-tight",
+                      isSelected && isHighContrast ? "text-white" : ""
+                    )}>{opt.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {errors.comfort && <p className="text-sm text-rose-500/80 pl-2">{errors.comfort}</p>}
           </div>
 
           {/* Questions Section */}

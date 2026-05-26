@@ -410,13 +410,8 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
           <img src="/images/holographic_home.png" alt="" className="w-full h-full object-contain mix-blend-screen opacity-70" />
         </motion.div>
       </div>
-      {/* Interactive 3D Spline Background (The Hustad) */}
-      <div className="absolute inset-0 z-0">
-        <SplineScene 
-          scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
-          className="w-full h-full opacity-50 scale-110 translate-x-[15%]"
-        />
-      </div>
+      {/* Background (The Hustad) */}
+      <div className="absolute inset-0 z-0 bg-cover bg-center opacity-20" style={{ backgroundImage: 'url(/images/roofline_bg.jpg)' }} />
 
       <div className="absolute inset-0 bg-gradient-to-r dark:from-[#060606] dark:via-[#060606]/80 from-hustad-cream via-hustad-cream/80 to-transparent z-0 transition-colors duration-300" />
 
@@ -430,7 +425,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
           <ThemeToggle />
           <div className="px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 backdrop-blur-md flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse shadow-[0_0_8px_rgba(129,140,248,0.6)]" />
-            <span className="text-[10px] font-mono uppercase tracking-widest">The Hustad: Online</span>
+            <span className="text-[10px] font-mono uppercase tracking-widest">Field Operations: Online</span>
           </div>
           <div className={cn(
             "px-4 py-1.5 rounded-full border flex items-center gap-2 transition-all duration-500 backdrop-blur-md",
@@ -448,14 +443,14 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
           {/* Launch Area */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-6 w-fit">
-                <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest">Autonomous Property Guardian: ACTIVE</span>
+                <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest">Forensic Inspection System: ACTIVE</span>
               </div>
               <h1 className="text-5xl md:text-7xl font-display font-medium leading-[1.1] tracking-tighter text-[var(--tx1)] dark:bg-clip-text dark:text-transparent dark:bg-gradient-to-b dark:from-neutral-50 dark:to-neutral-400 transition-colors duration-300">
-                Always Ready.<br />
-                <span className="text-indigo-400">Launch Shield.</span>
+                Field Ready.<br />
+                <span className="text-indigo-400">Launch Inspection.</span>
               </h1>
               <p className="mt-6 text-[var(--tx3)] max-w-lg text-lg font-light leading-relaxed transition-colors duration-300">
-                The Hustad stands ready in any condition. From severe storms to routine maintenance, our autonomous system is always ahead, protecting your home from damage and ensuring forensic-grade restoration.
+                Hustad stands ready in any condition. From severe storms to routine maintenance, our field teams are always ahead, protecting your home from damage and ensuring forensic-grade restoration.
               </p>
             </motion.div>
 

@@ -10,12 +10,14 @@ import {
   ShieldCheck,
   CheckCircle2,
   ChevronRight,
+  ChevronDown,
   ArrowLeft,
   AlertTriangle,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getMissingRequiredShots } from "@/lib/inspectionShotList";
-import { CLAIM_TERMS, REPAIR_TERMS, WISCONSIN_CLAIM_NOTICE } from "./constants";
+import { CLAIM_TERMS, REPAIR_TERMS, WISCONSIN_CLAIM_NOTICE, AGREEMENT_SECTIONS } from "./constants";
 
 interface Props {
   session: SessionState;
@@ -26,9 +28,16 @@ interface Props {
 
 export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props) {
   const [claimRelated, setClaimRelated] = useState<boolean | null>(session.pathData.claimRelatedWork);
-  const [acknowledged, setAcknowledged] = useState(session.pathData.agreementAcknowledged);
+  const [acks, setAcks] = useState<boolean[]>([
+    session.pathData.agreementAcknowledged,
+    session.pathData.agreementAcknowledged,
+    session.pathData.agreementAcknowledged,
+    session.pathData.agreementAcknowledged,
+    session.pathData.agreementAcknowledged
+  ]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPhotoWarning, setShowPhotoWarning] = useState(false);
+  const [showAgreement, setShowAgreement] = useState(false);
 
   const missingShots = getMissingRequiredShots(session.photos || []);
   const outcome = session.findings.outcomeType;
@@ -37,7 +46,8 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
   const handleContinue = () => {
     const e: Record<string, string> = {};
     if (isClaimPath && claimRelated === null) e.claim = "Please confirm whether this work is related to an insurance claim.";
-    if (!acknowledged) e.ack = "Please acknowledge the agreement summary.";
+    const allAcknowledged = acks.every(a => a);
+    if (!allAcknowledged) e.ack = "Please check all acknowledgements to proceed.";
     
     // Photo requirement guard
     if (!showPhotoWarning && missingShots.length > 0) {
@@ -53,7 +63,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
       pathData: {
         ...session.pathData,
         claimRelatedWork: claimRelated,
-        agreementAcknowledged: acknowledged,
+        agreementAcknowledged: allAcknowledged,
       },
     };
     onUpdate(updated);
@@ -63,15 +73,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
   return (
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Forensic Inspection Drone - Hovering Background */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 0.08, scale: 1, y: [0, -20, 0] }}
-          transition={{ duration: 2, y: { duration: 10, repeat: Infinity, ease: "easeInOut" } }}
-          className="absolute top-[10%] left-[5%] w-[500px] h-[500px]"
-        >
-          <img src="/images/inspection_drone.png" alt="" className="w-full h-full object-contain mix-blend-screen opacity-70" />
-        </motion.div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(99,102,241,0.04),transparent_70%)]" />
       </div>
 
       <div className="absolute top-10 left-10 z-30 hidden lg:flex flex-col items-start pointer-events-none">
@@ -86,12 +88,12 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-md w-fit mx-auto">
               <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
-              <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-[0.2em] pt-0.5">Authorization Terms</span>
+              <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-[0.2em] pt-0.5">Insurance Contingency Agreement Review</span>
             </div>
-            <h1 className="text-3xl md:text-6xl lg:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
-              Before the signature —
+            <h1 className="text-3xl md:text-5xl lg:text-7xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
+              Review what you are authorizing
               <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">here is what you are authorizing.</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">before you sign.</span>
             </h1>
           </motion.div>
 
@@ -188,24 +190,78 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
                 </section>
               )}
 
-              <button
-                onClick={() => setAcknowledged(!acknowledged)}
-                className={cn(
-                  "flex items-start gap-5 p-8 rounded-[40px] border transition-all duration-500 text-left",
-                  acknowledged ? "bg-white/10 border-white/30" : "bg-white/[0.02] border-white/[0.05] hover:border-white/20"
-                )}
-              >
-                <div className={cn(
-                  "w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 mt-1 transition-all",
-                  acknowledged ? "bg-indigo-500 border-indigo-500" : "border-white/20"
-                )}>
-                  {acknowledged && <CheckCircle2 className="w-4 h-4 text-[#E8EDF8]" />}
-                </div>
-                <p className="text-sm text-[#7090B0] font-light leading-relaxed">
-                  I have read and understood this agreement summary. I understand what I am authorizing and what it does not promise.
-                </p>
-              </button>
+              <div className="space-y-4">
+                <p className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em] pl-2">Required Acknowledgements</p>
+                {[
+                  "I have reviewed the documented inspection findings with my Hustad representative and they reflect the actual conditions found at my property.",
+                  "I understand that authorizing this agreement does not guarantee insurance coverage, claim approval, or any specific payment by my insurer.",
+                  "I understand that my deductible, depreciation holds, and any non-covered amounts remain my financial responsibility regardless of the claim outcome.",
+                  "I understand that Hustad Companies is not a public adjuster and cannot negotiate my claim or promise a specific coverage result.",
+                  "I confirm that all required property owners and insurance policyholders have been notified of this authorization and have the opportunity to review it before signing."
+                ].map((text, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      const newAcks = [...acks];
+                      newAcks[idx] = !newAcks[idx];
+                      setAcks(newAcks);
+                    }}
+                    className={cn(
+                      "w-full flex items-start gap-5 p-6 rounded-[32px] border transition-all duration-300 text-left",
+                      acks[idx] ? "bg-indigo-500/10 border-indigo-500/30" : "bg-white/[0.02] border-white/[0.05] hover:border-white/20",
+                      errors.ack && !acks[idx] && "border-rose-500/50 bg-rose-500/5"
+                    )}
+                  >
+                    <div className={cn(
+                      "w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all",
+                      acks[idx] ? "bg-indigo-500 border-indigo-500" : "border-white/20"
+                    )}>
+                      {acks[idx] && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                    </div>
+                    <p className="text-sm text-[#DDE5F5] font-light leading-relaxed">
+                      {text}
+                    </p>
+                  </button>
+                ))}
+              </div>
             </div>
+          </div>
+
+          {/* Full Agreement Preview */}
+          <div className="w-full border border-white/[0.08] rounded-[40px] overflow-hidden">
+            <button
+              onClick={() => setShowAgreement(!showAgreement)}
+              className="w-full flex items-center justify-between px-8 py-6 bg-white/[0.02] hover:bg-white/[0.04] transition-all"
+            >
+              <div className="flex items-center gap-3">
+                <FileText className="w-4 h-4 text-indigo-400" />
+                <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.2em]">Full Agreement Preview</span>
+              </div>
+              <ChevronDown className={cn("w-4 h-4 text-[#7090B0] transition-transform duration-300", showAgreement && "rotate-180")} />
+            </button>
+            <AnimatePresence>
+              {showAgreement && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="overflow-hidden"
+                >
+                  <div className="max-h-[400px] overflow-y-auto px-8 pb-8 pt-4 space-y-8 text-left border-t border-white/[0.06]">
+                    <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest">
+                      This is a preview of the agreement you are authorizing. The executed copy will be emailed upon signature.
+                    </p>
+                    {AGREEMENT_SECTIONS.map((section, i) => (
+                      <div key={i} className="space-y-2">
+                        <p className="text-xs font-mono font-bold text-[#AABDCF] uppercase tracking-[0.15em]">{section.heading}</p>
+                        <p className="text-sm text-[#7090B0] font-light leading-relaxed">{section.body}</p>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>
@@ -224,7 +280,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
             className="flex-1 h-14 md:h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
           >
             <div className="flex items-center justify-center gap-4">
-              <span className="text-sm md:text-xl font-display font-semibold tracking-tight">Continue to Signature</span>
+              <span className="text-sm md:text-xl font-display font-semibold tracking-tight">Continue to Authorization</span>
               <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-indigo-400 group-hover:translate-x-1 transition-transform shrink-0" />
             </div>
           </StarButton>

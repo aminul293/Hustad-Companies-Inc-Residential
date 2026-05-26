@@ -33,7 +33,8 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
   const outcome = session.findings.outcomeType || "no_damage";
   const isSigned = !!session.signatureData.signedAt;
   const isDeferred = session.sessionStatus === "deferred";
-  const config = NEXT_STEPS_CONFIG[outcome] || NEXT_STEPS_CONFIG.no_damage;
+  const outcomeKey = isDeferred ? "deferred" : (outcome || "no_damage");
+  const config = NEXT_STEPS_CONFIG[outcomeKey] || NEXT_STEPS_CONFIG.no_damage;
   const [exported, setExported] = useState(false);
   const [deliverySent, setDeliverySent] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
@@ -132,10 +133,21 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
   };
 
   useEffect(() => {
-    if (isDeferred || (!isSigned && (outcome !== "no_damage" && outcome !== "monitor_only"))) {
-      const reason = isDeferred ? "Signature deferred" : "Follow-up required";
+    let reason = "";
+    if (isDeferred) {
+      reason = "Signature deferred - remote review";
+    } else if (outcome === "repair_only") {
+      reason = "Repair estimate required";
+    } else if (outcome === "monitor_only") {
+      reason = "Annual monitor recheck";
+    } else if (!isSigned && outcome !== "no_damage") {
+      reason = "Follow-up required";
+    }
+
+    if (reason && !session.followUpTasks.some(t => t.reason === reason)) {
       onUpdate(createFollowUpTask(session, reason));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // REAL-TIME REMOTE SYNC (POLLING)
@@ -203,6 +215,17 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
           });
         }
 
+        let emailMessage = "";
+        if (isDeferred) {
+          emailMessage = `<p>Your property inspection at <strong>${session.property.address}</strong> is complete. Attached is the full report, photo documentation, executable unsigned agreement, and a one-page summary for your review.</p>`;
+        } else if (outcome === "repair_only") {
+          emailMessage = `<p>Your property inspection at <strong>${session.property.address}</strong> is complete. Attached is your repair option summary.</p><p>We have created a repair estimate task, and our team will follow up with you shortly.</p>`;
+        } else if (outcome === "no_damage" || outcome === "monitor_only") {
+          emailMessage = `<p>Your property inspection at <strong>${session.property.address}</strong> is complete. Attached is your documentation summary and future recheck options.</p><p>Please keep this for your records, and feel free to leave us a review or refer us to a neighbor.</p>`;
+        } else {
+          emailMessage = `<p>Your property inspection at <strong>${session.property.address}</strong> is complete. Attached is the full inspection report, photo evidence, executed agreement, and claim coordination checklist.</p>`;
+        }
+
         const reviewUrl = session.reviewToken 
           ? `${window.location.origin}/review/${session.reviewToken}` 
           : null;
@@ -229,7 +252,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
               <div style="padding: 32px;">
                 <h2 style="font-size: 20px; color: #0f172a; margin-top: 0;">Forensic Dossier Ready</h2>
                 <p>Hello,</p>
-                <p>Your property inspection at <strong>${session.property.address}</strong> is complete. We have generated a high-fidelity Forensic Dossier documenting all site findings and weather validations.</p>
+                ${emailMessage}
                 
                 <div style="background-color: #f8fafc; border-left: 4px solid #6366f1; padding: 16px; margin: 24px 0;">
                   <p style="margin: 0; font-size: 14px; color: #64748b;"><strong>Outcome:</strong> ${outcome.toUpperCase().replace(/_/g, " ")}</p>
@@ -330,27 +353,9 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
 
   return (
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
-      {/* Background Assets: Rapid Deployment Cloud */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Forensic Inspection Drone - Hovering Top Left */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.8, x: -100 }}
-          animate={{ opacity: 0.08, scale: 1, x: 0, y: [0, -20, 0] }}
-          transition={{ duration: 2, y: { duration: 10, repeat: Infinity, ease: "easeInOut" } }}
-          className="absolute top-[10%] -left-20 w-[500px] h-[500px]"
-        >
-          <img src="/images/inspection_drone.png" alt="" className="w-full h-full object-contain mix-blend-screen opacity-70" />
-        </motion.div>
-
-        {/* Rapid Response Vehicle - Rushing Bottom Right */}
-        <motion.div 
-          initial={{ opacity: 0, x: 200 }}
-          animate={{ opacity: 0.1, x: 0 }}
-          transition={{ duration: 1.5 }}
-          className="absolute -bottom-20 -right-20 w-[600px] h-[600px]"
-        >
-          <img src="/images/rapid_response.png" alt="" className="w-full h-full object-contain mix-blend-screen opacity-60" />
-        </motion.div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(99,102,241,0.04),transparent_70%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(99,102,241,0.03),transparent_60%)]" />
       </div>
 
       <div className="absolute top-10 left-10 z-30 hidden lg:flex flex-col items-start pointer-events-none">
@@ -400,7 +405,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
               <div className="p-8 rounded-[40px] bg-indigo-500/[0.03] border border-indigo-500/[0.1] backdrop-blur-3xl space-y-6">
                 <p className="font-mono text-[10px] text-indigo-300 uppercase tracking-[0.3em]">Your Deliverables</p>
                 <div className="space-y-4">
-                  {DELIVERABLES[outcome]?.map((d, i) => (
+                  {DELIVERABLES[outcomeKey]?.map((d, i) => (
                     <div key={i} className="flex items-center gap-4 group">
                       <div className="w-8 h-8 rounded-xl bg-indigo-500/10 flex items-center justify-center shrink-0">
                         <ShieldCheck className="w-4 h-4 text-indigo-400" />
@@ -579,7 +584,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
                 </>
               ) : (
                 <>
-                  <span className="text-lg font-display font-medium tracking-wide">Finish Session</span>
+                  <span className="text-lg font-display font-medium tracking-wide">{config.finishLabel}</span>
                   <ChevronRight className="w-5 h-5 text-[#DDE5F5]" />
                 </>
               )}

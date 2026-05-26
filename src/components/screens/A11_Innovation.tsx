@@ -61,13 +61,6 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
           style={{ backgroundImage: "url('/images/gradient-mesh-warm.svg')", backgroundSize: "cover", backgroundPosition: "center top", opacity: 0.35 }}
         />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.1),transparent_70%)]" />
-        <motion.div 
-          animate={{ opacity: [0.1, 0.2, 0.1], scale: [1, 1.05, 1] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0"
-        >
-          <img src="/images/forensic_hud.png" alt="" className="w-full h-full object-cover grayscale brightness-50" />
-        </motion.div>
       </div>
 
       {/* Branding */}

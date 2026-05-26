@@ -69,6 +69,15 @@ export type BuyerPriority =
   | "warranty_coverage"
   | "minimal_disruption";
 
+export type DecisionComfortOption =
+  | "clear_photos"
+  | "urgent_vs_monitor"
+  | "insurance_boundaries"
+  | "cost_options"
+  | "warranty_coverage"
+  | "spouse_involvement"
+  | "timeline";
+
 export type InsurerContactStatus =
   | "not_yet"
   | "already_contacted"
@@ -215,6 +224,7 @@ export interface BuyerPhaseAData {
   decisionMakerEmail: string;
   decisionMakerMobile: string;
   buyerQuestions: string;
+  decisionComfort: DecisionComfortOption | null;
 }
 
 export interface RepFindingsData {
@@ -258,6 +268,8 @@ export interface SignatureData {
   signatureImage: string | null;
   summarySendRecipient: string;
   deferralReason: string;
+  deferralFollowUpDate?: string;
+  deferralFollowUpTime?: string;
   signedAt: string | null;
 }
 
@@ -376,11 +388,11 @@ export function getNextScreen(
     case "A02_why_inspection": return "A03_what_we_inspect";
     case "A03_what_we_inspect": return "A04_how_findings_sorted";
     case "A04_how_findings_sorted": return "A05_insurance_clarity";
-    case "A05_insurance_clarity": return "A06_warranty_impact";
+    case "A05_insurance_clarity": return "A07_why_hustad";
     case "A06_warranty_impact": return "A07_why_hustad";
-    case "A07_why_hustad": return "A08_what_you_receive";
+    case "A07_why_hustad": return "A09_buyer_priorities";
     case "A08_what_you_receive": return "A09_buyer_priorities";
-    case "A09_buyer_priorities": return "A11_innovation";
+    case "A09_buyer_priorities": return "A10_inspection_hold";
     case "A11_innovation": return "A10_inspection_hold";
     case "A10_inspection_hold": return "B11_rep_findings_prep";
 
@@ -388,7 +400,15 @@ export function getNextScreen(
     case "B11_rep_findings_prep": return "B12_findings_summary";
 
     // Phase B branching from findings summary
-    case "B12_findings_summary": return "B13_recommended_path";
+    case "B12_findings_summary": {
+      if (
+        outcomeType === "claim_review_candidate" ||
+        outcomeType === "full_restoration_candidate"
+      ) {
+        return selectedPath === null ? "B14_path_decision" : "B13_recommended_path";
+      }
+      return "B13_recommended_path";
+    }
 
     case "B13_recommended_path": {
       if (outcomeType === "no_damage" || outcomeType === "monitor_only") {
@@ -398,13 +418,12 @@ export function getNextScreen(
       if (outcomeType === "repair_only") {
         return urgentItemsCount > 0 ? "B15_urgent_protection" : "B17_agreement_summary";
       }
-      // claim or restoration: may show path decision first
+      // claim or restoration: if we are in B13, it means a path is selected, or we skipped B14.
       if (
         outcomeType === "claim_review_candidate" ||
         outcomeType === "full_restoration_candidate"
       ) {
-        // Show path decision only if there's a viable alternate
-        return selectedPath === null ? "B14_path_decision" : (urgentItemsCount > 0 ? "B15_urgent_protection" : (outcomeType === "full_restoration_candidate" ? "B16_system_options" : "B17_agreement_summary"));
+        return urgentItemsCount > 0 ? "B15_urgent_protection" : (outcomeType === "full_restoration_candidate" ? "B16_system_options" : "B17_agreement_summary");
       }
       return "B19_next_steps";
     }

@@ -80,7 +80,7 @@ export function A02WhyInspection({ onNext, onBack }: Props) {
               </span>
             </h1>
             <p className="text-base md:text-xl text-[var(--tx3)] font-light max-w-2xl leading-relaxed">
-              Some storm damage is hard to confirm from the yard. We document visible roof and exterior conditions before making a recommendation.
+              We check specific exterior areas where storm impact, water entry risk, and delayed issues often show up first.
             </p>
           </motion.div>
 
@@ -160,7 +160,7 @@ export function A02WhyInspection({ onNext, onBack }: Props) {
                   <span className="text-[10px] font-mono text-[var(--tx3)] uppercase tracking-widest pt-0.5">Critical Notice</span>
                 </div>
                 <p className="text-base md:text-lg text-[var(--tx2)] font-light leading-relaxed">
-                  Some damage is not obvious right away.{" "}
+                  Some storm effects are not obvious right away.{" "}
                   <span className="text-[var(--tx1)] font-medium underline underline-offset-8 decoration-indigo-500/40">Clear photos and dates</span>{" "}
                   help protect your options.
                 </p>
@@ -213,37 +213,37 @@ const INSPECTION_AREAS = [
   {
     icon: Home,
     label: "Shingles & Ridge",
-    description: "Bruising, granule loss, cracking, lifted shingles, and exposed wear patterns across roof areas.",
+    description: "Bruising, granule loss, lifted shingles, cracked ridge caps, and impact patterns across roof areas.",
     detail: "We document granule density, impact pattern distribution, and bruising depth. Even minor granule loss accelerates aging and may affect warranty validity.",
   },
   {
     icon: Zap,
     label: "Flashing & Edges",
-    description: "Metal components around chimneys, vents, valleys, and roof edges where impact marks can appear.",
+    description: "Metal components around chimneys, walls, valleys, vents, and roof edges where impact or lifting can appear.",
     detail: "Soft metal components record impact density accurately. We measure dent patterns to help establish storm event correlation and timing.",
   },
   {
     icon: Droplets,
     label: "Gutters & Downspouts",
-    description: "Dents, loose sections, and granule buildup that help document storm impact.",
+    description: "Dents, loose sections, granule buildup, and other signs that help document storm impact.",
     detail: "Granule accumulation in gutters is one of the clearest indicators of active shingle deterioration. We photograph and measure to establish baseline.",
   },
   {
     icon: Square,
     label: "Siding & Screens",
-    description: "Visible dents, tears, and impact patterns that help support the overall review.",
+    description: "Visible dents, tears, impact marks, and related exterior conditions.",
     detail: "Aluminum screens and siding show consistent impact patterns that help correlate damage to a specific weather event, useful for carrier review.",
   },
   {
     icon: AlertCircle,
-    label: "Delayed Issue Risk",
-    description: "Conditions that may not leak today but should be repaired or monitored.",
+    label: "Delayed Issues",
+    description: "Conditions that may not leak today but should be repaired, monitored, or documented.",
     detail: "Some damage appears stable but degrades quickly under UV and freeze-thaw cycles. We flag these so you're not caught off-guard by a preventable leak.",
   },
   {
     icon: FileText,
     label: "Documentation",
-    description: "Photos grouped by area and finding type for your records.",
+    description: "Photos grouped by area and finding type so the review is easier to understand.",
     detail: "Every finding is timestamped, geo-tagged, and organized into your project file, whether or not a project moves forward. This belongs to you.",
   },
 ];

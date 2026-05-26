@@ -5,7 +5,6 @@ import { fetchWeatherNws } from "@/lib/api";
 import type { SessionState, OutcomeType } from "@/types/session";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { StarButton } from "@/components/ui/star-button";
-import { SplineScene } from "@/components/ui/splite";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { useTheme } from "@/components/ThemeProvider";
 import { 
@@ -72,13 +71,7 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[var(--bg-base)] text-[var(--tx1)]">
       <div className="absolute inset-0 pointer-events-none overflow-hidden theme-graphic">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.04),transparent_70%)]" />
-        <motion.div 
-          animate={{ opacity: [0.03, 0.06, 0.03], scale: [1, 1.02, 1] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0"
-        >
-          <img src="/images/forensic_hud.png" alt="" className="w-full h-full object-cover mix-blend-screen opacity-20 grayscale" />
-        </motion.div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_70%,rgba(99,102,241,0.03),transparent_50%)]" />
       </div>
 
       <div className="absolute top-10 left-10 z-30 hidden lg:flex flex-col items-start pointer-events-none">
@@ -93,22 +86,34 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="relative w-full h-[350px] rounded-[48px] overflow-hidden bg-[var(--bg-surface)] border border-[var(--border-color)] backdrop-blur-3xl group"
+            className="relative w-full h-[350px] rounded-[48px] overflow-hidden bg-[var(--bg-surface)] border border-[var(--border-color)] backdrop-blur-3xl group flex flex-col items-center justify-center"
           >
-            <div className="absolute inset-0 z-0 theme-graphic">
-              <SplineScene
-                scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
-                className="w-full h-full opacity-60"
-              />
-            </div>
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center space-y-4 pointer-events-none">
+            <div className="absolute inset-0 z-0 opacity-20 bg-[url('/images/grid.png')] bg-repeat" />
+            <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/10 to-transparent opacity-50" />
+            
+            <div className="relative z-10 flex flex-col items-center justify-center space-y-6 pointer-events-none">
               <div className="relative">
-                <div className="w-16 h-16 rounded-full border border-indigo-500/30 flex items-center justify-center">
-                  <Activity className="w-8 h-8 text-indigo-500 dark:text-indigo-300 animate-pulse" />
+                <div className="w-20 h-20 rounded-full border border-indigo-500/30 bg-[var(--bg-base)] flex items-center justify-center shadow-[0_0_40px_rgba(99,102,241,0.2)]">
+                  <Activity className="w-10 h-10 text-indigo-500 dark:text-indigo-400 animate-pulse" />
                 </div>
-                <div className="absolute inset-0 rounded-full border border-indigo-400/20 animate-ping theme-graphic" />
+                <div className="absolute inset-0 rounded-full border-2 border-indigo-400/40 animate-ping theme-graphic" />
               </div>
-              <p className="font-mono text-[10px] text-indigo-500 dark:text-indigo-300 uppercase tracking-[0.4em]">Inspection Active</p>
+              <div className="space-y-2 text-center">
+                <p className="font-mono text-[10px] text-indigo-500 dark:text-indigo-300 uppercase tracking-[0.4em] font-bold">
+                  Status
+                </p>
+                <div className="h-6 overflow-hidden relative">
+                  <motion.div 
+                    animate={{ y: [0, -24, -48, 0] }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                    className="flex flex-col text-sm text-[var(--tx2)] uppercase tracking-widest font-mono"
+                  >
+                    <span className="h-6 flex items-center justify-center">Documenting Exterior</span>
+                    <span className="h-6 flex items-center justify-center">Organizing Photos</span>
+                    <span className="h-6 flex items-center justify-center">Preparing Review</span>
+                  </motion.div>
+                </div>
+              </div>
             </div>
           </motion.div>
 
@@ -119,7 +124,7 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-[var(--tx1)] to-indigo-500 dark:from-indigo-300 dark:via-white dark:to-indigo-300">the exterior review.</span>
             </h1>
             <p className="text-lg text-[var(--tx3)] font-light leading-relaxed max-w-lg mx-auto">
-              They will return with documented findings, a clear recommendation, and time for your questions.
+              When your rep returns, they will start with your selected priorities and actual photos from your home.
             </p>
           </div>
         </div>
@@ -523,6 +528,8 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
     urgentCount?: number; stormCount?: number; monitorCount?: number;
   } | null>(null);
   const [autoClassifyError, setAutoClassifyError] = useState<string | null>(null);
+  const [repConfirmed, setRepConfirmed] = useState(false);
+  const [showHandoffPanel, setShowHandoffPanel] = useState(true);
 
   const handleAutoClassify = async () => {
     const photos = session.photoAssets?.map(p => p.dataUrl).filter(Boolean) ?? [];
@@ -740,6 +747,90 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
   return (
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[var(--bg-base)] text-[var(--tx1)]">
       <AnimatePresence>
+        {showHandoffPanel && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 40, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 40, scale: 0.96 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className={cn(
+                "w-full max-w-2xl rounded-[40px] border p-10 space-y-8 shadow-2xl relative overflow-hidden",
+                isHighContrast
+                  ? "bg-white border-black text-black"
+                  : "bg-[var(--bg-surface)] border-[var(--border-color)] text-[var(--tx1)]"
+              )}
+            >
+              {/* Highlight Background */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] pointer-events-none translate-x-1/2 -translate-y-1/2" />
+              
+              <div className="relative z-10 flex items-center gap-5">
+                <div className="w-14 h-14 rounded-[20px] bg-indigo-500 border border-indigo-400 flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.3)]">
+                  <AlertCircle className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-display font-medium tracking-tight">Mandatory Rep Handoff</h2>
+                  <p className="text-[var(--tx3)] text-sm font-light mt-1">Review homeowner inputs before opening the live review.</p>
+                </div>
+              </div>
+
+              <div className="relative z-10 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-5 rounded-3xl bg-[var(--bg-subtle)] border border-[var(--border-color)] hover:border-indigo-500/30 transition-colors group">
+                    <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--tx4)] mb-2 group-hover:text-indigo-400 transition-colors">Priorities</p>
+                    <p className="font-display font-medium text-lg leading-snug">
+                      {session.buyerData.buyerPriorities?.length 
+                        ? session.buyerData.buyerPriorities.map(p => p.replace(/_/g, ' ')).join(', ') 
+                        : "None selected"}
+                    </p>
+                  </div>
+                  <div className="p-5 rounded-3xl bg-[var(--bg-subtle)] border border-[var(--border-color)] hover:border-indigo-500/30 transition-colors group">
+                    <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--tx4)] mb-2 group-hover:text-indigo-400 transition-colors">Carrier Status</p>
+                    <p className="font-display font-medium text-lg leading-snug">
+                      {session.buyerData.insurerContactStatus?.replace(/_/g, ' ') || "Not specified"}
+                    </p>
+                  </div>
+                  <div className="p-5 rounded-3xl bg-[var(--bg-subtle)] border border-[var(--border-color)] hover:border-indigo-500/30 transition-colors group">
+                    <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--tx4)] mb-2 group-hover:text-indigo-400 transition-colors">Decision-Maker Status</p>
+                    <p className="font-display font-medium text-lg leading-snug">
+                      {session.buyerData.anotherDecisionMakerPresent 
+                        ? `Yes (${session.buyerData.decisionMakerRelation?.replace(/_/g, ' ')})` 
+                        : "No, just me"}
+                    </p>
+                  </div>
+                  <div className="p-5 rounded-3xl bg-[var(--bg-subtle)] border border-[var(--border-color)] hover:border-indigo-500/30 transition-colors group">
+                    <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--tx4)] mb-2 group-hover:text-indigo-400 transition-colors">Decision Comfort Need</p>
+                    <p className="font-display font-medium text-lg leading-snug text-indigo-400">
+                      {session.buyerData.decisionComfort?.replace(/_/g, ' ') || "Not specified"}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="p-5 rounded-3xl bg-[var(--bg-subtle)] border border-[var(--border-color)] hover:border-indigo-500/30 transition-colors group">
+                  <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--tx4)] mb-2 group-hover:text-indigo-400 transition-colors">Open Question for Rep</p>
+                  <p className="font-body font-light text-[var(--tx1)] leading-relaxed italic">
+                    "{session.buyerData.buyerQuestions || "No questions provided."}"
+                  </p>
+                </div>
+              </div>
+
+              <div className="relative z-10 pt-2">
+                <button
+                  onClick={() => setShowHandoffPanel(false)}
+                  className="w-full flex items-center justify-center gap-3 py-5 rounded-[24px] bg-indigo-500 hover:bg-indigo-600 text-white font-display font-semibold text-lg transition-all active:scale-[0.98] shadow-[0_10px_40px_rgba(99,102,241,0.3)]"
+                >
+                  <Check className="w-5 h-5" />
+                  I have reviewed these inputs
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
         {annotatingAsset && (
           <PhotoAnnotationLayer 
             photo={annotatingAsset}
@@ -905,7 +996,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
           <div className="flex items-center gap-3">
             <span className="font-display font-bold text-[var(--tx1)] text-2xl tracking-[0.15em]">HUSTAD</span>
             <div className="h-4 w-[1px] bg-[var(--border-color)] mx-1" />
-            <span className="text-[10px] font-mono text-[var(--tx2)] uppercase tracking-[0.4em] font-medium pt-1">Inspection Analysis Hub</span>
+            <span className="text-[10px] font-mono text-[var(--tx2)] uppercase tracking-[0.4em] font-medium pt-1">Inspection Analysis Builder</span>
           </div>
           <div className="flex items-center gap-2 text-[var(--tx3)] font-mono text-[9px] uppercase tracking-widest mt-1">
             <Scan className="w-3 h-3" />
@@ -1095,7 +1186,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                   )}
                 </div>
                 <div className="space-y-4">
-                  <p className="text-[9px] font-mono text-[var(--tx3)] uppercase tracking-[0.4em] pl-1 font-bold">Estimated Claim Value</p>
+                  <p className="text-[9px] font-mono text-[var(--tx3)] uppercase tracking-[0.4em] pl-1 font-bold">Preliminary Restoration Value Range</p>
                   <input
                     className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl py-5 px-6 text-[var(--tx1)] text-xl font-display placeholder:text-[var(--tx4)] outline-none focus:border-indigo-500/40 focus:bg-[var(--bg-base)] transition-all"
                     placeholder="e.g. $28,800"
@@ -1401,8 +1492,8 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
             ? "bg-white border-black text-black"
             : "bg-[var(--bg-surface)]/90 border-[var(--border-color)] text-[var(--tx1)] backdrop-blur-md"
         )}>
-          <button 
-            onClick={onBack} 
+          <button
+            onClick={onBack}
             className={cn(
               "group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full border transition-all duration-300 shrink-0",
               isHighContrast
@@ -1413,35 +1504,56 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
             <ArrowLeft className={cn("w-4 h-4 group-hover:-translate-x-1 transition-transform", isHighContrast ? "text-black group-hover:text-white" : "text-[var(--tx1)]")} />
             <span className="text-sm font-display font-medium text-inherit">Back</span>
           </button>
-          <StarButton 
-            onClick={handleLock}
-            disabled={!outcomeType}
-            lightColor={isHighContrast ? "#000000" : "#FAFAFA"}
-            backgroundColor={isHighContrast ? "#FFFFFF" : "#0A0A0A"}
-            className={cn(
-              "flex-1 h-14 md:h-20 rounded-[40px] transition-all duration-500 group border",
-              !outcomeType 
-                ? "opacity-20 grayscale cursor-not-allowed" 
-                : "active:scale-95",
-              isHighContrast
-                ? "border-black text-black"
-                : "shadow-[0_20px_60px_rgba(99,102,241,0.2)] border-[var(--border-color)]"
-            )}
-          >
-            <div className="flex items-center justify-center gap-6">
-              <div className="relative">
-                {Object.keys(errors).length > 0 ? (
-                  <AlertCircle className="w-7 h-7 text-rose-500 animate-pulse" />
-                ) : (
-                  <Lock className={cn("w-7 h-7 transition-colors", outcomeType ? (isHighContrast ? "text-black" : "text-indigo-400") : "text-[var(--tx4)]")} />
-                )}
+          <div className="flex-1 flex flex-col gap-3">
+            <button
+              onClick={() => setRepConfirmed(!repConfirmed)}
+              className={cn(
+                "w-full flex items-center gap-4 px-6 py-4 rounded-2xl border transition-all duration-300 text-left",
+                repConfirmed
+                  ? "bg-indigo-500/10 border-indigo-500/30"
+                  : "bg-white/[0.03] border-white/10 hover:border-white/20"
+              )}
+            >
+              <div className={cn(
+                "w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-all",
+                repConfirmed ? "bg-indigo-500 border-indigo-500" : "border-white/30"
+              )}>
+                {repConfirmed && <Check className="w-3 h-3 text-white" />}
               </div>
-              <span className="text-sm md:text-xl font-display font-medium tracking-wide">
-                {!outcomeType ? "Classification Required" : "Execute Lock & Finalize"}
+              <span className={cn("text-xs font-mono uppercase tracking-widest", repConfirmed ? "text-[var(--tx1)]" : "text-[var(--tx3)]")}>
+                I confirm these findings are accurate and ready for homeowner review
               </span>
-              <ChevronRight className={cn("w-6 h-6 group-hover:translate-x-1 transition-transform", isHighContrast ? "text-black" : "text-[var(--tx4)]")} />
-            </div>
-          </StarButton>
+            </button>
+            <StarButton
+              onClick={handleLock}
+              disabled={!outcomeType || !repConfirmed}
+              lightColor={isHighContrast ? "#000000" : "#FAFAFA"}
+              backgroundColor={isHighContrast ? "#FFFFFF" : "#0A0A0A"}
+              className={cn(
+                "w-full h-14 md:h-20 rounded-[40px] transition-all duration-500 group border",
+                (!outcomeType || !repConfirmed)
+                  ? "opacity-20 grayscale cursor-not-allowed"
+                  : "active:scale-95",
+                isHighContrast
+                  ? "border-black text-black"
+                  : "shadow-[0_20px_60px_rgba(99,102,241,0.2)] border-[var(--border-color)]"
+              )}
+            >
+              <div className="flex items-center justify-center gap-6">
+                <div className="relative">
+                  {Object.keys(errors).length > 0 ? (
+                    <AlertCircle className="w-7 h-7 text-rose-500 animate-pulse" />
+                  ) : (
+                    <Lock className={cn("w-7 h-7 transition-colors", (outcomeType && repConfirmed) ? (isHighContrast ? "text-black" : "text-indigo-400") : "text-[var(--tx4)]")} />
+                  )}
+                </div>
+                <span className="text-sm md:text-xl font-display font-medium tracking-wide">
+                  {!outcomeType ? "Classification Required" : !repConfirmed ? "Confirmation Required" : "Finalize Report for Homeowner Review"}
+                </span>
+                <ChevronRight className={cn("w-6 h-6 group-hover:translate-x-1 transition-transform", isHighContrast ? "text-black" : "text-[var(--tx4)]")} />
+              </div>
+            </StarButton>
+          </div>
         </div>
       </div>
     </div>

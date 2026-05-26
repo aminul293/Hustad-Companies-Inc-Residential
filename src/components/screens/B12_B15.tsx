@@ -1,23 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import type { SessionState, SelectedPath, OutcomeType } from "@/types/session";
+import { useState, useEffect } from "react";
+import type { SessionState, SelectedPath } from "@/types/session";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import { ElegantShape } from "@/components/ui/shape-landing-hero";
 import { StarButton } from "@/components/ui/star-button";
-import { SplineScene } from "@/components/ui/splite";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Shield, 
-  Zap, 
-  Eye, 
-  Wrench, 
-  FileText, 
-  AlertTriangle, 
-  ChevronRight, 
+import {
+  Shield,
+  Zap,
+  Eye,
+  Wrench,
+  FileText,
+  AlertTriangle,
+  ChevronRight,
   ArrowLeft,
-  LayoutGrid,
-  Lock,
   Unlock,
   CheckCircle2,
   Camera,
@@ -29,7 +25,6 @@ import {
 import { cn } from "@/lib/utils";
 import { setSelectedPath, addAuditEvent, unlockSummary } from "@/lib/session";
 import { PhotoThumbnail } from "@/components/PhotoThumbnail";
-import { InspectionPhoto } from "@/types/session";
 
 interface Props {
   session: SessionState;
@@ -42,6 +37,14 @@ interface Props {
 // ─────────────────────────────────────────────────────────────────────────────
 // B12 – Findings Summary
 // ─────────────────────────────────────────────────────────────────────────────
+
+const OUTCOME_HEADLINE: Record<string, string> = {
+  no_damage: "No damage documented.",
+  monitor_only: "Conditions flagged for monitoring.",
+  repair_only: "Repairs documented. No claim path indicated.",
+  claim_review_candidate: "Storm damage documented. Carrier review indicated.",
+  full_restoration_candidate: "Significant damage documented. Full restoration indicated.",
+};
 
 export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJump }: Props) {
   const { findings } = session;
@@ -65,15 +68,6 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
         {/* Ambient Gradient Lift */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.04),transparent_70%)]" />
 
-        {/* Forensic HUD Data Layer */}
-        <motion.div 
-          animate={{ opacity: [0.03, 0.05, 0.03], scale: [1, 1.02, 1] }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0"
-        >
-          <img src="/images/forensic_hud.png" alt="" className="w-full h-full object-cover mix-blend-screen opacity-20 grayscale" />
-        </motion.div>
-
         {/* National Mobilization Map - Ultra Subtle Accountability */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
@@ -84,15 +78,6 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
           <img src="/images/mobilization_map.png" alt="" className="w-full h-full object-contain mix-blend-screen grayscale" />
         </motion.div>
 
-        {/* Forensic Inspection Drone - Far Top Right */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.5, x: 200 }}
-          animate={{ opacity: 0.08, scale: 0.7, x: 0, y: [0, -20, 0] }}
-          transition={{ duration: 2, y: { duration: 15, repeat: Infinity, ease: "easeInOut" } }}
-          className="absolute top-[2%] -right-48 w-[450px] h-[450px]"
-        >
-          <img src="/images/inspection_drone.png" alt="" className="w-full h-full object-contain mix-blend-screen opacity-70" />
-        </motion.div>
       </div>
 
       <div className="absolute top-10 left-10 z-30 hidden lg:flex flex-col items-start pointer-events-none">
@@ -120,7 +105,7 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
                 <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest pt-0.5">Summary Locked & Audited</span>
               </div>
               <h1 className="text-3xl md:text-6xl lg:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
-                {findings.summaryHeadline || "Reviewing your findings."}
+                {OUTCOME_HEADLINE[outcome] || findings.summaryHeadline || "Reviewing your findings."}
               </h1>
             </motion.div>
             
@@ -171,9 +156,43 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
                   </div>
                 ))}
               </div>
+
+              {/* Credibility Block */}
+              <div className="p-8 rounded-[32px] bg-white/[0.02] border border-white/[0.05] space-y-4">
+                <p className="text-[10px] font-mono text-[#7090B0] uppercase tracking-[0.2em]">What we are not saying</p>
+                <div className="space-y-3">
+                  {[
+                    "We are not guaranteeing insurance coverage or claim approval.",
+                    "We are not recommending a path that is not supported by what we documented today.",
+                    "We are not pressuring a decision — the documented findings belong to you regardless of next steps.",
+                  ].map((line, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <div className="w-1 h-1 rounded-full bg-[#AABDCF]/40 mt-2 shrink-0" />
+                      <p className="text-sm text-[#AABDCF] font-light leading-relaxed">{line}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div className="lg:col-span-5 space-y-10">
+              {/* Homeowner Priorities Panel */}
+              {session.buyerData.buyerPriorities && session.buyerData.buyerPriorities.length > 0 && (
+                <section className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <ShieldCheck className="w-4 h-4 text-[#AABDCF]" />
+                    <h2 className="text-sm font-display font-medium text-[#DDE5F5] uppercase tracking-[0.2em]">Your Stated Priorities</h2>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {session.buyerData.buyerPriorities.map((p) => (
+                      <span key={p} className="px-4 py-2 rounded-xl bg-white/[0.05] border border-white/10 text-[#E8EDF8] text-sm font-display shadow-sm backdrop-blur-md">
+                        {p.replace(/_/g, " ")}
+                      </span>
+                    ))}
+                  </div>
+                </section>
+              )}
+
               {/* Photo Documentation Grid */}
               <section className="space-y-6">
                 <div className="flex items-center justify-between">
@@ -185,7 +204,7 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
-                  {summaryPhotos.length > 0 ? summaryPhotos.slice(0, 4).map((photo) => (
+                  {summaryPhotos.length > 0 ? summaryPhotos.slice(0, 6).map((photo) => (
                     <div key={photo.id} className="group relative aspect-[4/3] rounded-3xl overflow-hidden border border-white/10 bg-white/[0.02]">
                       {photo.type === "structured" ? (
                         <PhotoThumbnail photo={photo.photo!} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
@@ -196,7 +215,7 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
                         <p className="text-[8px] font-mono text-[#E8EDF8] uppercase tracking-widest">Captured • {new Date(photo.date).toLocaleDateString()}</p>
                       </div>
                     </div>
-                  )) : [1, 2, 3, 4].map(i => (
+                  )) : [1, 2, 3, 4, 5, 6].map(i => (
                     <div key={i} className="aspect-[4/3] rounded-3xl border border-dashed border-white/10 bg-white/[0.01] flex items-center justify-center">
                       <Camera className="w-6 h-6 text-[#1F2E48]" />
                     </div>
@@ -280,28 +299,33 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
 // B13 – Recommended Path
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function B13RecommendedPath({ session, onNext, onBack }: Props) {
+export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props) {
   const outcome = session.findings.outcomeType || "no_damage";
   const config = PATH_CONFIG[outcome] || PATH_CONFIG.no_damage;
 
+  // Determine recommended path id from outcome
+  const recommendedPathId: SelectedPath = outcome === "claim_review_candidate"
+    ? "claim_review"
+    : outcome === "full_restoration_candidate"
+      ? "full_restoration"
+      : outcome === "repair_only"
+        ? "direct_repair"
+        : null;
+
+  const showAlternatePath = outcome === "claim_review_candidate" || outcome === "full_restoration_candidate";
+  const [selectedPath, setSelectedPath_] = useState<SelectedPath>(session.pathData.selectedPath || recommendedPathId);
+
+  const handleContinue = () => {
+    const updated = setSelectedPath(session, selectedPath);
+    onUpdate(updated);
+    onNext();
+  };
+
   return (
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
-      {/* Immersive 3D Background */}
-      <div className="absolute inset-0 z-0">
-        <SplineScene 
-          scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
-          className="w-full h-full opacity-30"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#060606] via-transparent to-[#060606]" />
-        
-        {/* Background Asset: Rapid Response (Subtle) */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.05 }}
-          className="absolute top-[20%] right-[-5%] w-[500px] h-[500px] pointer-events-none"
-        >
-          <img src="/images/rapid_response.png" alt="" className="w-full h-full object-contain mix-blend-screen opacity-40 grayscale" />
-        </motion.div>
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(99,102,241,0.05),transparent_70%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(99,102,241,0.03),transparent_60%)]" />
       </div>
 
       <div className="absolute top-10 left-10 z-30 hidden lg:flex flex-col items-start pointer-events-none">
@@ -311,18 +335,18 @@ export function B13RecommendedPath({ session, onNext, onBack }: Props) {
         </div>
       </div>
 
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 text-center pb-32">
-        <div className="max-w-4xl w-full space-y-16">
-          <motion.div 
+      <div className="relative z-10 flex-1 overflow-y-auto px-8 pt-20 pb-36 min-h-0">
+        <div className="max-w-4xl mx-auto w-full space-y-12">
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
+            className="space-y-6 text-center"
           >
             <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-md w-fit mx-auto">
               <Clock className="w-3.5 h-3.5 text-indigo-400" />
               <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-[0.2em] pt-0.5">Recommended Strategy</span>
             </div>
-            <h1 className="text-3xl md:text-6xl lg:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
+            <h1 className="text-3xl md:text-6xl lg:text-7xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
               {config.headline}
             </h1>
             <p className="text-xl text-[#AABDCF] font-light leading-relaxed max-w-2xl mx-auto">
@@ -330,50 +354,102 @@ export function B13RecommendedPath({ session, onNext, onBack }: Props) {
             </p>
           </motion.div>
 
-          <motion.div 
+          {/* Recommended path card */}
+          <motion.button
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="relative p-12 rounded-[48px] overflow-hidden border border-white/[0.1] bg-white/[0.02] backdrop-blur-3xl"
+            onClick={() => setSelectedPath_(recommendedPathId)}
+            className={cn(
+              "relative w-full p-10 rounded-[48px] overflow-hidden border text-left transition-all duration-500",
+              selectedPath === recommendedPathId
+                ? "bg-indigo-500/10 border-indigo-500/40 shadow-2xl"
+                : "bg-white/[0.02] border-white/[0.1] hover:border-white/20"
+            )}
           >
-            <div 
-              className="absolute inset-0 opacity-20 blur-3xl"
+            <div
+              className="absolute inset-0 opacity-20 blur-3xl pointer-events-none"
               style={{ background: `radial-gradient(circle at center, ${config.cardColor}, transparent)` }}
             />
-            <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-12 text-left">
-              <div className="md:col-span-4 flex flex-col items-center md:items-start justify-center gap-6">
-                <div 
-                  className="w-24 h-24 rounded-[32px] flex items-center justify-center shadow-2xl"
+            <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-10">
+              <div className="md:col-span-4 flex flex-col items-start gap-5">
+                <div
+                  className="w-16 h-16 rounded-[24px] flex items-center justify-center shadow-2xl"
                   style={{ background: config.cardColor }}
                 >
-                  <config.icon className="w-12 h-12 text-[#E8EDF8]" />
+                  <config.icon className="w-8 h-8 text-[#E8EDF8]" />
                 </div>
-                <div className="text-center md:text-left">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[8px] font-mono uppercase tracking-[0.3em] px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300">Recommended</span>
+                  </div>
                   <p className="text-2xl font-display font-medium text-[#E8EDF8]">{config.pathLabel}</p>
                   <p className="text-[#AABDCF] font-light text-sm uppercase tracking-widest mt-1">Hustad Certified Path</p>
                 </div>
               </div>
-              <div className="md:col-span-8 space-y-8 border-l border-white/5 pl-0 md:pl-12">
-                <div className="space-y-4">
-                  <h3 className="text-[10px] font-mono text-indigo-300 uppercase tracking-[0.3em]">Operational Sequence</h3>
-                  <div className="space-y-4">
-                    {config.nextSteps.map((step, i) => (
-                      <motion.div 
-                        key={i}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.4 + (i * 0.1) }}
-                        className="flex items-start gap-4 group"
-                      >
-                        <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-500/40 group-hover:bg-indigo-400 transition-colors shrink-0" />
-                        <p className="text-[#DDE5F5] font-light text-base leading-relaxed group-hover:text-[#C2D0E4] transition-colors">{step}</p>
-                      </motion.div>
-                    ))}
-                  </div>
+              <div className="md:col-span-8 space-y-6 border-l border-white/5 pl-0 md:pl-10">
+                <h3 className="text-[10px] font-mono text-indigo-300 uppercase tracking-[0.3em]">What happens next</h3>
+                <div className="space-y-3">
+                  {config.nextSteps.map((step, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.4 + i * 0.08 }}
+                      className="flex items-start gap-4"
+                    >
+                      <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-500/40 shrink-0" />
+                      <p className="text-[#DDE5F5] font-light text-base leading-relaxed">{step}</p>
+                    </motion.div>
+                  ))}
                 </div>
               </div>
             </div>
-          </motion.div>
+            {selectedPath === recommendedPathId && (
+              <motion.div layoutId="path-check" className="absolute top-8 right-8">
+                <ShieldCheck className="w-6 h-6 text-indigo-400" />
+              </motion.div>
+            )}
+          </motion.button>
+
+          {/* Alternate path — direct repair always visible as legitimate option */}
+          {showAlternatePath && (
+            <motion.button
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              onClick={() => setSelectedPath_("direct_repair")}
+              className={cn(
+                "relative w-full p-8 rounded-[40px] border text-left transition-all duration-500",
+                selectedPath === "direct_repair"
+                  ? "bg-white/10 border-white/30 shadow-xl"
+                  : "bg-white/[0.02] border-white/[0.05] hover:border-white/20"
+              )}
+            >
+              <div className="flex items-start gap-6">
+                <div className={cn(
+                  "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors",
+                  selectedPath === "direct_repair" ? "bg-white text-black" : "bg-white/[0.05] text-[#8BA5C5]"
+                )}>
+                  <Wrench className="w-6 h-6" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[8px] font-mono uppercase tracking-[0.3em] px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[#8BA5C5]">Alternate Path</span>
+                  </div>
+                  <p className={cn("text-xl font-display font-medium transition-colors", selectedPath === "direct_repair" ? "text-[#E8EDF8]" : "text-[#DDE5F5]")}>Direct Repair</p>
+                  <p className="text-sm text-[#8BA5C5] font-light leading-relaxed mt-1">
+                    Address documented items directly — no insurance claim required. Faster scheduling, out-of-pocket cost, full control over timing.
+                  </p>
+                </div>
+              </div>
+              {selectedPath === "direct_repair" && (
+                <motion.div layoutId="path-check" className="absolute top-6 right-6">
+                  <ShieldCheck className="w-5 h-5 text-[#DDE5F5]" />
+                </motion.div>
+              )}
+            </motion.button>
+          )}
         </div>
       </div>
 
@@ -383,10 +459,10 @@ export function B13RecommendedPath({ session, onNext, onBack }: Props) {
             <ArrowLeft className="w-4 h-4 text-[#DDE5F5] group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-display font-medium text-[#E8EDF8]">Previous</span>
           </button>
-          <StarButton 
-            onClick={onNext} 
-            lightColor="#FAFAFA" 
-            backgroundColor="#060606" 
+          <StarButton
+            onClick={handleContinue}
+            lightColor="#FAFAFA"
+            backgroundColor="#060606"
             className="flex-1 h-14 md:h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
           >
             <div className="flex items-center justify-center gap-4">
@@ -466,166 +542,10 @@ const PATH_CONFIG: Record<string, {
 // B14 – Path Decision
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function B14PathDecision({ session, onUpdate, onNext, onBack }: Props) {
-  const [selected, setSelected] = useState<SelectedPath>(session.pathData.selectedPath);
-
-  const handleContinue = () => {
-    if (!selected) return;
-    const updated = setSelectedPath(session, selected);
-    onUpdate(updated);
-    onNext();
-  };
-
-  return (
-    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
-      {/* Background Assets: Rapid Deployment Cloud */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Forensic Inspection Drone - Hovering Top Left */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.8, x: -100 }}
-          animate={{ opacity: 0.08, scale: 1, x: 0, y: [0, -20, 0] }}
-          transition={{ duration: 2, y: { duration: 10, repeat: Infinity, ease: "easeInOut" } }}
-          className="absolute top-[10%] -left-20 w-[500px] h-[500px]"
-        >
-          <img src="/images/inspection_drone.png" alt="" className="w-full h-full object-contain mix-blend-screen opacity-70" />
-        </motion.div>
-
-        {/* Rapid Response Vehicle - Rushing Bottom Right */}
-        <motion.div 
-          initial={{ opacity: 0, x: 200 }}
-          animate={{ opacity: 0.1, x: 0 }}
-          transition={{ duration: 1.5 }}
-          className="absolute -bottom-20 -right-20 w-[600px] h-[600px]"
-        >
-          <img src="/images/rapid_response.png" alt="" className="w-full h-full object-contain mix-blend-screen opacity-60" />
-        </motion.div>
-      </div>
-
-      <div className="absolute top-10 left-10 z-30 hidden lg:flex flex-col items-start pointer-events-none">
-        <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em]">Madison Residential</span>
-        </div>
-      </div>
-
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 text-center pb-32">
-        <div className="max-w-4xl w-full space-y-16">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
-            <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-md w-fit mx-auto">
-              <LayoutGrid className="w-3.5 h-3.5 text-indigo-400" />
-              <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-[0.2em] pt-0.5">Selection Matrix</span>
-            </div>
-            <h1 className="text-3xl md:text-6xl lg:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
-              Two legitimate paths exist.
-              <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">Which fits your situation?</span>
-            </h1>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {[
-              { 
-                id: "claim_review" as SelectedPath, 
-                label: "Insurance Claim Review", 
-                icon: FileText, 
-                detail: "Document damage and coordinate with your insurer. Carrier-determined coverage.",
-                badge: "Recommended",
-                color: "indigo"
-              },
-              { 
-                id: "direct_repair" as SelectedPath, 
-                label: "Direct Repair", 
-                icon: Wrench, 
-                detail: "Repair items directly without an insurance claim. Out of pocket, faster scheduling.",
-                badge: "Alternate",
-                color: "white"
-              }
-            ].map((opt, i) => {
-              const isSelected = selected === opt.id;
-              return (
-                <motion.button
-                  key={opt.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  onClick={() => setSelected(opt.id)}
-                  className={cn(
-                    "group relative p-8 rounded-[40px] border transition-all duration-500 text-left overflow-hidden",
-                    isSelected 
-                      ? "bg-indigo-500/10 border-indigo-500/40 shadow-2xl" 
-                      : "bg-white/[0.02] border-white/[0.05] hover:border-white/20"
-                  )}
-                >
-                  <div className="relative z-10 space-y-6">
-                    <div className="flex items-start justify-between">
-                      <div className={cn(
-                        "w-12 h-12 rounded-2xl flex items-center justify-center transition-colors",
-                        isSelected ? "bg-indigo-500 text-[#E8EDF8]" : "bg-white/[0.05] text-[#8BA5C5] group-hover:text-[#7090B0]"
-                      )}>
-                        <opt.icon className="w-6 h-6" />
-                      </div>
-                      <span className={cn(
-                        "text-[8px] font-mono uppercase tracking-[0.3em] px-3 py-1 rounded-full border",
-                        opt.id === "claim_review" 
-                          ? "bg-indigo-500/20 border-indigo-500/30 text-indigo-300"
-                          : "bg-white/5 border-white/10 text-[#8BA5C5]"
-                      )}>
-                        {opt.badge}
-                      </span>
-                    </div>
-                    <div>
-                      <p className={cn(
-                        "text-2xl font-display font-medium transition-colors",
-                        isSelected ? "text-[#E8EDF8]" : "text-[#DDE5F5] group-hover:text-[#C2D0E4]"
-                      )}>
-                        {opt.label}
-                      </p>
-                      <p className="text-sm text-[#8BA5C5] font-light leading-relaxed mt-2 group-hover:text-[#AABDCF] transition-colors">
-                        {opt.detail}
-                      </p>
-                    </div>
-                  </div>
-                  {isSelected && (
-                    <motion.div layoutId="selection-check" className="absolute top-8 right-8">
-                      <ShieldCheck className="w-6 h-6 text-indigo-400" />
-                    </motion.div>
-                  )}
-                </motion.button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      <div className="absolute bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-3 md:gap-6">
-          <button onClick={onBack} className="group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 shrink-0">
-            <ArrowLeft className="w-4 h-4 text-[#DDE5F5] group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-[#E8EDF8]">Back</span>
-          </button>
-          <StarButton 
-            onClick={handleContinue} 
-            disabled={!selected} 
-            lightColor="#FAFAFA" 
-            backgroundColor="#060606" 
-            className={cn(
-              "flex-1 max-w-md h-20 rounded-full transition-all group",
-              !selected ? "opacity-20 grayscale" : "shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95"
-            )}
-          >
-            <div className="flex items-center justify-center gap-4">
-              <span className="text-sm md:text-xl font-display font-semibold tracking-tight">Continue with {selected ? (selected === "claim_review" ? "Claim Review" : "Direct Repair") : "Selected Path"}</span>
-              <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-indigo-400 group-hover:translate-x-1 transition-transform shrink-0" />
-            </div>
-          </StarButton>
-        </div>
-      </div>
-    </div>
-  );
+// B14 is merged into B13. This component auto-forwards to B15.
+export function B14PathDecision({ onNext }: Pick<Props, "onNext">) {
+  useEffect(() => { onNext(); }, [onNext]);
+  return null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -648,17 +568,8 @@ export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props
 
   return (
     <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
-      {/* Background Assets: Rapid Deployment Cloud */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Forensic Inspection Drone - Hovering Top Right */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 0.12, y: [0, -30, 0] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-10 -right-20 w-[600px] h-[600px]"
-        >
-          <img src="/images/inspection_drone.png" alt="" className="w-full h-full object-contain mix-blend-screen opacity-70" />
-        </motion.div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(244,63,94,0.04),transparent_70%)]" />
       </div>
 
       <div className="absolute top-10 left-10 z-30 hidden lg:flex flex-col items-start pointer-events-none">
@@ -670,7 +581,7 @@ export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props
 
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 text-center pb-32">
         <div className="max-w-4xl w-full space-y-16">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
