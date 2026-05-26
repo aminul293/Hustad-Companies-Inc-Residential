@@ -460,6 +460,8 @@ export function shouldShowScreen(
   const { selectedPath } = session.pathData;
 
   switch (screen) {
+    case "B11_rep_findings_prep":
+      return session.sessionStatus !== "summary_locked";
     case "B14_path_decision":
       return false; // Skipped as it is a dummy component that auto-forwards to B15/B16/B17
     case "B15_urgent_protection":

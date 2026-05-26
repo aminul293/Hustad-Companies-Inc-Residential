@@ -6,6 +6,7 @@ module.exports = {
     extend: {
       fontFamily: {
         display: ["'Playfair Display'", "Georgia", "serif"],
+        editorial: ["'Cormorant Garamond'", "'Cormorant'", "Georgia", "serif"],
         body: ["'DM Sans'", "system-ui", "sans-serif"],
         mono: ["'DM Mono'", "monospace"],
         inter: ["'Inter'", "'SF Pro Display'", "system-ui", "sans-serif"],
