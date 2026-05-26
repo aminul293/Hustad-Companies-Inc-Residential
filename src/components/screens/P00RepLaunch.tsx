@@ -36,7 +36,8 @@ import {
   X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { listDrafts, hasSameDayDraft, deleteDraft, createSession } from "@/lib/session";
+import { listDrafts, hasSameDayDraft, deleteDraft, createSession, loadDraftById } from "@/lib/session";
+import { fetchSessionsFromServer } from "@/lib/sync";
 import { RepCommandCenter, type IntakePrefill } from "@/components/RepCommandCenter";
 import { ResidentialCompanyModal } from "@/components/ResidentialCompanyModal";
 import { useSession as useAuthSession, signIn, signOut } from "next-auth/react";
@@ -89,6 +90,8 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [drafts, setDrafts] = useState<ReturnType<typeof listDrafts>>([]);
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
+  const [serverDuplicate, setServerDuplicate] = useState<{ sessionId: string; address: string; lastSavedAt: string; isLocal: boolean } | null>(null);
+  const [bypassServerDuplicate, setBypassServerDuplicate] = useState(false);
   const [showRepNav, setShowRepNav] = useState(false);
   const [showCompanyModal, setShowCompanyModal] = useState(false);
 
@@ -242,15 +245,43 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
     if (form.address.trim().length > 5) {
       const existing = hasSameDayDraft(form.address, authRep?.id);
       if (existing && existing.sessionId !== session.sessionId) {
-        setDuplicateWarning(
-          `A draft already exists for "${existing.address}" today.`
-        );
+        setDuplicateWarning(`A draft already exists for "${existing.address}" today.`);
       } else {
         setDuplicateWarning(null);
       }
     } else {
       setDuplicateWarning(null);
     }
+  }, [form.address, session.sessionId, authRep?.id]);
+
+  // Cross-device duplicate check — query Supabase for same address today
+  useEffect(() => {
+    setServerDuplicate(null);
+    setBypassServerDuplicate(false);
+    if (form.address.trim().length < 6 || !authRep) return;
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        const sessions = await fetchSessionsFromServer();
+        if (cancelled) return;
+        const today = new Date().toISOString().slice(0, 10);
+        const normalise = (s: string) => s.toLowerCase().trim();
+        const match = sessions.find(s => {
+          if (s.session_id === session.sessionId) return false;
+          if (!s.property_address) return false;
+          const sameAddr = normalise(s.property_address).includes(normalise(form.address)) ||
+                           normalise(form.address).includes(normalise(s.property_address));
+          const sameDay = (s.updated_at || s.created_at || "").slice(0, 10) === today;
+          const active = !["archived", "closed_signed", "closed_deferred", "closed_no_damage"].includes(s.session_status);
+          return sameAddr && sameDay && active;
+        });
+        if (match) {
+          const isLocal = !!loadDraftById(match.session_id);
+          setServerDuplicate({ sessionId: match.session_id, address: match.property_address, lastSavedAt: match.updated_at, isLocal });
+        }
+      } catch { /* non-fatal */ }
+    }, 600);
+    return () => { cancelled = true; clearTimeout(timer); };
   }, [form.address, session.sessionId, authRep?.id]);
 
   if (showDashboard && (authStatus === "authenticated" || !!mockId) && authRep) {
@@ -284,6 +315,11 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
 
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
+
+    if (serverDuplicate && !bypassServerDuplicate) {
+      setBypassServerDuplicate(true); // first click = show confirmation; second click = proceed
+      return;
+    }
 
     // CREATE A TRULY NEW SESSION
     const baseNewSession = createSession(authRep.id, authRep.name, authRep.email);
@@ -326,6 +362,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
   const set = (k: string, v: string) => {
     setForm((f) => ({ ...f, [k]: v }));
     setErrors((e) => { const n = { ...e }; delete n[k]; return n; });
+    if (k === "address") { setServerDuplicate(null); setBypassServerDuplicate(false); }
   };
 
   return (
@@ -684,6 +721,56 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
       {/* Footer CTA */}
       <div className="absolute bottom-0 inset-x-0 p-8 z-30 bg-gradient-to-t dark:from-[#060606] dark:via-[#060606]/90 from-hustad-cream via-hustad-cream/90 to-transparent pt-24 transition-colors duration-300">
         <div className="max-w-3xl mx-auto">
+          {/* Duplicate session warnings — shown above the launch button */}
+          {isPreFlightMode && serverDuplicate && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 p-4 rounded-3xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-4"
+            >
+              <AlertTriangle className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-mono text-amber-300 uppercase tracking-widest mb-1">
+                  {bypassServerDuplicate ? "Confirm: Create Duplicate Session?" : "Active Session Already Exists"}
+                </p>
+                <p className="text-sm text-amber-200/80 font-light leading-relaxed">
+                  {bypassServerDuplicate
+                    ? "This will create a second session for the same address today. Click Launch again to confirm, or open Command Center to resume the existing one."
+                    : `A session for "${serverDuplicate.address}" was already started today on another device. Resume it to avoid duplicates.`}
+                </p>
+                {!bypassServerDuplicate && (
+                  <div className="flex items-center gap-3 mt-3">
+                    {serverDuplicate.isLocal ? (
+                      <button
+                        onClick={() => { onLoadDraft(serverDuplicate.sessionId); }}
+                        className="text-[10px] font-mono uppercase tracking-widest text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-xl hover:bg-amber-500/10 transition-colors"
+                      >
+                        Resume Existing
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setShowDashboard(true)}
+                        className="text-[10px] font-mono uppercase tracking-widest text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-xl hover:bg-amber-500/10 transition-colors"
+                      >
+                        Open Command Center
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+          {isPreFlightMode && duplicateWarning && !serverDuplicate && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 p-4 rounded-3xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-4"
+            >
+              <AlertTriangle className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
+              <p className="text-sm text-amber-200/80 font-light">{duplicateWarning}</p>
+            </motion.div>
+          )}
+
           <div className="flex justify-center gap-4">
             {(authStatus === "authenticated" || !!mockId) && (
               <>
@@ -713,11 +800,18 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                       <X className="w-5 h-5 text-[var(--tx4)]" />
                       <span className="text-sm font-display font-medium text-[var(--tx2)]">Cancel / Back to Hub</span>
                     </button>
-                    <button 
+                    <button
                       onClick={handleStart}
-                      className="group flex items-center gap-4 px-12 py-6 rounded-full bg-white text-black transition-all hover:bg-neutral-200 active:scale-95 shadow-[0_20px_50px_rgba(255,255,255,0.1)]"
+                      className={cn(
+                        "group flex items-center gap-4 px-12 py-6 rounded-full transition-all active:scale-95 shadow-[0_20px_50px_rgba(255,255,255,0.1)]",
+                        bypassServerDuplicate
+                          ? "bg-amber-500 text-black hover:bg-amber-400"
+                          : "bg-white text-black hover:bg-neutral-200"
+                      )}
                     >
-                      <span className="text-lg font-display font-semibold tracking-tight">Launch Inspection</span>
+                      <span className="text-lg font-display font-semibold tracking-tight">
+                        {bypassServerDuplicate ? "Confirm New Session" : "Launch Inspection"}
+                      </span>
                       <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                     </button>
                   </>
