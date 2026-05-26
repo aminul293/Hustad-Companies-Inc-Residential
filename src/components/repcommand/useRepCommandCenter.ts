@@ -143,7 +143,20 @@ export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart
       try {
         const { fetchSessionsFromServer } = await import("@/lib/sync");
         const sessions = await fetchSessionsFromServer();
-        setServerSessions(Array.isArray(sessions) ? sessions : []);
+        const live = Array.isArray(sessions) ? sessions : [];
+
+        // Purge stale local drafts that were archived/deleted on the server from another device.
+        // A synced draft missing from the server list means it was archived elsewhere.
+        const serverIds = new Set(live.map((s: any) => s.session_id));
+        const localDrafts = listDrafts(currentRep.id);
+        localDrafts.forEach(draft => {
+          if (draft.syncStatus === "synced" && !serverIds.has(draft.sessionId)) {
+            deleteDraft(draft.sessionId);
+          }
+        });
+
+        setServerSessions(live);
+        setDraftRefreshKey(k => k + 1);
       } catch { /* non-fatal */ } finally { setIsLoading(false); }
     };
 

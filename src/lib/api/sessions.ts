@@ -27,8 +27,13 @@ export async function completeSession(
   });
 }
 
-export async function deleteSession(sessionId: string): Promise<void> {
-  await fetch(`/api/sessions/${sessionId}`, { method: "DELETE" }).catch(() => {});
+export async function deleteSession(sessionId: string): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/sessions/${sessionId}`, { method: "DELETE" });
+    return res.ok;
+  } catch {
+    return false;
+  }
 }
 
 export async function postReviewAction(
