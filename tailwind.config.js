@@ -78,6 +78,8 @@ module.exports = {
       animation: {
         "star-btn": "star-btn calc(var(--duration)*1s) linear infinite",
         spotlight: "spotlight 2s ease .75s 1 forwards",
+        marquee: "marquee var(--duration) infinite linear",
+        "marquee-vertical": "marquee-vertical var(--duration) linear infinite",
       },
       keyframes: {
         "star-btn": {
@@ -93,6 +95,14 @@ module.exports = {
             opacity: 1,
             transform: "translate(-50%,-40%) scale(1)",
           },
+        },
+        marquee: {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(calc(-100% - var(--gap)))" },
+        },
+        "marquee-vertical": {
+          from: { transform: "translateY(0)" },
+          to: { transform: "translateY(calc(-100% - var(--gap)))" },
         },
       },
     },
