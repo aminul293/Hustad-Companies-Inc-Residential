@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { SessionState, SelectedPath, InspectionPhoto } from "@/types/session";
+import type { SessionState, SelectedPath, InspectionPhoto, BuyerPriority } from "@/types/session";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { StarButton } from "@/components/ui/star-button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -1524,146 +1524,831 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// B13 – Recommended Path
+// B13 — Recommended Path (Page 14A / 14B / 14C)
+// Cinematic luxury enterprise redesign
 // ─────────────────────────────────────────────────────────────────────────────
 
+type B13PathKey = "carrier_review" | "direct_repair" | "no_action";
+
+function deriveB13PathKey(outcome: string | null, urgentCount: number): B13PathKey {
+  if (urgentCount > 0 || outcome === "repair_only") return "direct_repair";
+  if (outcome === "claim_review_candidate" || outcome === "full_restoration_candidate") return "carrier_review";
+  return "no_action";
+}
+
+interface B13Config {
+  variantLabel:           string;
+  heroEyebrow:            string;
+  heroHeadline:           string;
+  heroSubhead:            string;
+  theme:                  "blue" | "red" | "green";
+  pathBadgeLabel:         string;
+  PathBadgeIcon:          any;
+  primaryPathId:          SelectedPath;
+  primaryPathLabel:       string;
+  primaryPathDescription: string;
+  primaryBullets:         string[];
+  alternatePath:          string;
+  alternatePathDescription: string;
+  showAlternatePath:      boolean;
+  heroImage:              string;
+  imagePosition:          string;
+  credibilityLines:       string[];
+  repOpeningLine:         string;
+  repGuidedQs:            [string, string, string];
+  repGuardrail:           string;
+  ctaLabel:               string;
+}
+
+const B14_PATH_CONFIGS: Record<B13PathKey, B13Config> = {
+  carrier_review: {
+    variantLabel:   "14A",
+    heroEyebrow:    "Recommended Path",
+    heroHeadline:   "Carrier review is the\nrecommended path forward.",
+    heroSubhead:    "The documented storm findings are strong enough to justify a formal carrier review before any out-of-pocket expense. This is not a coverage guarantee — it is a recommendation to ask the question the evidence supports.",
+    theme:          "blue",
+    pathBadgeLabel: "Carrier Review Candidate",
+    PathBadgeIcon:  FileText,
+    primaryPathId:          "claim_review",
+    primaryPathLabel:       "Carrier Review",
+    primaryPathDescription: "Coordinate a formal carrier inspection based on documented storm findings. Hustad prepares the documentation package. Your carrier reviews the evidence and makes a coverage determination.",
+    primaryBullets: [
+      "Hustad organizes and submits the documentation package to your carrier.",
+      "Your carrier schedules an independent inspection of the property.",
+      "Coverage determination remains entirely with your insurance carrier.",
+      "No repair work begins until you authorize it after coverage review.",
+    ],
+    alternatePath:            "Direct Repair",
+    alternatePathDescription: "Address documented items out-of-pocket without a carrier review. Faster scheduling, no insurance process, full cost at your expense.",
+    showAlternatePath: true,
+    heroImage:     "/images/home_aerial.png",
+    imagePosition: "center 30%",
+    credibilityLines: [
+      "We are not saying your carrier has approved coverage.",
+      "We are not saying every exterior condition is storm related.",
+      "We are not asking you to make a repair decision without seeing the evidence.",
+      "We are saying the documented findings are strong enough to justify the recommended next step.",
+    ],
+    repOpeningLine: "What I'd like to do is walk you through what the carrier review path actually looks like — step by step. Then we can decide together if it makes sense to move forward.",
+    repGuidedQs: [
+      "Based on what you've seen in the photos: does a carrier review feel like the right next step, or do you have questions before deciding?",
+      "Is there anything about the carrier review process you'd like me to walk through before we move forward?",
+      "If the carrier reviews the documentation and confirms coverage, would you want Hustad to manage the project?",
+    ],
+    repGuardrail: "Do not discuss coverage probability, approval odds, or claim dollar amounts. You are recommending a next step based on evidence. Stay on the documentation. Let the photos do the work.",
+    ctaLabel: "Confirm the Carrier Review Path",
+  },
+
+  direct_repair: {
+    variantLabel:   "14B",
+    heroEyebrow:    "Recommended Path",
+    heroHeadline:   "Direct repair is the\nrecommended path forward.",
+    heroSubhead:    "The documented findings support a targeted repair scope. This path addresses what the evidence supports — nothing more. No insurance process required, faster scheduling, and full control over timing.",
+    theme:          "red",
+    pathBadgeLabel: "Direct Repair Recommended",
+    PathBadgeIcon:  Wrench,
+    primaryPathId:          "direct_repair",
+    primaryPathLabel:       "Direct Repair",
+    primaryPathDescription: "Address documented items directly with a scoped repair authorization. No carrier process required. Hustad schedules repair work based on exactly what was documented during the inspection.",
+    primaryBullets: [
+      "Scope limited to documented findings — nothing beyond what the evidence supports.",
+      "Faster scheduling with no carrier coordination delay.",
+      "Full cost transparency before any work begins.",
+      "You authorize exactly what gets repaired, and when.",
+    ],
+    alternatePath:            "Carrier Review",
+    alternatePathDescription: "If storm-related indicators exist, you may choose to explore a carrier review before committing to out-of-pocket repair. Longer timeline, potential coverage determination.",
+    showAlternatePath: false,
+    heroImage:     "/images/roof_forensic.png",
+    imagePosition: "center 40%",
+    credibilityLines: [
+      "We are not saying every condition requires full replacement.",
+      "We are not asking you to approve more than the evidence supports.",
+      "We are not recommending a carrier path if the findings don't support it.",
+      "We are saying the documented condition has a clear, scoped repair path.",
+    ],
+    repOpeningLine: "I want to walk you through exactly what the repair scope covers, so you can see what you're authorizing before we make any decisions.",
+    repGuidedQs: [
+      "Does the repair scope feel aligned with what you saw in the documentation?",
+      "Is there anything about the repair process or timeline you'd like to clarify before we move forward?",
+      "Would you like to review the authorization together on the next screen before making any decision?",
+    ],
+    repGuardrail: "Do not expand the scope beyond what the evidence supports. Do not introduce insurance options unless the homeowner specifically asks. Stay focused on the documented repair items.",
+    ctaLabel: "Review the Repair Authorization",
+  },
+
+  no_action: {
+    variantLabel:   "14C",
+    heroEyebrow:    "Inspection Complete",
+    heroHeadline:   "No action is recommended\nfor your property today.",
+    heroSubhead:    "Hustad completed a thorough exterior inspection and did not document conditions that support repair, emergency action, or carrier review at this time. Your inspection record is organized and saved as a dated property baseline.",
+    theme:          "green",
+    pathBadgeLabel: "No Action Required Today",
+    PathBadgeIcon:  CheckCircle2,
+    primaryPathId:          null,
+    primaryPathLabel:       "Save Baseline & Monitor",
+    primaryPathDescription: "Your inspection record is documented, organized, and saved as a baseline. If conditions change after a future storm event, you have a dated comparison point. No repair or claim action is needed today.",
+    primaryBullets: [
+      "Inspection report delivered to your property record.",
+      "Baseline documentation stored for future storm comparison.",
+      "Monitor items flagged with re-inspection triggers.",
+      "Schedule a free recheck reminder at any time.",
+    ],
+    alternatePath:            "Future Recheck Reminder",
+    alternatePathDescription: "Set a free recheck reminder for 6 or 12 months. If a storm event occurs before then, your baseline documentation provides a before-and-after comparison.",
+    showAlternatePath: true,
+    heroImage:     "/images/home_aerial.png",
+    imagePosition: "center 30%",
+    credibilityLines: [
+      "We are not saying your roof is perfect forever.",
+      "We are not saying every condition needs action today.",
+      "We are not asking you to make a repair or claim decision without a clear reason.",
+      "We are saying the best next step today is documentation and monitoring.",
+    ],
+    repOpeningLine: "Let me show you what we're leaving you with today — even a no-action finding has real value when it's organized and saved to your property record.",
+    repGuidedQs: [
+      "Does it help to know this inspection is documented, even when there's no action to take today?",
+      "Are there any areas of the property you'd like us to watch more closely going forward?",
+      "Would you like to set a future recheck reminder? If there's a storm event, you'll have a before-and-after comparison.",
+    ],
+    repGuardrail: "Do not over-explain or look for problems that aren't there. This is a genuine no-action finding. Honor it. Your credibility is the deliverable today.",
+    ctaLabel: "Save Your Property Record",
+  },
+};
+
+const B13_PRIORITY_LABELS: Record<string, { label: string; icon: any; accent: string }> = {
+  roof_longevity:     { label: "Roof Longevity",     icon: Shield,      accent: "#4D6FFF" },
+  insurance_process:  { label: "Insurance Process",  icon: FileCheck,   accent: "#8B5CFF" },
+  repair_speed:       { label: "Repair Speed",        icon: Zap,         accent: "#FF7849" },
+  cost_clarity:       { label: "Cost Clarity",        icon: Eye,         accent: "#43D17D" },
+  warranty_coverage:  { label: "Warranty Coverage",   icon: ShieldCheck, accent: "#FF4D8D" },
+  minimal_disruption: { label: "Minimal Disruption",  icon: Home,        accent: "#FFC774" },
+};
+
 export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props) {
-  const outcome = session.findings.outcomeType || "no_damage";
-  const config = PATH_CONFIG[outcome] || PATH_CONFIG.no_damage;
+  const outcome  = session.findings.outcomeType ?? "no_damage";
+  const pathKey  = deriveB13PathKey(outcome, session.findings.urgentItemsCount);
+  const config   = B14_PATH_CONFIGS[pathKey];
+  const tk       = DS.theme[config.theme];
 
-  const recommendedPathId: SelectedPath = outcome === "claim_review_candidate"
-    ? "claim_review"
-    : outcome === "full_restoration_candidate"
-      ? "full_restoration"
-      : outcome === "repair_only"
-        ? "direct_repair"
-        : null;
+  const legacyPK: PathKey = pathKey === "carrier_review" ? "carrier_review" : pathKey === "direct_repair" ? "urgent_repair" : "no_action";
 
-  const showAlternatePath = outcome === "claim_review_candidate" || outcome === "full_restoration_candidate";
-  const [selectedPath, setSelectedPath_] = useState<SelectedPath>(session.pathData.selectedPath || recommendedPathId);
+  const initialPath = session.pathData.selectedPath ?? config.primaryPathId;
+  const [chosenPath,      setChosenPath_]      = useState<SelectedPath>(initialPath);
+  const [showCompanion,   setShowCompanion]    = useState(false);
+  const [companionAns,    setCompanionAns]     = useState({ q1: "", q2: "", q3: "" });
+  const [companionSaved,  setCompanionSaved]   = useState(false);
+  const [recheckShown,    setRecheckShown]     = useState(false);
 
-  const handleContinue = () => { const updated = setSelectedPath(session, selectedPath); onUpdate(updated); onNext(); };
+  const allPhotos    = buildPhotoList(session);
+  const sortedPhotos = sortPhotosForProof(allPhotos, legacyPK);
+  const proofPhotos  = sortedPhotos.slice(0, 4);
+
+  const address = [
+    session.property?.address,
+    session.property?.cityStateZip,
+  ].filter(Boolean).join(", ");
+
+  const inspectionDate = session.createdAt
+    ? new Date(session.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    : "";
+
+  const stats = [
+    { label: "Storm",   value: session.findings.stormRelatedItemsCount, color: "#4D6FFF", bg: "rgba(77,111,255,0.10)",  border: "rgba(77,111,255,0.20)"  },
+    { label: "Urgent",  value: session.findings.urgentItemsCount,       color: "#FF5A6B", bg: "rgba(255,90,107,0.10)",  border: "rgba(255,90,107,0.20)"  },
+    { label: "Monitor", value: session.findings.monitorItemsCount,      color: "#FFC774", bg: "rgba(255,184,77,0.10)",  border: "rgba(255,184,77,0.20)"  },
+    { label: "Photos",  value: allPhotos.length,                        color: DS.text.secondary, bg: "rgba(255,255,255,0.04)", border: "rgba(255,255,255,0.10)" },
+  ];
+
+  const handleContinue = () => {
+    const updated = setSelectedPath(session, chosenPath);
+    onUpdate(updated);
+    onNext();
+  };
+
+  const handleSaveCompanion = () => {
+    setCompanionSaved(true);
+    setTimeout(() => setCompanionSaved(false), 2500);
+  };
 
   return (
-    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(99,102,241,0.05),transparent_70%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(99,102,241,0.03),transparent_60%)]" />
+    <div className="relative flex flex-col h-screen w-full overflow-hidden" style={DS.pageBg}>
+
+      {/* ═══ CINEMATIC BACKGROUND — 7 layers ═══════════════════════════════════ */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+
+        {/* L1 — Film grain */}
+        <div className="absolute inset-0" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.68' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E")`,
+          backgroundRepeat: "repeat", backgroundSize: "300px 300px",
+          opacity: 0.030, mixBlendMode: "soft-light" as React.CSSProperties["mixBlendMode"],
+        }} />
+
+        {/* L2 — Blueprint technical grid */}
+        <div className="absolute inset-0" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cline x1='0' y1='0' x2='60' y2='0' stroke='%234D6FFF' stroke-width='0.35'/%3E%3Cline x1='0' y1='0' x2='0' y2='60' stroke='%234D6FFF' stroke-width='0.35'/%3E%3C/svg%3E")`,
+          backgroundRepeat: "repeat", backgroundSize: "60px 60px", opacity: 0.040,
+        }} />
+
+        {/* L3 — Edge vignette */}
+        <div className="absolute inset-0" style={{ boxShadow: "inset 0 0 220px rgba(0,0,0,0.38), inset 0 0 80px rgba(0,0,0,0.20)" }} />
+
+        {/* L4 — Themed ambient glow top-right */}
+        <motion.div
+          animate={{ scale: [1, 1.12, 1.04, 1], opacity: [0.16, 0.22, 0.18, 0.16] }}
+          transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-40 -right-40 w-[780px] h-[780px] rounded-full"
+          style={{ background: `radial-gradient(circle, ${tk.accentGlow.replace("0.10", "0.28")}, transparent 68%)`, filter: "blur(120px)" }}
+        />
+
+        {/* L5 — Purple ambient glow bottom-left */}
+        <motion.div
+          animate={{ scale: [1, 1.09, 1.05, 1], opacity: [0.10, 0.16, 0.12, 0.10] }}
+          transition={{ duration: 38, repeat: Infinity, ease: "easeInOut", delay: 10 }}
+          className="absolute -bottom-52 -left-52 w-[680px] h-[680px] rounded-full"
+          style={{ background: "radial-gradient(circle, rgba(139,92,255,0.22), transparent 68%)", filter: "blur(120px)" }}
+        />
+
+        {/* L6 — Blue bloom top-left */}
+        <motion.div
+          animate={{ scale: [1, 1.07, 1], opacity: [0.07, 0.12, 0.07] }}
+          transition={{ duration: 24, repeat: Infinity, ease: "easeInOut", delay: 6 }}
+          className="absolute top-16 -left-28 w-[440px] h-[440px] rounded-full"
+          style={{ background: "radial-gradient(circle, rgba(77,111,255,0.20), transparent 65%)", filter: "blur(100px)" }}
+        />
+
+        {/* L7 — Horizon bloom */}
+        <motion.div
+          animate={{ scale: [1, 1.14, 1], opacity: [0.05, 0.09, 0.05] }}
+          transition={{ duration: 40, repeat: Infinity, ease: "easeInOut", delay: 18 }}
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[900px] h-[360px] rounded-full"
+          style={{ background: "radial-gradient(ellipse, rgba(61,90,254,0.14), transparent 60%)", filter: "blur(110px)" }}
+        />
       </div>
-      <div className="absolute top-10 left-10 z-30 hidden lg:flex flex-col items-start pointer-events-none">
-        <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em]">Madison Residential</span>
+
+      {/* ═══ CINEMATIC HOUSE / ROOF IMAGE ════════════════════════════════════════ */}
+      <div className="absolute top-0 right-0 w-[60%] pointer-events-none overflow-hidden" style={{ zIndex: 2, height: "70vh" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={config.heroImage} alt="" aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ objectPosition: config.imagePosition, filter: "brightness(0.42) contrast(1.12) saturate(0.78) hue-rotate(-8deg)" }}
+        />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(5,8,22,1) 0%, rgba(5,8,22,0.92) 28%, rgba(5,8,22,0.62) 58%, rgba(5,8,22,0.12) 100%)" }} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(5,8,22,0.20) 0%, transparent 38%, rgba(5,8,22,0.88) 100%)" }} />
+        <div className="absolute inset-0" style={{ background: "radial-gradient(circle at center right, rgba(61,90,254,0.18), transparent 40%)" }} />
+      </div>
+
+      {/* ═══ FLOATING GLASS HEADER ════════════════════════════════════════════════ */}
+      <div className="absolute top-0 inset-x-0 z-30 px-6 md:px-10 pt-5 pointer-events-none">
+        <div className="max-w-[1440px] mx-auto flex items-center justify-between">
+
+          {/* Brand wordmark */}
+          <div className="flex items-baseline gap-2.5 pointer-events-auto">
+            <span className="font-editorial font-medium" style={{ fontSize: "17px", letterSpacing: "-0.01em", color: DS.text.primary }}>HUSTAD</span>
+            <span style={{ fontFamily: "'Inter', system-ui", fontSize: "9px", letterSpacing: "3px", textTransform: "uppercase", color: DS.text.muted }}>Madison Residential</span>
+          </div>
+
+          {/* Center phase + progress pill */}
+          <div className="hidden md:flex flex-col items-center gap-1.5">
+            <div className="flex items-center gap-2 px-4 py-1.5 rounded-full pointer-events-auto"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)" }}>
+              <div className="w-1.5 h-1.5 rounded-full" style={{ background: tk.accent }} />
+              <span style={{ fontFamily: "'Inter'", fontSize: "10px", letterSpacing: "2px", textTransform: "uppercase", color: DS.text.muted }}>
+                Review / Finalize · Phase B · Page {config.variantLabel}
+              </span>
+            </div>
+            <div className="w-[200px] h-[2px] rounded-full" style={{ background: "rgba(255,255,255,0.06)" }}>
+              <div className="h-full rounded-full" style={{ width: "82%", background: `linear-gradient(90deg, ${tk.accent}, ${tk.accent}88)`, transition: "width 0.7s ease" }} />
+            </div>
+          </div>
+
+          {/* Path badge */}
+          <div className="pointer-events-auto">
+            <SemanticBadge
+              icon={config.PathBadgeIcon}
+              label={config.pathBadgeLabel}
+              variant={pathKey === "carrier_review" ? "neutral" : pathKey === "direct_repair" ? "urgent" : "success"}
+              size="sm"
+            />
+          </div>
         </div>
       </div>
-      <div className="relative z-10 flex-1 overflow-y-auto px-8 pt-20 pb-36 min-h-0">
-        <div className="max-w-4xl mx-auto w-full space-y-12">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 text-center">
-            <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-md w-fit mx-auto">
-              <Clock className="w-3.5 h-3.5 text-indigo-400" />
-              <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-[0.2em] pt-0.5">Recommended Strategy</span>
-            </div>
-            <h1 className="text-3xl md:text-6xl lg:text-7xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">{config.headline}</h1>
-            <p className="text-xl text-[#AABDCF] font-light leading-relaxed max-w-2xl mx-auto">{config.explanation}</p>
-          </motion.div>
-          <motion.button
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-            onClick={() => setSelectedPath_(recommendedPathId)}
-            className={cn("relative w-full p-10 rounded-[48px] overflow-hidden border text-left transition-all duration-500",
-              selectedPath === recommendedPathId ? "bg-indigo-500/10 border-indigo-500/40 shadow-2xl" : "bg-white/[0.02] border-white/[0.1] hover:border-white/20")}
+
+      {/* ═══ SCROLLABLE CONTENT ═══════════════════════════════════════════════════ */}
+      <div className="relative z-10 flex-1 overflow-y-auto pb-36 min-h-0" style={{ scrollbarWidth: "none" as React.CSSProperties["scrollbarWidth"] }}>
+        <div className="max-w-[1440px] mx-auto px-6 md:px-10 pt-24 space-y-8">
+
+          {/* ── § 1  HERO ──────────────────────────────────────────────────────── */}
+          <motion.section
+            initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.60, ease: [0.22, 1, 0.36, 1] }}
+            className="pt-8 space-y-5"
           >
-            <div className="absolute inset-0 opacity-20 blur-3xl pointer-events-none" style={{ background: `radial-gradient(circle at center, ${config.cardColor}, transparent)` }} />
-            <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-10">
-              <div className="md:col-span-4 flex flex-col items-start gap-5">
-                <div className="w-16 h-16 rounded-[24px] flex items-center justify-center shadow-2xl" style={{ background: config.cardColor }}>
-                  <config.icon className="w-8 h-8 text-[#E8EDF8]" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[8px] font-mono uppercase tracking-[0.3em] px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300">Recommended</span>
+            <MicroLabel icon={Sparkles} accent={tk.accent}>{config.heroEyebrow}</MicroLabel>
+
+            <h1 style={{
+              fontFamily:    "'Cormorant Garamond', 'Cormorant', Georgia, serif",
+              fontSize:      "clamp(48px, 5.8vw, 78px)",
+              fontWeight:    400,
+              lineHeight:    0.93,
+              letterSpacing: "-0.03em",
+              color:         DS.text.primary,
+              whiteSpace:    "pre-line",
+            }}>
+              {config.heroHeadline}
+            </h1>
+
+            <p className="max-w-[580px]" style={{ fontFamily: "'Inter', system-ui", fontSize: "17px", lineHeight: 1.62, color: DS.text.secondary }}>
+              {config.heroSubhead}
+            </p>
+
+            {/* Finding stats chips */}
+            <div className="flex flex-wrap gap-2.5 pt-2">
+              {stats.filter(s => s.value > 0).map((s, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.25 + i * 0.06 }}
+                  className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl"
+                  style={{ background: s.bg, border: `1px solid ${s.border}` }}
+                >
+                  <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "22px", fontWeight: 500, color: s.color, lineHeight: 1 }}>{s.value}</span>
+                  <span style={{ fontFamily: "'Inter'", fontSize: "10px", letterSpacing: "1.8px", textTransform: "uppercase", color: s.color, opacity: 0.80 }}>{s.label}</span>
+                </motion.div>
+              ))}
+              {address && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl"
+                  style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+                >
+                  <MapPin size={11} strokeWidth={1.5} style={{ color: DS.text.muted }} />
+                  <span style={{ fontFamily: "'Inter'", fontSize: "11px", color: DS.text.muted }}>{address}</span>
+                </motion.div>
+              )}
+              {inspectionDate && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.56 }}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl"
+                  style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+                >
+                  <Clock size={10} strokeWidth={1.5} style={{ color: DS.text.muted }} />
+                  <span style={{ fontFamily: "'Inter'", fontSize: "11px", color: DS.text.muted }}>Inspected {inspectionDate}</span>
+                </motion.div>
+              )}
+            </div>
+          </motion.section>
+
+          {/* ── § 2  PATH CARDS — Primary (8-col) + Right Column (4-col) ────────── */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+            {/* Primary Recommendation Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+              onClick={() => setChosenPath_(config.primaryPathId)}
+              className="lg:col-span-8 cursor-pointer relative overflow-hidden"
+              whileHover={{ y: -2, transition: { duration: 0.18 } }}
+              style={{
+                ...themedCard(tk),
+                padding: "36px",
+                outline: chosenPath === config.primaryPathId ? `1.5px solid ${tk.accent}55` : "1.5px solid transparent",
+                outlineOffset: "2px",
+                transition: "outline 0.25s ease, box-shadow 0.25s ease",
+              }}
+            >
+              {/* Subtle glow radial behind content */}
+              <div className="absolute top-0 right-0 w-[320px] h-[320px] pointer-events-none opacity-[0.07]"
+                style={{ background: `radial-gradient(circle, ${tk.accent}, transparent 70%)`, filter: "blur(60px)" }} />
+
+              <div className="relative space-y-6">
+                {/* Card header row */}
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <span style={{ fontFamily: "'Inter'", fontSize: "9px", letterSpacing: "2.5px", textTransform: "uppercase", color: tk.accent }}>
+                        Recommended Path
+                      </span>
+                      <AnimatePresence>
+                        {chosenPath === config.primaryPathId && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}
+                            className="flex items-center gap-1 px-2 py-0.5 rounded-full"
+                            style={{ background: tk.accentSoft, border: `1px solid ${tk.accentBorder}` }}
+                          >
+                            <CheckCircle2 size={9} style={{ color: tk.accent }} />
+                            <span style={{ fontFamily: "'Inter'", fontSize: "9px", color: tk.accent, letterSpacing: "0.5px" }}>Selected</span>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                    <h2 style={{
+                      fontFamily:    "'Cormorant Garamond', Georgia, serif",
+                      fontSize:      "clamp(26px, 3vw, 38px)",
+                      fontWeight:    500,
+                      lineHeight:    1.0,
+                      letterSpacing: "-0.02em",
+                      color:         DS.text.primary,
+                    }}>
+                      {config.primaryPathLabel}
+                    </h2>
                   </div>
-                  <p className="text-2xl font-display font-medium text-[#E8EDF8]">{config.pathLabel}</p>
-                  <p className="text-[#AABDCF] font-light text-sm uppercase tracking-widest mt-1">Hustad Certified Path</p>
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: tk.iconBg }}>
+                    <config.PathBadgeIcon size={20} strokeWidth={1.5} style={{ color: tk.accent }} />
+                  </div>
                 </div>
-              </div>
-              <div className="md:col-span-8 space-y-6 border-l border-white/5 pl-0 md:pl-10">
-                <h3 className="text-[10px] font-mono text-indigo-300 uppercase tracking-[0.3em]">What happens next</h3>
+
+                <p style={{ fontFamily: "'Inter'", fontSize: "14px", lineHeight: 1.65, color: DS.text.secondary }}>
+                  {config.primaryPathDescription}
+                </p>
+
+                <div style={{ height: "1px", background: tk.accentBorder }} />
+
+                {/* Step bullets */}
                 <div className="space-y-3">
-                  {config.nextSteps.map((step, i) => (
-                    <motion.div key={i} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 + i * 0.08 }} className="flex items-start gap-4">
-                      <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-500/40 shrink-0" />
-                      <p className="text-[#DDE5F5] font-light text-base leading-relaxed">{step}</p>
+                  {config.primaryBullets.map((bullet, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.28 + i * 0.07 }}
+                      className="flex items-start gap-3"
+                    >
+                      <div className="mt-[7px] w-1.5 h-1.5 rounded-full shrink-0" style={{ background: tk.accent, opacity: 0.72 }} />
+                      <p style={{ fontFamily: "'Inter'", fontSize: "13.5px", lineHeight: 1.62, color: DS.text.secondary }}>{bullet}</p>
                     </motion.div>
                   ))}
                 </div>
-              </div>
-            </div>
-            {selectedPath === recommendedPathId && (
-              <motion.div layoutId="path-check" className="absolute top-8 right-8">
-                <ShieldCheck className="w-6 h-6 text-indigo-400" />
-              </motion.div>
-            )}
-          </motion.button>
-          {showAlternatePath && (
-            <motion.button
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              onClick={() => setSelectedPath_("direct_repair")}
-              className={cn("relative w-full p-8 rounded-[40px] border text-left transition-all duration-500",
-                selectedPath === "direct_repair" ? "bg-white/10 border-white/30 shadow-xl" : "bg-white/[0.02] border-white/[0.05] hover:border-white/20")}
-            >
-              <div className="flex items-start gap-6">
-                <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors", selectedPath === "direct_repair" ? "bg-white text-black" : "bg-white/[0.05] text-[#8BA5C5]")}>
-                  <Wrench className="w-6 h-6" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[8px] font-mono uppercase tracking-[0.3em] px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[#8BA5C5]">Alternate Path</span>
+
+                {/* Path selector indicator */}
+                <div className="pt-2 flex items-center gap-2.5">
+                  <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200"
+                    style={{ borderColor: chosenPath === config.primaryPathId ? tk.accent : "rgba(255,255,255,0.22)", background: chosenPath === config.primaryPathId ? tk.accentSoft : "transparent" }}>
+                    {chosenPath === config.primaryPathId && (
+                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-2 h-2 rounded-full" style={{ background: tk.accent }} />
+                    )}
                   </div>
-                  <p className={cn("text-xl font-display font-medium transition-colors", selectedPath === "direct_repair" ? "text-[#E8EDF8]" : "text-[#DDE5F5]")}>Direct Repair</p>
-                  <p className="text-sm text-[#8BA5C5] font-light leading-relaxed mt-1">Address documented items directly. No insurance claim required. Faster scheduling, out-of-pocket cost, full control over timing.</p>
+                  <span style={{ fontFamily: "'Inter'", fontSize: "12px", color: chosenPath === config.primaryPathId ? tk.accent : DS.text.muted, transition: "color 0.2s ease" }}>
+                    {chosenPath === config.primaryPathId ? "This path is selected" : "Tap to select this path"}
+                  </span>
                 </div>
               </div>
-              {selectedPath === "direct_repair" && (
-                <motion.div layoutId="path-check" className="absolute top-6 right-6">
-                  <ShieldCheck className="w-5 h-5 text-[#DDE5F5]" />
+            </motion.div>
+
+            {/* Right column */}
+            <div className="lg:col-span-4 space-y-4">
+
+              {/* Alternate Path Card */}
+              {config.showAlternatePath && (
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.22 }}
+                  whileHover={{ y: -2, transition: { duration: 0.18 } }}
+                  onClick={() => setChosenPath_(pathKey === "carrier_review" ? "direct_repair" : null)}
+                  className="cursor-pointer relative overflow-hidden"
+                  style={{
+                    ...DS.card,
+                    padding: "24px",
+                    outline: chosenPath !== config.primaryPathId && config.showAlternatePath ? "1.5px solid rgba(255,255,255,0.18)" : "1.5px solid transparent",
+                    outlineOffset: "2px",
+                    transition: "outline 0.25s ease",
+                  }}
+                >
+                  <div className="space-y-3">
+                    <span style={{ fontFamily: "'Inter'", fontSize: "9px", letterSpacing: "2px", textTransform: "uppercase", color: DS.text.muted }}>Alternate Path</span>
+                    <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "22px", fontWeight: 500, lineHeight: 1.1, color: DS.text.primary }}>
+                      {config.alternatePath}
+                    </p>
+                    <p style={{ fontFamily: "'Inter'", fontSize: "12.5px", lineHeight: 1.60, color: DS.text.muted }}>
+                      {config.alternatePathDescription}
+                    </p>
+                    <div className="flex items-center gap-2 pt-1">
+                      <div className="w-4 h-4 rounded-full border flex items-center justify-center transition-all"
+                        style={{ borderColor: chosenPath !== config.primaryPathId && config.showAlternatePath ? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.20)" }}>
+                        {chosenPath !== config.primaryPathId && config.showAlternatePath && (
+                          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-1.5 h-1.5 rounded-full bg-white" />
+                        )}
+                      </div>
+                      <span style={{ fontFamily: "'Inter'", fontSize: "11px", color: DS.text.muted }}>Choose alternate path</span>
+                    </div>
+                  </div>
                 </motion.div>
               )}
-            </motion.button>
-          )}
-        </div>
-      </div>
-      <div className="absolute bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-3 md:gap-6">
-          <button onClick={onBack} className="group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 shrink-0">
-            <ArrowLeft className="w-4 h-4 text-[#DDE5F5] group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-[#E8EDF8]">Previous</span>
-          </button>
-          <StarButton onClick={handleContinue} lightColor="#FAFAFA" backgroundColor="#060606" className="flex-1 h-14 md:h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group">
-            <div className="flex items-center justify-center gap-4">
-              <span className="text-sm md:text-xl font-display font-semibold tracking-tight">{config.ctaLabel}</span>
-              <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-indigo-400 group-hover:translate-x-1 transition-transform shrink-0" />
+
+              {/* Homeowner Priorities */}
+              {(session.buyerData?.buyerPriorities?.length ?? 0) > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.28 }}
+                  style={{ ...DS.card, padding: "20px" }}
+                >
+                  <div className="space-y-3">
+                    <MicroLabel icon={Sparkles} accent="rgba(130,160,255,0.75)">Your Priorities</MicroLabel>
+                    <div className="flex flex-wrap gap-2">
+                      {(session.buyerData?.buyerPriorities || []).map((p: BuyerPriority) => {
+                        const meta = B13_PRIORITY_LABELS[p];
+                        if (!meta) return null;
+                        const PIcon = meta.icon;
+                        return (
+                          <div key={p} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+                            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)" }}>
+                            <PIcon size={10} strokeWidth={1.5} style={{ color: meta.accent }} />
+                            <span style={{ fontFamily: "'Inter'", fontSize: "11px", color: DS.text.secondary }}>{meta.label}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Trust / Credibility Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.32 }}
+                style={{ ...DS.card, padding: "22px" }}
+              >
+                <div className="space-y-3.5">
+                  <MicroLabel accent="rgba(130,160,255,0.75)">What We Are Not Saying</MicroLabel>
+                  <div className="space-y-2.5">
+                    {config.credibilityLines.map((line, i) => {
+                      const isPositive = line.startsWith("We are saying");
+                      return (
+                        <div key={i} className="flex items-start gap-2.5">
+                          {isPositive
+                            ? <CheckCircle2 size={12} strokeWidth={1.5} className="shrink-0 mt-0.5" style={{ color: tk.accent }} />
+                            : <XCircle     size={12} strokeWidth={1.5} className="shrink-0 mt-0.5" style={{ color: "#FF5A6B", opacity: 0.55 }} />
+                          }
+                          <p style={{ fontFamily: "'Inter'", fontSize: "11.5px", lineHeight: 1.55, color: isPositive ? DS.text.primary : DS.text.muted }}>
+                            {line}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </motion.div>
             </div>
-          </StarButton>
+          </div>
+
+          {/* ── § 3  PROOF PHOTOS DOCUMENTATION GALLERY ─────────────────────────── */}
+          {proofPhotos.length > 0 && (
+            <motion.section
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.38 }}
+              className="space-y-4"
+            >
+              <MicroLabel icon={Camera} accent={tk.accent}>
+                {pathKey === "carrier_review" ? "Storm Evidence Documentation" : pathKey === "direct_repair" ? "Repair Scope Documentation" : "Inspection Documentation"}
+              </MicroLabel>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {proofPhotos.map((photo, index) => {
+                  const meta = getPhotoMeta(photo, legacyPK);
+                  const BadgeIcon = meta.BadgeIcon;
+                  return (
+                    <motion.div
+                      key={photo.id}
+                      whileHover={{ y: -3, transition: { duration: 0.18 } }}
+                      className="overflow-hidden"
+                      style={{ borderRadius: "16px", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(10,16,32,0.92)" }}
+                    >
+                      <div className="relative overflow-hidden" style={{ aspectRatio: "16/9" }}>
+                        {photo.type === "structured" && photo.photo ? (
+                          <PhotoThumbnail photo={photo.photo} className="w-full h-full object-cover" />
+                        ) : photo.url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={photo.url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center" style={{ background: "rgba(255,255,255,0.02)" }}>
+                            <Camera size={20} strokeWidth={1} style={{ color: DS.text.faint }} />
+                          </div>
+                        )}
+                        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 45%, rgba(0,0,0,0.82) 100%)" }} />
+                        <div className="absolute top-2 left-2">
+                          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
+                            style={{ background: meta.badgeBg, border: `1px solid ${meta.badgeBorder}`, color: meta.badgeColor, backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", fontSize: "8px", fontFamily: "'Inter'", fontWeight: 500, letterSpacing: "0.5px" }}>
+                            <BadgeIcon size={8} strokeWidth={1.5} />
+                            <span>{meta.badgeLabel}</span>
+                          </div>
+                        </div>
+                        <div className="absolute bottom-2 left-2 right-2">
+                          <p style={{ fontFamily: "'Inter'", fontSize: "10px", color: "rgba(255,255,255,0.82)", lineHeight: 1.3 }}>{meta.location}</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </motion.section>
+          )}
+
+          {/* ── § 4  REP-GUIDED QUESTIONS ─────────────────────────────────────── */}
+          <motion.section
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.44 }}
+            className="space-y-4 pt-2"
+            style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            <MicroLabel icon={MessageCircle} accent={tk.accent}>Rep-Guided Questions</MicroLabel>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {config.repGuidedQs.map((q, i) => (
+                <motion.div
+                  key={i}
+                  whileHover={{ y: -2, transition: { duration: 0.18 } }}
+                  style={DS.card}
+                  className="p-5 space-y-3"
+                >
+                  <div className="w-6 h-6 rounded-lg flex items-center justify-center font-mono text-[10px] font-bold"
+                    style={{ background: tk.iconBg, color: tk.accent }}>{i + 1}</div>
+                  <p style={{ fontFamily: "'Inter'", fontSize: "13px", lineHeight: 1.62, color: DS.text.secondary }}>{q}</p>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Rep guardrail (rep mode only) */}
+            {session.mode === "rep" && (
+              <div className="flex items-start gap-3 px-5 py-4 rounded-[14px]"
+                style={{ background: "rgba(251,191,36,0.05)", border: "1px solid rgba(251,191,36,0.14)" }}>
+                <ShieldAlert size={13} strokeWidth={1.5} className="shrink-0 mt-0.5" style={{ color: "#FBB924", opacity: 0.70 }} />
+                <p style={{ fontFamily: "'Inter'", fontSize: "12px", lineHeight: 1.55, color: "rgba(251,191,36,0.60)" }}>{config.repGuardrail}</p>
+              </div>
+            )}
+          </motion.section>
+
+          {/* ── § 5  No-action recheck nudge ─────────────────────────────────── */}
+          {pathKey === "no_action" && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.50 }}
+              className="flex items-center justify-between gap-6 p-5 rounded-[16px]"
+              style={{ background: "rgba(67,209,125,0.06)", border: "1px solid rgba(67,209,125,0.18)" }}
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(67,209,125,0.12)" }}>
+                  <Calendar size={16} strokeWidth={1.5} style={{ color: "#43D17D" }} />
+                </div>
+                <div>
+                  <p style={{ fontFamily: "'Inter'", fontWeight: 500, fontSize: "13px", color: DS.text.primary }}>Schedule a Future Recheck</p>
+                  <p style={{ fontFamily: "'Inter'", fontSize: "11px", marginTop: "3px", color: DS.text.muted }}>
+                    Set a free reminder. If there's a storm event, you'll have a before-and-after comparison.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setRecheckShown(true)}
+                className="px-4 py-2 rounded-xl shrink-0 transition-opacity hover:opacity-80 active:scale-95"
+                style={{ background: "rgba(67,209,125,0.12)", border: "1px solid rgba(67,209,125,0.30)", fontFamily: "'Inter'", fontSize: "11px", letterSpacing: "0.5px", color: "#43D17D" }}
+              >
+                {recheckShown ? "Reminder Set" : "Set Reminder"}
+              </button>
+            </motion.div>
+          )}
+
         </div>
       </div>
+
+      {/* ═══ BOTTOM CTA BAR ═══════════════════════════════════════════════════════ */}
+      <div className="absolute bottom-0 inset-x-0 z-30 px-6 md:px-10 pb-8 pt-20"
+        style={{ background: "linear-gradient(to top, #050816 60%, transparent)" }}>
+        <div className="max-w-5xl mx-auto space-y-3">
+          <div className="flex items-center gap-4">
+
+            {/* Back — glass secondary */}
+            <motion.button
+              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+              onClick={onBack}
+              className="flex items-center gap-2.5 px-7 font-inter font-medium text-[14px] shrink-0"
+              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", height: "56px", borderRadius: "14px", color: DS.text.secondary }}
+            >
+              <ArrowLeft size={16} strokeWidth={1.5} />
+              <span>Previous</span>
+            </motion.button>
+
+            {/* Primary CTA — luxury gradient */}
+            <motion.button
+              whileHover={{ scale: 1.015, filter: "brightness(1.08)" }}
+              whileTap={{ scale: 0.975 }}
+              onClick={handleContinue}
+              className="flex-1 flex items-center justify-center gap-3 font-inter font-semibold text-[15px] text-white"
+              style={{ background: tk.btnGrad, boxShadow: tk.btnGlow, height: "56px", borderRadius: "14px" }}
+            >
+              <span>{config.ctaLabel}</span>
+              <ChevronRight size={18} strokeWidth={2} />
+            </motion.button>
+          </div>
+
+          {/* Footer reassurance */}
+          <div className="flex items-center justify-center gap-2"
+            style={{ fontFamily: "'Inter'", fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: DS.text.faint }}>
+            <CheckCircle2 size={11} strokeWidth={1.5} style={{ color: tk.accent }} />
+            <span>You can review everything before making any decision. No commitment until you authorize.</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ═══ REP COMPANION FAB ════════════════════════════════════════════════════ */}
+      {session.mode === "rep" && (
+        <motion.button
+          initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.7, type: "spring", stiffness: 260, damping: 22 }}
+          whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}
+          onClick={() => setShowCompanion(true)}
+          className="absolute bottom-32 right-6 z-40 flex items-center justify-center"
+          style={{ width: "52px", height: "52px", borderRadius: "50%", background: "linear-gradient(135deg, #4D6FFF, #8B5CFF)", boxShadow: "0 8px 28px rgba(77,111,255,0.45)" }}
+        >
+          <BookOpen size={20} strokeWidth={1.5} color="white" />
+        </motion.button>
+      )}
+
+      {/* ═══ REP COMPANION DRAWER ═════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {showCompanion && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-end justify-end p-6"
+            style={{ background: "rgba(2,4,14,0.72)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}
+            onClick={(e) => { if (e.target === e.currentTarget) setShowCompanion(false); }}
+          >
+            <motion.div
+              initial={{ x: 60, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 60, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 280, damping: 28 }}
+              className="w-full max-w-sm p-8 space-y-6"
+              style={{ ...DS.card, borderRadius: "24px", maxHeight: "72vh", overflowY: "auto" }}
+            >
+              <div className="flex items-center justify-between">
+                <MicroLabel icon={BookOpen} accent="#8B5CFF">Rep Companion · Page {config.variantLabel}</MicroLabel>
+                <button onClick={() => setShowCompanion(false)} style={{ color: DS.text.muted }}>
+                  <XCircle size={18} strokeWidth={1.5} />
+                </button>
+              </div>
+
+              {/* Opening approach */}
+              <div className="space-y-2 p-4 rounded-[14px]" style={{ background: "rgba(139,92,255,0.06)", border: "1px solid rgba(139,92,255,0.16)" }}>
+                <MicroLabel accent="#8B5CFF">Opening Approach</MicroLabel>
+                <p style={{ fontFamily: "'Inter'", fontSize: "12.5px", lineHeight: 1.6, color: DS.text.secondary, fontStyle: "italic" }}>
+                  "{config.repOpeningLine}"
+                </p>
+              </div>
+
+              {/* Questions with note fields */}
+              <div className="space-y-4">
+                {config.repGuidedQs.map((q, i) => {
+                  const key = `q${i + 1}` as "q1" | "q2" | "q3";
+                  return (
+                    <div key={i} className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-mono font-bold"
+                          style={{ background: "rgba(139,92,255,0.14)", color: "#8B5CFF" }}>{i + 1}</div>
+                        <span style={{ fontFamily: "'Inter'", fontSize: "9px", letterSpacing: "1.5px", textTransform: "uppercase", color: DS.text.muted }}>Question {i + 1}</span>
+                      </div>
+                      <p style={{ fontFamily: "'Inter'", fontSize: "12px", lineHeight: 1.55, color: DS.text.secondary }}>{q}</p>
+                      <textarea
+                        value={companionAns[key]}
+                        onChange={(e) => setCompanionAns(prev => ({ ...prev, [key]: e.target.value }))}
+                        placeholder="Note homeowner response..."
+                        rows={2}
+                        className="w-full resize-none"
+                        style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "10px", padding: "8px 10px", fontFamily: "'Inter'", fontSize: "11px", color: DS.text.secondary, outline: "none" }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Guardrail */}
+              <div className="flex items-start gap-2.5 p-3 rounded-[12px]"
+                style={{ background: "rgba(251,191,36,0.05)", border: "1px solid rgba(251,191,36,0.14)" }}>
+                <ShieldAlert size={13} strokeWidth={1.5} className="shrink-0 mt-0.5" style={{ color: "#FBB924" }} />
+                <p style={{ fontFamily: "'Inter'", fontSize: "11px", lineHeight: 1.50, color: "rgba(251,191,36,0.62)" }}>{config.repGuardrail}</p>
+              </div>
+
+              {/* Save button */}
+              <motion.button
+                whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.97 }}
+                onClick={handleSaveCompanion}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium"
+                style={{
+                  fontFamily: "'Inter'",
+                  background: companionSaved ? "rgba(67,209,125,0.18)" : "rgba(139,92,255,0.20)",
+                  border:     `1px solid ${companionSaved ? "rgba(67,209,125,0.35)" : "rgba(139,92,255,0.36)"}`,
+                  color:      companionSaved ? "#79E5A2" : "#C4AEFF",
+                  transition: "background 0.25s ease, border-color 0.25s ease, color 0.25s ease",
+                }}
+              >
+                {companionSaved
+                  ? <><CheckCircle2 size={14} strokeWidth={1.5} /> Notes Saved</>
+                  : <><Sparkles size={14} strokeWidth={1.5} /> Save Notes</>
+                }
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
-
-const PATH_CONFIG: Record<string, {
-  headline: string; explanation: string; icon: any; cardColor: string;
-  pathLabel: string; pathDetail: string; nextSteps: string[]; ctaLabel: string;
-}> = {
-  no_damage:             { headline: "Integrity Maintained.",       explanation: "Based on our forensic analysis, there is no actionable damage requiring a project or claim path today.",                                                                icon: ShieldCheck, cardColor: "#10b981", pathLabel: "Maintenance Only",    pathDetail: "Your property showed no meaningful storm damage during this inspection.",                                        nextSteps: ["Immutable documentation delivered for your records.", "Re-inspection recommended after significant storm events.", "Forensic data synced to Hustad CRM for history tracking."],                                   ctaLabel: "Review Your Deliverables" },
-  monitor_only:          { headline: "Proactive Monitoring.",       explanation: "Conditions exist that warrant tracking, but no urgent repair or claim path is indicated today.",                                                                      icon: Eye,         cardColor: "#0ea5e9", pathLabel: "Strategic Monitor",   pathDetail: "Conditions documented for baseline tracking. No contract or authorization is required today.",                   nextSteps: ["Receive a monitor-only summary with re-inspection triggers.", "Schedule a follow-up forensic review in 12 months.", "Review high-resolution imagery for future comparison."],                                    ctaLabel: "Review Your Deliverables" },
-  repair_only:           { headline: "Precision Restoration.",      explanation: "Targeted repairs are indicated to preserve system life. Full replacement is not required at this time.",                                                              icon: Wrench,      cardColor: "#6366f1", pathLabel: "Direct Repair",       pathDetail: "Repair-specific scope and authorization will be reviewed on the next screen.",                                    nextSteps: ["Finalize the surgical repair scope for authorization.", "Bypass insurance claims for faster scheduling.", "Review protection options for the repair zone."],                                                         ctaLabel: "Review Repair Authorization" },
-  claim_review_candidate:{ headline: "Insurance Path Indicated.",   explanation: "Storm-related damage warrants a formal carrier review to determine policy-level restoration coverage.",                                                               icon: FileText,    cardColor: "#f59e0b", pathLabel: "Claim Review",        pathDetail: "Hustad will coordinate forensic documentation with your carrier for coverage determination.",                    nextSteps: ["Review the claim-path authorization on the next screen.", "Coordinate carrier inspection with Hustad field rep.", "Coverage decisions remain with your insurance carrier."],                                          ctaLabel: "Review Claim Path" },
-  full_restoration_candidate: { headline: "Full Restoration Priority.", explanation: "Evidence supports a complete system restoration to return the property to its pre-loss or peak condition.",                                                      icon: Zap,         cardColor: "#f43f5e", pathLabel: "Full Restoration",    pathDetail: "System options and project authorization will be reviewed in the upcoming screens.",                              nextSteps: ["Select premium system and protection options.", "Review the executive project authorization.", "Confirm scheduling and logistics for production."],                                                               ctaLabel: "Review System Options" },
-};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // B14 – Path Decision (auto-forwards)
