@@ -250,9 +250,15 @@ export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart
       }
       const address = job.attributes.propertyName as string | undefined;
       const existingLocal = findDraftByImportId("centerpointId", job.id);
-      if (existingLocal) { setPendingDuplicate({ sessionId: existingLocal, address: normalizeAddress(address) || job.id }); return; }
-      const existingCloud = serverSessionsRef.current.some((s: any) => s.cpc_ticket_id === job.id || (job.pipelineLeadId && s.pipeline_lead_id === job.pipelineLeadId));
-      if (existingCloud) { showImportError("An inspection for this CenterPoint job already exists. Find it in the dashboard.", 8000); return; }
+      if (existingLocal) {
+        onLoadDraft(existingLocal);
+        return;
+      }
+      const cloudSession = serverSessionsRef.current.find((s: any) => s.cpc_ticket_id === job.id || (job.pipelineLeadId && s.pipeline_lead_id === job.pipelineLeadId));
+      if (cloudSession) {
+        onLoadDraft(cloudSession.session_id);
+        return;
+      }
       if (isValidAddress(address)) {
         const newSession = createSession(currentRep.id, currentRep.name, currentRep.email);
         newSession.centerpointId = job.id;
@@ -270,9 +276,15 @@ export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart
       if (!lead?.id) { showImportError("This pipeline lead has missing data and cannot be imported."); return; }
       const address = lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name;
       const existingLocal = findDraftByImportId("pipelineLeadId", lead.id);
-      if (existingLocal) { setPendingDuplicate({ sessionId: existingLocal, address: normalizeAddress(address) || lead.id }); return; }
-      const existingCloud = serverSessionsRef.current.some((s: any) => s.pipeline_lead_id === lead.id || (lead.cpc_ticket_id && s.cpc_ticket_id === lead.cpc_ticket_id));
-      if (existingCloud) { showImportError("An inspection for this lead already exists. Find it in the dashboard.", 8000); return; }
+      if (existingLocal) {
+        onLoadDraft(existingLocal);
+        return;
+      }
+      const cloudSession = serverSessionsRef.current.find((s: any) => s.pipeline_lead_id === lead.id || (lead.cpc_ticket_id && s.cpc_ticket_id === lead.cpc_ticket_id));
+      if (cloudSession) {
+        onLoadDraft(cloudSession.session_id);
+        return;
+      }
       const homeownerName: string = lead.centerpoint_jobs?.raw?._owner || "";
       const appointmentId: string | undefined = lead.appointmentId ?? undefined;
       if (isValidAddress(address)) {
@@ -436,7 +448,7 @@ export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart
       if (!merged.find(m => m.sessionId === s.session_id)) {
         const addr = (s.property_address || "").trim();
         if (!addr) return;
-        merged.push({ sessionId: s.session_id, address: addr, homeownerName: s.homeowner_name || "Unknown Owner", repName: s.rep_name || "Unknown Rep", lastSavedAt: s.updated_at, sessionStatus: s.session_status, outcomeType: s.outcome_type, syncStatus: "synced", hasFollowUp: false, missingFieldsCount: 0, emergencyOverride: s.emergency_override, reconciliationRequired: s.crm_reconciliation_required });
+        merged.push({ sessionId: s.session_id, address: addr, homeownerName: s.homeowner_name || "Unknown Owner", repName: s.rep_name || "Unknown Rep", lastSavedAt: s.updated_at, sessionStatus: s.session_status, outcomeType: s.outcome_type, syncStatus: "synced", hasFollowUp: false, missingFieldsCount: 0, missingFields: [], emergencyOverride: s.emergency_override, reconciliationRequired: s.crm_reconciliation_required });
       }
     });
     // Deduplicate by address — when the same property has multiple sessions,

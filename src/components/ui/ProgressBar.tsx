@@ -1,6 +1,7 @@
 "use client";
 
 import { PHASE_A_SCREENS, type ScreenId } from "@/types/session";
+import { useSession } from "@/components/SessionProvider";
 
 interface ProgressBarProps {
   currentScreen: ScreenId;
@@ -8,9 +9,15 @@ interface ProgressBarProps {
 }
 
 export function ProgressBar({ currentScreen, phase }: ProgressBarProps) {
+  const { jumpTo, session } = useSession();
+
   if (phase === "A") {
     const idx = PHASE_A_SCREENS.indexOf(currentScreen as ScreenId);
     
+    // We allow jumping to any screen if Phase A is complete, otherwise only to previously visited screens.
+    // For a presentation flow, it's often useful to jump back, but we don't want them skipping ahead of their current progress.
+    const maxIdx = session?.phaseACompleted ? PHASE_A_SCREENS.length : idx;
+
     return (
       <div className="px-8 py-6 flex justify-center">
         <div className="relative group max-w-2xl w-full">
@@ -32,11 +39,18 @@ export function ProgressBar({ currentScreen, phase }: ProgressBarProps) {
               {PHASE_A_SCREENS.map((_, i) => {
                 const isCompleted = i < idx;
                 const isActive = i === idx;
+                const isClickable = i <= maxIdx || session?.phaseACompleted;
                 
                 return (
-                  <div 
+                  <button 
                     key={i}
+                    onClick={() => {
+                      if (isClickable) jumpTo(PHASE_A_SCREENS[i]);
+                    }}
+                    disabled={!isClickable}
                     className={`h-full flex-1 rounded-full transition-all duration-700 relative overflow-hidden ${
+                      isClickable ? "cursor-pointer hover:bg-white/30" : "cursor-not-allowed opacity-50"
+                    } ${
                       isActive 
                         ? "bg-white/20 scale-y-125" 
                         : isCompleted 
@@ -46,11 +60,11 @@ export function ProgressBar({ currentScreen, phase }: ProgressBarProps) {
                   >
                     {isActive && (
                       <>
-                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-white to-rose-500 animate-pulse" />
-                        <div className="absolute inset-0 blur-[4px] bg-white/50 opacity-50" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-white to-rose-500 animate-pulse pointer-events-none" />
+                        <div className="absolute inset-0 blur-[4px] bg-white/50 opacity-50 pointer-events-none" />
                       </>
                     )}
-                  </div>
+                  </button>
                 );
               })}
             </div>

@@ -13,6 +13,7 @@ interface DraftSummary {
   sessionStatus: string;
   syncStatus: string;
   missingFieldsCount: number;
+  missingFields?: string[];
   reconciliationRequired?: boolean;
 }
 
@@ -68,8 +69,11 @@ export function SessionCard({
             )}
 
             {d.missingFieldsCount > 0 && (
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/5 border border-rose-500/20 text-[9px] font-mono text-rose-400 uppercase tracking-widest">
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/5 border border-rose-500/20 text-[9px] font-mono text-rose-400 uppercase tracking-widest" title={d.missingFields ? `Missing: ${d.missingFields.join(', ')}` : undefined}>
                 <AlertCircle className="w-3 h-3" />{d.missingFieldsCount} Incomplete
+                {d.missingFields && d.missingFields.length > 0 && (
+                  <span className="text-rose-400/60 lowercase tracking-normal font-sans ml-0.5">({d.missingFields.join(', ')})</span>
+                )}
               </div>
             )}
 

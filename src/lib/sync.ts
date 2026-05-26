@@ -75,7 +75,7 @@ export async function fetchSessionsFromServer(): Promise<any[]> {
 
 export async function fetchSessionById(sessionId: string) {
   try {
-    const res = await fetch(`${API_BASE}/api/session/${sessionId}`, {
+    const res = await fetch(`${API_BASE}/api/session?sessionId=${sessionId}`, {
       headers: getAuthHeaders(),
     });
     if (!res.ok) return null;

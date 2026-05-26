@@ -22,7 +22,7 @@ import {
   addAuditEvent,
   migrateLegacyPhotos,
 } from "@/lib/session";
-import { syncSessionToServer, queueForSync, processSyncQueue, getStoredRep, syncAllPhotos } from "@/lib/sync";
+import { syncSessionToServer, queueForSync, processSyncQueue, getStoredRep, syncAllPhotos, fetchSessionById } from "@/lib/sync";
 import { getAuthenticatedRep, stampSessionWithRep } from "@/lib/rep-identity";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -260,6 +260,24 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       } else {
         setSession(ownedDraft);
       }
+    } else {
+      // Try to fetch from server if it is a cloud session that hasn't been cached locally
+      fetchSessionById(sessionId).then((serverSession) => {
+        if (serverSession) {
+          const ownedDraft = stampSessionWithRep(serverSession, authRep);
+          saveSession(ownedDraft);
+          localStorage.setItem("hustad_draft_" + sessionId, JSON.stringify(ownedDraft));
+          if (ownedDraft.currentScreen === "P00_rep_launch") {
+            if (ownedDraft.property.address) {
+              setSession(navigateTo(ownedDraft, "A01_welcome"));
+            } else {
+              setSession(ownedDraft);
+            }
+          } else {
+            setSession(ownedDraft);
+          }
+        }
+      });
     }
   }, [authRep?.id, authRep?.name, authRep?.email]);
 

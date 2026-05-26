@@ -183,10 +183,12 @@ export function saveSession(session: SessionState): void {
   // Calculate missing fields for dashboard validation.
   // Photos are only required once Phase A is complete — not while actively working.
   const inProgress = session.sessionStatus === 'draft' || session.sessionStatus === 'phase_a_active';
-  let missing = 0;
-  if (!session.property.address) missing++;
-  if (!session.property.homeownerPrimaryName || session.property.homeownerPrimaryName === 'Unknown Homeowner') missing++;
-  if (!inProgress && session.photoAssets.length === 0) missing++;
+  const missingFields: string[] = [];
+  if (!session.property.address) missingFields.push("Address");
+  if (!session.property.homeownerPrimaryName || session.property.homeownerPrimaryName === 'Unknown Homeowner') missingFields.push("Homeowner Name");
+  if (!inProgress && session.photoAssets.length === 0) missingFields.push("Photos");
+
+  const missing = missingFields.length;
 
   index[session.sessionId] = {
     sessionId: session.sessionId,
@@ -201,6 +203,7 @@ export function saveSession(session: SessionState): void {
     syncStatus: session.syncStatus,
     hasFollowUp: session.followUpTasks.length > 0,
     missingFieldsCount: missing,
+    missingFields: missingFields,
     lastSyncAttemptAt: session.lastSyncAttemptAt,
     lastSyncedAt: session.lastSyncedAt,
     syncError: session.syncError,
@@ -238,6 +241,7 @@ interface DraftMeta {
   syncStatus: string;
   hasFollowUp: boolean;
   missingFieldsCount: number;
+  missingFields?: string[];
   lastSyncAttemptAt?: string;
   lastSyncedAt?: string;
   syncError?: string;

@@ -70,7 +70,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
   }, []);
 
   const authRep = getAuthenticatedRep(authSession, mockId);
-  const [showDashboard, setShowDashboard] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(true);
   const [isAddressFocused, setIsAddressFocused] = useState(false);
   const [suggestions, setSuggestions] = useState<{ main: string; sub: string }[]>([]);
   const [isSearching, setIsSearching] = useState(false);
