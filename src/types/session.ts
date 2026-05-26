@@ -461,10 +461,7 @@ export function shouldShowScreen(
 
   switch (screen) {
     case "B14_path_decision":
-      return (
-        outcomeType === "claim_review_candidate" ||
-        outcomeType === "full_restoration_candidate"
-      );
+      return false; // Skipped as it is a dummy component that auto-forwards to B15/B16/B17
     case "B15_urgent_protection":
       return urgentItemsCount > 0;
     case "B16_system_options":

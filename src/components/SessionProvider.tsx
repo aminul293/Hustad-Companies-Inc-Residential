@@ -201,15 +201,25 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const goBack = useCallback(() => {
+    console.log("[GOBACK] goBack called");
     setSession((prev) => {
-      if (!prev) return prev;
+      if (!prev) {
+        console.warn("[GOBACK] No active session");
+        return prev;
+      }
       const ORDERED_SCREENS: ScreenId[] = SCREEN_FLOW.map((s) => s.id);
       const idx = ORDERED_SCREENS.indexOf(prev.currentScreen);
-      if (idx <= 0) return prev;
+      console.log("[GOBACK] Current screen:", prev.currentScreen, "Index:", idx);
+      if (idx <= 0) {
+        console.warn("[GOBACK] Index <= 0, cannot go back");
+        return prev;
+      }
       let targetIdx = idx - 1;
       while (targetIdx > 0 && !shouldShowScreen(ORDERED_SCREENS[targetIdx], prev)) {
+        console.log("[GOBACK] Skipping screen:", ORDERED_SCREENS[targetIdx]);
         targetIdx--;
       }
+      console.log("[GOBACK] Target screen selected:", ORDERED_SCREENS[targetIdx]);
       return navigateTo(prev, ORDERED_SCREENS[targetIdx]);
     });
   }, []);
