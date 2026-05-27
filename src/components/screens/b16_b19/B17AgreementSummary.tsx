@@ -134,20 +134,14 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
             <div className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.1] backdrop-blur-3xl space-y-8">
               <p className="font-mono text-[10px] text-[#AABDCF] uppercase tracking-[0.3em]">Official Strategy</p>
               <div className="space-y-6">
-                {session.pathData.claimRelatedWork && (
-                  <div className="wisconsin-notice-block" style={{
-                    border: '1px solid #f59e0b',
-                    borderRadius: '8px',
-                    padding: '16px',
-                    marginBottom: '16px',
-                    background: 'rgba(245,158,11,0.06)'
-                  }}>
-                    <p style={{ fontWeight: 600, marginBottom: '8px', fontSize: '13px' }}>
+                {claimRelated === true && (
+                  <div className="p-5 rounded-2xl border border-amber-500/40 bg-amber-500/[0.06] space-y-3">
+                    <p className="text-xs font-mono font-semibold text-amber-400 uppercase tracking-[0.15em]">
                       {WISCONSIN_CLAIM_NOTICE.heading}
                     </p>
-                    <ul style={{ paddingLeft: '16px', margin: 0 }}>
+                    <ul className="space-y-1.5 pl-4 list-disc marker:text-amber-500/50">
                       {WISCONSIN_CLAIM_NOTICE.lines.map((line, i) => (
-                        <li key={i} style={{ fontSize: '12px', marginBottom: '6px', lineHeight: 1.5 }}>
+                        <li key={i} className="text-xs text-amber-200/70 font-light leading-relaxed">
                           {line}
                         </li>
                       ))}
