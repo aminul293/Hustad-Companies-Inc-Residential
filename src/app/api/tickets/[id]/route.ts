@@ -82,70 +82,10 @@ export async function PATCH(
   if (property_address !== undefined)   updates.property_address = property_address;
   if (price !== undefined)              updates.price = price;
 
-  // Handle CP write-back when stage changes to a key milestone
+  // Handle CP write-back when stage changes to a key milestone - DISABLED as per Option 2
+  // We do not auto-advance CenterPoint stages to prevent portal UI status mismatch.
   if (stage && stage !== current.stage && current.cp_job_id && CP_WRITEBACK[stage]) {
-    const cpStatus = CP_WRITEBACK[stage];
-    try {
-      const nowStr = new Date().toISOString();
-      const attrs: Record<string, any> = { status: cpStatus };
-      if (cpStatus === "completed") {
-        attrs.completedAt = nowStr;
-      } else if (cpStatus === "closed") {
-        attrs.closedAt = nowStr;
-        attrs.invoicedAt = nowStr;
-      } else if (cpStatus === "started") {
-        attrs.startedAt = nowStr;
-      }
-
-      const cpRes = await fetch(`${CP_BASE}/services/${current.cp_job_id}`, {
-        method: "PATCH",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: CP_KEY,
-        },
-        body: JSON.stringify({
-          data: { type: "services", id: current.cp_job_id, attributes: attrs },
-        }),
-      });
-
-      if (!cpRes.ok) {
-        const errText = await cpRes.text().catch(() => String(cpRes.status));
-        console.error(`[CP_WRITEBACK] stage=${stage} cp_job_id=${current.cp_job_id} status=${cpRes.status}: ${errText}`);
-        // Queue for retry so the failure is visible in the Manager outbound queue
-        await supabase.from("outbound_queue").insert({
-          target_system: "centerpoint",
-          target_id: current.cp_job_id,
-          action: "update_status",
-          payload: { status: cpStatus, ticket_id: params.id, stage },
-          status: "pending",
-          error: `HTTP ${cpRes.status}: ${errText.slice(0, 200)}`,
-        });
-      } else {
-        // Mirror in centerpoint_jobs cache
-        await supabase
-          .from("centerpoint_jobs")
-          .update({ status: cpStatus, synced_at: new Date().toISOString() })
-          .eq("cp_id", current.cp_job_id);
-
-        updates.last_cp_writeback_stage = stage;
-        updates.last_cp_writeback_at = new Date().toISOString();
-      }
-    } catch (writebackErr: any) {
-      console.error(`[CP_WRITEBACK] unexpected error for cp_job_id=${current.cp_job_id}:`, writebackErr?.message);
-      try {
-        await supabase.from("outbound_queue").insert({
-          target_system: "centerpoint",
-          target_id: current.cp_job_id,
-          action: "update_status",
-          payload: { status: cpStatus, ticket_id: params.id, stage },
-          status: "pending",
-          error: writebackErr?.message?.slice(0, 200) ?? "Unknown error",
-        });
-      } catch {
-        // Queue insert failed — error already logged above, don't block the ticket update
-      }
-    }
+    console.log(`[CP_WRITEBACK] CenterPoint writeback disabled for ticket ${params.id} (CP Job: ${current.cp_job_id})`);
   }
 
   const { data: ticket, error } = await supabase

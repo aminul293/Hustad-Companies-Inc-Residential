@@ -144,32 +144,10 @@ export async function POST(request: NextRequest) {
         console.error('[PIPELINE_SYNC] Failed to update pipeline_leads', e);
       }
 
-      // 2. Queue for CenterPoint write-back (Outbound Queue)
+      // 2. Queue for CenterPoint write-back (Outbound Queue) - DISABLED as per Option 2
+      // We do not auto-advance CenterPoint stages to prevent portal UI status mismatch.
       if (isTerminal || isInspectionDone) {
-        try {
-          const cpStage = (session.sessionStatus === 'signed' || session.sessionStatus === 'deferred') ? 'completed' : 'closed';
-          const supabase = getServiceClient();
-
-          let cpId = session.centerpointId;
-          const { data: jobRow } = await supabase
-            .from('centerpoint_jobs')
-            .select('cp_id')
-            .eq('name', session.centerpointId)
-            .maybeSingle();
-          if (jobRow?.cp_id) {
-            cpId = jobRow.cp_id;
-          }
-
-          await supabase.from('outbound_queue').insert({
-            target_system: 'centerpoint',
-            target_id: cpId,
-            action: 'update_status',
-            payload: { status: cpStage }
-          });
-          console.log(`[OUTBOUND_QUEUE] Queued CP Job ${cpId} (from ${session.centerpointId}) transition to ${cpStage}`);
-        } catch (e) {
-          console.error('[OUTBOUND_QUEUE] Failed to queue CenterPoint write-back', e);
-        }
+        console.log(`[OUTBOUND_QUEUE] CenterPoint write-back status update disabled for session ${sessionId} (CP Job: ${session.centerpointId})`);
       }
     }
 
