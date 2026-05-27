@@ -5,6 +5,19 @@ import { requireAuth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
+const CP_STAGE_ORDER = [
+  "lead_opened","lead_pending","lead_quoted","lead_sold",
+  "opened","scheduled","started","completed","invoiced","closed",
+];
+
+function cpStatusAdvances(current: string | null | undefined, next: string): boolean {
+  if (!current) return true;
+  const curIdx = CP_STAGE_ORDER.indexOf(current);
+  const nextIdx = CP_STAGE_ORDER.indexOf(next);
+  if (curIdx === -1 || nextIdx === -1) return true;
+  return nextIdx > curIdx;
+}
+
 export async function POST(request: NextRequest) {
   try {
     await requireAuth(request);
@@ -31,13 +44,72 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: "No pending items in queue" });
   }
 
-  const results = [];
+  const results: any[] = [];
+
+  // ── Batch deduplication by target_id ─────────────────────────────────────────
+  // If this batch contains multiple update_status items for the same CP job
+  // (rapid stage changes or duplicate entries), keep only the highest-stage item
+  // per target and immediately mark the rest as synced. This prevents two items
+  // for the same job racing to write to CP — even across concurrent workers the
+  // SKIP LOCKED claim means each row is owned by exactly one worker, so the
+  // winner within each batch is always the only one that writes.
+  const byTarget = new Map<string, any>();
+  const supersededIds: string[] = [];
 
   for (const item of queueItems) {
+    if (item.target_system !== "centerpoint" || item.action !== "update_status") continue;
+    const prev = byTarget.get(item.target_id);
+    if (!prev) {
+      byTarget.set(item.target_id, item);
+    } else {
+      const prevIdx = CP_STAGE_ORDER.indexOf(prev.payload?.status ?? "");
+      const curIdx  = CP_STAGE_ORDER.indexOf(item.payload?.status ?? "");
+      if (curIdx >= prevIdx) {
+        supersededIds.push(prev.id);
+        byTarget.set(item.target_id, item);
+      } else {
+        supersededIds.push(item.id);
+      }
+    }
+  }
+
+  if (supersededIds.length > 0) {
+    await supabase
+      .from("outbound_queue")
+      .update({ status: "synced", synced_at: new Date().toISOString() })
+      .in("id", supersededIds);
+    supersededIds.forEach(id =>
+      results.push({ id, success: true, skipped: true, reason: "superseded by higher-stage item in batch" })
+    );
+  }
+
+  // Items to actually process: winners from update_status dedup + any non-status items
+  const toProcess = [
+    ...Array.from(byTarget.values()),
+    ...queueItems.filter((i: any) => i.target_system !== "centerpoint" || i.action !== "update_status"),
+  ];
+
+  for (const item of toProcess) {
     try {
       console.log(`[WORKER] Processing item ${item.id} for ${item.target_system}`);
 
       if (item.target_system === "centerpoint" && item.action === "update_status") {
+        // Guard: skip if cached CP status is already at or beyond the queued status
+        const { data: cached } = await supabase
+          .from("centerpoint_jobs")
+          .select("status")
+          .eq("cp_id", item.target_id)
+          .maybeSingle();
+
+        if (!cpStatusAdvances(cached?.status, item.payload.status)) {
+          await supabase
+            .from("outbound_queue")
+            .update({ status: "synced", synced_at: new Date().toISOString() })
+            .eq("id", item.id);
+          results.push({ id: item.id, success: true, skipped: true, reason: `CP already at ${cached?.status}` });
+          continue;
+        }
+
         let attrs: Record<string, any>;
         
         if (item.payload.attrs) {

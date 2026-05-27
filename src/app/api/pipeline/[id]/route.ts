@@ -4,18 +4,29 @@ import { requireAuth } from '@/lib/auth';
 import { CP_BASE, cpJsonHeaders } from '@/lib/centerpoint/client';
 
 const PIPELINE_WRITEBACK: Record<string, string> = {
-  new_lead:               "lead_opened",
-  follow_up_needed:       "lead_pending",
-  contact_attempted:      "lead_pending",
-  contacted:              "lead_pending",
+  // Early CRM stages (new_lead, contact_attempted, contacted, follow_up_needed) are omitted —
+  // they have no CP equivalent that advances the job and would downgrade CP status if sent.
   scheduled:              "scheduled",
   appointment_confirmed:  "scheduled",
-  inspection_in_progress: "opened",
+  inspection_in_progress: "started",
   inspection_completed:   "completed",
-  dead_lead:              "lead_dead",
+  dead_lead:              "dead_lead",
   signed:                 "lead_sold",
   closed:                 "closed",
 };
+
+const CP_STAGE_ORDER = [
+  "lead_opened","lead_pending","lead_quoted","lead_sold",
+  "opened","scheduled","started","completed","invoiced","closed",
+];
+
+function cpStatusAdvances(current: string | null | undefined, next: string): boolean {
+  if (!current) return true;
+  const curIdx = CP_STAGE_ORDER.indexOf(current);
+  const nextIdx = CP_STAGE_ORDER.indexOf(next);
+  if (curIdx === -1 || nextIdx === -1) return true; // unknown stage — allow CP to decide
+  return nextIdx > curIdx;
+}
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
@@ -30,10 +41,10 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   try {
     const supabase = getServiceClient();
 
-    // 2. Fetch current pipeline lead and its related CP job cp_id
+    // 2. Fetch current pipeline lead and its related CP job cp_id + cached status
     const { data: current, error: fetchError } = await supabase
       .from('pipeline_leads')
-      .select('id, pipeline_status, centerpoint_jobs(cp_id)')
+      .select('id, pipeline_status, centerpoint_jobs(cp_id, status)')
       .eq('id', params.id)
       .single();
 
@@ -43,8 +54,15 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     const newStatus = updates.pipeline_status;
     const cpJob = current.centerpoint_jobs as any;
     const cpId = cpJob?.cp_id;
+    const currentCpStatus: string | null = cpJob?.status ?? null;
 
-    if (newStatus && newStatus !== current.pipeline_status && cpId && PIPELINE_WRITEBACK[newStatus]) {
+    if (
+      newStatus &&
+      newStatus !== current.pipeline_status &&
+      cpId &&
+      PIPELINE_WRITEBACK[newStatus] &&
+      cpStatusAdvances(currentCpStatus, PIPELINE_WRITEBACK[newStatus])
+    ) {
       const cpStatus = PIPELINE_WRITEBACK[newStatus];
       const nowStr = new Date().toISOString();
       const attrs: Record<string, any> = { status: cpStatus };
@@ -52,7 +70,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         attrs.completedAt = nowStr;
       } else if (cpStatus === "closed") {
         attrs.closedAt = nowStr;
-        attrs.invoicedAt = nowStr;
+        // invoicedAt is intentionally omitted — the tickets flow owns that timestamp
       } else if (cpStatus === "started") {
         attrs.startedAt = nowStr;
       }

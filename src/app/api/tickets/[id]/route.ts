@@ -11,7 +11,7 @@ const CP_WRITEBACK: Record<string, string> = {
   job_completed: "completed",
   invoiced:      "invoiced",
   closed_won:    "closed",
-  closed_lost:   "lead_dead",
+  closed_lost:   "dead_lead",
 };
 
 // ─── GET /api/tickets/[id] ────────────────────────────────────────────────────
