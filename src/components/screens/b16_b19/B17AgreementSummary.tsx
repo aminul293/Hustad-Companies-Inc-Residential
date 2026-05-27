@@ -83,7 +83,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
         </div>
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto px-10 pt-20 pb-40 text-center min-h-0">
+      <div className="relative z-10 flex-1 overflow-y-auto px-10 pt-20 pb-56 text-center min-h-0">
         <div className="max-w-4xl mx-auto space-y-16">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-md w-fit mx-auto">
@@ -266,8 +266,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
         </div>
       </div>
 
-      <div className="absolute bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20" />
+      <div className="absolute bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/95 to-transparent pointer-events-none">
         <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-3 md:gap-6 pointer-events-auto">
           <button onClick={onBack} className="group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 shrink-0">
             <ArrowLeft className="w-4 h-4 text-[#DDE5F5] group-hover:-translate-x-1 transition-transform" />
