@@ -30,6 +30,7 @@ import {
   B17AgreementSummary,
   B18SignatureDeferral,
   B19NextSteps,
+  B15CarrierReviewAgreement,
 } from "@/components/screens/B16_B19";
 
 export function ScreenRouter() {
@@ -159,8 +160,16 @@ export function ScreenRouter() {
     case "B16_system_options":
       return <B16SystemOptions {...props} />;
 
-    case "B17_agreement_summary":
-      return <B17AgreementSummary {...props} />;
+    case "B17_agreement_summary": {
+      const isCarrierReview =
+        session.findings.outcomeType === "claim_review_candidate" ||
+        session.findings.outcomeType === "full_restoration_candidate" ||
+        session.pathData.selectedPath === "claim_review" ||
+        session.pathData.selectedPath === "full_restoration";
+      return isCarrierReview
+        ? <B15CarrierReviewAgreement {...props} />
+        : <B17AgreementSummary {...props} />;
+    }
 
     case "B18_signature_deferral":
       return <B18SignatureDeferral {...props} />;

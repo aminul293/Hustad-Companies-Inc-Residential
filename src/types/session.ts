@@ -444,7 +444,18 @@ export function getNextScreen(
     }
 
     case "B16_system_options": return "B17_agreement_summary";
-    case "B17_agreement_summary": return "B18_signature_deferral";
+    case "B17_agreement_summary": {
+      // Carrier review: 15A/15B/15C (at B17) absorbs authorization — skip B18
+      if (
+        outcomeType === "claim_review_candidate" ||
+        outcomeType === "full_restoration_candidate" ||
+        selectedPath === "claim_review" ||
+        selectedPath === "full_restoration"
+      ) {
+        return "B19_next_steps";
+      }
+      return "B18_signature_deferral";
+    }
     case "B18_signature_deferral": return "B19_next_steps";
     case "B19_next_steps": return null;
 
