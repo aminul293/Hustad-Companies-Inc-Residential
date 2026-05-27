@@ -26,3 +26,30 @@ services:
         value: 3000
     healthCheckPath: /api/auth
     autoDeploy: true
+
+  - type: cron
+    name: centerpoint-process-queue
+    runtime: node
+    plan: free
+    schedule: "*/2 * * * *"
+    buildCommand: "true"
+    startCommand: "curl -s -X POST -H \"Authorization: Bearer $JWT_SECRET\" $NEXT_PUBLIC_APP_URL/api/centerpoint/process-queue"
+    envVars:
+      - key: JWT_SECRET
+        sync: false
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
+
+  - type: cron
+    name: centerpoint-sync
+    runtime: node
+    plan: free
+    schedule: "*/30 * * * *"
+    buildCommand: "true"
+    startCommand: "curl -s -X POST -H \"Authorization: Bearer $JWT_SECRET\" $NEXT_PUBLIC_APP_URL/api/centerpoint/sync"
+    envVars:
+      - key: JWT_SECRET
+        sync: false
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
+

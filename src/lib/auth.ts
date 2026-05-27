@@ -103,6 +103,17 @@ export interface AuthPayload {
 
 
 export async function requireAuth(req: NextRequest): Promise<AuthPayload> {
+  const authHeader = req.headers.get("authorization");
+  const systemSecret = process.env.CRON_SECRET || process.env.JWT_SECRET;
+  if (authHeader && systemSecret && authHeader === `Bearer ${systemSecret}`) {
+    return {
+      repId: "system",
+      email: "system@hustadcompanies.com",
+      name: "System Cron",
+      role: "admin",
+    };
+  }
+
   const nextAuthToken = await getToken({
     req,
     secret: nextAuthSecret,

@@ -1,23 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { getServiceClient } from "@/lib/supabase-server";
+import { requireAuth } from "@/lib/auth";
+import { CP_BASE, getCpToken } from "@/lib/centerpoint/client";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 export const revalidate = 0;
 
-const CP_BASE = "https://api.centerpointconnect.io/centerpoint";
 const HUSTAD_TYPE = "STORM INSPECTION-HAIL";
 const FETCH_SIZE = 250;
 const STAGE_ORDER = ["lead_opened","lead_pending","lead_quoted","lead_sold","dead_lead","opened","scheduled","started","completed","invoiced","closed"];
-
-function getCpKey(): string {
-  const key = process.env.CENTERPOINT_API_KEY;
-  if (!key) throw new Error("CENTERPOINT_API_KEY is not set in environment variables");
-  return key;
-}
+const FETCH_TIMEOUT_MS = 8000;
 
 function cpHeaders() {
-  return { Accept: "application/json", Authorization: getCpKey() };
+  return { Accept: "application/json", Authorization: getCpToken() };
 }
 
 // ─── Shared contact shape ─────────────────────────────────────────────────────
@@ -41,89 +37,112 @@ async function getResidentialCompanies(): Promise<CompanyContacts> {
       "page[number]": String(page),
       "filter[type]": "Residential",
     });
-    const res = await fetch(`${CP_BASE}/companies?${params}`, {
-      headers: cpHeaders(),
-      cache: "no-store",
-    });
-    if (!res.ok) break;
-    const data = await res.json();
-    const records: any[] = data?.data ?? [];
-    records.forEach((r) => {
-      const numId = Number(r.id);
-      const a = r.attributes ?? {};
-      ids.add(numId);
-      const companyName = a.name ?? a.companyName ?? null;
-      if (companyName) names.set(numId, companyName);
-      // Company-level phone lives in attributes.custom.phone (confirmed from API)
-      const phone = a.custom?.phone ?? null;
-      if (phone) phones.set(numId, String(phone));
-    });
-    const total = data?.meta?.page?.total ?? 0;
-    if (ids.size >= total || records.length === 0) break;
-    page++;
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    
+    try {
+      const res = await fetch(`${CP_BASE}/companies?${params}`, {
+        headers: cpHeaders(),
+        cache: "no-store",
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
+      if (!res.ok) break;
+      const data = await res.json();
+      const records: any[] = data?.data ?? [];
+      records.forEach((r) => {
+        const numId = Number(r.id);
+        const a = r.attributes ?? {};
+        ids.add(numId);
+        const companyName = a.name ?? a.companyName ?? null;
+        if (companyName) names.set(numId, companyName);
+        const phone = a.custom?.phone ?? null;
+        if (phone) phones.set(numId, String(phone));
+      });
+      const total = data?.meta?.page?.total ?? 0;
+      if (ids.size >= total || records.length === 0) break;
+      page++;
+    } catch (err: any) {
+      clearTimeout(timeoutId);
+      console.error(`[SYNC] Failed to fetch residential companies:`, err.message);
+      break;
+    }
   }
   return { ids, names, phones, emails };
 }
 
-// ─── Fetch profiles targeted per company ID ──────────────────────────────────
-// Fetches /profiles?filter[companyId]=X for each company that has jobs.
-// This is far more reliable and efficient than scanning all 7000+ profiles.
-// Accepts ALL profile types (employees + client_profiles) so we catch every
-// phone/email regardless of how CenterPoint categorises the contact.
+// ─── Fetch profiles targeted per company ID (Concurrently with Concurrency Cap) ──
 async function enrichWithContacts(companyIds: Set<number>, contacts: CompanyContacts): Promise<void> {
-  for (const companyId of companyIds) {
-    // Skip companies where we already have both phone and email
-    if (contacts.phones.has(companyId) && contacts.emails.has(companyId)) continue;
+  const ids = Array.from(companyIds);
+  const CONCURRENCY = 5;
+
+  const fetchCompany = async (companyId: number) => {
+    if (contacts.phones.has(companyId) && contacts.emails.has(companyId)) return;
 
     let page = 1;
-    let found = false;
     while (true) {
       const params = new URLSearchParams({
         "page[size]": "50",
         "page[number]": String(page),
         "filter[companyId]": String(companyId),
       });
-      const res = await fetch(`${CP_BASE}/profiles?${params}`, {
-        headers: cpHeaders(),
-        cache: "no-store",
-      });
-      if (!res.ok) break;
-      const data = await res.json();
-      const records: any[] = data?.data ?? [];
-      if (records.length === 0) break;
 
-      for (const r of records) {
-        const a = r.attributes ?? {};
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
-        // Phone: mobile first, then office, then custom.phone
-        const phone = a.mobile ?? a.office ?? a.custom?.phone ?? null;
-        if (phone && !contacts.phones.has(companyId)) {
-          contacts.phones.set(companyId, String(phone));
-          found = true;
+      try {
+        const res = await fetch(`${CP_BASE}/profiles?${params}`, {
+          headers: cpHeaders(),
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) break;
+        const data = await res.json();
+        const records: any[] = data?.data ?? [];
+        if (records.length === 0) break;
+
+        for (const r of records) {
+          const a = r.attributes ?? {};
+
+          const phone = a.mobile ?? a.office ?? a.custom?.phone ?? null;
+          if (phone && !contacts.phones.has(companyId)) {
+            contacts.phones.set(companyId, String(phone));
+          }
+
+          const email = a.email ?? null;
+          if (email && !contacts.emails.has(companyId)) {
+            contacts.emails.set(companyId, String(email));
+          }
+
+          if (!contacts.names.has(companyId) && a.name) {
+            contacts.names.set(companyId, String(a.name));
+          }
+
+          if (contacts.phones.has(companyId) && contacts.emails.has(companyId)) break;
         }
 
-        // Email
-        const email = a.email ?? null;
-        if (email && !contacts.emails.has(companyId)) {
-          contacts.emails.set(companyId, String(email));
-          found = true;
-        }
-
-        // Name fallback
-        if (!contacts.names.has(companyId) && a.name) {
-          contacts.names.set(companyId, String(a.name));
-        }
-
-        // Stop scanning this company's profiles once we have both
-        if (contacts.phones.has(companyId) && contacts.emails.has(companyId)) break;
+        const total = data?.meta?.page?.total ?? 0;
+        if (page * 50 >= total || records.length < 50) break;
+        page++;
+      } catch (err: any) {
+        clearTimeout(timeoutId);
+        console.error(`[SYNC] Failed to fetch profiles for company ${companyId}:`, err.message);
+        break;
       }
-
-      const total = data?.meta?.page?.total ?? 0;
-      if (page * 50 >= total || records.length < 50) break;
-      page++;
     }
+  };
 
-    void found; // suppress unused warning
+  const chunks = [];
+  for (let i = 0; i < ids.length; i += CONCURRENCY) {
+    chunks.push(ids.slice(i, i + CONCURRENCY));
+  }
+
+  for (const chunk of chunks) {
+    await Promise.all(chunk.map((id) => fetchCompany(id)));
   }
 }
 
@@ -131,7 +150,6 @@ async function enrichWithContacts(companyIds: Set<number>, contacts: CompanyCont
 function toRow(r: any, contacts?: CompanyContacts) {
   const a = r.attributes;
 
-  // Normalize status for the pipeline (e.g. "Closed Out" -> "closed")
   let normalizedStatus = (a.status || "").toLowerCase().replace(/\s+/g, "_");
   if (normalizedStatus === "closed_out") normalizedStatus = "closed";
   if (normalizedStatus === "new_lead") normalizedStatus = "lead_opened";
@@ -168,18 +186,8 @@ function toRow(r: any, contacts?: CompanyContacts) {
   };
 }
 
-// ─── POST /api/centerpoint/sync ──────────────────────────────────────────────
-export async function POST() {
-  // Validate API key before doing anything else
-  try {
-    getCpKey();
-  } catch (e: any) {
-    return NextResponse.json({ ok: false, error: e.message }, { status: 500 });
-  }
-
-  const supabase = getServiceClient();
-
-  // Cleanup: remove duplicate job names, keeping the newest one
+// ─── Post-Sync Database Cleanup (deduplicate) ────────────────────────────────
+async function runCleanup(supabase: any) {
   const { data: allJobsForCleanup } = await supabase
     .from("centerpoint_jobs")
     .select("cp_id, name, status, cp_updated_at");
@@ -203,6 +211,9 @@ export async function POST() {
         
         const bIdx = STAGE_ORDER.indexOf(b.status);
         const rIdx = STAGE_ORDER.indexOf(r.status);
+        if (bIdx === -1 && rIdx === -1) return b;
+        if (bIdx === -1) return r;
+        if (rIdx === -1) return b;
         return rIdx > bIdx ? r : b;
       });
       rows
@@ -215,20 +226,29 @@ export async function POST() {
       await supabase.from("centerpoint_jobs").delete().in("cp_id", cpIdsToDelete);
     }
   }
+}
 
-  const { data: lastLog } = await supabase
-    .from("cp_sync_log")
-    .select("completed_at")
-    .eq("status", "completed")
-    .order("completed_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+// ─── POST /api/centerpoint/sync ──────────────────────────────────────────────
+export async function POST(request: NextRequest) {
+  // 1. Authenticate Request (High 3)
+  try {
+    await requireAuth(request);
+  } catch (e: any) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-  const deltaSince: string | null = lastLog?.completed_at ?? null;
+  // 2. Validate API key
+  try {
+    getCpToken();
+  } catch (e: any) {
+    return NextResponse.json({ ok: false, error: e.message }, { status: 500 });
+  }
+
+  const supabase = getServiceClient();
 
   const { data: logRow } = await supabase
     .from("cp_sync_log")
-    .insert({ status: "running", delta_since: deltaSince })
+    .insert({ status: "running" })
     .select("id")
     .maybeSingle();
   const logId: string | undefined = logRow?.id;
@@ -241,10 +261,9 @@ export async function POST() {
     let cpPage = 1;
     let cpTotal = Infinity;
     let scanned = 0;
-    let reachedDelta = false;
-    const allRawRecords: any[] = []; // keep original CenterPoint records for re-processing
+    const allRawRecords: any[] = [];
 
-    while (scanned < cpTotal && !reachedDelta) {
+    while (scanned < cpTotal) {
       const params = new URLSearchParams({
         "page[size]": String(FETCH_SIZE),
         "page[number]": String(cpPage),
@@ -252,10 +271,16 @@ export async function POST() {
         "filter[workType]": "Inspection",
       });
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
       const res = await fetch(`${CP_BASE}/services?${params}`, {
         headers: cpHeaders(),
         cache: "no-store",
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!res.ok) {
         throw new Error(`CenterPoint API error ${res.status}: check your API key or CenterPoint credentials`);
@@ -314,16 +339,9 @@ export async function POST() {
     let upserted = 0;
 
     if (finalRows.length > 0) {
-      // Preserve inbox_status from existing records
-      const names = finalRows.map(r => r.name);
-      const { data: existingJobs } = await supabase
-        .from("centerpoint_jobs")
-        .select("id, name, cp_id, inbox_status")
-        .in("name", names);
-
-      const localMap = new Map(existingJobs?.map(j => [j.name, j.inbox_status]));
+      // Omit inbox_status completely so DB defaults/existing values are preserved race-free
       finalRows.forEach(r => {
-        if (localMap.has(r.name)) r.inbox_status = localMap.get(r.name);
+        delete (r as any).inbox_status;
       });
 
       const { error } = await supabase
@@ -334,6 +352,9 @@ export async function POST() {
       upserted = finalRows.length;
     }
 
+    // ── Post-Sync Database Cleanup (High 5) ──────────────────────────────────
+    await runCleanup(supabase);
+
     if (logId) {
       await supabase
         .from("cp_sync_log")
@@ -341,7 +362,7 @@ export async function POST() {
         .eq("id", logId);
     }
 
-    return NextResponse.json({ ok: true, upserted, scanned, delta: !!deltaSince, delta_since: deltaSince });
+    return NextResponse.json({ ok: true, upserted, scanned, delta: false, delta_since: null });
 
   } catch (err: any) {
     if (logId) {
@@ -352,8 +373,17 @@ export async function POST() {
 }
 
 // ─── GET /api/centerpoint/sync — last sync info ──────────────────────────────
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Validate token if needed, or allow read of status
   const supabase = getServiceClient();
+
+  // Recover stale sync logs (Medium 6)
+  await supabase
+    .from("cp_sync_log")
+    .update({ status: "failed", error: "Presumed crashed (timeout)" })
+    .eq("status", "running")
+    .lt("started_at", new Date(Date.now() - 10 * 60 * 1000).toISOString());
+
   const { data } = await supabase
     .from("cp_sync_log")
     .select("*")
@@ -366,3 +396,4 @@ export async function GET() {
 
   return NextResponse.json({ logs: data ?? [], total_cached: count ?? 0 });
 }
+

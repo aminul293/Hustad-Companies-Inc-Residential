@@ -50,45 +50,25 @@ export async function POST(req: NextRequest) {
 
   const supabase = getServiceClient();
 
-  // Guard: don't double-promote the same CP job
-  if (cp_job_id) {
-    const { data: existing } = await supabase
-      .from("hustad_tickets")
-      .select("id")
-      .eq("cp_job_id", cp_job_id)
-      .maybeSingle();
-    if (existing) {
-      return NextResponse.json({ error: "This job has already been promoted", ticket_id: existing.id }, { status: 409 });
-    }
+  const { data: result, error: rpcError } = await supabase
+    .rpc("promote_job_to_ticket", {
+      p_cp_job_id: cp_job_id ?? null,
+      p_cp_job_name: cp_job_name ?? null,
+      p_property_name: property_name,
+      p_property_address: property_address ?? "",
+      p_client_name: client_name ?? "",
+      p_client_email: client_email ?? "",
+      p_client_phone: client_phone ?? "",
+      p_assigned_rep_name: assigned_rep_name ?? "",
+      p_promoted_by: promoted_by ?? "",
+      p_price: price ?? 0,
+    });
+
+  if (rpcError) return NextResponse.json({ error: rpcError.message }, { status: 500 });
+
+  if (result && result.error) {
+    return NextResponse.json({ error: result.error, ticket_id: result.ticket_id }, { status: 409 });
   }
 
-  const { data: ticket, error } = await supabase
-    .from("hustad_tickets")
-    .insert({
-      cp_job_id: cp_job_id ?? null,
-      cp_job_name: cp_job_name ?? null,
-      property_name,
-      property_address: property_address ?? "",
-      client_name: client_name ?? "",
-      client_email: client_email ?? "",
-      client_phone: client_phone ?? "",
-      assigned_rep_name: assigned_rep_name ?? "",
-      promoted_by: promoted_by ?? "",
-      price: price ?? 0,
-      stage: "new",
-    })
-    .select()
-    .single();
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  // Mark the CP job as promoted
-  if (cp_job_id) {
-    await supabase
-      .from("centerpoint_jobs")
-      .update({ promoted_at: new Date().toISOString(), promoted_ticket_id: ticket.id })
-      .eq("cp_id", cp_job_id);
-  }
-
-  return NextResponse.json({ ticket }, { status: 201 });
+  return NextResponse.json({ ticket: result }, { status: 201 });
 }

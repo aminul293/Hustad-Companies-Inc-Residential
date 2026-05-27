@@ -28,51 +28,15 @@ export async function POST(request: NextRequest) {
       throw new Error("Could not find internal centerpoint_job record.");
     }
 
-    // 1. Create the Pipeline Lead — check for existing to avoid resetting status
-    const { data: existingLead } = await supabase
-      .from('pipeline_leads')
-      .select('id, pipeline_status')
-      .eq('cpc_ticket_id', job.attributes.name)
-      .maybeSingle();
+    // Call the RPC to atomically import/update the pipeline lead and update centerpoint_jobs.inbox_status
+    const { data: lead, error: rpcError } = await supabase
+      .rpc('import_job_to_pipeline', {
+        p_cp_job_id: cpJob.id,
+        p_cpc_ticket_id: job.attributes.name,
+        p_original_status: job.attributes.status
+      });
 
-    let lead;
-    if (existingLead) {
-      // Already exists — just return it or update notes/imported_at if needed, 
-      // but PRESERVE the pipeline_status.
-      const { data: updated, error: updateErr } = await supabase
-        .from('pipeline_leads')
-        .update({
-          lead_notes: `${existingLead.pipeline_status !== 'new_lead' ? '(Re-imported) ' : ''}${existingLead.pipeline_status === 'new_lead' ? `Imported from CenterPoint Inbox. Original Status: ${job.attributes.status}` : `Update attempted from Inbox.`}`
-        })
-        .eq('id', existingLead.id)
-        .select()
-        .single();
-      if (updateErr) throw updateErr;
-      lead = updated;
-    } else {
-      // New lead — create it
-      const { data: created, error: createErr } = await supabase
-        .from('pipeline_leads')
-        .insert({
-          centerpoint_job_id: cpJob.id,
-          cpc_ticket_id: job.attributes.name,
-          pipeline_status: 'new_lead',
-          imported_at: new Date().toISOString(),
-          lead_notes: `Imported from CenterPoint Inbox. Original Status: ${job.attributes.status}`
-        })
-        .select()
-        .single();
-      if (createErr) throw createErr;
-      lead = created;
-    }
-
-    // 2. Update the Inbox Status to prevent re-import
-    const { error: inboxError } = await supabase
-      .from('centerpoint_jobs')
-      .update({ inbox_status: 'imported_to_pipeline' })
-      .eq('id', cpJob.id);
-
-    if (inboxError) throw inboxError;
+    if (rpcError) throw rpcError;
 
     return NextResponse.json({ success: true, lead });
   } catch (error: any) {
@@ -169,21 +133,24 @@ export async function DELETE(request: NextRequest) {
     if (fetchErr) throw fetchErr;
 
     if (lead) {
-      // Reset inbox_status using the FK (same way the DELETE by ID does it)
+      // Reset inbox_status using the FK
       if (lead.centerpoint_job_id) {
-        await supabase
+        const { error: resetErr } = await supabase
           .from('centerpoint_jobs')
-          .update({ inbox_status: null })
+          .update({ inbox_status: 'new' })
           .eq('id', lead.centerpoint_job_id);
+        if (resetErr) throw resetErr;
       }
       // Delete the pipeline lead
-      await supabase.from('pipeline_leads').delete().eq('id', lead.id);
+      const { error: deleteErr } = await supabase.from('pipeline_leads').delete().eq('id', lead.id);
+      if (deleteErr) throw deleteErr;
     } else {
       // No pipeline lead found — just clear any stale inbox_status by looking up the job directly
-      await supabase
+      const { error: resetErr } = await supabase
         .from('centerpoint_jobs')
-        .update({ inbox_status: null })
+        .update({ inbox_status: 'new' })
         .eq('name', cpcTicketId);
+      if (resetErr) throw resetErr;
     }
 
     return NextResponse.json({ success: true });

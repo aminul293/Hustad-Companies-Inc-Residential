@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase-server";
-
-const CP_BASE = "https://api.centerpointconnect.io/centerpoint";
-const CP_KEY = process.env.CENTERPOINT_API_KEY!;
+import { requireAuth } from "@/lib/auth";
+import { CP_BASE, cpJsonHeaders } from "@/lib/centerpoint/client";
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  try {
+    await requireAuth(req);
+  } catch (e: any) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { id } = params;
   const body = await req.json();
   const { status } = body;
@@ -27,20 +32,23 @@ export async function PATCH(
     attrs.startedAt = nowStr;
   }
 
+  let cpHeaders;
+  try {
+    cpHeaders = cpJsonHeaders();
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
+
   // Push to CenterPoint
   const res = await fetch(`${CP_BASE}/services/${id}`, {
     method: "PATCH",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      Authorization: CP_KEY,
-    },
+    headers: cpHeaders,
     body: JSON.stringify({
       data: { type: "services", id, attributes: attrs },
     }),
   });
 
-  const data = await res.json();
+  const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
     return NextResponse.json({ error: data }, { status: res.status });
@@ -48,7 +56,7 @@ export async function PATCH(
 
   // Mirror the status update in Supabase so the UI stays consistent
   const supabase = getServiceClient();
-  await supabase
+  const { error: dbError } = await supabase
     .from("centerpoint_jobs")
     .update({
       status,
@@ -57,6 +65,10 @@ export async function PATCH(
       synced_at: new Date().toISOString(),
     })
     .eq("cp_id", id);
+
+  if (dbError) {
+    console.warn(`[PATCH_CP_JOB] Failed to mirror CP status back to centerpoint_jobs: ${dbError.message}`);
+  }
 
   return NextResponse.json(data);
 }
