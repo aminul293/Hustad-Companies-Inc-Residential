@@ -1,11 +1,115 @@
 import { NextResponse } from 'next/server';
 import { getServiceClient } from '@/lib/supabase-server';
+import { requireAuth } from '@/lib/auth';
+import { CP_BASE, cpJsonHeaders } from '@/lib/centerpoint/client';
+
+const PIPELINE_WRITEBACK: Record<string, string> = {
+  new_lead:               "lead_opened",
+  follow_up_needed:       "lead_pending",
+  contact_attempted:      "lead_pending",
+  contacted:              "lead_pending",
+  scheduled:              "scheduled",
+  appointment_confirmed:  "scheduled",
+  inspection_in_progress: "opened",
+  inspection_completed:   "completed",
+  dead_lead:              "lead_dead",
+  signed:                 "lead_sold",
+  closed:                 "closed",
+};
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+  try {
+    // 1. Authenticate Request
+    await requireAuth(request as any);
+  } catch (e: any) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const updates = await request.json();
 
   try {
     const supabase = getServiceClient();
+
+    // 2. Fetch current pipeline lead and its related CP job cp_id
+    const { data: current, error: fetchError } = await supabase
+      .from('pipeline_leads')
+      .select('id, pipeline_status, centerpoint_jobs(cp_id)')
+      .eq('id', params.id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    // 3. Handle CP write-back if pipeline_status changes
+    const newStatus = updates.pipeline_status;
+    const cpJob = current.centerpoint_jobs as any;
+    const cpId = cpJob?.cp_id;
+
+    if (newStatus && newStatus !== current.pipeline_status && cpId && PIPELINE_WRITEBACK[newStatus]) {
+      const cpStatus = PIPELINE_WRITEBACK[newStatus];
+      const nowStr = new Date().toISOString();
+      const attrs: Record<string, any> = { status: cpStatus };
+      if (cpStatus === "completed") {
+        attrs.completedAt = nowStr;
+      } else if (cpStatus === "closed") {
+        attrs.closedAt = nowStr;
+        attrs.invoicedAt = nowStr;
+      } else if (cpStatus === "started") {
+        attrs.startedAt = nowStr;
+      }
+
+      try {
+        let cpHeaders;
+        try {
+          cpHeaders = cpJsonHeaders();
+        } catch (keyErr: any) {
+          throw new Error(`API credentials missing: ${keyErr.message}`);
+        }
+
+        const cpRes = await fetch(`${CP_BASE}/services/${cpId}`, {
+          method: "PATCH",
+          headers: cpHeaders,
+          body: JSON.stringify({
+            data: { type: "services", id: cpId, attributes: attrs },
+          }),
+        });
+
+        if (!cpRes.ok) {
+          const errText = await cpRes.text().catch(() => String(cpRes.status));
+          console.error(`[PIPELINE_CP_WRITEBACK] status=${newStatus} cp_id=${cpId} error=${cpRes.status}: ${errText}`);
+          
+          await supabase.from("outbound_queue").insert({
+            target_system: "centerpoint",
+            target_id: cpId,
+            action: "update_status",
+            payload: { status: cpStatus, attrs, pipeline_lead_id: params.id, stage: newStatus },
+            status: "pending",
+            error: `HTTP ${cpRes.status}: ${errText.slice(0, 200)}`,
+          });
+        } else {
+          // Mirror in local centerpoint_jobs cache
+          await supabase
+            .from("centerpoint_jobs")
+            .update({ status: cpStatus, synced_at: new Date().toISOString() })
+            .eq("cp_id", cpId);
+        }
+      } catch (writebackErr: any) {
+        console.error(`[PIPELINE_CP_WRITEBACK] unexpected error for cp_id=${cpId}:`, writebackErr?.message);
+        try {
+          await supabase.from("outbound_queue").insert({
+            target_system: "centerpoint",
+            target_id: cpId,
+            action: "update_status",
+            payload: { status: cpStatus, attrs, pipeline_lead_id: params.id, stage: newStatus },
+            status: "pending",
+            error: writebackErr?.message?.slice(0, 200) ?? "Unknown error",
+          });
+        } catch {
+          // Non-blocking
+        }
+      }
+    }
+
+    // 4. Update the pipeline lead row
     const { data, error } = await supabase
       .from('pipeline_leads')
       .update(updates)
@@ -20,8 +124,16 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   console.log(`[API] Start removal for lead ID: ${params.id}`);
+  
+  try {
+    // Authenticate DELETE
+    await requireAuth(request as any);
+  } catch (e: any) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const supabase = getServiceClient();
     
@@ -45,12 +157,12 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
     console.log(`[API] Lead found. Status: ${lead.pipeline_status}, CP Ticket: ${lead.cpc_ticket_id}`);
 
     // 2. Case 2: Inspection Started (Blocked unless forced)
-    const { searchParams } = new URL(_request.url);
+    const { searchParams } = new URL(request.url);
     const force = searchParams.get('force') === 'true';
 
     const blockedStatuses = ['inspection_in_progress', 'inspection_completed', 'signed', 'closed'];
     if (blockedStatuses.includes(lead.pipeline_status) && !force) {
-      console.warn(`[API] Removal blocked due to status: \${lead.pipeline_status}`);
+      console.warn(`[API] Removal blocked due to status: ${lead.pipeline_status}`);
       return NextResponse.json({ 
         error: "This lead has inspection activity and cannot be removed from Pipeline." 
       }, { status: 403 });
@@ -62,14 +174,14 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
     if (cpResetId) {
       const { error: cpError } = await supabase
         .from('centerpoint_jobs')
-        .update({ inbox_status: null })
+        .update({ inbox_status: 'new' })
         .eq('id', cpResetId);
 
       if (cpError) console.error(`[API] CP status reset failed:`, cpError);
     }
 
     // 4. Remove from active pipeline
-    console.log(`[API] Executing delete for pipeline_leads ID: \${params.id}`);
+    console.log(`[API] Executing delete for pipeline_leads ID: ${params.id}`);
     const { error: deleteError } = await supabase
       .from('pipeline_leads')
       .delete()
@@ -90,7 +202,7 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
       console.error(`[API] Session archive failed (non-fatal):`, archiveError);
     }
 
-    console.log(`[API] Removal successful for: \${params.id}`);
+    console.log(`[API] Removal successful for: ${params.id}`);
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error(`[API] removal process exception:`, error);
