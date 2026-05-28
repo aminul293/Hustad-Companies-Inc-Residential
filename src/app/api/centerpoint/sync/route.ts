@@ -146,13 +146,36 @@ async function enrichWithContacts(companyIds: Set<number>, contacts: CompanyCont
   }
 }
 
+// ─── Comprehensive CenterPoint → Hustad status mapping ───────────────────────
+// CenterPoint uses varied status strings across lead and service workflows.
+// Unknown statuses fall back to "lead_opened" (earliest stage) so they are
+// never silently discarded by the dedup tiebreaker.
+const CP_STATUS_REMAP: Record<string, string> = {
+  new_lead:      "lead_opened",
+  new_service:   "lead_opened",   // CenterPoint work-order initial stage
+  new:           "lead_opened",
+  pending:       "lead_pending",
+  quoted:        "lead_quoted",
+  sold:          "lead_sold",
+  opened:        "opened",
+  open:          "opened",
+  scheduled:     "scheduled",
+  started:       "started",
+  in_progress:   "started",
+  completed:     "completed",
+  invoiced:      "invoiced",
+  closed_out:    "closed",
+  closed:        "closed",
+  dead_lead:     "dead_lead",
+  dead:          "dead_lead",
+};
+
 // ─── Map CenterPoint record → Supabase row ───────────────────────────────────
 function toRow(r: any, contacts?: CompanyContacts) {
   const a = r.attributes;
 
-  let normalizedStatus = (a.status || "").toLowerCase().replace(/\s+/g, "_");
-  if (normalizedStatus === "closed_out") normalizedStatus = "closed";
-  if (normalizedStatus === "new_lead") normalizedStatus = "lead_opened";
+  const raw = (a.status || "").toLowerCase().replace(/\s+/g, "_");
+  const normalizedStatus = CP_STATUS_REMAP[raw] ?? "lead_opened";
 
   const billedId = a.billedCompanyId ? Number(a.billedCompanyId) : null;
   const ownerName  = billedId && contacts ? (contacts.names.get(billedId) ?? null) : null;
@@ -209,11 +232,9 @@ async function runCleanup(supabase: any) {
         if (rDate > bDate) return r;
         if (rDate < bDate) return b;
         
-        const bIdx = STAGE_ORDER.indexOf(b.status);
-        const rIdx = STAGE_ORDER.indexOf(r.status);
-        if (bIdx === -1 && rIdx === -1) return b;
-        if (bIdx === -1) return r;
-        if (rIdx === -1) return b;
+        // Unknown statuses fall back to position 0 — never silently discarded
+        const bIdx = Math.max(0, STAGE_ORDER.indexOf(b.status));
+        const rIdx = Math.max(0, STAGE_ORDER.indexOf(r.status));
         return rIdx > bIdx ? r : b;
       });
       rows
@@ -329,8 +350,9 @@ export async function POST(request: NextRequest) {
       if (incomingDate > existingDate) {
         uniqueRows.set(row.name, row);
       } else if (incomingDate === existingDate) {
-        const ei = STAGE_ORDER.indexOf(existing.status === "closed_out" ? "closed" : existing.status);
-        const ii = STAGE_ORDER.indexOf(row.status === "closed_out" ? "closed" : row.status);
+        // Unknown statuses fall back to position 0 — never silently discarded
+        const ei = Math.max(0, STAGE_ORDER.indexOf(existing.status));
+        const ii = Math.max(0, STAGE_ORDER.indexOf(row.status));
         if (ii > ei) uniqueRows.set(row.name, row);
       }
     }
@@ -373,8 +395,7 @@ export async function POST(request: NextRequest) {
 }
 
 // ─── GET /api/centerpoint/sync — last sync info ──────────────────────────────
-export async function GET(request: NextRequest) {
-  // Validate token if needed, or allow read of status
+export async function GET(_request: NextRequest) {
   const supabase = getServiceClient();
 
   // Recover stale sync logs (Medium 6)

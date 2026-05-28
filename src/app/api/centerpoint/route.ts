@@ -6,7 +6,7 @@ export const fetchCache = "force-no-store";
 export const revalidate = 0;
 
 const PAGE_SIZE = 25;
-const STAGE_ORDER = ["lead_opened","lead_pending","lead_quoted","lead_sold","opened","scheduled","started","completed","invoiced","closed"];
+const STAGE_ORDER = ["lead_opened","lead_pending","lead_quoted","lead_sold","dead_lead","opened","scheduled","started","completed","invoiced","closed"];
 
 export async function GET(req: NextRequest) {
   try {
@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
       query = query.or(`name.ilike.%${search}%,property_name.ilike.%${search}%`);
     }
 
-    const { data, error } = await query;
+    const { data, error, count } = await query;
 
     if (error) {
       console.error("[CENTERPOINT_API] Supabase Error:", error);
@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
       data: mapped,
       meta: {
         page: {
-          total: deduped.length,
+          total: count ?? 0,
           currentPage: page,
           perPage: PAGE_SIZE,
         },

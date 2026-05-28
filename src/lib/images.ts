@@ -9,32 +9,41 @@
 export async function compressImage(dataUrl: string, maxWidth = 1024, quality = 0.7): Promise<string> {
   if (typeof window === "undefined") return dataUrl;
   
-  // If it's not a data URL or already small enough, we might skip, 
-  // but usually camera photos are large.
+  if (!dataUrl || typeof dataUrl !== "string" || (!dataUrl.startsWith("data:") && !dataUrl.startsWith("http"))) {
+    return dataUrl;
+  }
   
   return new Promise((resolve) => {
     const img = new Image();
+    if (dataUrl.startsWith("http")) {
+      img.crossOrigin = "anonymous";
+    }
     img.onload = () => {
-      const canvas = document.createElement("canvas");
-      let width = img.width;
-      let height = img.height;
-      
-      if (width > maxWidth) {
-        height = (maxWidth / width) * height;
-        width = maxWidth;
-      }
-      
-      canvas.width = width;
-      canvas.height = height;
-      
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
+      try {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > maxWidth) {
+          height = (maxWidth / width) * height;
+          width = maxWidth;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(dataUrl);
+          return;
+        }
+        
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      } catch (err) {
+        console.warn("[compressImage] Failed to compress image (likely tainted canvas/CORS):", err);
         resolve(dataUrl);
-        return;
       }
-      
-      ctx.drawImage(img, 0, 0, width, height);
-      resolve(canvas.toDataURL("image/jpeg", quality));
     };
     img.onerror = () => resolve(dataUrl);
     img.src = dataUrl;

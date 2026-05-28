@@ -15,6 +15,7 @@ const STAGES: Record<string, {
   ring: string;
   chip: { bg: string; fg: string; dot: string };
 }> = {
+  new_service:   { label: "New Service", next: "lead_opened",   color: "bg-sky-500/20 text-sky-300 border-sky-500/30",               ring: "bg-sky-500",     chip: { bg: "#dbeafe", fg: "#1e40af", dot: "#3b82f6" } },
   lead_opened:   { label: "New Lead",    next: "lead_pending",  color: "bg-sky-500/20 text-sky-300 border-sky-500/30",               ring: "bg-sky-500",     chip: { bg: "#dbeafe", fg: "#1e40af", dot: "#3b82f6" } },
   lead_pending:  { label: "Pending",     next: "lead_quoted",   color: "bg-blue-500/20 text-blue-300 border-blue-500/30",             ring: "bg-blue-500",    chip: { bg: "#e0f2fe", fg: "#0369a1", dot: "#0ea5e9" } },
   lead_quoted:   { label: "Quoted",      next: "lead_sold",     color: "bg-amber-500/20 text-amber-300 border-amber-500/30",          ring: "bg-amber-500",   chip: { bg: "#fff5cc", fg: "#6a4e00", dot: "#d6a800" } },
@@ -28,7 +29,7 @@ const STAGES: Record<string, {
   closed:        { label: "Closed Out",  next: null,            color: "bg-white/10 text-[#567090] border-white/10",                  ring: "bg-white/30",    chip: { bg: "#f6f9fc", fg: "#64748d", dot: "#94a3b8" } },
 };
 
-const STAGE_ORDER = ["lead_opened","lead_pending","lead_quoted","lead_sold","dead_lead","opened","scheduled","started","completed","invoiced","closed"];
+const STAGE_ORDER = ["new_service","lead_opened","lead_pending","lead_quoted","lead_sold","dead_lead","opened","scheduled","started","completed","invoiced","closed"];
 
 const STATUS_FILTERS = [
   { id: "all", label: "All Stages" },
@@ -94,6 +95,7 @@ export function CenterPointJobs() {
   const [promotingId, setPromotingId] = useState<string | null>(null);
   const [unlinkingId, setUnlinkingId] = useState<string | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
+  const [stagePickerJobId, setStagePickerJobId] = useState<string | null>(null);
 
   const fetchJobs = useCallback(async (opts?: { refresh?: boolean; newPage?: number }) => {
     const isRefresh = opts?.refresh;
@@ -118,11 +120,10 @@ export function CenterPointJobs() {
       if (data?.data) {
         if (isInitial) {
           setJobs(data.data);
-          // Set totalJobs to the count of jobs matching the current filter
-          setTotalJobs(data.meta?.page?.total ?? 0);
         } else {
           setJobs(prev => [...prev, ...data.data]);
         }
+        setTotalJobs(data.meta?.page?.total ?? 0);
       }
     } catch (e: any) {
       /* non-fatal */
@@ -430,7 +431,7 @@ export function CenterPointJobs() {
                           {/* Stage pipeline */}
                           <div>
                             <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest mb-3">Stage Pipeline</p>
-                            <div className="flex items-center gap-1 overflow-x-auto pb-2">
+                            <div className="flex items-center gap-1 flex-wrap">
                               {STAGE_ORDER.map((s, i) => {
                                 const isPast = i < currentIndex;
                                 const isCurrent = i === currentIndex;
@@ -478,26 +479,64 @@ export function CenterPointJobs() {
                           </div>
 
                           {/* Stage transition CTA & Import to Pipeline */}
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 border-t border-white/[0.05]">
-                            <div>
+                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pt-2 border-t border-white/[0.05]">
+                            <div className="flex-1 min-w-0">
                               <p className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest mb-2">Actions</p>
-                              <div className="flex items-center gap-3">
-                                {nextStage ? (
+
+                              {/* Stage picker — inline when open */}
+                              {stagePickerJobId === job.id ? (
+                                <div className="space-y-2">
+                                  <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest">Select new stage</p>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {STAGE_ORDER.map((s) => (
+                                      <button
+                                        key={s}
+                                        disabled={isTransitioning || s === attr.status}
+                                        onClick={() => {
+                                          setStagePickerJobId(null);
+                                          handleStageTransition(job, s);
+                                        }}
+                                        className={cn(
+                                          "px-3 py-1.5 rounded-full text-[9px] font-mono uppercase tracking-widest border transition-all",
+                                          s === attr.status
+                                            ? "bg-white/5 text-[#3F5878] border-white/5 cursor-default"
+                                            : "bg-white/[0.03] border-white/10 text-[#7090B0] hover:bg-indigo-500/20 hover:border-indigo-500/40 hover:text-indigo-300 active:scale-95"
+                                        )}
+                                      >
+                                        {STAGES[s]?.label ?? s}
+                                      </button>
+                                    ))}
+                                    <button
+                                      onClick={() => setStagePickerJobId(null)}
+                                      className="px-3 py-1.5 rounded-full text-[9px] font-mono uppercase tracking-widest border border-white/[0.04] text-[#2D4060] hover:bg-white/5 hover:text-[#567090] transition-all"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-3 flex-wrap">
+                                  {nextStage ? (
+                                    <button
+                                      onClick={() => handleStageTransition(job, nextStage)}
+                                      disabled={isTransitioning}
+                                      className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 text-[#E8EDF8] text-xs font-display font-medium hover:bg-white/20 active:scale-95 transition-all disabled:opacity-50"
+                                    >
+                                      {isTransitioning ? (
+                                        <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                      ) : (
+                                        <ArrowRight className="w-3.5 h-3.5" />
+                                      )}
+                                      Move to {STAGES[nextStage]?.label ?? nextStage}
+                                    </button>
+                                  ) : null}
                                   <button
-                                    onClick={() => handleStageTransition(job, nextStage)}
-                                    disabled={isTransitioning}
-                                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 text-[#E8EDF8] text-xs font-display font-medium hover:bg-white/20 active:scale-95 transition-all disabled:opacity-50"
+                                    onClick={() => setStagePickerJobId(job.id)}
+                                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-white/[0.03] border border-white/[0.08] text-[#567090] text-[10px] font-mono uppercase tracking-widest hover:bg-white/[0.07] hover:text-[#7090B0] hover:border-white/15 active:scale-95 transition-all"
                                   >
-                                    {isTransitioning ? (
-                                      <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                                    ) : (
-                                      <ArrowRight className="w-3.5 h-3.5" />
-                                    )}
-                                    Move to {STAGES[nextStage]?.label ?? nextStage}
+                                    <RefreshCw className="w-3 h-3" />
+                                    Change Stage
                                   </button>
-                                ) : (
-                                  <span className="text-[10px] font-mono text-[#2D4060] uppercase tracking-widest">Final stage</span>
-                                )}
 
                                 {job.inbox_status === 'imported_to_pipeline' ? (
                                   <span className="flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-display text-emerald-400 overflow-hidden">
@@ -565,6 +604,7 @@ export function CenterPointJobs() {
                                   </button>
                                 )}
                               </div>
+                            )}
                             </div>
                           </div>
                         </div>
