@@ -6,8 +6,7 @@ import { requireAuth } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 
 const CP_STAGE_ORDER = [
-  "lead_opened","lead_pending","lead_quoted","lead_sold",
-  "opened","scheduled","started","completed","invoiced","closed",
+  "new_service","opened","scheduled","started","completed","closed",
 ];
 
 function cpStatusAdvances(current: string | null | undefined, next: string): boolean {

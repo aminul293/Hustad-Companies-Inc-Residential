@@ -6,7 +6,7 @@ export const fetchCache = "force-no-store";
 export const revalidate = 0;
 
 const PAGE_SIZE = 25;
-const STAGE_ORDER = ["lead_opened","lead_pending","lead_quoted","lead_sold","dead_lead","opened","scheduled","started","completed","invoiced","closed"];
+const STAGE_ORDER = ["new_service","opened","scheduled","started","completed","closed"];
 
 export async function GET(req: NextRequest) {
   try {

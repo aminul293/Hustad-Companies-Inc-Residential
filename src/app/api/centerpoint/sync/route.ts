@@ -9,7 +9,7 @@ export const revalidate = 0;
 
 const HUSTAD_TYPE = "STORM INSPECTION-HAIL";
 const FETCH_SIZE = 250;
-const STAGE_ORDER = ["lead_opened","lead_pending","lead_quoted","lead_sold","dead_lead","opened","scheduled","started","completed","invoiced","closed"];
+const STAGE_ORDER = ["new_service","opened","scheduled","started","completed","closed"];
 const FETCH_TIMEOUT_MS = 8000;
 
 function cpHeaders() {
@@ -148,26 +148,20 @@ async function enrichWithContacts(companyIds: Set<number>, contacts: CompanyCont
 
 // ─── Comprehensive CenterPoint → Hustad status mapping ───────────────────────
 // CenterPoint uses varied status strings across lead and service workflows.
-// Unknown statuses fall back to "lead_opened" (earliest stage) so they are
+// Unknown statuses fall back to "new_service" (earliest stage) so they are
 // never silently discarded by the dedup tiebreaker.
 const CP_STATUS_REMAP: Record<string, string> = {
-  new_lead:      "lead_opened",
-  new_service:   "lead_opened",   // CenterPoint work-order initial stage
-  new:           "lead_opened",
-  pending:       "lead_pending",
-  quoted:        "lead_quoted",
-  sold:          "lead_sold",
+  new_service:   "new_service",
+  new:           "new_service",
   opened:        "opened",
   open:          "opened",
   scheduled:     "scheduled",
   started:       "started",
   in_progress:   "started",
   completed:     "completed",
-  invoiced:      "invoiced",
+  invoiced:      "completed",
   closed_out:    "closed",
   closed:        "closed",
-  dead_lead:     "dead_lead",
-  dead:          "dead_lead",
 };
 
 // ─── Map CenterPoint record → Supabase row ───────────────────────────────────
@@ -175,7 +169,7 @@ function toRow(r: any, contacts?: CompanyContacts) {
   const a = r.attributes;
 
   const raw = (a.status || "").toLowerCase().replace(/\s+/g, "_");
-  const normalizedStatus = CP_STATUS_REMAP[raw] ?? "lead_opened";
+  const normalizedStatus = CP_STATUS_REMAP[raw] ?? "new_service";
 
   const billedId = a.billedCompanyId ? Number(a.billedCompanyId) : null;
   const ownerName  = billedId && contacts ? (contacts.names.get(billedId) ?? null) : null;
@@ -323,7 +317,11 @@ export async function POST(request: NextRequest) {
           a?.category?.toLowerCase() === "residential" ||
           isResidentialId;
 
-        if (!isHailInspection || !isResidentialModule || !isInspectionType) continue;
+        const rawStatus = (a?.status || "").toLowerCase().replace(/\s+/g, "_");
+        const isLeadStatus = ["new_lead", "pending", "quoted", "sold", "dead_lead", "dead"].includes(rawStatus);
+        const isServiceDomain = a?.domain?.toLowerCase() === "service";
+
+        if (!isHailInspection || !isResidentialModule || !isInspectionType || isLeadStatus || !isServiceDomain) continue;
         allRawRecords.push(r);
       }
 

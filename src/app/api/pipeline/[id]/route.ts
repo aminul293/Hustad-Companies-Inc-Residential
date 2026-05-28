@@ -10,14 +10,13 @@ const PIPELINE_WRITEBACK: Record<string, string> = {
   appointment_confirmed:  "scheduled",
   inspection_in_progress: "started",
   inspection_completed:   "completed",
-  dead_lead:              "dead_lead",
-  signed:                 "lead_sold",
+  dead_lead:              "closed",
+  signed:                 "opened",
   closed:                 "closed",
 };
 
 const CP_STAGE_ORDER = [
-  "lead_opened","lead_pending","lead_quoted","lead_sold",
-  "opened","scheduled","started","completed","invoiced","closed",
+  "new_service","opened","scheduled","started","completed","closed",
 ];
 
 function cpStatusAdvances(current: string | null | undefined, next: string): boolean {

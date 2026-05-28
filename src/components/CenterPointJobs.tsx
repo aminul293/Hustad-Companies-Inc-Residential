@@ -15,34 +15,24 @@ const STAGES: Record<string, {
   ring: string;
   chip: { bg: string; fg: string; dot: string };
 }> = {
-  new_service:   { label: "New Service", next: "lead_opened",   color: "bg-sky-500/20 text-sky-300 border-sky-500/30",               ring: "bg-sky-500",     chip: { bg: "#dbeafe", fg: "#1e40af", dot: "#3b82f6" } },
-  lead_opened:   { label: "New Lead",    next: "lead_pending",  color: "bg-sky-500/20 text-sky-300 border-sky-500/30",               ring: "bg-sky-500",     chip: { bg: "#dbeafe", fg: "#1e40af", dot: "#3b82f6" } },
-  lead_pending:  { label: "Pending",     next: "lead_quoted",   color: "bg-blue-500/20 text-blue-300 border-blue-500/30",             ring: "bg-blue-500",    chip: { bg: "#e0f2fe", fg: "#0369a1", dot: "#0ea5e9" } },
-  lead_quoted:   { label: "Quoted",      next: "lead_sold",     color: "bg-amber-500/20 text-amber-300 border-amber-500/30",          ring: "bg-amber-500",   chip: { bg: "#fff5cc", fg: "#6a4e00", dot: "#d6a800" } },
-  lead_sold:     { label: "Sold",        next: "opened",        color: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",    ring: "bg-emerald-500", chip: { bg: "#d7f7c2", fg: "#0d6a3f", dot: "#29b572" } },
-  dead_lead:     { label: "Dead Lead",   next: null,            color: "bg-rose-500/20 text-rose-300 border-rose-500/30",             ring: "bg-rose-500",    chip: { bg: "#fde2e1", fg: "#983705", dot: "#d24c47" } },
+  new_service:   { label: "New Service", next: "opened",        color: "bg-sky-500/20 text-sky-300 border-sky-500/30",               ring: "bg-sky-500",     chip: { bg: "#dbeafe", fg: "#1e40af", dot: "#3b82f6" } },
   opened:        { label: "Opened",      next: "scheduled",     color: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",       ring: "bg-indigo-500",  chip: { bg: "#ede9fe", fg: "#4c1d95", dot: "#7c3aed" } },
   scheduled:     { label: "Scheduled",   next: "started",       color: "bg-violet-500/20 text-violet-300 border-violet-500/30",       ring: "bg-violet-500",  chip: { bg: "#f3e8ff", fg: "#6b21a8", dot: "#a855f7" } },
   started:       { label: "In Progress", next: "completed",     color: "bg-purple-500/20 text-purple-300 border-purple-500/30",       ring: "bg-purple-500",  chip: { bg: "#faf5ff", fg: "#7e22ce", dot: "#9333ea" } },
-  completed:     { label: "Completed",   next: "invoiced",      color: "bg-teal-500/20 text-teal-300 border-teal-500/30",             ring: "bg-teal-500",    chip: { bg: "#d7f7c2", fg: "#0d6a3f", dot: "#29b572" } },
-  invoiced:      { label: "Invoiced",    next: "closed",        color: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",             ring: "bg-cyan-500",    chip: { bg: "#cffafe", fg: "#155e75", dot: "#06b6d4" } },
+  completed:     { label: "Completed",   next: "closed",        color: "bg-teal-500/20 text-teal-300 border-teal-500/30",             ring: "bg-teal-500",    chip: { bg: "#d7f7c2", fg: "#0d6a3f", dot: "#29b572" } },
   closed:        { label: "Closed Out",  next: null,            color: "bg-white/10 text-[#567090] border-white/10",                  ring: "bg-white/30",    chip: { bg: "#f6f9fc", fg: "#64748d", dot: "#94a3b8" } },
 };
 
-const STAGE_ORDER = ["new_service","lead_opened","lead_pending","lead_quoted","lead_sold","dead_lead","opened","scheduled","started","completed","invoiced","closed"];
+const STAGE_ORDER = ["new_service","opened","scheduled","started","completed","closed"];
 
 const STATUS_FILTERS = [
   { id: "all", label: "All Stages" },
-  { id: "lead_opened", label: "New Lead" },
-  { id: "lead_pending", label: "Pending" },
-  { id: "lead_quoted", label: "Quoted" },
-  { id: "lead_sold", label: "Sold" },
+  { id: "new_service", label: "New Service" },
   { id: "opened", label: "Opened" },
   { id: "scheduled", label: "Scheduled" },
   { id: "started", label: "In Progress" },
   { id: "completed", label: "Completed" },
-  { id: "invoiced", label: "Invoiced" },
-  { id: "closed", label: "Closed" },
+  { id: "closed", label: "Closed Out" },
 ];
 
 interface CPJob {
