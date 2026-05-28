@@ -359,6 +359,7 @@ export async function POST(request: NextRequest) {
 
     const finalRows = Array.from(uniqueRows.values());
     let upserted = 0;
+    let deleted = 0;
 
     if (finalRows.length > 0) {
       // Omit inbox_status completely so DB defaults/existing values are preserved race-free
@@ -374,6 +375,35 @@ export async function POST(request: NextRequest) {
       upserted = finalRows.length;
     }
 
+    // ── Reconciliation: remove records deleted in CenterPoint ────────────────
+    // Only runs when CP returned at least one record — guards against deleting
+    // everything if the API scan fails or returns an empty page mid-way.
+    if (allRawRecords.length > 0) {
+      const syncedCpIds = allRawRecords.map((r) => String(r.id));
+
+      const { data: existingRows } = await supabase
+        .from("centerpoint_jobs")
+        .select("cp_id");
+
+      const staleIds = (existingRows ?? [])
+        .map((r: any) => r.cp_id)
+        .filter((id: string) => !syncedCpIds.includes(id));
+
+      if (staleIds.length > 0) {
+        console.log(`[SYNC] Removing ${staleIds.length} records deleted in CenterPoint`);
+        const { error: deleteError } = await supabase
+          .from("centerpoint_jobs")
+          .delete()
+          .in("cp_id", staleIds);
+
+        if (deleteError) {
+          console.warn(`[SYNC] Failed to remove stale records: ${deleteError.message}`);
+        } else {
+          deleted = staleIds.length;
+        }
+      }
+    }
+
     // ── Post-Sync Database Cleanup (High 5) ──────────────────────────────────
     await runCleanup(supabase);
 
@@ -384,7 +414,7 @@ export async function POST(request: NextRequest) {
         .eq("id", logId);
     }
 
-    return NextResponse.json({ ok: true, upserted, scanned, delta: false, delta_since: null });
+    return NextResponse.json({ ok: true, upserted, deleted, scanned, delta: false, delta_since: null });
 
   } catch (err: any) {
     if (logId) {
