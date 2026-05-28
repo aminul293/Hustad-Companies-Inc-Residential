@@ -391,6 +391,28 @@ export async function POST(request: NextRequest) {
 
       if (staleIds.length > 0) {
         console.log(`[SYNC] Removing ${staleIds.length} records deleted in CenterPoint`);
+        
+        // 1. Get internal UUIDs for the stale jobs to prevent FK constraint violation
+        const { data: staleJobs } = await supabase
+          .from("centerpoint_jobs")
+          .select("id")
+          .in("cp_id", staleIds);
+        
+        const staleUuids = (staleJobs ?? []).map((j: any) => j.id).filter(Boolean);
+
+        // 2. Nullify references in pipeline_leads first
+        if (staleUuids.length > 0) {
+          const { error: unlinkError } = await supabase
+            .from("pipeline_leads")
+            .update({ centerpoint_job_id: null })
+            .in("centerpoint_job_id", staleUuids);
+          
+          if (unlinkError) {
+            console.warn(`[SYNC] Failed to unlink stale jobs from pipeline_leads: ${unlinkError.message}`);
+          }
+        }
+
+        // 3. Delete the jobs from centerpoint_jobs
         const { error: deleteError } = await supabase
           .from("centerpoint_jobs")
           .delete()
