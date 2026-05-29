@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getServiceClient } from "@/lib/supabase-server";
-import { CP_BASE, getCpToken } from "@/lib/centerpoint/client";
+import { CP_BASE, getCpToken, advanceWorkflowToTarget } from "@/lib/centerpoint/client";
 import { requireAuth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -174,6 +174,13 @@ export async function POST(request: NextRequest) {
 
         if (cacheUpdateError) {
           console.warn(`[WORKER] Synced queue item ${item.id} but failed to update local cache: ${cacheUpdateError.message}`);
+        }
+        
+        // Auto-advance stages to match status
+        try {
+          await advanceWorkflowToTarget(item.target_id, attrs.status, cpKey);
+        } catch (e: any) {
+          console.warn(`[WORKER] Failed to auto-advance workflow stages for cp_id=${item.target_id}:`, e.message);
         }
         
         results.push({ id: item.id, success: true });

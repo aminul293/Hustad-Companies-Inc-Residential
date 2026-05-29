@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceClient } from '@/lib/supabase-server';
 import { requireAuth } from '@/lib/auth';
-import { CP_BASE, cpJsonHeaders } from '@/lib/centerpoint/client';
+import { CP_BASE, cpJsonHeaders, advanceWorkflowToTarget, getCpToken } from '@/lib/centerpoint/client';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -171,6 +171,13 @@ export async function POST(request: NextRequest) {
             .from("centerpoint_jobs")
             .update({ status: "scheduled", synced_at: new Date().toISOString() })
             .eq("cp_id", cpId);
+
+          try {
+            const cpKey = getCpToken();
+            await advanceWorkflowToTarget(cpId, "scheduled", cpKey);
+          } catch (e: any) {
+            console.warn(`[APPOINTMENT_CP_WRITEBACK] Failed to auto-advance workflow stages for cp_id=${cpId}:`, e.message);
+          }
         } else {
           const errText = await cpRes.text().catch(() => String(cpRes.status));
           console.error(`[APPOINTMENT_CP_WRITEBACK] status=scheduled cp_id=${cpId} error=${cpRes.status}: ${errText}`);
