@@ -598,6 +598,22 @@ function Step15C({
     if (Object.keys(e).length) { setErrors(e); return; }
 
     setSubmitting(true);
+
+    if (session.centerpointId) {
+      try {
+        await fetch("/api/centerpoint/opportunities", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            centerpointId: session.centerpointId,
+            targetStage: "Accepted",
+          }),
+        });
+      } catch (err) {
+        console.error("Opportunity creation failed:", err);
+      }
+    }
+
     let updated: SessionState = {
       ...session,
       property: {
@@ -875,6 +891,22 @@ function SendForReviewModal({
     if (Object.keys(e).length) { setErrors(e); return; }
 
     setSending(true);
+
+    if (session.centerpointId) {
+      try {
+        await fetch("/api/centerpoint/opportunities", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            centerpointId: session.centerpointId,
+            targetStage: "Pending",
+          }),
+        });
+      } catch (err) {
+        console.error("Opportunity creation failed:", err);
+      }
+    }
+
     let updated: SessionState = {
       ...session,
       property: {

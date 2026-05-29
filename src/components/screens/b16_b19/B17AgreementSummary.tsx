@@ -14,6 +14,7 @@ import {
   ArrowLeft,
   AlertTriangle,
   FileText,
+  Send,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getMissingRequiredShots } from "@/lib/inspectionShotList";
@@ -43,7 +44,34 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
   const outcome = session.findings.outcomeType;
   const isClaimPath = outcome === "claim_review_candidate" || session.pathData.selectedPath === "claim_review";
 
-  const handleContinue = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const createCPOpportunity = async (stage: "Pending" | "Accepted") => {
+    if (!session.centerpointId) {
+      console.warn("No centerpointId in session to create opportunity.");
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      const res = await fetch("/api/centerpoint/opportunities", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          centerpointId: session.centerpointId,
+          targetStage: stage,
+        }),
+      });
+      if (!res.ok) {
+        console.error("Opportunity creation failed:", await res.text());
+      }
+    } catch (err) {
+      console.error("Opportunity creation error:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleContinue = async () => {
     const e: Record<string, string> = {};
     if (isClaimPath && claimRelated === null) e.claim = "Please confirm whether this work is related to an insurance claim.";
     const allAcknowledged = acks.every(a => a);
@@ -57,12 +85,34 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
 
     if (Object.keys(e).length) { setErrors(e); return; }
 
+    await createCPOpportunity("Accepted");
+
     const updated: SessionState = {
       ...session,
       sessionStatus: "authorization_pending",
       pathData: {
         ...session.pathData,
         claimRelatedWork: claimRelated,
+        agreementAcknowledged: allAcknowledged,
+      },
+    };
+    onUpdate(updated);
+    onNext();
+  };
+
+  const handleSendForReview = async () => {
+    const e: Record<string, string> = {};
+    const allAcknowledged = acks.every(a => a);
+    if (!allAcknowledged) e.ack = "Please check all acknowledgements to proceed.";
+    if (Object.keys(e).length) { setErrors(e); return; }
+
+    await createCPOpportunity("Pending");
+
+    const updated: SessionState = {
+      ...session,
+      sessionStatus: "deferred",
+      pathData: {
+        ...session.pathData,
         agreementAcknowledged: allAcknowledged,
       },
     };
@@ -261,22 +311,35 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
       </div>
 
       <div className="absolute bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/95 to-transparent pointer-events-none">
-        <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-3 md:gap-6 pointer-events-auto">
-          <button onClick={onBack} className="group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 shrink-0">
-            <ArrowLeft className="w-4 h-4 text-[#DDE5F5] group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-[#E8EDF8]">Back</span>
-          </button>
-          <StarButton 
-            onClick={handleContinue} 
-            lightColor="#FAFAFA" 
-            backgroundColor="#060606" 
-            className="flex-1 h-14 md:h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+        <div className="relative max-w-5xl mx-auto flex flex-col gap-4 pointer-events-auto">
+          <div className="flex items-center justify-between gap-3 md:gap-6">
+            <button onClick={onBack} className="group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 shrink-0">
+              <ArrowLeft className="w-4 h-4 text-[#DDE5F5] group-hover:-translate-x-1 transition-transform" />
+              <span className="text-sm font-display font-medium text-[#E8EDF8]">Back</span>
+            </button>
+            <StarButton 
+              onClick={handleContinue} 
+              disabled={isSubmitting}
+              lightColor="#FAFAFA" 
+              backgroundColor="#060606" 
+              className="flex-1 h-14 md:h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+            >
+              <div className="flex items-center justify-center gap-4">
+                <span className="text-sm md:text-xl font-display font-semibold tracking-tight">
+                  {isSubmitting ? "Authorizing..." : "Continue to Authorization"}
+                </span>
+                {!isSubmitting && <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-indigo-400 group-hover:translate-x-1 transition-transform shrink-0" />}
+              </div>
+            </StarButton>
+          </div>
+          <button
+            onClick={handleSendForReview}
+            disabled={isSubmitting}
+            className="w-full flex items-center justify-center gap-2.5 h-12 md:h-14 rounded-full text-sm font-medium transition-all bg-[#1D55C4]/10 border border-[#1D55C4]/30 text-indigo-300 hover:bg-[#1D55C4]/20 disabled:opacity-50"
           >
-            <div className="flex items-center justify-center gap-4">
-              <span className="text-sm md:text-xl font-display font-semibold tracking-tight">Continue to Authorization</span>
-              <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-indigo-400 group-hover:translate-x-1 transition-transform shrink-0" />
-            </div>
-          </StarButton>
+            <Send className="w-4 h-4 text-indigo-400" />
+            {isSubmitting ? "Sending..." : "Send Agreement for Review"}
+          </button>
         </div>
       </div>
     </div>
