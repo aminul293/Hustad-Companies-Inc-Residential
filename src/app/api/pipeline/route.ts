@@ -140,6 +140,12 @@ export async function DELETE(request: NextRequest) {
           .update({ inbox_status: 'new' })
           .eq('id', lead.centerpoint_job_id);
         if (resetErr) throw resetErr;
+      } else {
+        const { error: resetErr } = await supabase
+          .from('centerpoint_jobs')
+          .update({ inbox_status: 'new' })
+          .eq('name', cpcTicketId);
+        if (resetErr) throw resetErr;
       }
       // Delete the pipeline lead
       const { error: deleteErr } = await supabase.from('pipeline_leads').delete().eq('id', lead.id);

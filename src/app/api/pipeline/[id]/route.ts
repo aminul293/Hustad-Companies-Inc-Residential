@@ -205,6 +205,13 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
         .eq('id', cpResetId);
 
       if (cpError) console.error(`[API] CP status reset failed:`, cpError);
+    } else if (lead.cpc_ticket_id) {
+      const { error: cpError } = await supabase
+        .from('centerpoint_jobs')
+        .update({ inbox_status: 'new' })
+        .eq('name', lead.cpc_ticket_id);
+
+      if (cpError) console.error(`[API] CP status reset fallback failed:`, cpError);
     }
 
     // 4. Remove from active pipeline
