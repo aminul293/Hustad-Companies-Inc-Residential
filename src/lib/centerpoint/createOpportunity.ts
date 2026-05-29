@@ -8,46 +8,80 @@ export interface OpportunityInput {
 }
 
 export async function createOpportunity(input: OpportunityInput, apiKey: string) {
-  const url = `${CP_BASE}/opportunities`;
-  const body = {
-    data: {
-      type: "opportunities",
-      attributes: {
-        name: input.name,
-        domain: "Sales",
-        billedCompanyId: input.billedCompanyId,
-        description: input.description,
+  // 1. Check if opportunity already exists
+  let opportunityId = null;
+  let opportunityName = input.name;
+  let opportunityStatus = "";
+
+  try {
+    const searchUrl = `${CP_BASE}/opportunities?filter[search]=${input.name}`;
+    const searchRes = await fetch(searchUrl, {
+      headers: {
+        Accept: "application/json",
+        Authorization: apiKey,
       },
-    },
-  };
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      Authorization: apiKey,
-    },
-    body: JSON.stringify(body),
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    const errorText = await res.text();
-    let errorDetail = errorText;
-    try {
-      const parsed = JSON.parse(errorText);
-      errorDetail = parsed?.errors?.[0]?.detail ?? parsed?.message ?? errorText;
-    } catch {
-      // Not JSON
+      cache: "no-store",
+    });
+    if (searchRes.ok) {
+      const searchData = await searchRes.json();
+      const match = (searchData.data || []).find((r: any) => r.attributes?.name === input.name);
+      if (match) {
+        opportunityId = match.id;
+        opportunityName = match.attributes?.name ?? input.name;
+        opportunityStatus = match.attributes?.status ?? "";
+        console.log(`[CREATE_OPPORTUNITY] Found existing opportunity for job ${input.name} with ID: ${opportunityId}`);
+      }
     }
-    throw new Error(`Failed to create opportunity: ${res.status} - ${errorDetail}`);
+  } catch (err) {
+    console.warn("[CREATE_OPPORTUNITY] Search failed, fallback to creation:", err);
   }
 
-  const result = await res.json();
-  const opportunityId = result?.data?.id;
+  // 2. If it does not exist, create it
   if (!opportunityId) {
-    throw new Error("Opportunity created but no ID was returned by CenterPoint.");
+    const url = `${CP_BASE}/opportunities`;
+    const body = {
+      data: {
+        type: "opportunities",
+        attributes: {
+          name: input.name,
+          domain: "Sales",
+          billedCompanyId: input.billedCompanyId,
+          description: input.description,
+        },
+      },
+    };
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: apiKey,
+      },
+      body: JSON.stringify(body),
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      let errorDetail = errorText;
+      try {
+        const parsed = JSON.parse(errorText);
+        errorDetail = parsed?.errors?.[0]?.detail ?? parsed?.message ?? errorText;
+      } catch {
+        // Not JSON
+      }
+      throw new Error(`Failed to create opportunity: ${res.status} - ${errorDetail}`);
+    }
+
+    const result = await res.json();
+    opportunityId = result?.data?.id;
+    opportunityName = result?.data?.attributes?.name ?? input.name;
+    opportunityStatus = result?.data?.attributes?.status ?? "";
+  }
+
+  if (!opportunityId) {
+    throw new Error("Opportunity ID was not resolved or returned by CenterPoint.");
   }
 
   // Sequentially transition workflow stage until we reach the target stage
@@ -122,7 +156,7 @@ export async function createOpportunity(input: OpportunityInput, apiKey: string)
 
   return {
     id: opportunityId,
-    name: result?.data?.attributes?.name ?? input.name,
+    name: opportunityName,
     status: currentStageName || input.targetStage,
   };
 }
