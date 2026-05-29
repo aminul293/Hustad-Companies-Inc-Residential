@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase-server";
 import { requireAuth } from "@/lib/auth";
+import { CP_BASE, cpJsonHeaders } from "@/lib/centerpoint/client";
 
 const TERMINAL_STATUSES = [
   "signed", "deferred", "closed_no_damage", "closed_monitor_only",
@@ -106,6 +107,56 @@ export async function POST(
         (lead as any)?.centerpoint_jobs?.property_name ||
         session.property_address ||
         "Unknown Property";
+    }
+
+    // Trigger CenterPoint write-back when completing an inspection session
+    if (session.pipeline_lead_id && cpJobId) {
+      const nowStr = new Date().toISOString();
+      const attrs = { status: "completed", completedAt: nowStr };
+      
+      try {
+        const cpHeaders = cpJsonHeaders();
+        const cpRes = await fetch(`${CP_BASE}/services/${cpJobId}`, {
+          method: "PATCH",
+          headers: cpHeaders,
+          body: JSON.stringify({
+            data: { type: "services", id: cpJobId, attributes: attrs },
+          }),
+        });
+
+        if (cpRes.ok) {
+          // Mirror in local centerpoint_jobs cache
+          await supabase
+            .from("centerpoint_jobs")
+            .update({ status: "completed", synced_at: new Date().toISOString() })
+            .eq("cp_id", cpJobId);
+        } else {
+          const errText = await cpRes.text().catch(() => String(cpRes.status));
+          console.error(`[SESSION_COMPLETE_CP_WRITEBACK] status=completed cp_id=${cpJobId} error=${cpRes.status}: ${errText}`);
+          await supabase.from("outbound_queue").insert({
+            target_system: "centerpoint",
+            target_id: cpJobId,
+            action: "update_status",
+            payload: { status: "completed", attrs, pipeline_lead_id: session.pipeline_lead_id },
+            status: "pending",
+            error: `HTTP ${cpRes.status}: ${errText.slice(0, 200)}`,
+          });
+        }
+      } catch (writebackErr: any) {
+        console.error(`[SESSION_COMPLETE_CP_WRITEBACK] unexpected error for cp_id=${cpJobId}:`, writebackErr?.message);
+        try {
+          await supabase.from("outbound_queue").insert({
+            target_system: "centerpoint",
+            target_id: cpJobId,
+            action: "update_status",
+            payload: { status: "completed", attrs, pipeline_lead_id: session.pipeline_lead_id },
+            status: "pending",
+            error: writebackErr?.message?.slice(0, 200) ?? "Unknown error",
+          });
+        } catch {
+          // Non-blocking
+        }
+      }
     }
 
     // 5. Upsert hustad_ticket — always, regardless of pipeline linkage
