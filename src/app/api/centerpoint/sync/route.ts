@@ -381,7 +381,9 @@ export async function POST(request: NextRequest) {
 
       const { data: existingRows } = await supabase
         .from("centerpoint_jobs")
-        .select("cp_id");
+        .select("cp_id")
+        .neq("inbox_status", "imported_to_pipeline")
+        .is("promoted_ticket_id", null);
 
       const staleIds = (existingRows ?? [])
         .map((r: any) => r.cp_id)
