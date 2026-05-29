@@ -21,8 +21,20 @@ export async function PATCH(
     return NextResponse.json({ error: "status is required" }, { status: 400 });
   }
 
+  // Map our internal stage keys to the values CenterPoint's API actually accepts.
+  // CP uses "closed_out" for the final stage; sending "closed" is silently ignored.
+  const CP_STATUS_OUT: Record<string, string> = {
+    new_service: "new_service",
+    opened:      "opened",
+    scheduled:   "scheduled",
+    started:     "started",
+    completed:   "completed",
+    closed:      "closed_out",
+  };
+  const cpStatus = CP_STATUS_OUT[status] ?? status;
+
   const nowStr = new Date().toISOString();
-  const attrs: Record<string, any> = { status };
+  const attrs: Record<string, any> = { status: cpStatus };
   if (status === "completed") {
     attrs.completedAt = nowStr;
   } else if (status === "closed") {

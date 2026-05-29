@@ -322,7 +322,7 @@ export async function POST(request: NextRequest) {
           isResidentialId;
 
         const rawStatus = (a?.status || "").toLowerCase().replace(/\s+/g, "_");
-        const isActiveStatus = ["new_service", "new", "opened", "open", "scheduled", "started", "in_progress"].includes(rawStatus);
+        const isActiveStatus = ["new_service", "new", "opened", "open", "accepted", "scheduled", "started", "in_progress"].includes(rawStatus);
         const isServiceDomain = a?.domain?.toLowerCase() === "service";
 
         if (!isHailInspection || !isResidentialModule || !isInspectionType || !isActiveStatus || !isServiceDomain) continue;
@@ -369,12 +369,40 @@ export async function POST(request: NextRequest) {
         delete (r as any).inbox_status;
       });
 
+      // Protect manually-set stages from CP sync overwrite.
+      // CP derives its `status` from internal workflow stages we cannot update externally,
+      // so it resets to "opened" after our PATCH. We guard against this by checking whether
+      // our stage_transitioned_at (set when a rep manually changes the stage) is more recent
+      // than CP's updatedAt — if so, keep the local status rather than CP's.
+      const incomingCpIds = finalRows.map(r => r.cp_id);
+      const { data: existingStages } = await supabase
+        .from("centerpoint_jobs")
+        .select("cp_id, status, display_status, stage_transitioned_at")
+        .in("cp_id", incomingCpIds);
+
+      const stageMap = new Map<string, any>(
+        (existingStages ?? []).map((r: any) => [String(r.cp_id), r])
+      );
+
+      const rowsToUpsert = finalRows.map(row => {
+        const existing = stageMap.get(String(row.cp_id));
+        if (!existing?.stage_transitioned_at || !existing.status) return row;
+
+        const manualTime = new Date(existing.stage_transitioned_at).getTime();
+        const cpTime = row.cp_updated_at ? new Date(row.cp_updated_at).getTime() : 0;
+
+        if (manualTime > cpTime) {
+          return { ...row, status: existing.status, display_status: existing.display_status ?? row.display_status };
+        }
+        return row;
+      });
+
       const { error } = await supabase
         .from("centerpoint_jobs")
-        .upsert(finalRows, { onConflict: "cp_id" });
+        .upsert(rowsToUpsert, { onConflict: "cp_id" });
 
       if (error) throw new Error(`Supabase upsert failed: ${error.message}`);
-      upserted = finalRows.length;
+      upserted = rowsToUpsert.length;
     }
 
     // ── Reconciliation: remove records deleted in CenterPoint ────────────────
