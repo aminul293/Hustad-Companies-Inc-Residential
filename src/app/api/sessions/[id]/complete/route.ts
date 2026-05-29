@@ -112,7 +112,13 @@ export async function POST(
     // Trigger CenterPoint write-back when completing an inspection session
     if (session.pipeline_lead_id && cpJobId) {
       const nowStr = new Date().toISOString();
-      const attrs = { status: "completed", completedAt: nowStr };
+      const cpStatus = finalStatus === "signed" ? "opened" : "closed";
+      const attrs: Record<string, any> = { status: cpStatus };
+      if (cpStatus === "closed") {
+        attrs.closedAt = nowStr;
+      } else {
+        attrs.openedAt = nowStr;
+      }
       
       try {
         const cpHeaders = cpJsonHeaders();
@@ -128,16 +134,16 @@ export async function POST(
           // Mirror in local centerpoint_jobs cache
           await supabase
             .from("centerpoint_jobs")
-            .update({ status: "completed", synced_at: new Date().toISOString() })
+            .update({ status: cpStatus, synced_at: new Date().toISOString() })
             .eq("cp_id", cpJobId);
         } else {
           const errText = await cpRes.text().catch(() => String(cpRes.status));
-          console.error(`[SESSION_COMPLETE_CP_WRITEBACK] status=completed cp_id=${cpJobId} error=${cpRes.status}: ${errText}`);
+          console.error(`[SESSION_COMPLETE_CP_WRITEBACK] status=${cpStatus} cp_id=${cpJobId} error=${cpRes.status}: ${errText}`);
           await supabase.from("outbound_queue").insert({
             target_system: "centerpoint",
             target_id: cpJobId,
             action: "update_status",
-            payload: { status: "completed", attrs, pipeline_lead_id: session.pipeline_lead_id },
+            payload: { status: cpStatus, attrs, pipeline_lead_id: session.pipeline_lead_id },
             status: "pending",
             error: `HTTP ${cpRes.status}: ${errText.slice(0, 200)}`,
           });
@@ -149,7 +155,7 @@ export async function POST(
             target_system: "centerpoint",
             target_id: cpJobId,
             action: "update_status",
-            payload: { status: "completed", attrs, pipeline_lead_id: session.pipeline_lead_id },
+            payload: { status: cpStatus, attrs, pipeline_lead_id: session.pipeline_lead_id },
             status: "pending",
             error: writebackErr?.message?.slice(0, 200) ?? "Unknown error",
           });
