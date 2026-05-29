@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
       .order("cp_updated_at", { ascending: false, nullsFirst: false })
       .range(offset, offset + PAGE_SIZE - 1);
 
-    query = query.eq("status", "new_service");
+    query = query.in("status", ["new_service", "opened"]);
 
     if (search) {
       query = query.or(`name.ilike.%${search}%,property_name.ilike.%${search}%`);
