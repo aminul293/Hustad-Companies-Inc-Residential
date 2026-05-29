@@ -62,7 +62,7 @@ export function PipelineLeadCard({
       className="bg-[#0b0b0b] border border-white/[0.07] rounded-[36px] hover:border-white/[0.14] transition-all duration-300 flex flex-col"
     >
       {/* Progress bar */}
-      <div className="h-[2px] bg-white/[0.04] shrink-0 rounded-t-[36px] overflow-hidden">
+      <div className="h-[3px] bg-white/[0.04] shrink-0 rounded-t-[32px] overflow-hidden mx-[4px] mt-[1px]">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${((stageIdx + 1) / 5) * 100}%` }}
