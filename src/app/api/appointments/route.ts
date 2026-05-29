@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceClient } from '@/lib/supabase-server';
 import { requireAuth } from '@/lib/auth';
+import { CP_BASE, cpJsonHeaders } from '@/lib/centerpoint/client';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -138,6 +139,66 @@ export async function POST(request: NextRequest) {
         scheduled_end_at: appointment_end_at,
       })
       .eq('id', pipeline_lead_id);
+
+    // Fetch pipeline lead's centerpoint job details for write-back
+    const { data: leadDetail } = await supabase
+      .from('pipeline_leads')
+      .select('pipeline_status, centerpoint_jobs(cp_id, status)')
+      .eq('id', pipeline_lead_id)
+      .single();
+
+    const cpJob = leadDetail?.centerpoint_jobs as any;
+    const cpId = cpJob?.cp_id;
+    const currentCpStatus: string | null = cpJob?.status ?? null;
+
+    if (cpId && currentCpStatus !== "scheduled") {
+      const nowStr = new Date().toISOString();
+      const attrs = { status: "scheduled", scheduledAt: appointment_start_at };
+      
+      try {
+        const cpHeaders = cpJsonHeaders();
+        const cpRes = await fetch(`${CP_BASE}/services/${cpId}`, {
+          method: "PATCH",
+          headers: cpHeaders,
+          body: JSON.stringify({
+            data: { type: "services", id: cpId, attributes: attrs },
+          }),
+        });
+
+        if (cpRes.ok) {
+          // Mirror in local centerpoint_jobs cache
+          await supabase
+            .from("centerpoint_jobs")
+            .update({ status: "scheduled", synced_at: new Date().toISOString() })
+            .eq("cp_id", cpId);
+        } else {
+          const errText = await cpRes.text().catch(() => String(cpRes.status));
+          console.error(`[APPOINTMENT_CP_WRITEBACK] status=scheduled cp_id=${cpId} error=${cpRes.status}: ${errText}`);
+          await supabase.from("outbound_queue").insert({
+            target_system: "centerpoint",
+            target_id: cpId,
+            action: "update_status",
+            payload: { status: "scheduled", attrs, pipeline_lead_id },
+            status: "pending",
+            error: `HTTP ${cpRes.status}: ${errText.slice(0, 200)}`,
+          });
+        }
+      } catch (writebackErr: any) {
+        console.error(`[APPOINTMENT_CP_WRITEBACK] unexpected error for cp_id=${cpId}:`, writebackErr?.message);
+        try {
+          await supabase.from("outbound_queue").insert({
+            target_system: "centerpoint",
+            target_id: cpId,
+            action: "update_status",
+            payload: { status: "scheduled", attrs, pipeline_lead_id },
+            status: "pending",
+            error: writebackErr?.message?.slice(0, 200) ?? "Unknown error",
+          });
+        } catch {
+          // Non-blocking
+        }
+      }
+    }
 
     return NextResponse.json({ success: true, appointment: appt }, { status: 201 });
   } catch (err: any) {
