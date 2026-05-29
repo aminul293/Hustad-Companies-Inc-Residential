@@ -565,12 +565,14 @@ function Step15C({
   onUpdate,
   onNext,
   onBack,
+  initialSendModalOpen = false,
 }: {
   session: SessionState;
   acksComplete: boolean;
   onUpdate: (s: SessionState) => void;
   onNext: () => void;
   onBack: () => void;
+  initialSendModalOpen?: boolean;
 }) {
   // Pre-fill from session — only ask for what's missing
   const [carrierName, setCarrierName]     = useState(session.property.insurerNameKnown || "");
@@ -578,7 +580,7 @@ function Step15C({
   const [signed, setSigned]               = useState(false);
   const [errors, setErrors]               = useState<Record<string, string>>({});
   const [submitting, setSubmitting]       = useState(false);
-  const [showSendModal, setShowSendModal] = useState(false);
+  const [showSendModal, setShowSendModal] = useState(initialSendModalOpen);
 
   const signerName  = session.signatureData.signerName  || session.property.homeownerPrimaryName;
   const signerEmail = session.signatureData.signerEmail || session.property.homeownerPrimaryEmail;
@@ -1101,6 +1103,7 @@ function SendForReviewModal({
 
 export function B15CarrierReviewAgreement({ session, onUpdate, onNext, onBack }: Props) {
   const [step, setStep] = useState<Step>("15A");
+  const [sendModalOpen, setSendModalOpen] = useState(false);
   // Persist ack state across step transitions
   const [acks, setAcks] = useState<boolean[]>(() =>
     Array(ACK_ITEMS.length).fill(session.pathData.agreementAcknowledged ?? false)
@@ -1122,16 +1125,18 @@ export function B15CarrierReviewAgreement({ session, onUpdate, onNext, onBack }:
       pathData: { ...session.pathData, agreementAcknowledged: acksComplete },
     };
     onUpdate(updated);
+    setSendModalOpen(false);
     goTo("15C");
   };
 
-  // From 15B: send for review opens 15C with send modal — just go to 15C
+  // From 15B: send for review opens 15C with send modal
   const handleSendFromB = () => {
     const updated: SessionState = {
       ...session,
       pathData: { ...session.pathData, agreementAcknowledged: acksComplete },
     };
     onUpdate(updated);
+    setSendModalOpen(true);
     goTo("15C");
   };
 
@@ -1159,6 +1164,7 @@ export function B15CarrierReviewAgreement({ session, onUpdate, onNext, onBack }:
       onUpdate={onUpdate}
       onNext={onNext}
       onBack={handleBack}
+      initialSendModalOpen={sendModalOpen}
     />
   );
 }
