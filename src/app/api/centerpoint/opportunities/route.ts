@@ -52,8 +52,9 @@ export async function POST(req: NextRequest) {
       const { data: cpJob, error } = await supabase
         .from("centerpoint_jobs")
         .select("billed_company_id, name, property_name, description")
-        .eq("cp_id", centerpointId)
-        .single();
+        .or(`cp_id.eq.${centerpointId},name.eq.${centerpointId}`)
+        .limit(1)
+        .maybeSingle();
 
       if (error) {
         console.warn("[CREATE_OPPORTUNITY_API] Supabase job lookup warning:", error.message);
