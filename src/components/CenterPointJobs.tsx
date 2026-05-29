@@ -296,20 +296,7 @@ export function CenterPointJobs() {
           </button>
         </form>
 
-        {/* Stage filter */}
-        <div className="flex items-center gap-3 overflow-x-auto pb-1">
-          <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest shrink-0">Stage</span>
-          {STATUS_FILTERS.map(f => (
-            <button
-              key={f.id}
-              onClick={() => setStatusFilter(f.id)}
-              className={cn(
-                "px-4 py-2 rounded-full border text-xs font-display transition-all whitespace-nowrap shrink-0",
-                statusFilter === f.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-[#7090B0] hover:bg-white/10"
-              )}
-            >{f.label}</button>
-          ))}
-        </div>
+
       </div>
 
       {/* Job list */}
