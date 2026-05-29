@@ -10,7 +10,7 @@ export const revalidate = 0;
 const HUSTAD_TYPE = "STORM INSPECTION-HAIL";
 const FETCH_SIZE = 250;
 const STAGE_ORDER = ["new_service","opened","scheduled","started","completed","closed"];
-const FETCH_TIMEOUT_MS = 8000;
+const FETCH_TIMEOUT_MS = 25000;
 
 function cpHeaders() {
   return { Accept: "application/json", Authorization: getCpToken() };
