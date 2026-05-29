@@ -174,12 +174,35 @@ export function usePipelineLeads(repId?: string, repEmail?: string) {
           deleteAppointment(a.id)
         ));
       }
+      if (lead && lead.scheduled_start_at) {
+        fireCancellationEmail(leadId, lead.scheduled_start_at);
+      }
     }
     if (targetIdx < 1) updates.next_follow_up_at = null;
     await patch(leadId, updates);
   };
 
   // ── Schedule ───────────────────────────────────────────────────────────────
+  const fireCancellationEmail = (leadId: string, prevStart: string) => {
+    const lead = leads.find(l => l.id === leadId);
+    if (!lead) return;
+    const em = resolveEmail(lead);
+    if (!em) return;
+    const ownerFirst = ((lead.centerpoint_jobs?.raw?._owner as string) || "there").split(" ")[0];
+    const propertyName = lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name || leadId;
+    const date = new Date(prevStart);
+    const dateStr = date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+    const timeStr = date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+
+    const html = `<div style="max-width:580px;margin:0 auto;padding:40px 32px;background:#ffffff;font-family:Arial,sans-serif;"><div style="background:#0f0f0f;border-radius:16px;padding:28px 32px;margin-bottom:28px;"><p style="margin:0 0 4px;font-size:11px;color:#666;text-transform:uppercase;letter-spacing:0.15em;">Hustad Companies</p><h1 style="margin:0;font-size:22px;color:#ffffff;font-weight:600;">Inspection Cancelled</h1></div><p style="font-size:16px;color:#1a1a1a;margin:0 0 20px;">Hi ${ownerFirst},</p><p style="font-size:15px;color:#333;line-height:1.6;margin:0 0 24px;">Your storm inspection at <strong>${propertyName}</strong> originally scheduled for <strong>${dateStr} at ${timeStr}</strong> has been cancelled.</p><p style="font-size:15px;color:#333;line-height:1.6;margin:0 0 24px;">If you would like to reschedule or have any questions, please contact our office at (402) 934-2173 or reply to this email.</p><p style="font-size:15px;color:#333;margin:0 0 4px;">Best regards,</p><p style="font-size:15px;color:#1a1a1a;font-weight:600;margin:0 0 4px;">Hustad Companies</p><p style="font-size:14px;color:#666;margin:0;">(402) 934-2173</p></div>`;
+    const subject = `Inspection Cancelled — ${propertyName}`;
+    sendEmail({ to: em, subject, html }).then(async () => {
+      const entry = `[${callTimestamp()}] Cancellation email sent to ${em} (originally ${dateStr} at ${timeStr})`;
+      const currentNotes = lead.lead_notes || "";
+      await patch(leadId, { lead_notes: currentNotes ? `${currentNotes}\n${entry}` : entry });
+    }).catch(() => {});
+  };
+
   const fireScheduleEmail = (leadId: string, start: Date, durationMin: number) => {
     const lead = leads.find(l => l.id === leadId);
     if (!lead) return;
