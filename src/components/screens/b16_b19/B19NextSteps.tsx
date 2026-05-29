@@ -105,7 +105,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
 
       // Directly call complete endpoint — RepCommandCenter is unmounted during inspection flow
       // so the sessionCompleted event below has no listener. These calls must happen here.
-      await completeSession(finalSession.sessionId, "completed");
+      await completeSession(finalSession.sessionId, finalSession.sessionStatus);
       if (finalSession.appointmentId) {
         await patchAppointment(finalSession.appointmentId, { appointment_status: "completed" });
       }
