@@ -24,7 +24,7 @@ export async function createOpportunity(input: OpportunityInput, apiKey: string)
     });
     if (searchRes.ok) {
       const searchData = await searchRes.json();
-      const match = (searchData.data || []).find((r: any) => r.attributes?.name === input.name);
+      const match = (searchData.data || []).find((r: any) => r.attributes?.name === input.name && r.attributes?.domain === "Sales");
       if (match) {
         opportunityId = match.id;
         opportunityName = match.attributes?.name ?? input.name;
