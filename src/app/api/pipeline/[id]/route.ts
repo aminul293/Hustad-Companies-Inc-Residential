@@ -135,6 +135,16 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       .single();
 
     if (error) throw error;
+
+    // Auto-archive inspection sessions if moving back to pre-scheduling stages
+    const unscheduledStages = ["new_lead", "contact_attempted", "contacted", "follow_up_needed"];
+    if (updates.pipeline_status && unscheduledStages.includes(updates.pipeline_status)) {
+      await supabase
+        .from('inspection_sessions')
+        .update({ session_status: 'archived' })
+        .eq('pipeline_lead_id', params.id);
+    }
+
     return NextResponse.json({ success: true, lead: data });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
