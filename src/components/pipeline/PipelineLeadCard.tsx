@@ -263,28 +263,28 @@ export function PipelineLeadCard({
 
         {/* Secondary actions */}
         {lead.pipeline_status !== "dead_lead" && (
-          <div className="mt-2.5 pt-2.5 border-t border-white/[0.05] flex items-center gap-1">
-            <button onClick={() => onNotes(lead)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[#8BA5C5] hover:text-[#E8EDF8] hover:bg-white/[0.04] transition-all text-[11px] font-medium">
-              <MessageSquare className="w-3.5 h-3.5 text-[#7090B0]" />Notes
+          <div className="mt-2.5 pt-2.5 border-t border-white/[0.05] flex flex-wrap items-center gap-2">
+            <button onClick={() => onNotes(lead)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-[#8BA5C5] hover:text-[#E8EDF8] hover:bg-white/[0.08] transition-all text-[10px] font-medium">
+              <MessageSquare className="w-3 h-3 text-[#7090B0]" />Notes
               {lead.lead_notes && <div className="w-1.5 h-1.5 rounded-full bg-indigo-400/80" />}
             </button>
-            <button onClick={() => onDraftEmail(lead)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-indigo-300 hover:text-indigo-200 hover:bg-indigo-500/[0.06] transition-all text-[11px] font-medium">
-              <Mail className="w-3.5 h-3.5 text-indigo-400" />Email
+            <button onClick={() => onDraftEmail(lead)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-indigo-300 hover:text-indigo-200 hover:bg-indigo-500/[0.06] transition-all text-[10px] font-medium">
+              <Mail className="w-3 h-3 text-indigo-400" />Email
               {lead.lead_notes?.includes("Email sent") && <div className="w-1.5 h-1.5 rounded-full bg-indigo-400/80" />}
             </button>
             {isScheduled && (
-              <button onClick={() => onSchedule(lead)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-emerald-300 hover:text-emerald-200 hover:bg-emerald-500/[0.06] transition-all text-[11px] font-medium">
-                <Calendar className="w-3.5 h-3.5 text-emerald-400" />Reschedule
+              <button onClick={() => onSchedule(lead)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-emerald-300 hover:text-emerald-200 hover:bg-emerald-500/[0.06] transition-all text-[10px] font-medium">
+                <Calendar className="w-3 h-3 text-emerald-400" />Reschedule
               </button>
             )}
-            <button onClick={() => onDeadLead(lead)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-rose-300/80 hover:text-rose-200 hover:bg-rose-500/[0.06] transition-all text-[11px] font-medium">
-              <XCircle className="w-3.5 h-3.5 text-rose-400" />Dead Lead
+            <button onClick={() => onDeadLead(lead)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-rose-300 hover:text-rose-200 hover:bg-rose-500/[0.06] transition-all text-[10px] font-medium">
+              <XCircle className="w-3 h-3 text-rose-400" />Dead Lead
             </button>
             <button onClick={e => onRemove(e, lead)} disabled={removing}
-              className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl transition-all text-[11px] font-medium",
-                isBlocked ? "text-white/20 cursor-not-allowed" : "text-[#8BA5C5] hover:text-[#E8EDF8] hover:bg-white/[0.04]"
+              className={cn("flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border transition-all text-[10px] font-medium",
+                isBlocked ? "bg-white/[0.01] border-white/[0.03] text-white/20 cursor-not-allowed" : "bg-white/[0.03] border-white/[0.06] text-[#8BA5C5] hover:text-[#E8EDF8] hover:bg-white/[0.08]"
               )}>
-              <MinusCircle className="w-3.5 h-3.5 text-[#7090B0]" />{removing ? "Removing…" : "Remove"}
+              <MinusCircle className="w-3 h-3 text-[#7090B0]" />{removing ? "Removing…" : "Remove"}
             </button>
           </div>
         )}
