@@ -277,8 +277,8 @@ export async function POST(request: NextRequest) {
     let cpTotal = Infinity;
     let scanned = 0;
     const allRawRecords: any[] = [];
-
-    while (scanned < cpTotal) {
+    const MAX_PAGES = 4; // Limit to 1000 recently updated records to prevent Vercel gateway/execution timeouts
+    while (scanned < cpTotal && cpPage <= MAX_PAGES) {
       const params = new URLSearchParams({
         "page[size]": String(FETCH_SIZE),
         "page[number]": String(cpPage),
