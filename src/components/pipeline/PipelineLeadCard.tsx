@@ -113,7 +113,7 @@ export function PipelineLeadCard({
           <div className="flex items-center gap-2">
             {isUrgent  && <div className="flex items-center gap-1 text-[9px] font-mono text-rose-400/80"><Flame className="w-3 h-3" /> Urgent</div>}
             {isWarning && <div className="flex items-center gap-1 text-[9px] font-mono text-amber-400/70"><AlertCircle className="w-3 h-3" /> Stale</div>}
-            <span className="text-[9px] font-mono text-[#2D4060] bg-white/[0.04] border border-white/[0.06] px-2 py-1 rounded-lg">
+            <span className="text-[9px] font-mono text-[#8BA5C5] bg-white/[0.04] border border-white/[0.06] px-2 py-1 rounded-lg">
               #{lead.cpc_ticket_id}
             </span>
           </div>
