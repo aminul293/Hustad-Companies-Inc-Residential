@@ -28,11 +28,6 @@ const STAGE_ORDER = ["new_service","opened","scheduled","started","completed","c
 const STATUS_FILTERS = [
   { id: "all", label: "All Stages" },
   { id: "new_service", label: "New Service" },
-  { id: "opened", label: "Opened" },
-  { id: "scheduled", label: "Scheduled" },
-  { id: "started", label: "In Progress" },
-  { id: "completed", label: "Completed" },
-  { id: "closed", label: "Closed Out" },
 ];
 
 interface CPJob {

@@ -318,10 +318,10 @@ export async function POST(request: NextRequest) {
           isResidentialId;
 
         const rawStatus = (a?.status || "").toLowerCase().replace(/\s+/g, "_");
-        const isLeadStatus = ["new_lead", "pending", "quoted", "sold", "dead_lead", "dead"].includes(rawStatus);
+        const isNewService = ["new_service", "new"].includes(rawStatus);
         const isServiceDomain = a?.domain?.toLowerCase() === "service";
 
-        if (!isHailInspection || !isResidentialModule || !isInspectionType || isLeadStatus || !isServiceDomain) continue;
+        if (!isHailInspection || !isResidentialModule || !isInspectionType || !isNewService || !isServiceDomain) continue;
         allRawRecords.push(r);
       }
 
