@@ -609,13 +609,10 @@ function Step15C({
 
         const outcome = session.findings.outcomeType;
         if (outcome === "repair_only") {
-          domain = "Service";
-          type = "Service";
+          opportunityType = "Service";
         } else if (outcome === "claim_review_candidate") {
-          domain = "Sales";
           opportunityType = "Hail/Wind Claim";
         } else if (outcome === "full_restoration_candidate") {
-          domain = "Sales";
           opportunityType = "Roof Replacement";
         }
 
@@ -921,13 +918,10 @@ function SendForReviewModal({
 
         const outcome = session.findings.outcomeType;
         if (outcome === "repair_only") {
-          domain = "Service";
-          type = "Service";
+          opportunityType = "Service";
         } else if (outcome === "claim_review_candidate") {
-          domain = "Sales";
           opportunityType = "Hail/Wind Claim";
         } else if (outcome === "full_restoration_candidate") {
-          domain = "Sales";
           opportunityType = "Roof Replacement";
         }
 
