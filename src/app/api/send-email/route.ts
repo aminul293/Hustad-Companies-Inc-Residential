@@ -71,9 +71,9 @@ export async function POST(request: NextRequest) {
         toRecipients: [
           { emailAddress: { address: to } },
         ],
-        ccRecipients: cc ? [
-          { emailAddress: { address: cc } },
-        ] : [],
+        ccRecipients: cc
+          ? cc.split(',').map((email: string) => ({ emailAddress: { address: email.trim() } }))
+          : [],
         ...(pdfBase64 ? {
           attachments: [
             {

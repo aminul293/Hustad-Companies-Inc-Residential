@@ -237,9 +237,15 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
         ` : '';
 
         // 5. Dispatch to API
+        const ccList = [];
+        if (decisionMakerEmail && decisionMakerEmail !== primaryEmail) {
+          ccList.push(decisionMakerEmail);
+        }
+        ccList.push("Dustin@hustadcompanies.com");
+
         const response = await sendEmail({
           to: primaryEmail,
-          cc: (decisionMakerEmail && decisionMakerEmail !== primaryEmail) ? decisionMakerEmail : null,
+          cc: ccList.join(","),
           subject: `Hustad Forensic Dossier: ${session.property.address}`,
           pdfBase64,
           fileName: `Hustad_Dossier_${session.sessionId.slice(-6).toUpperCase()}.pdf`,
