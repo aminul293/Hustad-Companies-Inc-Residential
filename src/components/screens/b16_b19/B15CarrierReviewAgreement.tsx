@@ -603,12 +603,31 @@ function Step15C({
 
     if (session.centerpointId) {
       try {
+        let domain = "Sales";
+        let type: string | undefined = undefined;
+        let opportunityType: string | undefined = undefined;
+
+        const outcome = session.findings.outcomeType;
+        if (outcome === "repair_only") {
+          domain = "Service";
+          type = "Service";
+        } else if (outcome === "claim_review_candidate") {
+          domain = "Sales";
+          opportunityType = "Hail/Wind Claim";
+        } else if (outcome === "full_restoration_candidate") {
+          domain = "Sales";
+          opportunityType = "Roof Replacement";
+        }
+
         await fetch("/api/centerpoint/opportunities", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             centerpointId: session.centerpointId,
             targetStage: "Accepted",
+            domain,
+            type,
+            opportunityType,
           }),
         });
       } catch (err) {
@@ -896,12 +915,31 @@ function SendForReviewModal({
 
     if (session.centerpointId) {
       try {
+        let domain = "Sales";
+        let type: string | undefined = undefined;
+        let opportunityType: string | undefined = undefined;
+
+        const outcome = session.findings.outcomeType;
+        if (outcome === "repair_only") {
+          domain = "Service";
+          type = "Service";
+        } else if (outcome === "claim_review_candidate") {
+          domain = "Sales";
+          opportunityType = "Hail/Wind Claim";
+        } else if (outcome === "full_restoration_candidate") {
+          domain = "Sales";
+          opportunityType = "Roof Replacement";
+        }
+
         await fetch("/api/centerpoint/opportunities", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             centerpointId: session.centerpointId,
             targetStage: "Pending",
+            domain,
+            type,
+            opportunityType,
           }),
         });
       } catch (err) {

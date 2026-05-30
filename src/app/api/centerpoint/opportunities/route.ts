@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { centerpointId, name, billedCompanyId, description, targetStage } = body;
+  const { centerpointId, name, billedCompanyId, description, targetStage, domain, type, opportunityType } = body;
 
   if (!targetStage) {
     return NextResponse.json(
@@ -103,6 +103,9 @@ export async function POST(req: NextRequest) {
       billedCompanyId: resolvedBilledCompanyId,
       description: resolvedDescription,
       targetStage,
+      domain,
+      type,
+      opportunityType,
     }, apiKey);
 
     return NextResponse.json({

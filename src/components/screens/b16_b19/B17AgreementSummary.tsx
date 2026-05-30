@@ -53,12 +53,30 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
     }
     try {
       setIsSubmitting(true);
+      let domain = "Sales";
+      let type: string | undefined = undefined;
+      let opportunityType: string | undefined = undefined;
+
+      if (outcome === "repair_only") {
+        domain = "Service";
+        type = "Service";
+      } else if (outcome === "claim_review_candidate") {
+        domain = "Sales";
+        opportunityType = "Hail/Wind Claim";
+      } else if (outcome === "full_restoration_candidate") {
+        domain = "Sales";
+        opportunityType = "Roof Replacement";
+      }
+
       const res = await fetch("/api/centerpoint/opportunities", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           centerpointId: session.centerpointId,
           targetStage: stage,
+          domain,
+          type,
+          opportunityType,
         }),
       });
       if (!res.ok) {

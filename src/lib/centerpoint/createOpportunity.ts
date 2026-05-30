@@ -5,6 +5,9 @@ export interface OpportunityInput {
   billedCompanyId: number;
   description: string;
   targetStage: "Pending" | "Accepted";
+  domain?: string;
+  type?: string;
+  opportunityType?: string;
 }
 
 export async function createOpportunity(input: OpportunityInput, apiKey: string) {
@@ -44,9 +47,11 @@ export async function createOpportunity(input: OpportunityInput, apiKey: string)
         type: "opportunities",
         attributes: {
           name: input.name,
-          domain: "Sales",
+          domain: input.domain || "Sales",
           billedCompanyId: input.billedCompanyId,
           description: input.description,
+          ...(input.type ? { type: input.type } : {}),
+          ...(input.opportunityType ? { opportunityType: input.opportunityType } : {}),
         },
       },
     };
