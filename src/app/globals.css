@@ -131,6 +131,12 @@ html, body {
   transition: background-color 0.3s ease;
 }
 
+@supports (height: 100dvh) {
+  html, body, .h-screen, .screen-container {
+    height: 100dvh !important;
+  }
+}
+
 #__next {
   min-height: 100%;
   width: 100%;
