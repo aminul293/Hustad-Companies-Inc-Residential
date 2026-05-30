@@ -241,7 +241,13 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
         if (decisionMakerEmail && decisionMakerEmail !== primaryEmail) {
           ccList.push(decisionMakerEmail);
         }
-        ccList.push("Dustin@hustadcompanies.com");
+        
+        if (outcome === "claim_review_candidate") {
+          ccList.push("ecaturia@hustadcompanies.com");
+          ccList.push("Marshall@hustadcompanies.com");
+        } else {
+          ccList.push("Dustin@hustadcompanies.com");
+        }
 
         const response = await sendEmail({
           to: primaryEmail,
