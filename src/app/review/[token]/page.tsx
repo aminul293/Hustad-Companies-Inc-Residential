@@ -152,8 +152,13 @@ export default function RemoteReviewPage() {
   };
 
   const handleDownload = async () => {
-    const { downloadSummaryPDF } = await import("@/lib/pdf-export");
-    await downloadSummaryPDF(session!);
+    try {
+      const { downloadSummaryPDF } = await import("@/lib/pdf-export");
+      await downloadSummaryPDF(session!);
+    } catch (err: any) {
+      console.error("PDF download failed:", err);
+      alert("Failed to generate PDF: " + err.message);
+    }
   };
 
   if (loading) return (

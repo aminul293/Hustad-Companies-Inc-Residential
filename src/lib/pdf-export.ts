@@ -800,8 +800,19 @@ async function renderEvidenceGallery(d: jsPDF, photos: PdfPhoto[], pt: PathType,
 
       // ── PHOTO ──────────────────────────────────────────────────────────────
       try {
-        const compressed = await compressImage(photo.dataUrl, 650);
-        d.addImage(compressed, "JPEG", cx, cy, imgW, imgH, undefined, "FAST");
+        let compressed = await compressImage(photo.dataUrl, 650);
+        if (compressed.startsWith("http")) {
+          const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+            const tempImg = new Image();
+            tempImg.crossOrigin = "anonymous";
+            tempImg.onload = () => resolve(tempImg);
+            tempImg.onerror = reject;
+            tempImg.src = compressed;
+          });
+          d.addImage(img, "JPEG", cx, cy, imgW, imgH, undefined, "FAST");
+        } else {
+          d.addImage(compressed, "JPEG", cx, cy, imgW, imgH, undefined, "FAST");
+        }
 
         // Annotations
         if (photo.annotations && photo.annotations.length > 0) {
