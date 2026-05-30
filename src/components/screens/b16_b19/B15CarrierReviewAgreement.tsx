@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { addAuditEvent, submitSession, generateReviewToken } from "@/lib/session";
 import { syncSession } from "@/lib/api";
 import { AGREEMENT_SECTIONS, WISCONSIN_CLAIM_NOTICE } from "./constants";
+import { useTheme } from "@/components/ThemeProvider";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -69,11 +70,89 @@ const CARD_LG: React.CSSProperties = {
   boxShadow:    LM.shadowLg,
 };
 
+function getDynamicLM(theme: string) {
+  const isDark = theme === "dark" || theme === "high-contrast";
+  if (!isDark) {
+    return {
+      isDark:       false,
+      pageBg:       "#F7F5F1",
+      cardBg:       "#FFFFFF",
+      navy:         "#1B2B4B",
+      navyMid:      "rgba(27,43,75,0.62)",
+      navyLight:    "rgba(27,43,75,0.40)",
+      navyFaint:    "rgba(27,43,75,0.18)",
+      blue:         "#1D55C4",
+      blueDark:     "#1540A0",
+      blueLight:    "rgba(29,85,196,0.07)",
+      blueActive:   "rgba(29,85,196,0.12)",
+      blueBorder:   "rgba(29,85,196,0.22)",
+      border:       "rgba(27,43,75,0.10)",
+      borderMid:    "rgba(27,43,75,0.16)",
+      shadow:       "0 1px 4px rgba(27,43,75,0.06), 0 2px 12px rgba(27,43,75,0.07)",
+      shadowLg:     "0 4px 24px rgba(27,43,75,0.10), 0 1px 6px rgba(27,43,75,0.06)",
+      green:        "#166534",
+      greenBg:      "rgba(22,101,52,0.07)",
+      greenBorder:  "rgba(22,101,52,0.20)",
+      amber:        "#92400E",
+      amberBg:      "rgba(146,64,14,0.07)",
+      amberBorder:  "rgba(146,64,14,0.20)",
+      disabled:     "rgba(27,43,75,0.28)",
+      disabledBg:   "rgba(27,43,75,0.05)",
+    };
+  }
+
+  return {
+    isDark:       true,
+    pageBg:       "#060606",
+    cardBg:       "rgba(255,255,255,0.03)",
+    navy:         "#E8EDF8",
+    navyMid:      "#DDE5F5",
+    navyLight:    "#8BA5C5",
+    navyFaint:    "rgba(255,255,255,0.08)",
+    blue:         "#818CF8", // indigo-400
+    blueDark:     "#6366F1", // indigo-500
+    blueLight:    "rgba(99,102,241,0.12)",
+    blueActive:   "rgba(99,102,241,0.18)",
+    blueBorder:   "rgba(99,102,241,0.30)",
+    border:       "rgba(255,255,255,0.08)",
+    borderMid:    "rgba(255,255,255,0.15)",
+    shadow:       "0 20px 60px rgba(0,0,0,0.50)",
+    shadowLg:     "0 30px 80px rgba(0,0,0,0.60)",
+    green:        "#34D399",
+    greenBg:      "rgba(52,211,153,0.10)",
+    greenBorder:  "rgba(52,211,153,0.25)",
+    amber:        "#FBBF24",
+    amberBg:      "rgba(251,191,36,0.10)",
+    amberBorder:  "rgba(251,191,36,0.25)",
+    disabled:     "rgba(255,255,255,0.20)",
+    disabledBg:   "rgba(255,255,255,0.02)",
+  };
+}
+
+function getCardStyles(LM: any) {
+  return {
+    card: {
+      background:   LM.cardBg,
+      border:       `1px solid ${LM.border}`,
+      borderRadius: "16px",
+      boxShadow:    LM.shadow,
+    } as React.CSSProperties,
+    cardLg: {
+      background:   LM.cardBg,
+      border:       `1px solid ${LM.border}`,
+      borderRadius: "20px",
+      boxShadow:    LM.shadowLg,
+    } as React.CSSProperties,
+  };
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared sub-components
 // ─────────────────────────────────────────────────────────────────────────────
 
 function MicroLabel({ children }: { children: React.ReactNode }) {
+  const { theme } = useTheme();
+  const LM = getDynamicLM(theme);
   return (
     <p className="text-[10px] font-mono uppercase tracking-[1.8px]"
        style={{ color: LM.navyLight }}>
@@ -83,6 +162,8 @@ function MicroLabel({ children }: { children: React.ReactNode }) {
 }
 
 function StepPips({ current }: { current: Step }) {
+  const { theme } = useTheme();
+  const LM = getDynamicLM(theme);
   const steps: Step[] = ["15A", "15B", "15C"];
   const labels = ["How It Works", "Agreement Review", "Authorization"];
   const idx = steps.indexOf(current);
@@ -123,6 +204,8 @@ function PageHeader({
   title: React.ReactNode;
   step: Step;
 }) {
+  const { theme } = useTheme();
+  const LM = getDynamicLM(theme);
   return (
     <div className="flex items-start justify-between gap-6 mb-6">
       <div>
@@ -153,6 +236,9 @@ function CTABar({
   onSecondary?: () => void;
   secondaryLabel?: string;
 }) {
+  const { theme } = useTheme();
+  const LM = getDynamicLM(theme);
+  const { card: CARD } = getCardStyles(LM);
   return (
     <div
       className="absolute bottom-0 inset-x-0 px-8 pb-8 pt-20 z-20"
@@ -230,6 +316,9 @@ const HOW_IT_WORKS_STEPS = [
 ];
 
 function Step15A({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
+  const { theme } = useTheme();
+  const LM = getDynamicLM(theme);
+  const { card: CARD, cardLg: CARD_LG } = getCardStyles(LM);
   return (
     <div className="relative flex flex-col h-screen" style={{ background: LM.pageBg }}>
       <div className="px-8 pt-8 pb-0 shrink-0">
@@ -357,6 +446,9 @@ function Step15B({
   onBack: () => void;
   onSendForReview: () => void;
 }) {
+  const { theme } = useTheme();
+  const LM = getDynamicLM(theme);
+  const { card: CARD, cardLg: CARD_LG } = getCardStyles(LM);
   const [showAgreement, setShowAgreement] = useState(false);
   const allChecked = acks.every(Boolean);
   const isClaimPath =
@@ -574,6 +666,9 @@ function Step15C({
   onBack: () => void;
   initialSendModalOpen?: boolean;
 }) {
+  const { theme } = useTheme();
+  const LM = getDynamicLM(theme);
+  const { card: CARD, cardLg: CARD_LG } = getCardStyles(LM);
   // Pre-fill from session — only ask for what's missing
   const [carrierName, setCarrierName]     = useState(session.property.insurerNameKnown || "");
   const [claimNumber, setClaimNumber]     = useState(session.property.claimNumberKnown || "");
@@ -1134,6 +1229,9 @@ function SendForReviewModal({
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function B15CarrierReviewAgreement({ session, onUpdate, onNext, onBack }: Props) {
+  const { theme } = useTheme();
+  const LM = getDynamicLM(theme);
+  const { card: CARD, cardLg: CARD_LG } = getCardStyles(LM);
   const [step, setStep] = useState<Step>("15A");
   const [sendModalOpen, setSendModalOpen] = useState(false);
   // Persist ack state across step transitions

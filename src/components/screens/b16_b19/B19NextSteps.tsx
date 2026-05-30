@@ -20,6 +20,7 @@ import { downloadSummaryPDF } from "@/lib/pdf-export";
 import { RemoteStatusTracker } from "@/components/RemoteStatusTracker";
 import { syncSession, fetchSessionById, completeSession, patchAppointment, officeDispatch, sendEmail, sendSms } from "@/lib/api";
 import { NEXT_STEPS_CONFIG, DELIVERABLES } from "./constants";
+import { useTheme } from "@/components/ThemeProvider";
 
 interface NextStepsProps {
   session: SessionState;
@@ -30,6 +31,8 @@ interface NextStepsProps {
 }
 
 export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsProps) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark" || theme === "high-contrast";
   const outcome = session.findings.outcomeType || "no_damage";
   const isSigned = !!session.signatureData.signedAt;
   const isDeferred = session.sessionStatus === "deferred";
@@ -364,32 +367,34 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
   };
 
   return (
-    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(99,102,241,0.04),transparent_70%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(99,102,241,0.03),transparent_60%)]" />
-      </div>
+    <div className={cn("relative flex flex-col h-screen w-full overflow-hidden transition-colors duration-300", isDark ? "bg-[#060606]" : "bg-[#F7F5F1]")}>
+      {isDark && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(99,102,241,0.04),transparent_70%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(99,102,241,0.03),transparent_60%)]" />
+        </div>
+      )}
 
       <div className="absolute top-10 left-10 z-30 hidden lg:flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em]">Madison Residential</span>
+          <span className={cn("font-display font-bold text-2xl tracking-[0.1em]", isDark ? "text-[#E8EDF8]" : "text-[#1B2B4B]")}>HUSTAD</span>
+          <span className={cn("text-[10px] font-mono uppercase tracking-[0.3em]", isDark ? "text-[#AABDCF]" : "text-[rgba(27,43,75,0.62)]")}>Madison Residential</span>
         </div>
       </div>
 
       <div className="relative z-10 flex-1 overflow-y-auto min-h-0 px-6 md:px-10 pt-20 pb-64 text-center">
         <div className="max-w-[1400px] mx-auto space-y-16">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-md w-fit mx-auto">
+            <div className={cn("inline-flex items-center gap-3 px-4 py-1.5 rounded-full border backdrop-blur-md w-fit mx-auto", isDark ? "bg-white/[0.03] border-white/[0.08]" : "bg-zinc-100 border-zinc-200")}>
               <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400" />
-              <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-[0.2em] pt-0.5">
+              <span className={cn("text-[10px] font-mono uppercase tracking-[0.2em] pt-0.5", isDark ? "text-indigo-300" : "text-[#1D55C4]")}>
                 {isSigned ? "✓ Authorization Complete" : "✓ Session Finalized"}
               </span>
             </div>
-            <h1 className="text-3xl md:text-5xl lg:text-7xl font-display font-medium text-[#E8EDF8] tracking-tighter leading-[1.05]">
+            <h1 className={cn("text-3xl md:text-5xl lg:text-7xl font-display font-medium tracking-tighter leading-[1.05]", isDark ? "text-[#E8EDF8]" : "text-[#1B2B4B]")}>
               {config.headline}
             </h1>
-            <p className="text-xl text-[#AABDCF] font-light leading-relaxed max-w-2xl mx-auto">
+            <p className={cn("text-xl font-light leading-relaxed max-w-2xl mx-auto", isDark ? "text-[#AABDCF]" : "text-[rgba(27,43,75,0.85)]")}>
               {config.detail}
             </p>
           </motion.div>
@@ -397,15 +402,19 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-left">
             <div className="lg:col-span-7 space-y-8">
               {/* Roadmap Bento */}
-              <div className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.1] backdrop-blur-3xl space-y-8">
-                <p className="font-mono text-[10px] text-[#AABDCF] uppercase tracking-[0.3em]">Operational Roadmap</p>
+              <div className={cn("p-10 rounded-[48px] backdrop-blur-3xl space-y-8 border", isDark ? "bg-white/[0.03] border-white/[0.1]" : "bg-white border-zinc-200 shadow-sm")}>
+                <p className={cn("font-mono text-[10px] uppercase tracking-[0.3em]", isDark ? "text-[#AABDCF]" : "text-zinc-500")}>Operational Roadmap</p>
                 <div className="space-y-8">
                   {config.steps.map((step, i) => (
                     <div key={i} className="flex items-start gap-6 group">
-                      <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-indigo-500/50 transition-colors">
-                        <span className="text-sm font-mono text-[#AABDCF] group-hover:text-[#E8EDF8] transition-colors">{i + 1}</span>
+                      <div className={cn("w-10 h-10 rounded-2xl border flex items-center justify-center shrink-0 transition-colors", 
+                        isDark 
+                          ? "bg-white/5 border-white/10 group-hover:border-indigo-500/50" 
+                          : "bg-zinc-50 border-zinc-200 group-hover:border-indigo-400"
+                      )}>
+                        <span className={cn("text-sm font-mono transition-colors", isDark ? "text-[#AABDCF] group-hover:text-[#E8EDF8]" : "text-zinc-600 group-hover:text-[#1D55C4]")}>{i + 1}</span>
                       </div>
-                      <p className="text-[#DDE5F5] font-light text-base leading-relaxed pt-1.5 group-hover:text-[#C2D0E4] transition-colors">{step}</p>
+                      <p className={cn("font-light text-base leading-relaxed pt-1.5 transition-colors", isDark ? "text-[#DDE5F5] group-hover:text-[#C2D0E4]" : "text-[#1B2B4B] group-hover:text-zinc-900")}>{step}</p>
                     </div>
                   ))}
                 </div>
@@ -414,15 +423,19 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
 
             <div className="lg:col-span-5 space-y-8">
               {/* Deliverables Bento */}
-              <div className="p-8 rounded-[40px] bg-indigo-500/[0.03] border border-indigo-500/[0.1] backdrop-blur-3xl space-y-6">
-                <p className="font-mono text-[10px] text-indigo-300 uppercase tracking-[0.3em]">Your Deliverables</p>
+              <div className={cn("p-8 rounded-[40px] backdrop-blur-3xl space-y-6 border", 
+                isDark 
+                  ? "bg-indigo-500/[0.03] border-indigo-500/[0.1]" 
+                  : "bg-indigo-50/50 border-indigo-100 shadow-sm"
+              )}>
+                <p className={cn("font-mono text-[10px] uppercase tracking-[0.3em]", isDark ? "text-indigo-300" : "text-[#1D55C4]")}>Your Deliverables</p>
                 <div className="space-y-4">
                   {DELIVERABLES[outcomeKey]?.map((d, i) => (
                     <div key={i} className="flex items-center gap-4 group">
-                      <div className="w-8 h-8 rounded-xl bg-indigo-500/10 flex items-center justify-center shrink-0">
-                        <ShieldCheck className="w-4 h-4 text-indigo-400" />
+                      <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center shrink-0", isDark ? "bg-indigo-500/10" : "bg-indigo-100")}>
+                        <ShieldCheck className="w-4 h-4 text-indigo-500" />
                       </div>
-                      <p className="text-[#DDE5F5] text-sm font-light group-hover:text-[#E8EDF8] transition-colors">{d}</p>
+                      <p className={cn("text-sm font-light transition-colors", isDark ? "text-[#DDE5F5] group-hover:text-[#E8EDF8]" : "text-[#1B2B4B] group-hover:text-zinc-900")}>{d}</p>
                     </div>
                   ))}
                 </div>
@@ -456,17 +469,25 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
                           className={cn(
                             "w-full p-6 rounded-[32px] border transition-all duration-300 flex flex-col items-center gap-3 text-center",
                             deliverySent === opt.id 
-                              ? "bg-indigo-500/20 border-indigo-500/40" 
-                              : "bg-white/[0.02] border-white/[0.05] hover:border-white/20",
+                              ? (isDark ? "bg-indigo-500/20 border-indigo-500/40" : "bg-indigo-50 border-indigo-300 shadow-sm") 
+                              : (isDark ? "bg-white/[0.02] border-white/[0.05] hover:border-white/20" : "bg-white border-zinc-200 hover:bg-zinc-50 shadow-sm"),
                             isSending && opt.id === "email" && "animate-pulse"
                           )}
                         >
-                          <opt.icon className={cn("w-5 h-5", deliverySent === opt.id ? "text-indigo-400" : "text-[#7090B0]")} />
-                          <span className={cn("text-[10px] font-mono uppercase tracking-widest", deliverySent === opt.id ? "text-[#E8EDF8]" : "text-[#AABDCF]")}>
+                          <opt.icon className={cn("w-5 h-5", 
+                            deliverySent === opt.id 
+                              ? (isDark ? "text-indigo-400" : "text-[#1D55C4]") 
+                              : (isDark ? "text-[#7090B0]" : "text-zinc-500")
+                          )} />
+                          <span className={cn("text-[10px] font-mono uppercase tracking-widest", 
+                            deliverySent === opt.id 
+                              ? (isDark ? "text-[#E8EDF8]" : "text-[#1D55C4]") 
+                              : (isDark ? "text-[#AABDCF]" : "text-zinc-600")
+                          )}>
                             {isSending && opt.id === "email" ? "Sending..." : deliverySent === opt.id ? "Sent ✓" : opt.label}
                           </span>
                         </button>
-                        <p className="text-[9px] font-mono text-[#3F5878] truncate px-2 text-center uppercase tracking-tighter">
+                        <p className={cn("text-[9px] font-mono truncate px-2 text-center uppercase tracking-tighter", isDark ? "text-[#3F5878]" : "text-zinc-400")}>
                           {recipient}
                         </p>
                       </div>
@@ -478,9 +499,9 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
                   <motion.div 
                     initial={{ opacity: 0, height: 0 }} 
                     animate={{ opacity: 1, height: "auto" }} 
-                    className="p-6 rounded-[32px] bg-indigo-500/[0.05] border border-indigo-500/20 space-y-3"
+                    className={cn("p-6 rounded-[32px] border space-y-3", isDark ? "bg-indigo-500/[0.05] border-indigo-500/20" : "bg-indigo-50/50 border-indigo-100")}
                   >
-                    <p className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest pl-1 pt-2">Data Gap: Homeowner Contact Required</p>
+                    <p className={cn("text-[10px] font-mono uppercase tracking-widest pl-1 pt-2", isDark ? "text-indigo-300" : "text-[#1D55C4]")}>Data Gap: Homeowner Contact Required</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="relative group">
                         <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400/50 group-focus-within:text-indigo-400 transition-colors" />
@@ -489,7 +510,11 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
                           placeholder="Email Address"
                           value={quickEmail}
                           onChange={(e) => setQuickEmail(e.target.value)}
-                          className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-[#E8EDF8] placeholder:text-[#2D4060] focus:border-indigo-400/50 outline-none transition-all text-sm"
+                          className={cn("w-full border rounded-2xl py-3 pl-12 pr-4 outline-none transition-all text-sm", 
+                            isDark 
+                              ? "bg-white/[0.03] border-white/10 text-[#E8EDF8] placeholder:text-[#2D4060] focus:border-indigo-400/50" 
+                              : "bg-white border-zinc-200 text-[#1B2B4B] placeholder:text-zinc-400 focus:border-indigo-400"
+                          )}
                         />
                       </div>
                       <div className="relative group">
@@ -499,7 +524,11 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
                           placeholder="Phone Number"
                           value={quickPhone}
                           onChange={(e) => setQuickPhone(e.target.value)}
-                          className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-[#E8EDF8] placeholder:text-[#2D4060] focus:border-indigo-400/50 outline-none transition-all text-sm"
+                          className={cn("w-full border rounded-2xl py-3 pl-12 pr-4 outline-none transition-all text-sm", 
+                            isDark 
+                              ? "bg-white/[0.03] border-white/10 text-[#E8EDF8] placeholder:text-[#2D4060] focus:border-indigo-400/50" 
+                              : "bg-white border-zinc-200 text-[#1B2B4B] placeholder:text-zinc-400 focus:border-indigo-400"
+                          )}
                         />
                       </div>
                     </div>
@@ -522,10 +551,16 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
 
               <button 
                 onClick={handleDownloadPDF}
-                className="w-full p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/5 transition-all flex items-center justify-center gap-3 group"
+                className={cn("w-full p-4 rounded-2xl border transition-all flex items-center justify-center gap-3 group", 
+                  isDark 
+                    ? "bg-white/[0.02] border-white/5 hover:bg-white/5" 
+                    : "bg-white border-zinc-200 hover:bg-zinc-50 shadow-sm"
+                )}
               >
-                <Download className="w-4 h-4 text-[#7090B0] group-hover:text-indigo-400 transition-colors" />
-                <span className="text-[10px] font-mono text-[#7090B0] uppercase tracking-widest group-hover:text-[#AABDCF] transition-colors">
+                <Download className={cn("w-4 h-4 transition-colors", isDark ? "text-[#7090B0] group-hover:text-indigo-400" : "text-zinc-500 group-hover:text-[#1D55C4]")} />
+                <span className={cn("text-[10px] font-mono uppercase tracking-widest transition-colors", 
+                  isDark ? "text-[#7090B0] group-hover:text-[#AABDCF]" : "text-zinc-600 group-hover:text-zinc-900"
+                )}>
                   {exported ? "Summary Downloaded ✓" : "Download Summary (PDF)"}
                 </span>
               </button>
@@ -535,21 +570,23 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
                 <div className={cn(
                   "p-6 rounded-[32px] border transition-all duration-300 space-y-4",
                   session.officeDispatchStatus === "sent" 
-                    ? "bg-green-500/5 border-green-500/20" 
-                    : "bg-rose-500/5 border-rose-500/20"
+                    ? (isDark ? "bg-green-500/5 border-green-500/20" : "bg-emerald-50 border-emerald-200") 
+                    : (isDark ? "bg-rose-500/5 border-rose-500/20" : "bg-rose-50 border-rose-200")
                 )}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className={cn(
                         "w-2 h-2 rounded-full",
-                        session.officeDispatchStatus === "sent" ? "bg-green-400" : "bg-rose-400 animate-pulse"
+                        session.officeDispatchStatus === "sent" 
+                          ? (isDark ? "bg-green-400" : "bg-emerald-500") 
+                          : (isDark ? "bg-rose-400 animate-pulse" : "bg-rose-500 animate-pulse")
                       )} />
-                      <p className="text-[10px] font-mono text-[#7090B0] uppercase tracking-[0.2em]">Office Dispatch</p>
+                      <p className={cn("text-[10px] font-mono uppercase tracking-[0.2em]", isDark ? "text-[#7090B0]" : "text-zinc-500")}>Office Dispatch</p>
                     </div>
                     {session.officeDispatchStatus === "sent" ? (
-                      <span className="text-[10px] font-mono text-green-400 uppercase tracking-widest">Sent ✓</span>
+                      <span className={cn("text-[10px] font-mono uppercase tracking-widest", isDark ? "text-green-400" : "text-emerald-600 font-medium")}>Sent ✓</span>
                     ) : (
-                      <span className="text-[10px] font-mono text-rose-400 uppercase tracking-widest">Failed</span>
+                      <span className={cn("text-[10px] font-mono uppercase tracking-widest", isDark ? "text-rose-400" : "text-rose-600 font-medium")}>Failed</span>
                     )}
                   </div>
                   
@@ -557,19 +594,19 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
                     <button
                       disabled={isDispatching}
                       onClick={() => handleOfficeDispatch(session)}
-                      className="w-full py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex items-center justify-center gap-2"
-                    >
-                      {isDispatching ? (
-                        <RefreshCw className="w-3 h-3 text-[#7090B0] animate-spin" />
-                      ) : (
-                        <RefreshCw className="w-3 h-3 text-[#7090B0]" />
+                      className={cn("w-full py-3 rounded-xl border transition-all flex items-center justify-center gap-2", 
+                        isDark 
+                          ? "bg-white/5 border-white/10 hover:bg-white/10" 
+                          : "bg-white border-zinc-200 hover:bg-zinc-50 shadow-sm"
                       )}
-                      <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.1em]">Retry Dispatch</span>
+                    >
+                      <RefreshCw className={cn("w-3 h-3", isDark ? "text-[#7090B0]" : "text-zinc-500", isDispatching && "animate-spin")} />
+                      <span className={cn("text-[10px] font-mono uppercase tracking-[0.1em]", isDark ? "text-[#AABDCF]" : "text-zinc-700")}>Retry Dispatch</span>
                     </button>
                   )}
                   
                   {session.officeDispatchedAt && (
-                    <p className="text-[9px] font-mono text-[#2D4060] text-center uppercase tracking-tighter">
+                    <p className={cn("text-[9px] font-mono text-center uppercase tracking-tighter", isDark ? "text-[#2D4060]" : "text-zinc-400")}>
                       Timestamp: {new Date(session.officeDispatchedAt).toLocaleString()}
                     </p>
                   )}
@@ -581,13 +618,19 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
       </div>
 
       <div className="absolute bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent pt-20" />
+        <div className={cn("absolute inset-0 pt-20", isDark ? "bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent" : "bg-gradient-to-t from-[#F7F5F1] via-[#F7F5F1]/90 to-transparent")} />
         <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-3 md:gap-6 pointer-events-auto">
-          <button onClick={onBack} className="group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 shrink-0">
-            <ArrowLeft className="w-4 h-4 text-[#DDE5F5] group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-[#E8EDF8]">Back</span>
+          <button onClick={onBack} className={cn("group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full border transition-all duration-300 shrink-0", isDark ? "bg-white/10 border-white/20 text-[#DDE5F5] hover:bg-white/20" : "bg-white border-zinc-200 text-[#1B2B4B] hover:bg-zinc-50")}>
+            <ArrowLeft className={cn("w-4 h-4 group-hover:-translate-x-1 transition-transform", isDark ? "text-[#DDE5F5]" : "text-zinc-600")} />
+            <span className={cn("text-sm font-display font-medium", isDark ? "text-[#E8EDF8]" : "text-[#1B2B4B]")}>Back</span>
           </button>
-          <StarButton onClick={handleFinish} lightColor="#FAFAFA" backgroundColor="#060606" className="flex-1 max-w-md h-18 rounded-full active:scale-95 transition-transform disabled:opacity-50 disabled:pointer-events-none" disabled={isSyncing}>
+          <StarButton 
+            onClick={handleFinish} 
+            lightColor={isDark ? "#FAFAFA" : "#FFFFFF"}
+            backgroundColor={isDark ? "#060606" : "#1D55C4"}
+            className={cn("flex-1 max-w-md h-18 rounded-full transition-transform active:scale-95 disabled:opacity-50 disabled:pointer-events-none", isDark ? "shadow-[0_20px_60px_rgba(99,102,241,0.2)]" : "shadow-sm")} 
+            disabled={isSyncing}
+          >
             <div className="flex items-center gap-4">
               {isSyncing ? (
                 <>
@@ -597,7 +640,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
               ) : (
                 <>
                   <span className="text-lg font-display font-medium tracking-wide">{config.finishLabel}</span>
-                  <ChevronRight className="w-5 h-5 text-[#DDE5F5]" />
+                  <ChevronRight className={cn("w-5 h-5", isDark ? "text-[#DDE5F5]" : "text-white")} />
                 </>
               )}
             </div>

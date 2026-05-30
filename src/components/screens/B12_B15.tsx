@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { setSelectedPath, addAuditEvent, unlockSummary } from "@/lib/session";
 import { PhotoThumbnail } from "@/components/PhotoThumbnail";
+import { useTheme } from "@/components/ThemeProvider";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared interface
@@ -324,6 +325,134 @@ function themedCard(tk: typeof DS.theme[keyof typeof DS.theme]): React.CSSProper
   };
 }
 
+function getDynamicDS(theme: string) {
+  const isDark = theme === "dark" || theme === "high-contrast";
+  if (isDark) {
+    return {
+      isDark: true,
+      pageBg: DS.pageBg,
+      card: DS.card,
+      text: DS.text,
+      theme: DS.theme,
+      themedCard: (tk: any) => ({
+        background: "linear-gradient(180deg, rgba(20,32,58,0.90) 0%, rgba(10,16,32,0.97) 100%)",
+        border: `1px solid ${tk.cardBorder}`,
+        boxShadow: `0 20px 60px rgba(0,0,0,0.50), 0 0 80px ${tk.cardGlow}, inset 0 1px 0 rgba(255,255,255,0.06)`,
+        borderRadius: "20px",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+      } as React.CSSProperties),
+    };
+  }
+  
+  const lightTheme = {
+    blue: {
+      accent:         "#1D55C4",
+      accentSoft:     "rgba(29,85,196,0.07)",
+      accentBorder:   "rgba(29,85,196,0.22)",
+      accentGlow:     "rgba(29,85,196,0.04)",
+      badgeBg:        "rgba(29,85,196,0.07)",
+      badgeBorder:    "rgba(29,85,196,0.22)",
+      badgeText:      "#1D55C4",
+      cardBorder:     "rgba(29,85,196,0.15)",
+      cardGlow:       "rgba(29,85,196,0.04)",
+      btnGrad:        "linear-gradient(90deg, #1D55C4, #1540A0, #0f2e75)",
+      btnGlow:        "0 4px 18px rgba(29,85,196,0.20)",
+      iconBg:         "rgba(29,85,196,0.07)",
+      recheckActive:  "background: rgba(29,85,196,0.12); border-color: rgba(29,85,196,0.32);",
+    },
+    red: {
+      accent:         "#B91C1C",
+      accentSoft:     "rgba(185,28,28,0.07)",
+      accentBorder:   "rgba(185,28,28,0.22)",
+      accentGlow:     "rgba(185,28,28,0.04)",
+      badgeBg:        "rgba(185,28,28,0.07)",
+      badgeBorder:    "rgba(185,28,28,0.22)",
+      badgeText:      "#B91C1C",
+      cardBorder:     "rgba(185,28,28,0.15)",
+      cardGlow:       "rgba(185,28,28,0.04)",
+      btnGrad:        "linear-gradient(90deg, #B91C1C, #991B1B, #7F1D1D)",
+      btnGlow:        "0 4px 18px rgba(185,28,28,0.20)",
+      iconBg:         "rgba(185,28,28,0.07)",
+      recheckActive:  "background: rgba(185,28,28,0.12); border-color: rgba(185,28,28,0.32);",
+    },
+    green: {
+      accent:         "#15803D",
+      accentSoft:     "rgba(21,128,61,0.07)",
+      accentBorder:   "rgba(21,128,61,0.22)",
+      accentGlow:     "rgba(21,128,61,0.04)",
+      badgeBg:        "rgba(21,128,61,0.07)",
+      badgeBorder:    "rgba(21,128,61,0.22)",
+      badgeText:      "#15803D",
+      cardBorder:     "rgba(21,128,61,0.15)",
+      cardGlow:       "rgba(21,128,61,0.04)",
+      btnGrad:        "linear-gradient(90deg, #15803D, #166534, #14532D)",
+      btnGlow:        "0 4px 18px rgba(21,128,61,0.20)",
+      iconBg:         "rgba(21,128,61,0.07)",
+      recheckActive:  "background: rgba(21,128,61,0.12); border-color: rgba(21,128,61,0.32);",
+    },
+  };
+
+  return {
+    isDark: false,
+    pageBg: {
+      background: "#F7F5F1",
+    } as React.CSSProperties,
+    card: {
+      background: "#FFFFFF",
+      border: "1px solid rgba(27,43,75,0.10)",
+      boxShadow: "0 1px 4px rgba(27,43,75,0.06), 0 2px 12px rgba(27,43,75,0.07)",
+      borderRadius: "20px",
+    } as React.CSSProperties,
+    text: {
+      primary:   "#1B2B4B",
+      secondary: "rgba(27,43,75,0.72)",
+      muted:     "rgba(27,43,75,0.48)",
+      faint:     "rgba(27,43,75,0.28)",
+    },
+    theme: lightTheme,
+    themedCard: (tk: any) => ({
+      background: "#FFFFFF",
+      border: `1px solid ${tk.cardBorder}`,
+      boxShadow: "0 1px 4px rgba(27,43,75,0.06), 0 2px 12px rgba(27,43,75,0.07)",
+      borderRadius: "20px",
+    } as React.CSSProperties),
+  };
+}
+
+function getBadgeTokens(theme: string) {
+  const isDark = theme === "dark" || theme === "high-contrast";
+  if (isDark) {
+    return BADGE;
+  }
+  return {
+    neutral: {
+      bg:     "rgba(29,85,196,0.07)",
+      border: "rgba(29,85,196,0.22)",
+      text:   "#1D55C4",
+      glow:   "0 0 18px rgba(29,85,196,0.04)",
+    },
+    urgent: {
+      bg:     "rgba(185,28,28,0.07)",
+      border: "rgba(185,28,28,0.22)",
+      text:   "#B91C1C",
+      glow:   "0 0 18px rgba(185,28,28,0.04)",
+    },
+    maintenance: {
+      bg:     "rgba(146,64,14,0.07)",
+      border: "rgba(146,64,14,0.20)",
+      text:   "#92400E",
+      glow:   "0 0 18px rgba(146,64,14,0.04)",
+    },
+    success: {
+      bg:     "rgba(22,101,52,0.07)",
+      border: "rgba(22,101,52,0.20)",
+      text:   "#166534",
+      glow:   "0 0 18px rgba(22,101,52,0.04)",
+    },
+  };
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Semantic badge color tokens — spec-exact
 // ─────────────────────────────────────────────────────────────────────────────
@@ -367,8 +496,10 @@ function SemanticBadge({
   variant?: BadgeVariant;
   size?: "sm" | "md";
 }) {
+  const { theme } = useTheme();
+  const badgeTokens = getBadgeTokens(theme);
   const [hovered, setHovered] = useState(false);
-  const t = BADGE[variant];
+  const t = badgeTokens[variant];
   return (
     <motion.div
       onHoverStart={() => setHovered(true)}
@@ -429,6 +560,10 @@ function MicroLabel({
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJump }: Props) {
+  const { theme } = useTheme();
+  const DS = getDynamicDS(theme);
+  const themedCard = DS.themedCard;
+
   const { findings } = session;
   const outcome  = findings.outcomeType ?? "no_damage";
   const pathKey  = derivePathKey(outcome, findings.urgentItemsCount);
@@ -497,76 +632,78 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
       {/* ════════════════════════════════════════════════════════════════════════
           CINEMATIC BACKGROUND — 7 layers deep
       ════════════════════════════════════════════════════════════════════════ */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      {DS.isDark && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
 
-        {/* L1 — Film grain noise · soft-light · 3% opacity */}
-        <div className="absolute inset-0" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.68' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E")`,
-          backgroundRepeat: "repeat",
-          backgroundSize:   "300px 300px",
-          opacity:          0.030,
-          mixBlendMode:     "soft-light",
-        }} />
+          {/* L1 — Film grain noise · soft-light · 3% opacity */}
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.68' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E")`,
+            backgroundRepeat: "repeat",
+            backgroundSize:   "300px 300px",
+            opacity:          0.030,
+            mixBlendMode:     "soft-light",
+          }} />
 
-        {/* L2 — Blueprint technical grid · 4% opacity */}
-        <div className="absolute inset-0" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cline x1='0' y1='0' x2='60' y2='0' stroke='%234D6FFF' stroke-width='0.35'/%3E%3Cline x1='0' y1='0' x2='0' y2='60' stroke='%234D6FFF' stroke-width='0.35'/%3E%3C/svg%3E")`,
-          backgroundRepeat: "repeat",
-          backgroundSize:   "60px 60px",
-          opacity:          0.040,
-        }} />
+          {/* L2 — Blueprint technical grid · 4% opacity */}
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cline x1='0' y1='0' x2='60' y2='0' stroke='%234D6FFF' stroke-width='0.35'/%3E%3Cline x1='0' y1='0' x2='0' y2='60' stroke='%234D6FFF' stroke-width='0.35'/%3E%3C/svg%3E")`,
+            backgroundRepeat: "repeat",
+            backgroundSize:   "60px 60px",
+            opacity:          0.040,
+          }} />
 
-        {/* L3 — Edge vignette · depth-framing darkening */}
-        <div className="absolute inset-0" style={{
-          boxShadow:    "inset 0 0 220px rgba(0,0,0,0.38), inset 0 0 80px rgba(0,0,0,0.20)",
-          borderRadius: "0",
-        }} />
+          {/* L3 — Edge vignette · depth-framing darkening */}
+          <div className="absolute inset-0" style={{
+            boxShadow:    "inset 0 0 220px rgba(0,0,0,0.38), inset 0 0 80px rgba(0,0,0,0.20)",
+            borderRadius: "0",
+          }} />
 
-        {/* L4 — Ambient glow · top-right · themed · 30s drift */}
-        <motion.div
-          animate={{ scale: [1, 1.12, 1.04, 1], opacity: [0.16, 0.22, 0.18, 0.16] }}
-          transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-40 -right-40 w-[780px] h-[780px] rounded-full"
-          style={{
-            background: `radial-gradient(circle, ${tk.accentGlow.replace("0.10", "0.28")}, transparent 68%)`,
-            filter: "blur(120px)",
-          }}
-        />
+          {/* L4 — Ambient glow · top-right · themed · 30s drift */}
+          <motion.div
+            animate={{ scale: [1, 1.12, 1.04, 1], opacity: [0.16, 0.22, 0.18, 0.16] }}
+            transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -top-40 -right-40 w-[780px] h-[780px] rounded-full"
+            style={{
+              background: `radial-gradient(circle, ${tk.accentGlow.replace("0.10", "0.28")}, transparent 68%)`,
+              filter: "blur(120px)",
+            }}
+          />
 
-        {/* L5 — Ambient glow · bottom-left · purple · 38s drift */}
-        <motion.div
-          animate={{ scale: [1, 1.09, 1.05, 1], opacity: [0.10, 0.16, 0.12, 0.10] }}
-          transition={{ duration: 38, repeat: Infinity, ease: "easeInOut", delay: 10 }}
-          className="absolute -bottom-52 -left-52 w-[680px] h-[680px] rounded-full"
-          style={{
-            background: "radial-gradient(circle, rgba(139,92,255,0.22), transparent 68%)",
-            filter: "blur(120px)",
-          }}
-        />
+          {/* L5 — Ambient glow · bottom-left · purple · 38s drift */}
+          <motion.div
+            animate={{ scale: [1, 1.09, 1.05, 1], opacity: [0.10, 0.16, 0.12, 0.10] }}
+            transition={{ duration: 38, repeat: Infinity, ease: "easeInOut", delay: 10 }}
+            className="absolute -bottom-52 -left-52 w-[680px] h-[680px] rounded-full"
+            style={{
+              background: "radial-gradient(circle, rgba(139,92,255,0.22), transparent 68%)",
+              filter: "blur(120px)",
+            }}
+          />
 
-        {/* L6 — Soft blue bloom · top-left accent · 24s drift */}
-        <motion.div
-          animate={{ scale: [1, 1.07, 1], opacity: [0.07, 0.12, 0.07] }}
-          transition={{ duration: 24, repeat: Infinity, ease: "easeInOut", delay: 6 }}
-          className="absolute top-16 -left-28 w-[440px] h-[440px] rounded-full"
-          style={{
-            background: "radial-gradient(circle, rgba(77,111,255,0.20), transparent 65%)",
-            filter: "blur(100px)",
-          }}
-        />
+          {/* L6 — Soft blue bloom · top-left accent · 24s drift */}
+          <motion.div
+            animate={{ scale: [1, 1.07, 1], opacity: [0.07, 0.12, 0.07] }}
+            transition={{ duration: 24, repeat: Infinity, ease: "easeInOut", delay: 6 }}
+            className="absolute top-16 -left-28 w-[440px] h-[440px] rounded-full"
+            style={{
+              background: "radial-gradient(circle, rgba(77,111,255,0.20), transparent 65%)",
+              filter: "blur(100px)",
+            }}
+          />
 
-        {/* L7 — Horizon bloom · center-bottom · very faint · 40s drift */}
-        <motion.div
-          animate={{ scale: [1, 1.14, 1], opacity: [0.05, 0.09, 0.05] }}
-          transition={{ duration: 40, repeat: Infinity, ease: "easeInOut", delay: 18 }}
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[900px] h-[360px] rounded-full"
-          style={{
-            background: "radial-gradient(ellipse, rgba(61,90,254,0.14), transparent 60%)",
-            filter: "blur(110px)",
-          }}
-        />
+          {/* L7 — Horizon bloom · center-bottom · very faint · 40s drift */}
+          <motion.div
+            animate={{ scale: [1, 1.14, 1], opacity: [0.05, 0.09, 0.05] }}
+            transition={{ duration: 40, repeat: Infinity, ease: "easeInOut", delay: 18 }}
+            className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[900px] h-[360px] rounded-full"
+            style={{
+              background: "radial-gradient(ellipse, rgba(61,90,254,0.14), transparent 60%)",
+              filter: "blur(110px)",
+            }}
+          />
 
-      </div>
+        </div>
+      )}
 
       {/* ════════════════════════════════════════════════════════════════════════
           CINEMATIC HOUSE IMAGE — right-side hero, fades out before cards
@@ -1686,6 +1823,10 @@ const B13_PRIORITY_LABELS: Record<string, { label: string; icon: any; accent: st
 };
 
 export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props) {
+  const { theme } = useTheme();
+  const DS = getDynamicDS(theme);
+  const themedCard = DS.themedCard;
+
   const outcome  = session.findings.outcomeType ?? "no_damage";
   const pathKey  = deriveB13PathKey(outcome, session.findings.urgentItemsCount);
   const config   = B14_PATH_CONFIGS[pathKey];
@@ -1735,56 +1876,58 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
     <div className="relative flex flex-col h-screen w-full overflow-hidden" style={DS.pageBg}>
 
       {/* ═══ CINEMATIC BACKGROUND — 7 layers ═══════════════════════════════════ */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      {DS.isDark && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
 
-        {/* L1 — Film grain */}
-        <div className="absolute inset-0" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.68' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E")`,
-          backgroundRepeat: "repeat", backgroundSize: "300px 300px",
-          opacity: 0.030, mixBlendMode: "soft-light" as React.CSSProperties["mixBlendMode"],
-        }} />
+          {/* L1 — Film grain */}
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.68' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E")`,
+            backgroundRepeat: "repeat", backgroundSize: "300px 300px",
+            opacity: 0.030, mixBlendMode: "soft-light" as React.CSSProperties["mixBlendMode"],
+          }} />
 
-        {/* L2 — Blueprint technical grid */}
-        <div className="absolute inset-0" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cline x1='0' y1='0' x2='60' y2='0' stroke='%234D6FFF' stroke-width='0.35'/%3E%3Cline x1='0' y1='0' x2='0' y2='60' stroke='%234D6FFF' stroke-width='0.35'/%3E%3C/svg%3E")`,
-          backgroundRepeat: "repeat", backgroundSize: "60px 60px", opacity: 0.040,
-        }} />
+          {/* L2 — Blueprint technical grid */}
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cline x1='0' y1='0' x2='60' y2='0' stroke='%234D6FFF' stroke-width='0.35'/%3E%3Cline x1='0' y1='0' x2='0' y2='60' stroke='%234D6FFF' stroke-width='0.35'/%3E%3C/svg%3E")`,
+            backgroundRepeat: "repeat", backgroundSize: "60px 60px", opacity: 0.040,
+          }} />
 
-        {/* L3 — Edge vignette */}
-        <div className="absolute inset-0" style={{ boxShadow: "inset 0 0 220px rgba(0,0,0,0.38), inset 0 0 80px rgba(0,0,0,0.20)" }} />
+          {/* L3 — Edge vignette */}
+          <div className="absolute inset-0" style={{ boxShadow: "inset 0 0 220px rgba(0,0,0,0.38), inset 0 0 80px rgba(0,0,0,0.20)" }} />
 
-        {/* L4 — Themed ambient glow top-right */}
-        <motion.div
-          animate={{ scale: [1, 1.12, 1.04, 1], opacity: [0.16, 0.22, 0.18, 0.16] }}
-          transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-40 -right-40 w-[780px] h-[780px] rounded-full"
-          style={{ background: `radial-gradient(circle, ${tk.accentGlow.replace("0.10", "0.28")}, transparent 68%)`, filter: "blur(120px)" }}
-        />
+          {/* L4 — Themed ambient glow top-right */}
+          <motion.div
+            animate={{ scale: [1, 1.12, 1.04, 1], opacity: [0.16, 0.22, 0.18, 0.16] }}
+            transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -top-40 -right-40 w-[780px] h-[780px] rounded-full"
+            style={{ background: `radial-gradient(circle, ${tk.accentGlow.replace("0.10", "0.28")}, transparent 68%)`, filter: "blur(120px)" }}
+          />
 
-        {/* L5 — Purple ambient glow bottom-left */}
-        <motion.div
-          animate={{ scale: [1, 1.09, 1.05, 1], opacity: [0.10, 0.16, 0.12, 0.10] }}
-          transition={{ duration: 38, repeat: Infinity, ease: "easeInOut", delay: 10 }}
-          className="absolute -bottom-52 -left-52 w-[680px] h-[680px] rounded-full"
-          style={{ background: "radial-gradient(circle, rgba(139,92,255,0.22), transparent 68%)", filter: "blur(120px)" }}
-        />
+          {/* L5 — Purple ambient glow bottom-left */}
+          <motion.div
+            animate={{ scale: [1, 1.09, 1.05, 1], opacity: [0.10, 0.16, 0.12, 0.10] }}
+            transition={{ duration: 38, repeat: Infinity, ease: "easeInOut", delay: 10 }}
+            className="absolute -bottom-52 -left-52 w-[680px] h-[680px] rounded-full"
+            style={{ background: "radial-gradient(circle, rgba(139,92,255,0.22), transparent 68%)", filter: "blur(120px)" }}
+          />
 
-        {/* L6 — Blue bloom top-left */}
-        <motion.div
-          animate={{ scale: [1, 1.07, 1], opacity: [0.07, 0.12, 0.07] }}
-          transition={{ duration: 24, repeat: Infinity, ease: "easeInOut", delay: 6 }}
-          className="absolute top-16 -left-28 w-[440px] h-[440px] rounded-full"
-          style={{ background: "radial-gradient(circle, rgba(77,111,255,0.20), transparent 65%)", filter: "blur(100px)" }}
-        />
+          {/* L6 — Blue bloom top-left */}
+          <motion.div
+            animate={{ scale: [1, 1.07, 1], opacity: [0.07, 0.12, 0.07] }}
+            transition={{ duration: 24, repeat: Infinity, ease: "easeInOut", delay: 6 }}
+            className="absolute top-16 -left-28 w-[440px] h-[440px] rounded-full"
+            style={{ background: "radial-gradient(circle, rgba(77,111,255,0.20), transparent 65%)", filter: "blur(100px)" }}
+          />
 
-        {/* L7 — Horizon bloom */}
-        <motion.div
-          animate={{ scale: [1, 1.14, 1], opacity: [0.05, 0.09, 0.05] }}
-          transition={{ duration: 40, repeat: Infinity, ease: "easeInOut", delay: 18 }}
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[900px] h-[360px] rounded-full"
-          style={{ background: "radial-gradient(ellipse, rgba(61,90,254,0.14), transparent 60%)", filter: "blur(110px)" }}
-        />
-      </div>
+          {/* L7 — Horizon bloom */}
+          <motion.div
+            animate={{ scale: [1, 1.14, 1], opacity: [0.05, 0.09, 0.05] }}
+            transition={{ duration: 40, repeat: Infinity, ease: "easeInOut", delay: 18 }}
+            className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[900px] h-[360px] rounded-full"
+            style={{ background: "radial-gradient(ellipse, rgba(61,90,254,0.14), transparent 60%)", filter: "blur(110px)" }}
+          />
+        </div>
+      )}
 
       {/* ═══ CINEMATIC HOUSE / ROOF IMAGE ════════════════════════════════════════ */}
       <div className="absolute top-0 right-0 w-[60%] pointer-events-none overflow-hidden" style={{ zIndex: 2, height: "70vh" }}>
@@ -2364,6 +2507,8 @@ export function B14PathDecision({ onNext }: Pick<Props, "onNext">) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark" || theme === "high-contrast";
   const [authorized, setAuthorized] = useState<boolean | null>(session.findings.urgentProtectionAuthorized);
 
   const handleContinue = () => {
@@ -2374,14 +2519,16 @@ export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props
   };
 
   return (
-    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(244,63,94,0.04),transparent_70%)]" />
-      </div>
+    <div className={cn("relative flex flex-col h-screen w-full overflow-hidden transition-colors duration-300", isDark ? "bg-[#060606]" : "bg-[#F7F5F1]")}>
+      {isDark && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(244,63,94,0.04),transparent_70%)]" />
+        </div>
+      )}
       <div className="absolute top-10 left-10 z-30 hidden lg:flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em]">Madison Residential</span>
+          <span className={cn("font-display font-bold text-2xl tracking-[0.1em]", isDark ? "text-[#E8EDF8]" : "text-[#1B2B4B]")}>HUSTAD</span>
+          <span className={cn("text-[10px] font-mono uppercase tracking-[0.3em]", isDark ? "text-[#AABDCF]" : "text-[rgba(27,43,75,0.62)]")}>Madison Residential</span>
         </div>
       </div>
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 text-center pb-32">
@@ -2391,22 +2538,22 @@ export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props
               <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
               <span className="text-[10px] font-mono text-rose-500 uppercase tracking-[0.2em] pt-0.5">Critical Protection Required</span>
             </div>
-            <h1 className="text-3xl md:text-6xl lg:text-8xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
+            <h1 className={cn("text-3xl md:text-6xl lg:text-8xl font-display font-medium tracking-tight leading-[1.05]", isDark ? "text-[#E8EDF8]" : "text-[#1B2B4B]")}>
               <span className="text-rose-500">{session.findings.urgentItemsCount} urgent item{session.findings.urgentItemsCount !== 1 ? "s" : ""}</span> need<br />immediate attention.
             </h1>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className="relative p-10 rounded-[48px] bg-rose-500/[0.03] border border-rose-500/[0.1] backdrop-blur-3xl text-left space-y-6">
+            <div className={cn("relative p-10 rounded-[48px] border text-left space-y-6", isDark ? "bg-rose-500/[0.03] border-rose-500/[0.1] backdrop-blur-3xl" : "bg-rose-50/50 border-rose-200")}>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-rose-500/20 flex items-center justify-center"><AlertTriangle className="w-6 h-6 text-rose-500" /></div>
-                <p className="text-lg font-display font-medium text-[#E8EDF8]">Loss Containment Recommended</p>
+                <p className={cn("text-lg font-display font-medium", isDark ? "text-[#E8EDF8]" : "text-[#1B2B4B]")}>Loss Containment Recommended</p>
               </div>
-              <p className="text-[#AABDCF] font-light leading-relaxed">
+              <p className={cn("font-light leading-relaxed", isDark ? "text-[#AABDCF]" : "text-[rgba(27,43,75,0.72)]")}>
                 {session.findings.summaryBody ? session.findings.summaryBody.slice(0, 150) + "..." : "Urgent stabilization or narrow-scope immediate work is recommended."}
               </p>
-              <div className="p-4 rounded-2xl bg-black/40 border border-white/5 flex items-start gap-3">
-                <ShieldCheck className="w-4 h-4 text-[#7090B0] mt-1" />
-                <p className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-widest leading-relaxed">This is loss containment, not upsell. Scope is limited to documented urgent items.</p>
+              <div className={cn("p-4 rounded-2xl border flex items-start gap-3", isDark ? "bg-black/40 border-white/5" : "bg-white border-zinc-200")}>
+                <ShieldCheck className={cn("w-4 h-4 mt-1", isDark ? "text-[#7090B0]" : "text-zinc-500")} />
+                <p className={cn("text-[10px] font-mono uppercase tracking-widest leading-relaxed", isDark ? "text-[#AABDCF]" : "text-zinc-600")}>This is loss containment, not upsell. Scope is limited to documented urgent items.</p>
               </div>
             </div>
             <div className="space-y-4">
@@ -2418,15 +2565,28 @@ export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props
                 return (
                   <motion.button key={String(opt.val)} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} onClick={() => setAuthorized(opt.val)}
                     className={cn("w-full text-left p-6 rounded-[32px] border transition-all duration-300 group overflow-hidden relative",
-                      isSelected ? (opt.val ? "bg-rose-500/10 border-rose-500/40 shadow-2xl" : "bg-white/10 border-white/20 shadow-xl") : "bg-white/[0.02] border-white/[0.05] hover:border-white/20")}
+                      isDark
+                        ? (isSelected ? (opt.val ? "bg-rose-500/10 border-rose-500/40 shadow-2xl" : "bg-white/10 border-white/20 shadow-xl") : "bg-white/[0.02] border-white/[0.05] hover:border-white/20")
+                        : (isSelected ? (opt.val ? "bg-rose-50 border-rose-300 shadow-sm" : "bg-white border-zinc-400 shadow-sm") : "bg-white border-zinc-200 hover:bg-zinc-50")
+                    )}
                   >
                     <div className="relative z-10 flex items-start gap-4">
-                      <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", isSelected ? (opt.val ? "bg-rose-500 text-[#E8EDF8]" : "bg-white text-black") : "bg-white/5 text-[#7090B0]")}>
+                      <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", 
+                        isSelected 
+                          ? (opt.val ? "bg-rose-500 text-white" : (isDark ? "bg-white text-black" : "bg-zinc-800 text-white")) 
+                          : (isDark ? "bg-white/5 text-[#7090B0]" : "bg-zinc-100 text-zinc-500")
+                      )}>
                         <opt.icon className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className={cn("font-display font-medium text-lg", isSelected ? "text-[#E8EDF8]" : "text-[#DDE5F5] group-hover:text-[#E8EDF8]")}>{opt.label}</p>
-                        <p className="text-xs text-[#7090B0] font-light mt-1 group-hover:text-[#AABDCF] transition-colors leading-relaxed">{opt.detail}</p>
+                        <p className={cn("font-display font-medium text-lg", 
+                          isSelected 
+                            ? (isDark ? "text-[#E8EDF8]" : "text-[#1B2B4B]") 
+                            : (isDark ? "text-[#DDE5F5] group-hover:text-[#E8EDF8]" : "text-[#1B2B4B] group-hover:text-zinc-900")
+                        )}>{opt.label}</p>
+                        <p className={cn("text-xs font-light mt-1 transition-colors leading-relaxed", 
+                          isDark ? "text-[#7090B0] group-hover:text-[#AABDCF]" : "text-[rgba(27,43,75,0.62)] group-hover:text-zinc-700"
+                        )}>{opt.detail}</p>
                       </div>
                     </div>
                   </motion.button>
@@ -2436,17 +2596,24 @@ export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props
           </div>
         </div>
       </div>
-      <div className="absolute bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent">
+      <div className={cn("absolute bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30", isDark ? "bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent" : "bg-gradient-to-t from-[#F7F5F1] via-[#F7F5F1]/90 to-transparent")}>
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3 md:gap-6">
-          <button onClick={onBack} className="group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 shrink-0">
-            <ArrowLeft className="w-4 h-4 text-[#DDE5F5] group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-display font-medium text-[#E8EDF8]">Back</span>
+          <button onClick={onBack} className={cn("group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full border transition-all duration-300 shrink-0", isDark ? "bg-white/10 border-white/20 hover:bg-white/20" : "bg-white border-zinc-200 hover:bg-zinc-50")}>
+            <ArrowLeft className={cn("w-4 h-4 group-hover:-translate-x-1 transition-transform", isDark ? "text-[#DDE5F5]" : "text-zinc-600")} />
+            <span className={cn("text-sm font-display font-medium", isDark ? "text-[#E8EDF8]" : "text-zinc-800")}>Back</span>
           </button>
-          <StarButton onClick={handleContinue} disabled={authorized === null} lightColor="#FAFAFA" backgroundColor="#060606"
-            className={cn("flex-1 max-w-md h-20 rounded-full transition-all group", authorized === null ? "opacity-20 grayscale" : "shadow-[0_20px_60px_rgba(244,63,94,0.2)] active:scale-95")}>
+          <StarButton onClick={handleContinue} disabled={authorized === null} 
+            lightColor={isDark ? "#FAFAFA" : "#FFFFFF"} 
+            backgroundColor={isDark ? "#060606" : (authorized ? "#B91C1C" : "#1B2B4B")}
+            className={cn("flex-1 max-w-md h-20 rounded-full transition-all group", 
+              authorized === null 
+                ? "opacity-20 grayscale" 
+                : (isDark ? "shadow-[0_20px_60px_rgba(244,63,94,0.2)] active:scale-95" : "active:scale-95 shadow-sm")
+            )}
+          >
             <div className="flex items-center justify-center gap-4">
               <span className="text-sm md:text-xl font-display font-semibold tracking-tight">Continue</span>
-              <ChevronRight className="w-5 h-5 text-rose-400 group-hover:translate-x-1 transition-transform" />
+              <ChevronRight className={cn("w-5 h-5 group-hover:translate-x-1 transition-transform", isDark ? "text-rose-400" : "text-white")} />
             </div>
           </StarButton>
         </div>

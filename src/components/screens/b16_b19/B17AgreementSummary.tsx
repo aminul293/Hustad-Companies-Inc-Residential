@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { getMissingRequiredShots } from "@/lib/inspectionShotList";
 import { CLAIM_TERMS, REPAIR_TERMS, WISCONSIN_CLAIM_NOTICE, AGREEMENT_SECTIONS } from "./constants";
+import { useTheme } from "@/components/ThemeProvider";
 
 interface Props {
   session: SessionState;
@@ -27,7 +28,129 @@ interface Props {
   onBack: () => void;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Light-mode design tokens — cream/off-white bg, navy text, blue accents
+// ─────────────────────────────────────────────────────────────────────────────
+
+const LM = {
+  pageBg:       "#F7F5F1",
+  cardBg:       "#FFFFFF",
+  navy:         "#1B2B4B",
+  navyMid:      "rgba(27,43,75,0.62)",
+  navyLight:    "rgba(27,43,75,0.40)",
+  navyFaint:    "rgba(27,43,75,0.18)",
+  blue:         "#1D55C4",
+  blueDark:     "#1540A0",
+  blueLight:    "rgba(29,85,196,0.07)",
+  blueActive:   "rgba(29,85,196,0.12)",
+  blueBorder:   "rgba(29,85,196,0.22)",
+  border:       "rgba(27,43,75,0.10)",
+  borderMid:    "rgba(27,43,75,0.16)",
+  shadow:       "0 1px 4px rgba(27,43,75,0.06), 0 2px 12px rgba(27,43,75,0.07)",
+  shadowLg:     "0 4px 24px rgba(27,43,75,0.10), 0 1px 6px rgba(27,43,75,0.06)",
+  green:        "#166534",
+  greenBg:      "rgba(22,101,52,0.07)",
+  greenBorder:  "rgba(22,101,52,0.20)",
+  amber:        "#92400E",
+  amberBg:      "rgba(146,64,14,0.07)",
+  amberBorder:  "rgba(146,64,14,0.20)",
+  disabled:     "rgba(27,43,75,0.28)",
+  disabledBg:   "rgba(27,43,75,0.05)",
+};
+
+const CARD: React.CSSProperties = {
+  background:   LM.cardBg,
+  border:       `1px solid ${LM.border}`,
+  borderRadius: "16px",
+  boxShadow:    LM.shadow,
+};
+
+const CARD_LG: React.CSSProperties = {
+  ...CARD,
+  borderRadius: "20px",
+  boxShadow:    LM.shadowLg,
+};
+
+function getDynamicLM(theme: string) {
+  const isDark = theme === "dark" || theme === "high-contrast";
+  if (!isDark) {
+    return {
+      isDark:       false,
+      pageBg:       "#F7F5F1",
+      cardBg:       "#FFFFFF",
+      navy:         "#1B2B4B",
+      navyMid:      "rgba(27,43,75,0.62)",
+      navyLight:    "rgba(27,43,75,0.40)",
+      navyFaint:    "rgba(27,43,75,0.18)",
+      blue:         "#1D55C4",
+      blueDark:     "#1540A0",
+      blueLight:    "rgba(29,85,196,0.07)",
+      blueActive:   "rgba(29,85,196,0.12)",
+      blueBorder:   "rgba(29,85,196,0.22)",
+      border:       "rgba(27,43,75,0.10)",
+      borderMid:    "rgba(27,43,75,0.16)",
+      shadow:       "0 1px 4px rgba(27,43,75,0.06), 0 2px 12px rgba(27,43,75,0.07)",
+      shadowLg:     "0 4px 24px rgba(27,43,75,0.10), 0 1px 6px rgba(27,43,75,0.06)",
+      green:        "#166534",
+      greenBg:      "rgba(22,101,52,0.07)",
+      greenBorder:  "rgba(22,101,52,0.20)",
+      amber:        "#92400E",
+      amberBg:      "rgba(146,64,14,0.07)",
+      amberBorder:  "rgba(146,64,14,0.20)",
+      disabled:     "rgba(27,43,75,0.28)",
+      disabledBg:   "rgba(27,43,75,0.05)",
+    };
+  }
+
+  return {
+    isDark:       true,
+    pageBg:       "#060606",
+    cardBg:       "rgba(255,255,255,0.03)",
+    navy:         "#E8EDF8",
+    navyMid:      "#DDE5F5",
+    navyLight:    "#8BA5C5",
+    navyFaint:    "rgba(255,255,255,0.08)",
+    blue:         "#818CF8", // indigo-400
+    blueDark:     "#6366F1", // indigo-500
+    blueLight:    "rgba(99,102,241,0.12)",
+    blueActive:   "rgba(99,102,241,0.18)",
+    blueBorder:   "rgba(99,102,241,0.30)",
+    border:       "rgba(255,255,255,0.08)",
+    borderMid:    "rgba(255,255,255,0.15)",
+    shadow:       "0 20px 60px rgba(0,0,0,0.50)",
+    shadowLg:     "0 30px 80px rgba(0,0,0,0.60)",
+    green:        "#34D399",
+    greenBg:      "rgba(52,211,153,0.10)",
+    greenBorder:  "rgba(52,211,153,0.25)",
+    amber:        "#FBBF24",
+    amberBg:      "rgba(251,191,36,0.10)",
+    amberBorder:  "rgba(251,191,36,0.25)",
+    disabled:     "rgba(255,255,255,0.20)",
+    disabledBg:   "rgba(255,255,255,0.02)",
+  };
+}
+
+function getCardStyles(LM: any) {
+  return {
+    card: {
+      background:   LM.cardBg,
+      border:       `1px solid ${LM.border}`,
+      borderRadius: "16px",
+      boxShadow:    LM.shadow,
+    } as React.CSSProperties,
+    cardLg: {
+      background:   LM.cardBg,
+      border:       `1px solid ${LM.border}`,
+      borderRadius: "20px",
+      boxShadow:    LM.shadowLg,
+    } as React.CSSProperties,
+  };
+}
+
 export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props) {
+  const { theme } = useTheme();
+  const LM = getDynamicLM(theme);
+  const { card: CARD, cardLg: CARD_LG } = getCardStyles(LM);
   const [claimRelated, setClaimRelated] = useState<boolean | null>(session.pathData.claimRelatedWork);
   const [acks, setAcks] = useState<boolean[]>([
     session.pathData.agreementAcknowledged,
@@ -65,7 +188,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
         opportunityType = "Roof Replacement";
       }
 
-      const res = await fetch("/api/centerpoint/opportunities", {
+      await fetch("/api/centerpoint/opportunities", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -76,11 +199,8 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
           opportunityType,
         }),
       });
-      if (!res.ok) {
-        console.error("Opportunity creation failed:", await res.text());
-      }
     } catch (err) {
-      console.error("Opportunity creation error:", err);
+      console.error("Opportunity creation failed:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -88,7 +208,6 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
 
   const handleContinue = async () => {
     const e: Record<string, string> = {};
-    if (isClaimPath && claimRelated === null) e.claim = "Please confirm whether this work is related to an insurance claim.";
     const allAcknowledged = acks.every(a => a);
     if (!allAcknowledged) e.ack = "Please check all acknowledgements to proceed.";
     
@@ -136,57 +255,51 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
   };
 
   return (
-    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[#060606]">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(99,102,241,0.04),transparent_70%)]" />
-      </div>
-
-      <div className="absolute top-10 left-10 z-30 hidden lg:flex flex-col items-start pointer-events-none">
-        <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-[#E8EDF8] text-2xl tracking-[0.1em]">HUSTAD</span>
-          <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em]">Madison Residential</span>
+    <div className="relative flex flex-col h-screen w-full overflow-hidden" style={{ background: LM.pageBg }}>
+      <div className="px-8 pt-8 pb-0 shrink-0">
+        <div className="max-w-4xl mx-auto space-y-1">
+          <p style={{ color: LM.blue, fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", fontWeight: 500 }}>
+            Page 17 · Agreement Summary
+          </p>
+          <h1 style={{ color: LM.navy, fontSize: "clamp(26px, 4vw, 36px)", fontWeight: 700, lineHeight: 1.08, letterSpacing: "-0.02em", marginTop: "4px" }}>
+            Insurance Contingency Agreement Review
+          </h1>
+          <p style={{ color: LM.navyMid, fontSize: "14.5px", lineHeight: 1.5, marginTop: "6px" }}>
+            Review what you are authorizing before you proceed.
+          </p>
         </div>
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto px-10 pt-20 pb-56 text-center min-h-0">
-        <div className="max-w-4xl mx-auto space-y-16">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-md w-fit mx-auto">
-              <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
-              <span className="text-[10px] font-mono text-indigo-300 uppercase tracking-[0.2em] pt-0.5">Insurance Contingency Agreement Review</span>
-            </div>
-            <h1 className="text-3xl md:text-5xl lg:text-7xl font-display font-medium text-[#E8EDF8] tracking-tight leading-[1.05]">
-              Review what you are authorizing
-              <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-indigo-300">before you sign.</span>
-            </h1>
-          </motion.div>
-
+      <div className="flex-1 overflow-y-auto px-8 pb-48 pt-4 min-h-0" style={{ scrollbarWidth: "none" as React.CSSProperties["scrollbarWidth"] }}>
+        <div className="max-w-4xl mx-auto space-y-6">
           <AnimatePresence>
             {showPhotoWarning && (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="max-w-xl mx-auto p-8 rounded-[40px] bg-rose-500/10 border border-rose-500/30 backdrop-blur-3xl space-y-6 text-left"
+                style={{ background: LM.amberBg, border: `1px solid ${LM.amberBorder}` }}
+                className="p-6 rounded-[16px] space-y-4 text-left"
               >
-                <div className="flex items-center gap-4 text-rose-400">
-                  <AlertTriangle className="w-6 h-6" />
-                  <h3 className="text-xl font-display font-medium">Incomplete Documentation</h3>
+                <div className="flex items-center gap-3" style={{ color: LM.amber }}>
+                  <AlertTriangle className="w-5 h-5" />
+                  <h3 className="text-base font-semibold">Incomplete Documentation</h3>
                 </div>
-                <p className="text-sm text-rose-200/70 font-light leading-relaxed">
-                  You are missing <span className="font-bold text-rose-300">{missingShots.length} required photos</span> for this forensic inspection. 
+                <p style={{ color: LM.navyMid, fontSize: "13px", lineHeight: 1.5 }}>
+                  You are missing <span className="font-bold">{missingShots.length} required photos</span> for this forensic inspection. 
                   The dossier will be flagged as &quot;Partial Evidence&quot; in the command center.
                 </p>
-                <div className="flex gap-4">
+                <div className="flex gap-3">
                   <button 
-                    onClick={() => onBack()} // Should probably go back to the photo screen, but onBack is standard
-                    className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/10 text-[#E8EDF8] text-xs font-mono uppercase tracking-widest hover:bg-white/10"
+                    onClick={() => onBack()}
+                    className="flex-1 py-3 rounded-xl text-xs font-semibold transition-opacity hover:opacity-75"
+                    style={{ background: LM.pageBg, border: `1px solid ${LM.borderMid}`, color: LM.navy }}
                   >
                     Go Back &amp; Capture
                   </button>
                   <button 
                     onClick={() => handleContinue()} 
-                    className="flex-1 py-4 rounded-2xl bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-mono uppercase tracking-widest hover:bg-rose-500/30"
+                    className="flex-1 py-3 rounded-xl text-xs font-semibold text-white transition-opacity hover:opacity-75"
+                    style={{ background: LM.amber, boxShadow: "0 3px 12px rgba(146,64,14,0.25)" }}
                   >
                     Continue Anyway
                   </button>
@@ -195,18 +308,20 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
             )}
           </AnimatePresence>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 text-left">
-            <div className="p-10 rounded-[48px] bg-white/[0.03] border border-white/[0.1] backdrop-blur-3xl space-y-8">
-              <p className="font-mono text-[10px] text-[#AABDCF] uppercase tracking-[0.3em]">Official Strategy</p>
-              <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+            <div style={CARD_LG} className="p-6 space-y-6">
+              <p className="text-[10px] font-mono uppercase tracking-[1.8px]" style={{ color: LM.navyLight }}>
+                Agreement Scope
+              </p>
+              <div className="space-y-4">
                 {claimRelated === true && (
-                  <div className="p-5 rounded-2xl border border-amber-500/40 bg-amber-500/[0.06] space-y-3">
-                    <p className="text-xs font-mono font-semibold text-amber-400 uppercase tracking-[0.15em]">
+                  <div className="p-4 rounded-xl space-y-2.5" style={{ background: LM.amberBg, border: `1px solid ${LM.amberBorder}` }}>
+                    <p className="text-xs font-mono font-semibold uppercase tracking-[0.1em]" style={{ color: LM.amber }}>
                       {WISCONSIN_CLAIM_NOTICE.heading}
                     </p>
-                    <ul className="space-y-1.5 pl-4 list-disc marker:text-amber-500/50">
+                    <ul className="space-y-1 pl-3 list-disc marker:text-amber-500/50">
                       {WISCONSIN_CLAIM_NOTICE.lines.map((line, i) => (
-                        <li key={i} className="text-xs text-amber-200/70 font-light leading-relaxed">
+                        <li key={i} className="text-xs font-light leading-relaxed" style={{ color: LM.amber }}>
                           {line}
                         </li>
                       ))}
@@ -214,19 +329,21 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
                   </div>
                 )}
                 {(isClaimPath ? CLAIM_TERMS : REPAIR_TERMS).map((t, i) => (
-                  <div key={i} className="flex items-start gap-4 group">
-                    <ChevronRight className="w-4 h-4 text-indigo-400 mt-1 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity" />
-                    <p className="text-[#DDE5F5] font-light text-sm leading-relaxed group-hover:text-[#C2D0E4] transition-colors">{t}</p>
+                  <div key={i} className="flex items-start gap-3 group">
+                    <ChevronRight className="w-4 h-4 mt-0.5 shrink-0 transition-opacity" style={{ color: LM.blue }} />
+                    <p style={{ color: LM.navy, fontSize: "13px", lineHeight: 1.6 }}>{t}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="space-y-10">
+            <div className="space-y-6">
               {isClaimPath && (
-                <section className="space-y-6">
-                  <p className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em] pl-2">Insurance Status</p>
-                  <div className="flex gap-4">
+                <div style={CARD} className="p-6 space-y-4">
+                  <p className="text-[10px] font-mono uppercase tracking-[1.8px]" style={{ color: LM.navyLight }}>
+                    Insurance Status
+                  </p>
+                  <div className="flex gap-3">
                     {[
                       { val: true, label: "Claim Related", icon: Zap },
                       { val: false, label: "Direct Project", icon: Shield }
@@ -234,69 +351,70 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
                       <button
                         key={String(opt.val)}
                         onClick={() => setClaimRelated(opt.val)}
-                        className={cn(
-                          "flex-1 p-6 rounded-[32px] border transition-all duration-300 flex flex-col items-center gap-3 text-center",
-                          claimRelated === opt.val 
-                            ? "bg-indigo-500/20 border-indigo-500/40" 
-                            : "bg-white/[0.02] border-white/[0.05] hover:border-white/20"
-                        )}
+                        className="flex-1 p-5 rounded-xl border transition-all duration-300 flex flex-col items-center gap-2.5 text-center"
+                        style={claimRelated === opt.val
+                          ? { background: LM.blueLight, border: `1.5px solid ${LM.blue}`, color: LM.blue }
+                          : { background: LM.cardBg, border: `1.5px solid ${LM.border}`, color: LM.navyMid }
+                        }
                       >
-                        <opt.icon className={cn("w-6 h-6", claimRelated === opt.val ? "text-indigo-400" : "text-[#7090B0]")} />
-                        <span className={cn("text-xs font-display font-medium", claimRelated === opt.val ? "text-[#E8EDF8]" : "text-[#AABDCF]")}>{opt.label}</span>
+                        <opt.icon className="w-5 h-5" style={{ color: claimRelated === opt.val ? LM.blue : LM.navyLight }} />
+                        <span className="text-[13px] font-semibold">{opt.label}</span>
                       </button>
                     ))}
                   </div>
-                </section>
+                </div>
               )}
 
-              <div className="space-y-4">
-                <p className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.3em] pl-2">Required Acknowledgements</p>
-                {[
-                  "I have reviewed the documented inspection findings with my Hustad representative and they reflect the actual conditions found at my property.",
-                  "I understand that authorizing this agreement does not guarantee insurance coverage, claim approval, or any specific payment by my insurer.",
-                  "I understand that my deductible, depreciation holds, and any non-covered amounts remain my financial responsibility regardless of the claim outcome.",
-                  "I understand that Hustad Companies is not a public adjuster and cannot negotiate my claim or promise a specific coverage result.",
-                  "I confirm that all required property owners and insurance policyholders have been notified of this authorization and have the opportunity to review it before signing."
-                ].map((text, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      const newAcks = [...acks];
-                      newAcks[idx] = !newAcks[idx];
-                      setAcks(newAcks);
-                    }}
-                    className={cn(
-                      "w-full flex items-start gap-5 p-6 rounded-[32px] border transition-all duration-300 text-left",
-                      acks[idx] ? "bg-indigo-500/10 border-indigo-500/30" : "bg-white/[0.02] border-white/[0.05] hover:border-white/20",
-                      errors.ack && !acks[idx] && "border-rose-500/50 bg-rose-500/5"
-                    )}
-                  >
-                    <div className={cn(
-                      "w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all",
-                      acks[idx] ? "bg-indigo-500 border-indigo-500" : "border-white/20"
-                    )}>
-                      {acks[idx] && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
-                    </div>
-                    <p className="text-sm text-[#DDE5F5] font-light leading-relaxed">
-                      {text}
-                    </p>
-                  </button>
-                ))}
+              <div style={CARD} className="p-6 space-y-4">
+                <p className="text-[10px] font-mono uppercase tracking-[1.8px]" style={{ color: LM.navyLight }}>
+                  Required Acknowledgements
+                </p>
+                <div className="space-y-3.5">
+                  {[
+                    "I reviewed the forensic findings, classifications, and report details.",
+                    "I understand the contingency terms and my insurance claim rights.",
+                    "I authorize Hustad to deliver the completed inspection package.",
+                    "I authorize coordination scheduling for adjuster reviews.",
+                    "I accept the scope of work described in the findings package."
+                  ].map((text, i) => (
+                    <label key={i} className="flex items-start gap-3 cursor-pointer group select-none">
+                      <input 
+                        type="checkbox" 
+                        checked={acks[i]} 
+                        onChange={(e) => {
+                          const next = [...acks];
+                          next[i] = e.target.checked;
+                          setAcks(next);
+                          setErrors({});
+                        }}
+                        className="mt-0.5 w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"
+                      />
+                      <span style={{ color: LM.navy, fontSize: "12.5px", lineHeight: 1.5 }}>{text}</span>
+                    </label>
+                  ))}
+                </div>
+                {errors.ack && (
+                  <p style={{ color: "#DC2626", fontSize: "11px", fontWeight: 500 }}>{errors.ack}</p>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Full Agreement Preview */}
-          <div className="w-full border border-white/[0.08] rounded-[40px] overflow-hidden">
+          <div style={CARD_LG} className="overflow-hidden">
             <button
               onClick={() => setShowAgreement(!showAgreement)}
-              className="w-full flex items-center justify-between px-8 py-6 bg-white/[0.02] hover:bg-white/[0.04] transition-all"
+              className="w-full flex items-center justify-between px-6 py-4 transition-colors hover:bg-gray-50 text-left"
+              style={{ borderBottom: showAgreement ? `1px solid ${LM.border}` : "none" }}
             >
               <div className="flex items-center gap-3">
-                <FileText className="w-4 h-4 text-indigo-400" />
-                <span className="text-[10px] font-mono text-[#AABDCF] uppercase tracking-[0.2em]">Full Agreement Preview</span>
+                <FileText size={15} strokeWidth={1.5} style={{ color: LM.blue }} />
+                <span style={{ color: LM.navy, fontSize: "13.5px", fontWeight: 600 }}>
+                  Full Agreement Preview
+                </span>
+                <span style={{ color: LM.navyLight, fontSize: "11px" }}>
+                  — Contingency Contract Template ( Wisconsin DATCP )
+                </span>
               </div>
-              <ChevronDown className={cn("w-4 h-4 text-[#7090B0] transition-transform duration-300", showAgreement && "rotate-180")} />
             </button>
             <AnimatePresence>
               {showAgreement && (
@@ -307,14 +425,14 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                   className="overflow-hidden"
                 >
-                  <div className="max-h-[400px] overflow-y-auto px-8 pb-8 pt-4 space-y-8 text-left border-t border-white/[0.06]">
-                    <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest">
+                  <div className="max-h-[300px] overflow-y-auto px-6 pb-6 pt-4 space-y-6 text-left border-t border-gray-100" style={{ scrollbarWidth: "thin" }}>
+                    <p style={{ color: LM.navyLight, fontSize: "10px", lineHeight: 1.5 }} className="font-mono uppercase tracking-wider">
                       This is a preview of the agreement you are authorizing. The executed copy will be emailed upon signature.
                     </p>
                     {AGREEMENT_SECTIONS.map((section, i) => (
-                      <div key={i} className="space-y-2">
-                        <p className="text-xs font-mono font-bold text-[#AABDCF] uppercase tracking-[0.15em]">{section.heading}</p>
-                        <p className="text-sm text-[#7090B0] font-light leading-relaxed">{section.body}</p>
+                      <div key={i} className="space-y-1.5">
+                        <p style={{ color: LM.navy, fontSize: "12px", fontWeight: 700 }} className="font-mono uppercase tracking-wider">{section.heading}</p>
+                        <p style={{ color: LM.navyMid, fontSize: "12.5px", lineHeight: 1.6 }} className="font-light">{section.body}</p>
                       </div>
                     ))}
                   </div>
@@ -325,34 +443,37 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
         </div>
       </div>
 
-      <div className="absolute bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30 bg-gradient-to-t from-[#060606] via-[#060606]/95 to-transparent pointer-events-none">
-        <div className="relative max-w-5xl mx-auto flex flex-col gap-4 pointer-events-auto">
-          <div className="flex items-center justify-between gap-3 md:gap-6">
-            <button onClick={onBack} className="group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all duration-300 shrink-0">
-              <ArrowLeft className="w-4 h-4 text-[#DDE5F5] group-hover:-translate-x-1 transition-transform" />
-              <span className="text-sm font-display font-medium text-[#E8EDF8]">Back</span>
+      <div 
+        className="absolute bottom-0 inset-x-0 px-8 pb-8 pt-16 z-20"
+        style={{ background: `linear-gradient(to top, ${LM.pageBg} 70%, transparent)` }}
+      >
+        <div className="max-w-4xl mx-auto space-y-3">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={onBack} 
+              className="flex items-center justify-center gap-2.5 px-6 h-[52px] rounded-[12px] text-[14px] font-medium shrink-0 transition-opacity hover:opacity-75"
+              style={{ background: LM.pageBg, border: `1px solid ${LM.borderMid}`, color: LM.navy }}
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back</span>
             </button>
-            <StarButton 
+            <button 
               onClick={handleContinue} 
               disabled={isSubmitting}
-              lightColor="#FAFAFA" 
-              backgroundColor="#060606" 
-              className="flex-1 h-14 md:h-20 rounded-full shadow-[0_20px_60px_rgba(99,102,241,0.2)] active:scale-95 transition-all group"
+              className="flex-1 flex items-center justify-center gap-3 h-[52px] rounded-[12px] text-[15px] font-semibold text-white transition-all active:scale-[0.99] disabled:opacity-50"
+              style={{ background: LM.blue, boxShadow: "0 4px 18px rgba(29,85,196,0.28)" }}
             >
-              <div className="flex items-center justify-center gap-4">
-                <span className="text-sm md:text-xl font-display font-semibold tracking-tight">
-                  {isSubmitting ? "Authorizing..." : "Continue to Authorization"}
-                </span>
-                {!isSubmitting && <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-indigo-400 group-hover:translate-x-1 transition-transform shrink-0" />}
-              </div>
-            </StarButton>
+              <span>{isSubmitting ? "Authorizing..." : "Continue to Authorization"}</span>
+              {!isSubmitting && <ChevronRight size={17} strokeWidth={2} />}
+            </button>
           </div>
           <button
             onClick={handleSendForReview}
             disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2.5 h-12 md:h-14 rounded-full text-sm font-medium transition-all bg-[#1D55C4]/10 border border-[#1D55C4]/30 text-indigo-300 hover:bg-[#1D55C4]/20 disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2.5 h-[44px] rounded-[10px] text-[14px] font-medium transition-all disabled:opacity-50 hover:opacity-75"
+            style={{ color: LM.blue, border: `1px solid ${LM.blueBorder}`, background: LM.blueLight }}
           >
-            <Send className="w-4 h-4 text-indigo-400" />
+            <Send className="w-4 h-4" />
             {isSubmitting ? "Sending..." : "Send Agreement for Review"}
           </button>
         </div>
