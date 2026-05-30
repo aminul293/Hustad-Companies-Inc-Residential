@@ -217,8 +217,7 @@ interface RepPrepProps {
 }
 
 const OUTCOME_OPTIONS: { value: OutcomeType; label: string; description: string; icon: any; color: string }[] = [
-  { value: "no_damage", label: "No Damage", description: "Property integrity maintained.", icon: ShieldCheck, color: "emerald" },
-  { value: "monitor_only", label: "Monitor Only", description: "Proactive baseline tracking.", icon: Eye, color: "sky" },
+  { value: "no_damage", label: "No Damage / Monitor Only", description: "Property integrity maintained or proactive baseline tracking.", icon: ShieldCheck, color: "emerald" },
   { value: "repair_only", label: "Repair Only", description: "Targeted restoration path.", icon: Wrench, color: "indigo" },
   { value: "claim_review_candidate", label: "Claim Review", description: "Storm damage documentation.", icon: Zap, color: "amber" },
   { value: "full_restoration_candidate", label: "Full Restoration", description: "Complete home restoration.", icon: LayoutGrid, color: "rose" },
@@ -288,7 +287,7 @@ const TREE_RESULTS: Record<string, { value: OutcomeType; label: string; reason: 
     reason: "Shingle damage is present and storm-related but localized — a targeted repair is the right path.",
   },
   result_monitor_only: {
-    value: "monitor_only",
+    value: "no_damage",
     label: "Monitor Only",
     reason: "Wear observed is consistent with normal aging, not storm impact — set a baseline and monitor over time.",
   },
@@ -1047,7 +1046,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {OUTCOME_OPTIONS.map((opt) => {
-                  const isSelected = outcomeType === opt.value;
+                  const isSelected = outcomeType === opt.value || (opt.value === "no_damage" && outcomeType === "monitor_only");
                   return (
                     <button
                       key={opt.value}
