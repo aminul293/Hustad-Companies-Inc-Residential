@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "@/components/SessionProvider";
 import { navigateTo } from "@/lib/session";
 import { P00RepLaunch } from "@/components/screens/P00RepLaunch";
@@ -33,6 +34,36 @@ import {
   B15CarrierReviewAgreement,
 } from "@/components/screens/B16_B19";
 
+const SCREEN_ORDER = [
+  "P00_rep_launch",
+  "A01_welcome",
+  "A02_why_inspection",
+  "A03_what_we_inspect",
+  "A04_how_findings_sorted",
+  "A05_insurance_clarity",
+  "A06_warranty_impact",
+  "A07_why_hustad",
+  "A08_what_you_receive",
+  "A09_buyer_priorities",
+  "A11_innovation",
+  "A10_inspection_hold",
+  "B11_rep_findings_prep",
+  "B12_findings_summary",
+  "B13_recommended_path",
+  "B14_path_decision",
+  "B15_urgent_protection",
+  "B16_system_options",
+  "B17_agreement_summary",
+  "B18_signature_deferral",
+  "B19_next_steps",
+];
+
+const slideVariants = {
+  enter: (dir: number) => ({ opacity: 0, x: dir * 24 }),
+  center: { opacity: 1, x: 0 },
+  exit: (dir: number) => ({ opacity: 0, x: dir * -24 }),
+};
+
 export function ScreenRouter() {
   const {
     session, updateSession, goNext, goBack, jumpTo,
@@ -45,6 +76,16 @@ export function ScreenRouter() {
     onNext: goNext,
     onBack: goBack,
   };
+
+  const prevScreenRef = useRef(session.currentScreen);
+  const directionRef = useRef(1);
+
+  if (prevScreenRef.current !== session.currentScreen) {
+    const prevIdx = SCREEN_ORDER.indexOf(prevScreenRef.current);
+    const nextIdx = SCREEN_ORDER.indexOf(session.currentScreen);
+    directionRef.current = nextIdx >= prevIdx ? 1 : -1;
+    prevScreenRef.current = session.currentScreen;
+  }
 
   // SYNC URL WITH SCREEN (Enables Browser Back/Forward)
   useEffect(() => {
@@ -63,9 +104,11 @@ export function ScreenRouter() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, [jumpTo]);
 
+  let content: JSX.Element | null = null;
+
   switch (session.currentScreen) {
     case "P00_rep_launch":
-      return (
+      content = (
         <P00RepLaunch
           session={session}
           onUpdate={updateSession}
@@ -76,9 +119,10 @@ export function ScreenRouter() {
           onResetSession={resetSession}
         />
       );
+      break;
 
     case "A01_welcome":
-      return (
+      content = (
         <A01Welcome
           session={session}
           onUpdate={updateSession}
@@ -87,40 +131,49 @@ export function ScreenRouter() {
           onSkip={() => jumpTo("A10_inspection_hold")}
         />
       );
+      break;
 
     case "A02_why_inspection":
-      return <A02WhyInspection {...props} />;
+      content = <A02WhyInspection {...props} />;
+      break;
 
     case "A03_what_we_inspect":
-      return <A03WhatWeInspect {...props} />;
+      content = <A03WhatWeInspect {...props} />;
+      break;
 
     case "A04_how_findings_sorted":
-      return <A04HowFindingsSorted {...props} />;
+      content = <A04HowFindingsSorted {...props} />;
+      break;
 
     case "A05_insurance_clarity":
-      return <A05InsuranceClarity {...props} />;
+      content = <A05InsuranceClarity {...props} />;
+      break;
 
     case "A06_warranty_impact":
-      return <A06WarrantyImpact {...props} />;
+      content = <A06WarrantyImpact {...props} />;
+      break;
 
     case "A07_why_hustad":
-      return <A07WhyHustad {...props} />;
+      content = <A07WhyHustad {...props} />;
+      break;
 
     case "A08_what_you_receive":
-      return <A08WhatYouReceive {...props} />;
+      content = <A08WhatYouReceive {...props} />;
+      break;
 
     case "A09_buyer_priorities":
-      return <A09BuyerPriorities {...props} />;
+      content = <A09BuyerPriorities {...props} />;
+      break;
 
     case "A11_innovation":
-      return <A11Innovation {...props} />;
+      content = <A11Innovation {...props} />;
+      break;
 
     case "A10_inspection_hold":
-      return (
+      content = (
         <A10InspectionHold
           session={session}
           onRepReturn={() => {
-            // Set rep_review_pending status as the rep takes over for findings prep
             updateSession(navigateTo(
               { ...session, sessionStatus: "rep_review_pending" },
               "B11_rep_findings_prep"
@@ -129,9 +182,10 @@ export function ScreenRouter() {
           onBack={goBack}
         />
       );
+      break;
 
     case "B11_rep_findings_prep":
-      return (
+      content = (
         <B11RepFindingsPrep
           session={session}
           onUpdate={updateSession}
@@ -139,26 +193,32 @@ export function ScreenRouter() {
           onBack={goBack}
         />
       );
+      break;
 
     case "B12_findings_summary":
-      return (
+      content = (
         <B12FindingsSummary
           {...props}
           onRepJump={repJumpTo}
         />
       );
+      break;
 
     case "B13_recommended_path":
-      return <B13RecommendedPath {...props} />;
+      content = <B13RecommendedPath {...props} />;
+      break;
 
     case "B14_path_decision":
-      return <B14PathDecision {...props} />;
+      content = <B14PathDecision {...props} />;
+      break;
 
     case "B15_urgent_protection":
-      return <B15UrgentProtection {...props} />;
+      content = <B15UrgentProtection {...props} />;
+      break;
 
     case "B16_system_options":
-      return <B16SystemOptions {...props} />;
+      content = <B16SystemOptions {...props} />;
+      break;
 
     case "B17_agreement_summary": {
       const isCarrierReview =
@@ -166,16 +226,18 @@ export function ScreenRouter() {
         session.findings.outcomeType === "full_restoration_candidate" ||
         session.pathData.selectedPath === "claim_review" ||
         session.pathData.selectedPath === "full_restoration";
-      return isCarrierReview
+      content = isCarrierReview
         ? <B15CarrierReviewAgreement {...props} />
         : <B17AgreementSummary {...props} />;
+      break;
     }
 
     case "B18_signature_deferral":
-      return <B18SignatureDeferral {...props} />;
+      content = <B18SignatureDeferral {...props} />;
+      break;
 
     case "B19_next_steps":
-      return (
+      content = (
         <B19NextSteps
           session={session}
           onUpdate={updateSession}
@@ -184,9 +246,10 @@ export function ScreenRouter() {
           onFinish={resetSession}
         />
       );
+      break;
 
     default:
-      return (
+      content = (
         <div className="screen-container items-center justify-center">
           <p className="font-mono text-hustad-navy/40">Unknown screen</p>
           <button className="btn-primary mt-4" onClick={resetSession}>
@@ -195,4 +258,23 @@ export function ScreenRouter() {
         </div>
       );
   }
+
+  return (
+    <div className="relative w-full h-full overflow-hidden">
+      <AnimatePresence mode="sync" initial={false} custom={directionRef.current}>
+        <motion.div
+          key={session.currentScreen}
+          custom={directionRef.current}
+          variants={slideVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="absolute inset-0"
+        >
+          {content}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
 }

@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-30T00:00:00Z",
+  "title": "Design System: Hustad Residential Tablet Platform",
+  "extensions": {
+    "colorMeta": {
+      "void-dark":      { "role": "neutral",   "displayName": "Void Dark",      "canonical": "oklch(0.07 0.02 245)", "tonalRamp": ["#020408","#06090F","#0a1020","#0d1525","#141f33","#1e3050","#2d4060","#567090"] },
+      "navy-surface":   { "role": "neutral",   "displayName": "Navy Surface",   "canonical": "oklch(0.13 0.04 245)", "tonalRamp": ["#060B15","#0a1020","#0d1525","#141f33","#1e3050","#2d4060","#3d5278","#567090"] },
+      "navy-deep":      { "role": "neutral",   "displayName": "Navy Deep",      "canonical": "oklch(0.14 0.05 245)", "tonalRamp": ["#060B15","#0d1525","#0f1d35","#1a2d4f","#263f6a","#345590","#4a73b8","#9fb8e0"] },
+      "blue-action":    { "role": "primary",   "displayName": "Blue Action",    "canonical": "oklch(0.43 0.18 250)", "tonalRamp": ["#0c2c6e","#1040a0","#1552c0","#2563ba","#3b78d0","#5e9be0","#8bbef0","#c2d9f7"] },
+      "teal-action":    { "role": "secondary", "displayName": "Teal Action",    "canonical": "oklch(0.53 0.11 192)", "tonalRamp": ["#0d3830","#114d43","#1a6358","#22796e","#2a8a82","#3da49a","#65c4bc","#a8e0da"] },
+      "amber-signal":   { "role": "tertiary",  "displayName": "Amber Signal",   "canonical": "oklch(0.62 0.14 65)",  "tonalRamp": ["#4a2c00","#6a3e00","#8c5500","#a86e1a","#c0892e","#c8923a","#d8ac6a","#ecd0a4"] },
+      "ink-primary":    { "role": "neutral",   "displayName": "Ink Primary",    "canonical": "oklch(0.93 0.01 245)", "tonalRamp": ["#1e3050","#2D4060","#567090","#8BA5C5","#C0CEDF","#E8EDF8","#F3F4F6","#FFFFFF"] },
+      "sky-highlight":  { "role": "primary",   "displayName": "Sky Highlight",  "canonical": "oklch(0.62 0.12 250)", "tonalRamp": ["#1040a0","#1a52b8","#2563ba","#3a74c8","#4a8fd4","#6aaee0","#96caf0","#c8e5ff"] }
+    },
+    "typographyMeta": {
+      "display":  { "displayName": "Display",  "purpose": "Screen titles — one per screen, top of content area. Playfair Display earns trust on sight." },
+      "headline": { "displayName": "Headline", "purpose": "Section headings within a screen. Used sparingly; one focused screen rarely needs one." },
+      "body":     { "displayName": "Body",     "purpose": "Descriptive copy, compliance text, descriptions. 65–75ch on prose screens." },
+      "label":    { "displayName": "Label",    "purpose": "Form labels, list labels, button text. Sentence case — never all-caps." },
+      "mono":     { "displayName": "Mono",     "purpose": "Phase badges (PHASE A / PHASE B), status codes, reference IDs." }
+    },
+    "shadows": [
+      { "name": "card-ambient",  "value": "0 2px 16px rgba(15,29,53,0.10), 0 1px 3px rgba(15,29,53,0.06)", "purpose": "Default card lift. Never decorative — only with a 1px navy-border companion." },
+      { "name": "card-hover",    "value": "0 8px 32px rgba(15,29,53,0.16), 0 2px 8px rgba(15,29,53,0.10)", "purpose": "Interactive card hover state. Communicates selectability." },
+      { "name": "elevated",      "value": "0 20px 60px rgba(15,29,53,0.20), 0 4px 16px rgba(15,29,53,0.10)", "purpose": "Modal and popover elevation. Structural, not ambient." },
+      { "name": "focus-ring",    "value": "0 0 0 3px rgba(74,143,212,0.15)", "purpose": "Input and interactive element focus ring. Sky-blue tinted, low opacity." }
+    ],
+    "motion": [
+      { "name": "screen-enter",     "value": "opacity 0 → 1, translateY 12px → 0, 250ms ease-out", "purpose": "Screen transition on route change. The only page-level animation." },
+      { "name": "state-transition", "value": "all 150ms linear",                                    "purpose": "Button and interactive element state changes. Fast — users are in a task flow." },
+      { "name": "progress-fill",    "value": "all 500ms ease",                                      "purpose": "Progress bar fill — longer duration conveys meaningful advancement." }
+    ],
+    "breakpoints": [
+      { "name": "iPad Air portrait (primary)", "value": "820px", "purpose": "The only target viewport. No responsive design below this breakpoint in core screens." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button (Navy)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main forward-action button. Full-width, used for the primary progression action on each screen.",
+      "html": "<button class=\"ds-btn-primary\">Continue</button>",
+      "css": ".ds-btn-primary { display: flex; align-items: center; justify-content: center; width: 100%; padding: 16px 24px; background: #0f1d35; color: #E8EDF8; border: none; border-radius: 16px; font-family: 'DM Sans', system-ui, sans-serif; font-size: 1rem; font-weight: 500; letter-spacing: 0.01em; cursor: pointer; transition: all 150ms linear; } .ds-btn-primary:hover { background: #1a2d4f; } .ds-btn-primary:active { transform: scale(0.98); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(74,143,212,0.15); }"
+    },
+    {
+      "name": "Teal CTA Button",
+      "kind": "button",
+      "refersTo": "button-teal",
+      "description": "Primary submission / commitment action. Use when the action is a meaningful commitment (save, submit, confirm).",
+      "html": "<button class=\"ds-btn-teal\">Submit Inspection</button>",
+      "css": ".ds-btn-teal { display: flex; align-items: center; justify-content: center; width: 100%; padding: 16px 24px; background: #2a8a82; color: #ffffff; border: none; border-radius: 16px; font-family: 'DM Sans', system-ui, sans-serif; font-size: 1rem; font-weight: 500; letter-spacing: 0.01em; cursor: pointer; transition: all 150ms linear; } .ds-btn-teal:hover { background: #3aada3; } .ds-btn-teal:active { transform: scale(0.98); } .ds-btn-teal:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(42,138,130,0.25); }"
+    },
+    {
+      "name": "Amber Signature Button",
+      "kind": "button",
+      "refersTo": "button-amber",
+      "description": "Reserved for signature capture and agreement completion screens. The warm amber signals the weight of the action.",
+      "html": "<button class=\"ds-btn-amber\">Sign Agreement</button>",
+      "css": ".ds-btn-amber { display: flex; align-items: center; justify-content: center; width: 100%; padding: 16px 24px; background: #c8923a; color: #ffffff; border: none; border-radius: 16px; font-family: 'DM Sans', system-ui, sans-serif; font-size: 1rem; font-weight: 500; letter-spacing: 0.01em; cursor: pointer; transition: all 150ms linear; } .ds-btn-amber:hover { background: #e0a94a; } .ds-btn-amber:active { transform: scale(0.98); } .ds-btn-amber:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(200,146,58,0.25); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Back navigation and secondary choices. Transparent with a hairline border.",
+      "html": "<button class=\"ds-btn-secondary\">Back</button>",
+      "css": ".ds-btn-secondary { display: flex; align-items: center; justify-content: center; width: 100%; padding: 16px 24px; background: transparent; color: #E8EDF8; border: 1px solid #1e3050; border-radius: 16px; font-family: 'DM Sans', system-ui, sans-serif; font-size: 1rem; font-weight: 400; cursor: pointer; transition: all 150ms linear; } .ds-btn-secondary:hover { border-color: #2d4060; background: rgba(30,48,80,0.3); } .ds-btn-secondary:active { transform: scale(0.98); } .ds-btn-secondary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(74,143,212,0.15); }"
+    },
+    {
+      "name": "Content Card",
+      "kind": "card",
+      "refersTo": "card-surface",
+      "description": "Default content card. 1px navy border + ambient shadow + 16px radius.",
+      "html": "<div class=\"ds-card\"><p class=\"ds-card-label\">Job Address</p><p class=\"ds-card-value\">1234 Elm Street, Madison WI</p></div>",
+      "css": ".ds-card { background: #0d1525; border: 1px solid #1e3050; border-radius: 16px; padding: 20px; box-shadow: 0 2px 16px rgba(15,29,53,0.10), 0 1px 3px rgba(15,29,53,0.06); transition: box-shadow 150ms linear; } .ds-card:hover { box-shadow: 0 8px 32px rgba(15,29,53,0.16), 0 2px 8px rgba(15,29,53,0.10); } .ds-card-label { font-family: 'DM Sans', system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; color: #8BA5C5; margin: 0 0 4px 0; letter-spacing: 0.01em; } .ds-card-value { font-family: 'DM Sans', system-ui, sans-serif; font-size: 1rem; font-weight: 400; color: #F3F4F6; margin: 0; }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Form input — documentation fields. Navy-surface background with navy border.",
+      "html": "<div class=\"ds-field-wrapper\"><label class=\"ds-label\">Property Owner</label><input class=\"ds-input\" type=\"text\" placeholder=\"Enter full name\" /></div>",
+      "css": ".ds-field-wrapper { display: flex; flex-direction: column; gap: 6px; } .ds-label { font-family: 'DM Sans', system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; color: #E8EDF8; letter-spacing: 0.01em; } .ds-input { background: #0d1525; border: 1px solid #1e3050; border-radius: 12px; padding: 12px 16px; color: #E8EDF8; font-family: 'DM Sans', system-ui, sans-serif; font-size: 1rem; font-weight: 400; outline: none; transition: all 150ms linear; box-sizing: border-box; width: 100%; } .ds-input::placeholder { color: #567090; } .ds-input:focus { border-color: #2563ba; box-shadow: 0 0 0 3px rgba(74,143,212,0.15); } .ds-input:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Screen Footer (Glass Chrome)",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Persistent footer for navigation actions. The only glassmorphism element in the system — backdrop-blur over the dark content.",
+      "html": "<footer class=\"ds-screen-footer\"><button class=\"ds-btn-secondary ds-footer-btn\">Back</button><button class=\"ds-btn-teal ds-footer-btn\">Continue</button></footer>",
+      "css": ".ds-screen-footer { flex-shrink: 0; display: flex; gap: 12px; padding: 20px 32px; border-top: 1px solid #1e3050; background: color-mix(in srgb, #0d1525 80%, transparent); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); } .ds-footer-btn { flex: 1; }"
+    },
+    {
+      "name": "Phase Badge",
+      "kind": "chip",
+      "refersTo": null,
+      "description": "Screen phase indicator. DM Mono, uppercase, pill-shaped. Used in screen header to orient the rep in the flow.",
+      "html": "<span class=\"ds-phase-badge ds-phase-a\">Phase A</span>",
+      "css": ".ds-phase-badge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 9999px; font-family: 'DM Mono', monospace; font-size: 0.6875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; } .ds-phase-a { background: rgba(26,45,79,0.8); color: #8BA5C5; } .ds-phase-b { background: rgba(42,138,130,0.15); color: #3aada3; }"
+    },
+    {
+      "name": "Screen Title",
+      "kind": "custom",
+      "refersTo": "display",
+      "description": "Top-of-screen heading. Playfair Display — the rep's first visual anchor on each step.",
+      "html": "<div class=\"ds-screen-header\"><span class=\"ds-phase-badge ds-phase-a\">Phase A</span><h1 class=\"ds-screen-title\">Document the Damage</h1><p class=\"ds-screen-subtitle\">Photograph each affected area with the compliance checklist visible.</p></div>",
+      "css": ".ds-screen-header { display: flex; flex-direction: column; gap: 8px; } .ds-screen-title { margin: 0; font-family: 'Playfair Display', Georgia, serif; font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; color: #E8EDF8; text-wrap: balance; } .ds-screen-subtitle { margin: 0; font-family: 'DM Sans', system-ui, sans-serif; font-size: 1.0125rem; font-weight: 300; line-height: 1.5; color: #8BA5C5; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Field Intelligence Dossier",
+    "overview": "The Hustad Tablet Platform is a professional instrument, not a consumer app. It is a dark, precise, high-craft surface designed for field reps presenting documented storm damage findings to homeowners on an iPad Air in portrait orientation. The interface projects expert authority — the kind of tool that earns trust on sight, before the rep has said a word.\n\nThe palette is built around near-void blacks and layered dark navy surfaces, with Playfair Display headings that carry editorial weight against the dark. Teal punctuates primary actions; amber signals attention states; sky-blue carries interactive highlights and focus rings. Glassmorphism appears as purposeful chrome — frosted backdrop over dark surfaces for screen footers and elevated panels — never as decoration or identity.\n\nThis system explicitly rejects the startup dark-mode aesthetic, consumer insurance app friendliness, and generic enterprise field-service density. It should feel like the screen version of a forensic assessment brief — precise, weighted, unapologetic.",
+    "keyCharacteristics": [
+      "Near-void background (#06090F) with three distinct dark navy depth levels",
+      "Playfair Display for screen titles and presentation headings; DM Sans for all functional UI text",
+      "Glassmorphism is a purposeful architectural element for footer chrome and modals only",
+      "Teal (#2a8a82) as primary action accent; amber (#c8923a) as signature/completion signal",
+      "Fixed iPad Air portrait viewport — no fluid typography, no responsive breakpoints in the core flow"
+    ],
+    "rules": [
+      { "name": "The One Surface Rule",    "body": "The four dark navy surface colors (void/surface/elevated/subtle) are the only background fills for standard screens. No custom backgrounds on cards or sections.", "section": "colors" },
+      { "name": "The Two-Accent Rule",     "body": "Teal carries forward-commitment actions. Amber carries signature and completion moments. Blue-action carries focus and interactive affordance only. Nothing else carries accent color.", "section": "colors" },
+      { "name": "The Contrast Floor",      "body": "Body text must sustain ≥4.5:1 contrast on all surfaces. Ink-muted (#567090) is forbidden as body text color on any dark surface.", "section": "colors" },
+      { "name": "The Serif-Only Rule",     "body": "Playfair Display is for screen titles and section headings only. Buttons, labels, chips, form fields, and table data use DM Sans.", "section": "typography" },
+      { "name": "The Inter-Only Rule",     "body": "On CRM and pipeline data surfaces, use Inter with tabular figures. Playfair Display does not appear on data-dense screens.", "section": "typography" },
+      { "name": "The Fixed-Scale Rule",    "body": "All typography uses fixed rem values. Only .screen-title uses clamp(). No other type element uses fluid sizing.", "section": "typography" },
+      { "name": "The Glass Protocol",      "body": "Glassmorphism is permitted only on the screen footer (backdrop-blur-sm + 80% surface opacity) and modal overlays. Forbidden everywhere else.", "section": "elevation" },
+      { "name": "The Flat-By-Default Rule","body": "Cards at rest carry a 1px navy-border and card-ambient shadow. Do not pair a wide shadow (blur ≥16px) with a solid border at rest — that is the ghost-card pattern.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use Playfair Display for screen titles and section headings only.",
+      "Do use the four-layer dark surface system for all backgrounds.",
+      "Do keep teal for forward-commitment actions and amber for signature moments.",
+      "Do use the glass chrome pattern exclusively on the screen footer and modal overlays.",
+      "Do maintain ≥44px tap targets on every interactive element.",
+      "Do use Inter with tabular figures on RepCommandCenter, PipelineLeads, and CenterPointJobs.",
+      "Do add transition: all 150ms and active:scale-[0.98] on all button elements.",
+      "Do write screen titles with text-wrap: balance for even line breaks."
+    ],
+    "donts": [
+      "Don't use glassmorphism on cards, list items, section containers, or scrolling content elements.",
+      "Don't pair a border: 1px solid with a wide box-shadow (blur ≥16px) on the same element at rest.",
+      "Don't use violet, purple, or neon accent colors — the palette is navy, teal, and amber only.",
+      "Don't use gradient text (background-clip: text). Emphasis is through weight and size contrast.",
+      "Don't use Playfair Display in buttons, labels, chips, table cells, or form controls.",
+      "Don't add fluid clamp() typography beyond .screen-title.",
+      "Don't use border-left greater than 1px as a colored side accent.",
+      "Don't make the interface look like a startup AI tool — no gradient mesh backgrounds, no particle effects.",
+      "Don't use generic enterprise mobile patterns (large icon-grid touch targets, white-background card grids).",
+      "Don't introduce colors outside the defined palette for new screens."
+    ]
+  }
+}

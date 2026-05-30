@@ -46,7 +46,7 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
         className="absolute top-0 inset-x-0 h-[55%] opacity-[0.07]"
         style={{ backgroundImage: "url('/images/gradient-mesh-hero.svg')", backgroundSize: "cover", backgroundPosition: "center top" }}
       />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(99,102,241,0.04),transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(37,99,186,0.04),transparent_60%)]" />
       <motion.div
         initial={{ opacity: 0, x: -300 }}
         animate={{ opacity: 0.1, x: 0 }}
@@ -61,7 +61,7 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
   const brandingAnchor = (
     <div className="absolute top-8 left-8 z-20 flex flex-col items-start pointer-events-none">
       <div className="flex items-baseline gap-2.5">
-        <span className="font-display font-bold text-[var(--tx1)] text-2xl tracking-[0.1em]">HUSTAD</span>
+        <span className="font-inter font-bold text-[var(--tx1)] text-2xl tracking-[0.1em]">HUSTAD</span>
         <span className="text-[10px] font-mono text-[var(--tx3)] uppercase tracking-[0.3em] pt-0.5">Madison Residential</span>
       </div>
       <div className="mt-2 h-px w-12 bg-gradient-to-r from-[var(--tx3)]/20 to-transparent" />
@@ -72,7 +72,7 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
     <>
       <div className="space-y-8 relative z-10">
         <div className="flex items-start gap-5 group/item">
-          <div className="w-11 h-11 rounded-full bg-[var(--bg-subtle)] flex items-center justify-center text-hustad-teal-light shrink-0 border border-[var(--border-color)] shadow-inner mt-0.5">
+          <div className="w-11 h-11 rounded-2xl bg-[var(--bg-subtle)] flex items-center justify-center text-hustad-teal-light shrink-0 border border-[var(--border-color)] shadow-inner mt-0.5">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
           </div>
           <div>
@@ -84,7 +84,7 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
         </div>
         <div className="h-px w-full bg-gradient-to-r from-transparent via-[var(--border-color)] to-transparent" />
         <div className="flex items-start gap-5 group/item">
-          <div className="w-11 h-11 rounded-full bg-[var(--bg-subtle)] flex items-center justify-center text-hustad-amber shrink-0 border border-[var(--border-color)] shadow-inner mt-0.5">
+          <div className="w-11 h-11 rounded-2xl bg-[var(--bg-subtle)] flex items-center justify-center text-hustad-amber shrink-0 border border-[var(--border-color)] shadow-inner mt-0.5">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
           </div>
           <div>
@@ -101,15 +101,15 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
           onClick={onNext}
           lightColor={isHighContrast ? "#000000" : "#FAFAFA"}
           backgroundColor={isHighContrast ? "#000000" : "#060606"}
-          className={`w-full max-w-md h-16 rounded-full active:scale-95 transition-all group btn-primary ${
-            isHighContrast 
-              ? "bg-black text-white border-2 border-white" 
-              : "text-white shadow-[0_20px_60px_rgba(99,102,241,0.2)]"
+          className={`w-full max-w-md h-16 rounded-2xl active:scale-95 transition-all group btn-primary ${
+            isHighContrast
+              ? "bg-black text-white border-2 border-white"
+              : "text-white"
           }`}
         >
           <div className="flex items-center justify-center gap-3">
-            <span className="text-lg font-display font-semibold tracking-tight">Start My Brief Review</span>
-            <ArrowRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
+            <span className="text-lg font-inter font-semibold tracking-tight">Start My Brief Review</span>
+            <ArrowRight className="w-5 h-5 text-[#4a8fd4] group-hover:translate-x-1 transition-transform" />
           </div>
         </StarButton>
         <button
@@ -132,7 +132,7 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
   // ── Mobile portrait: flat scrollable layout, no 3D scroll animation ──
   if (isMobile) {
     return (
-      <div className="relative flex flex-col min-h-screen w-full bg-[var(--bg-base)] selection:bg-indigo-500/30 selection:text-[var(--tx1)]">
+      <div className="relative flex flex-col min-h-screen w-full bg-[var(--bg-base)] selection:bg-[#2563ba]/30 selection:text-[var(--tx1)]">
         {backgroundAssets}
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-[0.02] invert pointer-events-none" />
         {brandingAnchor}
@@ -140,11 +140,11 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
         <div className="relative z-10 flex flex-col flex-1 px-5 pt-24 pb-10 overflow-y-auto animate-in fade-in duration-700 min-h-0">
           {/* Title */}
           <div className="text-center space-y-4 mb-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--bg-subtle)] border border-[var(--border-color)] shadow-sm mx-auto">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-color)] shadow-sm mx-auto">
               <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
               <p className="text-[10px] font-mono text-[var(--tx3)] uppercase tracking-[0.2em] pt-0.5">Client Portal Active</p>
             </div>
-            <h1 className="font-display font-medium text-[var(--tx1)] text-3xl leading-[1.15] tracking-tight px-2">
+            <h1 className="font-inter font-medium text-[var(--tx1)] text-3xl leading-[1.15] tracking-tight px-2">
               {name ? (
                 <><span className="text-[var(--tx3)]">Hello,</span> {name.split(" ")[0]}.<br /></>
               ) : null}
@@ -158,7 +158,7 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
           </div>
 
           {/* Card */}
-          <div className="relative bg-[var(--bg-surface)] backdrop-blur-3xl p-6 border border-[var(--border-color)] flex flex-col gap-0 overflow-hidden rounded-[24px]">
+          <div className="relative bg-[var(--bg-surface)] p-6 border border-[var(--border-color)] flex flex-col gap-0 overflow-hidden rounded-3xl">
             <div className="absolute top-0 right-0 w-48 h-48 bg-hustad-teal-light/5 rounded-full blur-[80px] pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-hustad-blue/10 rounded-full blur-[80px] pointer-events-none" />
             {cardContent}
@@ -170,7 +170,7 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
 
   // ── Tablet / Desktop: original ContainerScroll 3D animation ──
   return (
-    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[var(--bg-base)] selection:bg-indigo-500/30 selection:text-[var(--tx1)]">
+    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[var(--bg-base)] selection:bg-[#2563ba]/30 selection:text-[var(--tx1)]">
       {backgroundAssets}
       <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-[0.02] invert pointer-events-none" />
       {brandingAnchor}
@@ -181,11 +181,11 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
         <ContainerScroll
           titleComponent={
             <div className="text-center space-y-8 mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--bg-subtle)] border border-[var(--border-color)] shadow-sm mx-auto">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-color)] shadow-sm mx-auto">
                 <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
                 <p className="text-[11px] font-mono text-[var(--tx3)] uppercase tracking-[0.2em] pt-0.5">Client Portal Active</p>
               </div>
-              <h1 className="font-display font-medium text-[var(--tx1)] text-5xl md:text-8xl leading-[1.1] tracking-tight max-w-6xl mx-auto">
+              <h1 className="font-inter font-medium text-[var(--tx1)] text-5xl md:text-8xl leading-[1.1] tracking-tight max-w-6xl mx-auto">
                 {name ? (
                   <><span className="text-[var(--tx3)]">Hello,</span> {name.split(" ")[0]}.<br /></>
                 ) : null}
@@ -201,12 +201,12 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
             </div>
           }
         >
-          <div className="relative h-full bg-[var(--bg-surface)] backdrop-blur-3xl p-8 md:p-12 border border-[var(--border-color)] flex flex-col justify-between overflow-hidden rounded-[30px]">
+          <div className="relative h-full bg-[var(--bg-surface)] p-8 md:p-12 border border-[var(--border-color)] flex flex-col justify-between overflow-hidden rounded-3xl">
             <div className="absolute top-0 right-0 w-64 h-64 bg-hustad-teal-light/5 rounded-full blur-[100px] pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-hustad-blue/10 rounded-full blur-[100px] pointer-events-none" />
             <div className="space-y-10 relative z-10">
               <div className="flex items-start gap-6 group/item transition-transform duration-300 hover:translate-x-1">
-                <div className="w-12 h-12 rounded-full bg-[var(--bg-subtle)] flex items-center justify-center text-hustad-teal-light shrink-0 border border-[var(--border-color)] shadow-inner mt-0.5">
+                <div className="w-12 h-12 rounded-2xl bg-[var(--bg-subtle)] flex items-center justify-center text-hustad-teal-light shrink-0 border border-[var(--border-color)] shadow-inner mt-0.5">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
                 </div>
                 <div>
@@ -218,7 +218,7 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
               </div>
               <div className="h-px w-full bg-gradient-to-r from-transparent via-[var(--border-color)] to-transparent" />
               <div className="flex items-start gap-6 group/item transition-transform duration-300 hover:translate-x-1">
-                <div className="w-12 h-12 rounded-full bg-[var(--bg-subtle)] flex items-center justify-center text-hustad-amber shrink-0 border border-[var(--border-color)] shadow-inner mt-0.5">
+                <div className="w-12 h-12 rounded-2xl bg-[var(--bg-subtle)] flex items-center justify-center text-hustad-amber shrink-0 border border-[var(--border-color)] shadow-inner mt-0.5">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
                 </div>
                 <div>
@@ -234,15 +234,15 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
                 onClick={onNext}
                 lightColor={isHighContrast ? "#000000" : "#FAFAFA"}
                 backgroundColor={isHighContrast ? "#000000" : "#060606"}
-                className={`w-full max-w-md h-20 rounded-full active:scale-95 transition-all group btn-primary ${
-                  isHighContrast 
-                    ? "bg-black text-white border-2 border-white" 
-                    : "text-white shadow-[0_20px_60px_rgba(99,102,241,0.2)]"
+                className={`w-full max-w-md h-20 rounded-2xl active:scale-95 transition-all group btn-primary ${
+                  isHighContrast
+                    ? "bg-black text-white border-2 border-white"
+                    : "text-white"
                 }`}
               >
                 <div className="flex items-center justify-center gap-4">
-                  <span className="text-xl font-display font-semibold tracking-tight">Start My Brief Review</span>
-                  <ArrowRight className="w-6 h-6 text-indigo-400 group-hover:translate-x-1 transition-transform" />
+                  <span className="text-xl font-inter font-semibold tracking-tight">Start My Brief Review</span>
+                  <ArrowRight className="w-6 h-6 text-[#4a8fd4] group-hover:translate-x-1 transition-transform" />
                 </div>
               </StarButton>
               <button

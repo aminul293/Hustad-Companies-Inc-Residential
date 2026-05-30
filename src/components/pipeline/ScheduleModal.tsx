@@ -19,9 +19,6 @@ interface Props {
   onClose: () => void;
 }
 
-const addDaysLocal = (days: number) =>
-  new Date(Date.now() + days * 86400000).toISOString().split("T")[0];
-
 export function ScheduleModal({
   open, leadName, schedDate, schedTime, schedDuration,
   clashWarning, scheduling, onDateChange, onTimeChange,
@@ -44,13 +41,13 @@ export function ScheduleModal({
         >
           <motion.div initial={{ opacity: 0, scale: 0.96, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 12 }} transition={{ type: "spring", damping: 28, stiffness: 320 }}
-            className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 w-full max-w-md shadow-2xl"
+            className="bg-[#0d0d0d] border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl"
           >
             <div className="flex items-start justify-between mb-7">
               <div>
                 <div className="flex items-center gap-2.5 mb-1">
-                  <CalendarDays className="w-5 h-5 text-emerald-400" />
-                  <h3 className="text-xl font-display font-medium">Schedule Inspection</h3>
+                  <CalendarDays className="w-5 h-5 text-[#2a8a82]" />
+                  <h3 className="text-xl font-inter font-medium">Schedule Inspection</h3>
                 </div>
                 <p className="text-sm text-[#4D678A] font-light">{leadName}</p>
               </div>
@@ -63,7 +60,7 @@ export function ScheduleModal({
               <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2">Date</label>
               <input type="date" value={schedDate} min={new Date().toISOString().split("T")[0]}
                 onChange={e => onDateChange(e.target.value)}
-                className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-[#E8EDF8] text-sm focus:outline-none focus:border-indigo-500/50 [color-scheme:dark]"
+                className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-[#E8EDF8] text-sm focus:outline-none focus:border-[#2563ba]/50 [color-scheme:dark]"
               />
             </div>
 
@@ -74,7 +71,7 @@ export function ScheduleModal({
                   <button key={slot.value} onClick={() => onTimeChange(slot.value)}
                     className={cn("py-2.5 rounded-xl text-xs font-medium transition-all",
                       schedTime === slot.value
-                        ? "bg-indigo-500 text-[#E8EDF8] shadow-lg shadow-indigo-500/20"
+                        ? "bg-[#2563ba] text-white"
                         : "bg-white/[0.04] text-[#4D678A] hover:bg-white/[0.08] hover:text-[#AABDCF]"
                     )}>{slot.label}</button>
                 ))}
@@ -88,7 +85,7 @@ export function ScheduleModal({
                   <button key={dur.value} onClick={() => onDurationChange(dur.value)}
                     className={cn("flex-1 py-2.5 rounded-xl text-xs font-medium transition-all",
                       schedDuration === dur.value
-                        ? "bg-emerald-500/20 border border-emerald-500/40 text-emerald-300"
+                        ? "bg-[#2a8a82]/20 border border-[#2a8a82]/40 text-[#3aada3]"
                         : "bg-white/[0.04] text-[#3F5878] hover:bg-white/[0.07] hover:text-[#8BA5C5]"
                     )}>{dur.label}</button>
                 ))}
@@ -97,10 +94,10 @@ export function ScheduleModal({
 
             {schedDate && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                className="flex items-center gap-3 bg-indigo-500/[0.08] border border-indigo-500/15 rounded-2xl px-4 py-3 mb-4"
+                className="flex items-center gap-3 bg-[#2563ba]/[0.08] border border-[#2563ba]/15 rounded-2xl px-4 py-3 mb-4"
               >
-                <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
-                <p className="text-sm text-indigo-300 font-medium">{summary()}</p>
+                <CheckCircle2 className="w-4 h-4 text-[#4a8fd4] shrink-0" />
+                <p className="text-sm text-[#4a8fd4] font-medium">{summary()}</p>
               </motion.div>
             )}
 
@@ -126,10 +123,10 @@ export function ScheduleModal({
                 Cancel
               </button>
               <button onClick={() => onConfirm(false)} disabled={!schedDate || scheduling}
-                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-sm font-medium"
+                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#2a8a82]/20 border border-[#2a8a82]/30 text-[#3aada3] hover:bg-[#2a8a82]/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-sm font-medium"
               >
                 {scheduling
-                  ? <><div className="w-3.5 h-3.5 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" /> Checking…</>
+                  ? <><div className="w-3.5 h-3.5 border-2 border-[#2a8a82]/30 border-t-[#3aada3] rounded-full animate-spin" /> Checking…</>
                   : <>Confirm Schedule <ChevronRight className="w-4 h-4" /></>}
               </button>
             </div>

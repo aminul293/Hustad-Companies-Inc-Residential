@@ -59,10 +59,10 @@ export function PipelineLeadCard({
       animate={{ opacity: removing ? 0.35 : 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.94 }}
       transition={{ duration: 0.22 }}
-      className="bg-[#0b0b0b] border border-white/[0.07] rounded-[36px] hover:border-white/[0.14] transition-all duration-300 flex flex-col"
+      className="bg-[#0b0b0b] border border-white/[0.07] rounded-2xl hover:border-white/[0.14] transition-all duration-300 flex flex-col"
     >
       {/* Progress bar */}
-      <div className="h-[3px] bg-white/[0.04] shrink-0 rounded-t-[32px] overflow-hidden mx-[4px] mt-[1px]">
+      <div className="h-[3px] bg-white/[0.04] shrink-0 rounded-t-2xl overflow-hidden mx-[4px] mt-[1px]">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${((stageIdx + 1) / 5) * 100}%` }}
@@ -106,7 +106,7 @@ export function PipelineLeadCard({
 
         {/* Status badge row */}
         <div className="flex items-center justify-between mb-5">
-          <div className={cn("flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-[9px] font-mono uppercase tracking-widest", cfg.color)}>
+          <div className={cn("flex items-center gap-2 px-3.5 py-1.5 rounded-lg border text-[9px] font-mono uppercase tracking-widest", cfg.color)}>
             <StatusIcon className="w-3 h-3" />
             {cfg.label}
           </div>
@@ -121,7 +121,7 @@ export function PipelineLeadCard({
 
         {/* Property info */}
         <div className="mb-6">
-          <h3 className="text-[1.4rem] font-display font-medium text-[#E8EDF8] tracking-tight leading-tight mb-2">
+          <h3 className="text-[1.4rem] font-inter font-medium text-[#E8EDF8] tracking-tight leading-tight mb-2">
             {lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name}
           </h3>
           <div className="flex items-center gap-3 mb-1.5">
@@ -157,7 +157,7 @@ export function PipelineLeadCard({
           {em ? (
             <div className="flex items-center gap-2 mt-1">
               <button onClick={e => { e.stopPropagation(); onDraftEmail(lead); }}
-                className="flex items-center gap-1.5 text-[11px] text-indigo-400 hover:text-indigo-300 transition-colors font-medium">
+                className="flex items-center gap-1.5 text-[11px] text-[#2563ba] hover:text-[#4a8fd4] transition-colors font-medium">
                 <Mail className="w-3 h-3 shrink-0" /><span className="truncate">{em}</span>
               </button>
               <button onClick={e => { e.stopPropagation(); onEditEmail(lead); }} className="text-[#567090] hover:text-[#7090B0] transition-colors">
@@ -166,7 +166,7 @@ export function PipelineLeadCard({
             </div>
           ) : (
             <button onClick={e => { e.stopPropagation(); onEditEmail(lead); }}
-              className="flex items-center gap-1.5 text-[11px] text-[#567090] hover:text-indigo-400/80 transition-colors font-light mt-1">
+              className="flex items-center gap-1.5 text-[11px] text-[#567090] hover:text-[#2563ba]/80 transition-colors font-light mt-1">
               <Mail className="w-3 h-3 shrink-0" />Add email address
             </button>
           )}
@@ -174,14 +174,14 @@ export function PipelineLeadCard({
 
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-2.5 mb-6">
-          <div className="bg-white/[0.025] border border-white/[0.05] rounded-[18px] p-3.5">
+          <div className="bg-white/[0.025] border border-white/[0.05] rounded-2xl p-3.5">
             <div className="flex items-center justify-between mb-1.5">
               <p className="text-[7px] font-mono text-[#8BA5C5] uppercase tracking-[0.2em]">Attempts</p>
               <Phone className="w-2.5 h-2.5 text-[#4D678A]" />
             </div>
             <p className="text-[1.3rem] font-sans font-semibold leading-none text-[#E8EDF8]">{lead.contact_attempt_count}</p>
           </div>
-          <div className="bg-white/[0.025] border border-white/[0.05] rounded-[18px] p-3.5">
+          <div className="bg-white/[0.025] border border-white/[0.05] rounded-2xl p-3.5">
             <div className="flex items-center justify-between mb-1.5">
               <p className="text-[7px] font-mono text-[#8BA5C5] uppercase tracking-[0.2em]">{isScheduled ? "Date" : "Last Contact"}</p>
               <Clock className="w-2.5 h-2.5 text-[#4D678A]" />
@@ -190,7 +190,7 @@ export function PipelineLeadCard({
               {isScheduled && lead.scheduled_start_at ? fmtDate(lead.scheduled_start_at) : fmtDate(lead.last_contacted_at) || "Never"}
             </p>
           </div>
-          <div className="bg-white/[0.025] border border-white/[0.05] rounded-[18px] p-3.5">
+          <div className="bg-white/[0.025] border border-white/[0.05] rounded-2xl p-3.5">
             <div className="flex items-center justify-between mb-1.5">
               <p className="text-[7px] font-mono text-[#8BA5C5] uppercase tracking-[0.2em]">
                 {isScheduled ? "Duration" : lead.pipeline_status === "follow_up_needed" ? "Follow Up" : "Idle"}
@@ -199,7 +199,7 @@ export function PipelineLeadCard({
             </div>
             {isScheduled ? (
               <div>
-                <p className="text-[11px] font-sans font-semibold text-emerald-400 leading-tight">
+                <p className="text-[11px] font-sans font-semibold text-[#3aada3] leading-tight">
                   {lead.scheduled_start_at ? fmtTime(lead.scheduled_start_at) : "—"}
                 </p>
                 <p className="text-[9px] font-mono text-[#7090B0] mt-0.5">
@@ -239,7 +239,7 @@ export function PipelineLeadCard({
         <div className="flex gap-2.5 mt-auto">
           {isScheduled ? (
             <button onClick={() => onStartInspection(lead)}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-indigo-500 hover:bg-indigo-400 active:scale-95 text-[#E8EDF8] transition-all text-sm font-medium shadow-lg shadow-indigo-500/20">
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#2a8a82] hover:bg-[#2a8a82]/80 active:scale-95 text-white transition-all text-sm font-medium">
               <PlayCircle className="w-4 h-4" />Start Inspection
             </button>
           ) : lead.pipeline_status === "dead_lead" ? (
@@ -254,7 +254,7 @@ export function PipelineLeadCard({
               <button onClick={() => onFollowUp(lead)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white hover:text-black active:scale-95 transition-all text-xs font-medium">
                 <Clock className="w-3.5 h-3.5" />Follow-up
               </button>
-              <button onClick={() => onSchedule(lead)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-indigo-500/15 border border-indigo-500/25 text-indigo-300 hover:bg-indigo-500/30 active:scale-95 transition-all text-xs font-medium">
+              <button onClick={() => onSchedule(lead)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#2563ba]/15 border border-[#2563ba]/25 text-[#4a8fd4] hover:bg-[#2563ba]/30 active:scale-95 transition-all text-xs font-medium">
                 <Calendar className="w-3.5 h-3.5" />Schedule
               </button>
             </>
@@ -266,15 +266,15 @@ export function PipelineLeadCard({
           <div className="mt-2.5 pt-2.5 border-t border-white/[0.05] flex flex-wrap items-center gap-2">
             <button onClick={() => onNotes(lead)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-[#8BA5C5] hover:text-[#E8EDF8] hover:bg-white/[0.08] transition-all text-[10px] font-medium">
               <MessageSquare className="w-3 h-3 text-[#7090B0]" />Notes
-              {lead.lead_notes && <div className="w-1.5 h-1.5 rounded-full bg-indigo-400/80" />}
+              {lead.lead_notes && <div className="w-1.5 h-1.5 rounded-full bg-[#2563ba]/80" />}
             </button>
-            <button onClick={() => onDraftEmail(lead)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-indigo-300 hover:text-indigo-200 hover:bg-indigo-500/[0.06] transition-all text-[10px] font-medium">
-              <Mail className="w-3 h-3 text-indigo-400" />Email
-              {lead.lead_notes?.includes("Email sent") && <div className="w-1.5 h-1.5 rounded-full bg-indigo-400/80" />}
+            <button onClick={() => onDraftEmail(lead)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-[#4a8fd4] hover:text-[#4a8fd4]/80 hover:bg-[#2563ba]/[0.06] transition-all text-[10px] font-medium">
+              <Mail className="w-3 h-3 text-[#2563ba]" />Email
+              {lead.lead_notes?.includes("Email sent") && <div className="w-1.5 h-1.5 rounded-full bg-[#2563ba]/80" />}
             </button>
             {isScheduled && (
-              <button onClick={() => onSchedule(lead)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-emerald-300 hover:text-emerald-200 hover:bg-emerald-500/[0.06] transition-all text-[10px] font-medium">
-                <Calendar className="w-3 h-3 text-emerald-400" />Reschedule
+              <button onClick={() => onSchedule(lead)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-[#3aada3] hover:text-[#3aada3]/80 hover:bg-[#2a8a82]/[0.06] transition-all text-[10px] font-medium">
+                <Calendar className="w-3 h-3 text-[#2a8a82]" />Reschedule
               </button>
             )}
             <button onClick={() => onDeadLead(lead)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-rose-300 hover:text-rose-200 hover:bg-rose-500/[0.06] transition-all text-[10px] font-medium">

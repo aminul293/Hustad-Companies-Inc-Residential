@@ -36,8 +36,8 @@ export function NotesPanel({ open, leadName, existingNotes, newNoteText, onNoteC
             <div className="flex items-center justify-between px-8 py-6 border-b border-white/[0.06]">
               <div>
                 <div className="flex items-center gap-2.5 mb-0.5">
-                  <MessageSquare className="w-4 h-4 text-indigo-400" />
-                  <h3 className="text-lg font-display font-medium">Activity Log</h3>
+                  <MessageSquare className="w-4 h-4 text-[#2563ba]" />
+                  <h3 className="text-lg font-inter font-medium">Activity Log</h3>
                 </div>
                 <p className="text-xs text-[#3F5878] font-light">{leadName}</p>
               </div>
@@ -81,7 +81,7 @@ export function NotesPanel({ open, leadName, existingNotes, newNoteText, onNoteC
               <textarea ref={notesRef} value={newNoteText} onChange={e => onNoteChange(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) onSave(); }}
                 placeholder="Add a note… (⌘↵ to save)" rows={3}
-                className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl px-4 py-3 text-sm text-[#C2D0E4] placeholder:text-[#2D4060] focus:outline-none focus:border-indigo-500/40 resize-none leading-relaxed"
+                className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl px-4 py-3 text-sm text-[#C2D0E4] placeholder:text-[#2D4060] focus:outline-none focus:border-[#2563ba]/40 resize-none leading-relaxed"
               />
               <div className="flex gap-3">
                 <button onClick={onClose}
@@ -89,7 +89,7 @@ export function NotesPanel({ open, leadName, existingNotes, newNoteText, onNoteC
                   Close
                 </button>
                 <button onClick={onSave} disabled={!newNoteText.trim()}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-sm font-medium">
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#2563ba]/20 border border-[#2563ba]/30 text-[#4a8fd4] hover:bg-[#2563ba]/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-sm font-medium">
                   <CheckCircle2 className="w-3.5 h-3.5" /> Add Note
                 </button>
               </div>

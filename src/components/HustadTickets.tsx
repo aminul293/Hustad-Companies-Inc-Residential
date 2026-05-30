@@ -10,15 +10,15 @@ import { motion, AnimatePresence } from "framer-motion";
 const STAGES: Record<string, { label: string; next: string | null; color: string; ring: string; cpWriteback?: string }> = {
   new:             { label: "New",          next: "contacted",       color: "bg-sky-500/20 text-sky-300 border-sky-500/30",         ring: "bg-sky-500" },
   contacted:       { label: "Contacted",    next: "appointment_set", color: "bg-blue-500/20 text-blue-300 border-blue-500/30",       ring: "bg-blue-500" },
-  appointment_set: { label: "Appt Set",     next: "inspection_done", color: "bg-violet-500/20 text-violet-300 border-violet-500/30", ring: "bg-violet-500" },
-  inspection_done: { label: "Inspected",    next: "estimate_sent",   color: "bg-purple-500/20 text-purple-300 border-purple-500/30", ring: "bg-purple-500" },
-  estimate_sent:   { label: "Quoted",       next: "follow_up",       color: "bg-amber-500/20 text-amber-300 border-amber-500/30",    ring: "bg-amber-500" },
-  follow_up:       { label: "Follow Up",    next: "signed",          color: "bg-orange-500/20 text-orange-300 border-orange-500/30", ring: "bg-orange-500" },
-  signed:          { label: "Signed",       next: "job_scheduled",   color: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30", ring: "bg-emerald-500", cpWriteback: "lead_sold" },
-  job_scheduled:   { label: "Scheduled",    next: "job_started",     color: "bg-teal-500/20 text-teal-300 border-teal-500/30",       ring: "bg-teal-500",   cpWriteback: "scheduled" },
-  job_started:     { label: "In Progress",  next: "job_completed",   color: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30", ring: "bg-indigo-500", cpWriteback: "started" },
-  job_completed:   { label: "Completed",    next: "invoiced",        color: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",       ring: "bg-cyan-500",   cpWriteback: "completed" },
-  invoiced:        { label: "Invoiced",     next: "closed_won",      color: "bg-lime-500/20 text-lime-300 border-lime-500/30",       ring: "bg-lime-500",   cpWriteback: "invoiced" },
+  appointment_set: { label: "Appt Set",     next: "inspection_done", color: "bg-[#2563ba]/20 text-[#4a8fd4] border-[#2563ba]/30",    ring: "bg-[#2563ba]" },
+  inspection_done: { label: "Inspected",    next: "estimate_sent",   color: "bg-[#1e4d8c]/25 text-[#4a8fd4] border-[#1e4d8c]/35",    ring: "bg-[#1e4d8c]" },
+  estimate_sent:   { label: "Quoted",       next: "follow_up",       color: "bg-amber-500/20 text-amber-300 border-amber-500/30",     ring: "bg-amber-500" },
+  follow_up:       { label: "Follow Up",    next: "signed",          color: "bg-orange-500/20 text-orange-300 border-orange-500/30",  ring: "bg-orange-500" },
+  signed:          { label: "Signed",       next: "job_scheduled",   color: "bg-[#2a8a82]/20 text-[#3aada3] border-[#2a8a82]/30",    ring: "bg-[#2a8a82]",  cpWriteback: "lead_sold" },
+  job_scheduled:   { label: "Scheduled",    next: "job_started",     color: "bg-[#2a8a82]/25 text-[#3aada3] border-[#2a8a82]/35",    ring: "bg-[#3aada3]",  cpWriteback: "scheduled" },
+  job_started:     { label: "In Progress",  next: "job_completed",   color: "bg-[#2563ba]/25 text-[#4a8fd4] border-[#2563ba]/35",    ring: "bg-[#2563ba]",  cpWriteback: "started" },
+  job_completed:   { label: "Completed",    next: "invoiced",        color: "bg-[#1e4d8c]/20 text-[#4a8fd4] border-[#1e4d8c]/30",    ring: "bg-[#4a8fd4]",  cpWriteback: "completed" },
+  invoiced:        { label: "Invoiced",     next: "closed_won",      color: "bg-[#c8923a]/15 text-[#c8923a] border-[#c8923a]/25",    ring: "bg-[#c8923a]",  cpWriteback: "invoiced" },
   closed_won:      { label: "Closed Won",   next: null,              color: "bg-green-500/20 text-green-300 border-green-500/30",    ring: "bg-green-500",  cpWriteback: "closed" },
   closed_lost:     { label: "Closed Lost",  next: null,              color: "bg-rose-500/20 text-rose-300 border-rose-500/30",       ring: "bg-rose-500",   cpWriteback: "lead_dead" },
 };
@@ -207,12 +207,12 @@ export function HustadTickets() {
           <div className="flex items-center gap-4">
             <button 
               onClick={() => window.dispatchEvent(new CustomEvent('changeView', { detail: 'dashboard' }))}
-              className="p-3 rounded-full bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all"
+              className="p-3 rounded-[14px] bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h2 className="text-2xl font-display font-medium tracking-tight">Hustad Tickets</h2>
+              <h2 className="text-2xl font-inter font-medium tracking-tight">Hustad Tickets</h2>
               <p className="text-sm text-[#567090] mt-1">
                 {total.toLocaleString()} tickets · managed pipeline
               </p>
@@ -220,7 +220,7 @@ export function HustadTickets() {
           </div>
           <button
             onClick={() => fetchTickets({ refresh: true, newPage: 1 })}
-            className={cn("p-3 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all", refreshing && "animate-spin")}
+            className={cn("p-3 bg-white/5 border border-white/10 rounded-[14px] hover:bg-white/10 transition-all", refreshing && "animate-spin")}
           >
             <RefreshCw className="w-4 h-4 text-[#7090B0]" />
           </button>
@@ -234,9 +234,9 @@ export function HustadTickets() {
             placeholder="Search by property, client, or job number..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full bg-white/[0.03] border border-white/[0.1] rounded-2xl py-3.5 pl-12 pr-32 text-sm outline-none focus:border-indigo-500/50 transition-all"
+            className="w-full bg-white/[0.03] border border-white/[0.1] rounded-2xl py-3.5 pl-12 pr-32 text-sm outline-none focus:border-[#2563ba]/50 transition-all"
           />
-          <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-indigo-500/20 border border-indigo-500/30 rounded-xl text-xs text-indigo-300 hover:bg-indigo-500/30 transition-all">
+          <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-[#2563ba]/20 border border-[#2563ba]/30 rounded-xl text-xs text-[#4a8fd4] hover:bg-[#2563ba]/30 transition-all">
             Search
           </button>
         </form>
@@ -249,7 +249,7 @@ export function HustadTickets() {
               key={f.id}
               onClick={() => setStageFilter(f.id)}
               className={cn(
-                "px-4 py-2 rounded-full border text-xs font-display transition-all whitespace-nowrap shrink-0",
+                "px-4 py-2 rounded-lg border text-xs font-inter transition-all whitespace-nowrap shrink-0",
                 stageFilter === f.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-[#7090B0] hover:bg-white/10"
               )}
             >{f.label}</button>
@@ -267,7 +267,7 @@ export function HustadTickets() {
         ) : tickets.length === 0 ? (
           <div className="py-20 text-center opacity-30">
             <Ticket className="w-12 h-12 mx-auto mb-4" />
-            <p className="font-display">No tickets yet</p>
+            <p className="font-inter">No tickets yet</p>
             <p className="text-xs text-[#567090] mt-2">Push jobs from CenterPoint to create tickets</p>
           </div>
         ) : (
@@ -284,7 +284,7 @@ export function HustadTickets() {
                 <motion.div
                   key={ticket.id}
                   layout
-                  className="rounded-[28px] bg-white/[0.02] border border-white/[0.06] hover:border-white/15 transition-all overflow-hidden"
+                  className="rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-white/15 transition-all overflow-hidden"
                 >
                   {/* Ticket row */}
                   <button
@@ -295,7 +295,7 @@ export function HustadTickets() {
                       <div className={cn("w-2.5 h-2.5 rounded-full shrink-0", stage.ring)} />
                       <div className="min-w-0">
                         <div className="flex items-center gap-3 mb-1 flex-wrap">
-                          <span className="text-base font-display font-medium text-[#E8EDF8] truncate">
+                          <span className="text-base font-inter font-medium text-[#E8EDF8] truncate">
                             {ticket.property_name}
                           </span>
                           {ticket.cp_job_name && (
@@ -303,7 +303,7 @@ export function HustadTickets() {
                           )}
                         </div>
                         <div className="flex items-center gap-4 flex-wrap">
-                          <span className={cn("px-2.5 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest border", stage.color)}>
+                          <span className={cn("px-2.5 py-0.5 rounded-lg text-[9px] font-mono uppercase tracking-widest border", stage.color)}>
                             {stage.label}
                           </span>
                           {ticket.client_name && (
@@ -326,12 +326,12 @@ export function HustadTickets() {
                     <div className="flex items-center gap-6 shrink-0">
                       <div className="text-right hidden md:block">
                         <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-widest mb-0.5">Touches</p>
-                        <p className="text-sm font-display font-medium text-[#E8EDF8]">{touches.length}</p>
+                        <p className="text-sm font-inter font-medium text-[#E8EDF8]">{touches.length}</p>
                       </div>
                       {ticket.price > 0 && (
                         <div className="text-right hidden md:block">
                           <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-widest mb-0.5">Value</p>
-                          <p className="text-sm font-display font-medium text-[#E8EDF8]">${Number(ticket.price).toLocaleString()}</p>
+                          <p className="text-sm font-inter font-medium text-[#E8EDF8]">${Number(ticket.price).toLocaleString()}</p>
                         </div>
                       )}
                       <ChevronRight className={cn("w-4 h-4 text-[#2D4060] transition-transform duration-200", isExpanded && "rotate-90")} />
@@ -361,7 +361,7 @@ export function HustadTickets() {
                                 return (
                                   <div key={s} className="flex items-center gap-1 shrink-0">
                                     <div className={cn(
-                                      "px-3 py-1.5 rounded-full text-[9px] font-mono uppercase tracking-widest border transition-all",
+                                      "px-3 py-1.5 rounded-lg text-[9px] font-mono uppercase tracking-widest border transition-all",
                                       isCurrent ? stg.color + " ring-1 ring-white/20" :
                                       isPast ? "bg-white/5 text-[#2D4060] border-white/5" :
                                       "bg-transparent text-[#293A58] border-white/[0.04]"
@@ -393,7 +393,7 @@ export function HustadTickets() {
                             ].map(item => (
                               <div key={item.label} className="space-y-1">
                                 <p className="text-[9px] font-mono text-[#354D6F] uppercase tracking-widest">{item.label}</p>
-                                <p className="text-xs text-[#AABDCF] font-display">{item.value}</p>
+                                <p className="text-xs text-[#AABDCF] font-inter">{item.value}</p>
                               </div>
                             ))}
                           </div>
@@ -405,7 +405,7 @@ export function HustadTickets() {
                               {editingNotes === ticket.id ? (
                                 <div className="flex items-center gap-2">
                                   <button onClick={() => setEditingNotes(null)} className="text-[10px] text-[#3F5878] hover:text-[#8BA5C5]">Cancel</button>
-                                  <button onClick={() => handleSaveNotes(ticket)} className="text-[10px] text-indigo-400 hover:text-indigo-300">Save</button>
+                                  <button onClick={() => handleSaveNotes(ticket)} className="text-[10px] text-[#2563ba] hover:text-[#4a8fd4]">Save</button>
                                 </div>
                               ) : (
                                 <button
@@ -419,10 +419,10 @@ export function HustadTickets() {
                                 value={notesValue}
                                 onChange={(e) => setNotesValue(e.target.value)}
                                 rows={3}
-                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-[#AABDCF] outline-none focus:border-indigo-500/50 resize-none"
+                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-[#AABDCF] outline-none focus:border-[#2563ba]/50 resize-none"
                               />
                             ) : (
-                              <p className="text-sm text-[#567090] font-display">{ticket.notes || "No notes yet."}</p>
+                              <p className="text-sm text-[#567090] font-inter">{ticket.notes || "No notes yet."}</p>
                             )}
                           </div>
 
@@ -434,7 +434,7 @@ export function HustadTickets() {
                               </p>
                               <button
                                 onClick={() => setAddingTouchId(addingTouchId === ticket.id ? null : ticket.id)}
-                                className="flex items-center gap-1.5 text-[10px] font-mono text-indigo-400/70 hover:text-indigo-300 uppercase tracking-widest"
+                                className="flex items-center gap-1.5 text-[10px] font-mono text-[#2563ba]/70 hover:text-[#4a8fd4] uppercase tracking-widest"
                               >
                                 <Plus className="w-3 h-3" />
                                 Add Touch
@@ -459,7 +459,7 @@ export function HustadTickets() {
                                             <button key={m}
                                               onClick={() => setTouchForm(f => ({ ...f, method: m }))}
                                               className={cn(
-                                                "px-3 py-1 rounded-full text-[10px] font-mono border transition-all",
+                                                "px-3 py-1 rounded-lg text-[10px] font-mono border transition-all",
                                                 touchForm.method === m ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-[#567090] hover:bg-white/10"
                                               )}
                                             >{m.replace(/_/g, " ")}</button>
@@ -473,7 +473,7 @@ export function HustadTickets() {
                                             <button key={o}
                                               onClick={() => setTouchForm(f => ({ ...f, outcome: o }))}
                                               className={cn(
-                                                "px-3 py-1 rounded-full text-[10px] font-mono border transition-all",
+                                                "px-3 py-1 rounded-lg text-[10px] font-mono border transition-all",
                                                 touchForm.outcome === o ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-[#567090] hover:bg-white/10"
                                               )}
                                             >{o.replace(/_/g, " ")}</button>
@@ -485,21 +485,21 @@ export function HustadTickets() {
                                       placeholder="Rep name"
                                       value={touchForm.rep_name}
                                       onChange={(e) => setTouchForm(f => ({ ...f, rep_name: e.target.value }))}
-                                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500/50"
+                                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#2563ba]/50"
                                     />
                                     <textarea
                                       placeholder="Notes (optional)"
                                       value={touchForm.notes}
                                       onChange={(e) => setTouchForm(f => ({ ...f, notes: e.target.value }))}
                                       rows={2}
-                                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500/50 resize-none"
+                                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#2563ba]/50 resize-none"
                                     />
                                     <div className="flex justify-end gap-2">
                                       <button onClick={() => setAddingTouchId(null)} className="text-xs text-[#3F5878] px-4">Cancel</button>
                                       <button
                                         onClick={() => handleAddTouch(ticket)}
                                         disabled={savingTouch}
-                                        className="px-5 py-2 rounded-full bg-indigo-500 text-[#E8EDF8] text-xs font-display hover:bg-indigo-400 disabled:opacity-50 transition-all"
+                                        className="px-5 py-2 rounded-[14px] bg-[#2563ba] text-white text-xs font-inter hover:bg-[#1e4d8c] disabled:opacity-50 transition-all"
                                       >
                                         {savingTouch ? "Saving…" : "Log Touch"}
                                       </button>
@@ -544,7 +544,7 @@ export function HustadTickets() {
                                 <button
                                   onClick={() => handleAdvanceStage(ticket, nextStage)}
                                   disabled={advancingId === ticket.id}
-                                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black text-xs font-display font-medium hover:bg-white/90 active:scale-95 transition-all disabled:opacity-50"
+                                  className="flex items-center gap-2 px-5 py-2.5 rounded-[14px] bg-white text-black text-xs font-inter font-medium hover:bg-white/90 active:scale-95 transition-all disabled:opacity-50"
                                 >
                                   {advancingId === ticket.id
                                     ? <div className="w-3.5 h-3.5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
@@ -559,14 +559,14 @@ export function HustadTickets() {
                               {ticket.stage !== "closed_lost" && ticket.stage !== "closed_won" && (
                                 <button
                                   onClick={() => handleAdvanceStage(ticket, "closed_lost")}
-                                  className="px-4 py-2.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-xs font-display text-rose-400 hover:bg-rose-500/20 transition-all"
+                                  className="px-4 py-2.5 rounded-[14px] bg-rose-500/10 border border-rose-500/20 text-xs font-inter text-rose-400 hover:bg-rose-500/20 transition-all"
                                 >
                                   Close Lost
                                 </button>
                               )}
                               <button
                                 onClick={() => setDeleteModal({ id: ticket.id, name: ticket.property_name })}
-                                className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-white/[0.03] border border-white/10 text-xs font-display text-[#3F5878] hover:text-rose-400 hover:border-rose-500/30 hover:bg-rose-500/[0.06] transition-all"
+                                className="flex items-center gap-1.5 px-4 py-2.5 rounded-[14px] bg-white/[0.03] border border-white/10 text-xs font-inter text-[#3F5878] hover:text-rose-400 hover:border-rose-500/30 hover:bg-rose-500/[0.06] transition-all"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                                 Delete
@@ -574,7 +574,7 @@ export function HustadTickets() {
                             </div>
                             {STAGES[ticket.stage]?.cpWriteback && (
                               <div className="flex items-center gap-1.5">
-                                <CheckCircle2 className="w-3 h-3 text-emerald-500/50" />
+                                <CheckCircle2 className="w-3 h-3 text-[#2a8a82]/50" />
                                 <span className="text-[9px] font-mono text-[#354D6F]">Will sync to CP at this stage</span>
                               </div>
                             )}
@@ -590,7 +590,7 @@ export function HustadTickets() {
             {tickets.length < total && (
               <button
                 onClick={() => { const next = page + 1; setPage(next); fetchTickets({ newPage: next }); }}
-                className="w-full py-4 rounded-2xl border border-white/10 text-[#567090] text-sm font-display hover:bg-white/5 hover:text-[#AABDCF] transition-all"
+                className="w-full py-4 rounded-2xl border border-white/10 text-[#567090] text-sm font-inter hover:bg-white/5 hover:text-[#AABDCF] transition-all"
               >
                 Load more · {(total - tickets.length).toLocaleString()} remaining
               </button>
@@ -610,7 +610,7 @@ export function HustadTickets() {
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 max-w-sm w-full shadow-2xl"
+              className="bg-[#0d0d0d] border border-white/10 rounded-3xl p-8 max-w-sm w-full shadow-2xl"
             >
               <div className="flex items-start justify-between mb-6">
                 <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
@@ -620,7 +620,7 @@ export function HustadTickets() {
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              <h3 className="text-xl font-display font-medium mb-3">Delete Ticket?</h3>
+              <h3 className="text-xl font-inter font-medium mb-3">Delete Ticket?</h3>
               <p className="text-[#567090] text-sm leading-relaxed mb-8">
                 <span className="text-[#AABDCF] font-medium">{deleteModal.name}</span> and all its touch history will be permanently deleted. This cannot be undone.
               </p>

@@ -5,9 +5,9 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CalendarDays, UserX, AlarmClock, CheckCircle2, AlertTriangle,
-  RefreshCw, ChevronDown, ChevronRight, Users, Zap, XCircle,
-  Clock, MapPin, Phone, Navigation2, PlayCircle, X, Database,
-  TrendingDown, Activity, UserPlus
+  RefreshCw, ChevronDown, Users, Zap,
+  Clock, Phone, Navigation2, PlayCircle, Database,
+  Activity, UserPlus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AuthenticatedRep } from "@/lib/rep-identity";
@@ -91,12 +91,12 @@ function getPhone(a: Appointment) {
 }
 
 const STATUS_DOT: Record<string, string> = {
-  scheduled:   "bg-emerald-400",
+  scheduled:   "bg-[#2a8a82]",
   confirmed:   "bg-sky-400",
   rescheduled: "bg-amber-400",
   no_show:     "bg-rose-400",
   cancelled:   "bg-white/20",
-  completed:   "bg-purple-400",
+  completed:   "bg-[#2a8a82]",
 };
 const STATUS_LABEL: Record<string, string> = {
   scheduled: "Scheduled", confirmed: "Confirmed", rescheduled: "Rescheduled",
@@ -154,7 +154,7 @@ export function ManagerDashboard({ currentRep }: Props) {
     return (
       <div className="p-8 text-center">
         <p className="text-rose-400 text-sm">{error}</p>
-        <button onClick={fetchData} className="mt-4 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs text-[#8BA5C5] hover:text-[#E8EDF8] transition-all">
+        <button onClick={fetchData} className="mt-4 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-xs text-[#8BA5C5] hover:text-[#E8EDF8] transition-all">
           Retry
         </button>
       </div>
@@ -208,8 +208,8 @@ export function ManagerDashboard({ currentRep }: Props) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: "Total Today",       value: total,         icon: CalendarDays, color: "text-[#8BA5C5]",    bg: "bg-white/[0.02]",       border: "border-white/[0.07]" },
-          { label: "Remaining",         value: scheduled,     icon: Clock,        color: "text-emerald-400", bg: "bg-emerald-500/[0.04]", border: "border-emerald-500/[0.12]" },
-          { label: "Completed",         value: completed,     icon: CheckCircle2, color: "text-purple-400",  bg: "bg-purple-500/[0.04]",  border: "border-purple-500/[0.12]" },
+          { label: "Remaining",         value: scheduled,     icon: Clock,        color: "text-[#3aada3]",   bg: "bg-[#2a8a82]/[0.06]",  border: "border-[#2a8a82]/20" },
+          { label: "Completed",         value: completed,     icon: CheckCircle2, color: "text-[#2563ba]",   bg: "bg-[#2563ba]/[0.06]",  border: "border-[#2563ba]/20" },
           { label: "No Shows",          value: noShows,       icon: UserX,        color: "text-rose-400",    bg: "bg-rose-500/[0.04]",    border: "border-rose-500/[0.12]" },
           { label: "Conflicts",         value: conflictCount, icon: AlertTriangle,color: "text-amber-400",   bg: "bg-amber-500/[0.04]",   border: "border-amber-500/[0.12]" },
           { label: "Overdue Follow-ups",value: overdueCount,  icon: AlarmClock,   color: "text-orange-400",  bg: "bg-orange-500/[0.04]",  border: "border-orange-500/[0.12]" },
@@ -217,13 +217,13 @@ export function ManagerDashboard({ currentRep }: Props) {
           { label: "Active Reps Today", value: Object.keys(byRep).length, icon: Users, color: "text-sky-400", bg: "bg-sky-500/[0.04]", border: "border-sky-500/[0.12]" },
         ].map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-            className={cn("p-6 rounded-[28px] border transition-all", s.bg, s.border)}>
+            className={cn("p-6 rounded-2xl border transition-all", s.bg, s.border)}>
             <div className="flex items-center justify-between mb-4">
               <div className={cn("p-2 rounded-xl bg-white/5", s.color)}>
                 <s.icon className="w-4 h-4" />
               </div>
             </div>
-            <p className="text-3xl font-display font-semibold tracking-tight mb-1">{s.value}</p>
+            <p className="text-3xl font-inter font-light tracking-tight mb-1">{s.value}</p>
             <p className="text-[10px] font-mono text-[#4D678A] uppercase tracking-widest">{s.label}</p>
           </motion.div>
         ))}
@@ -243,7 +243,7 @@ export function ManagerDashboard({ currentRep }: Props) {
                 <div className="grid grid-cols-2 gap-3">
                   {[a, b].map(appt => (
                     <div key={appt.id} className="p-3 rounded-xl bg-black/20 border border-white/[0.06]">
-                      <p className="text-xs font-display font-medium text-[#DDE5F5] truncate">{getAddress(appt)}</p>
+                      <p className="text-xs font-inter font-medium text-[#DDE5F5] truncate">{getAddress(appt)}</p>
                       <p className="text-[10px] font-mono text-[#567090] mt-0.5">
                         {fmtTime(appt.appointment_start_at)} – {fmtTime(appt.appointment_end_at)}
                       </p>
@@ -277,13 +277,13 @@ export function ManagerDashboard({ currentRep }: Props) {
                       <Users className="w-4 h-4 text-[#3F5878]" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-display font-medium text-[#DDE5F5] truncate">
+                      <p className="text-sm font-inter font-medium text-[#DDE5F5] truncate">
                         {resolveRepName(repId)}
                       </p>
                       <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                         <Pill label={`${appts.length} total`} color="text-[#3F5878]" />
-                        {repRemaining > 0 && <Pill label={`${repRemaining} remaining`} color="text-emerald-400" />}
-                        {repCompleted > 0 && <Pill label={`${repCompleted} done`} color="text-purple-400" />}
+                        {repRemaining > 0 && <Pill label={`${repRemaining} remaining`} color="text-[#3aada3]" />}
+                        {repCompleted > 0 && <Pill label={`${repCompleted} done`} color="text-[#2563ba]" />}
                         {repNoShows > 0 && <Pill label={`${repNoShows} no-show`} color="text-rose-400" />}
                         {repConflicts > 0 && <Pill label="conflict" color="text-amber-400" icon={AlertTriangle} />}
                       </div>
@@ -327,7 +327,7 @@ export function ManagerDashboard({ currentRep }: Props) {
               <motion.div key={appt.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
                 className="p-4 rounded-2xl bg-rose-500/[0.04] border border-rose-500/15 flex items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="text-sm font-display font-medium text-[#DDE5F5] truncate">{getAddress(appt)}</p>
+                  <p className="text-sm font-inter font-medium text-[#DDE5F5] truncate">{getAddress(appt)}</p>
                   <p className="text-[10px] font-mono text-[#3F5878] mt-0.5">
                     {fmtTime(appt.appointment_start_at)} · {appt.assigned_rep_id ? resolveRepName(appt.assigned_rep_id) : "Unassigned"}
                   </p>
@@ -348,7 +348,7 @@ export function ManagerDashboard({ currentRep }: Props) {
               <motion.div key={lead.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
                 className="p-4 rounded-2xl bg-orange-500/[0.04] border border-orange-500/15 flex items-center justify-between gap-4">
                 <div className="min-w-0 space-y-0.5">
-                  <p className="text-sm font-display font-medium text-[#DDE5F5] truncate">
+                  <p className="text-sm font-inter font-medium text-[#DDE5F5] truncate">
                     {lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id}
                   </p>
                   <div className="flex items-center gap-3 flex-wrap">
@@ -419,7 +419,7 @@ export function ManagerDashboard({ currentRep }: Props) {
                     setTimeout(() => setRetryCooldown(false), 5000);
                   }
                 }}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-[#567090] hover:text-[#E8EDF8] hover:bg-white/10 transition-all disabled:opacity-40">
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-[#567090] hover:text-[#E8EDF8] hover:bg-white/10 transition-all disabled:opacity-40">
                 <Zap className="w-3.5 h-3.5" />
                 {retryCooldown ? "Retrying…" : "Retry Failed Items"}
               </button>
@@ -432,7 +432,7 @@ export function ManagerDashboard({ currentRep }: Props) {
       {total === 0 && overdue_followups.length === 0 && outbound_failures.length === 0 && (
         <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
           <Activity className="w-8 h-8 text-[#1F2E48]" />
-          <p className="text-lg font-display font-medium text-[#3F5878]">All clear</p>
+          <p className="text-lg font-inter font-medium text-[#3F5878]">All clear</p>
           <p className="text-sm text-[#2D4060] font-light">No appointments, follow-ups, or queue failures today.</p>
         </div>
       )}
@@ -445,7 +445,7 @@ function SectionHeader({ icon: Icon, label, count, color }: { icon: any; label: 
   return (
     <div className="flex items-center gap-3">
       <Icon className={cn("w-4 h-4", color)} />
-      <h3 className="text-sm font-display font-medium text-[#AABDCF]">{label}</h3>
+      <h3 className="text-sm font-inter font-medium text-[#AABDCF]">{label}</h3>
       <span className={cn("text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5", color)}>{count}</span>
     </div>
   );
@@ -499,7 +499,7 @@ function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
         <div className={cn("w-2 h-2 rounded-full shrink-0", dot)} />
         <div className="min-w-0 space-y-0.5">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-display font-medium text-[#DDE5F5] truncate">{address}</p>
+            <p className="text-sm font-inter font-medium text-[#DDE5F5] truncate">{address}</p>
             {hasConflict && <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0" />}
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -532,7 +532,7 @@ function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
                 }));
               }
             }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-all text-[10px] font-mono">
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#2a8a82]/10 border border-[#2a8a82]/25 text-[#3aada3] hover:bg-[#2a8a82]/20 transition-all text-[10px] font-mono">
             <PlayCircle className="w-3 h-3" /> Start
           </button>
         )}
@@ -564,7 +564,7 @@ function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
                     key={rep.id}
                     onClick={() => handleReassign(rep.id)}
                     className={cn(
-                      "w-full text-left px-3 py-2.5 text-xs font-display transition-all hover:bg-white/10",
+                      "w-full text-left px-3 py-2.5 text-xs font-inter transition-all hover:bg-white/10",
                       appt.assigned_rep_id === rep.id ? "text-sky-400 bg-sky-500/10" : "text-[#AABDCF]"
                     )}
                   >

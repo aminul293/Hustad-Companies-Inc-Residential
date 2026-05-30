@@ -15,11 +15,11 @@ const STAGES: Record<string, {
   ring: string;
   chip: { bg: string; fg: string; dot: string };
 }> = {
-  new_service:   { label: "New Service", next: "opened",        color: "bg-sky-500/20 text-sky-300 border-sky-500/30",               ring: "bg-sky-500",     chip: { bg: "#dbeafe", fg: "#1e40af", dot: "#3b82f6" } },
-  opened:        { label: "Opened",      next: "scheduled",     color: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",       ring: "bg-indigo-500",  chip: { bg: "#ede9fe", fg: "#4c1d95", dot: "#7c3aed" } },
-  scheduled:     { label: "Scheduled",   next: "started",       color: "bg-violet-500/20 text-violet-300 border-violet-500/30",       ring: "bg-violet-500",  chip: { bg: "#f3e8ff", fg: "#6b21a8", dot: "#a855f7" } },
-  started:       { label: "In Progress", next: "completed",     color: "bg-purple-500/20 text-purple-300 border-purple-500/30",       ring: "bg-purple-500",  chip: { bg: "#faf5ff", fg: "#7e22ce", dot: "#9333ea" } },
-  completed:     { label: "Completed",   next: "closed",        color: "bg-teal-500/20 text-teal-300 border-teal-500/30",             ring: "bg-teal-500",    chip: { bg: "#d7f7c2", fg: "#0d6a3f", dot: "#29b572" } },
+  new_service:   { label: "New Service", next: "opened",        color: "bg-sky-500/20 text-sky-300 border-sky-500/30",               ring: "bg-sky-400",     chip: { bg: "#d0e4f7", fg: "#1e4d8c", dot: "#2563ba" } },
+  opened:        { label: "Opened",      next: "scheduled",     color: "bg-[#2563ba]/20 text-[#4a8fd4] border-[#2563ba]/30",          ring: "bg-[#2563ba]",   chip: { bg: "#c5daf4", fg: "#163975", dot: "#2563ba" } },
+  scheduled:     { label: "Scheduled",   next: "started",       color: "bg-[#1e4d8c]/25 text-[#4a8fd4] border-[#1e4d8c]/35",          ring: "bg-[#1e4d8c]",   chip: { bg: "#b9d0ef", fg: "#123068", dot: "#1e4d8c" } },
+  started:       { label: "In Progress", next: "completed",     color: "bg-[#2a8a82]/20 text-[#3aada3] border-[#2a8a82]/30",          ring: "bg-[#2a8a82]",   chip: { bg: "#b8d9d7", fg: "#165955", dot: "#2a8a82" } },
+  completed:     { label: "Completed",   next: "closed",        color: "bg-[#2a8a82]/25 text-[#3aada3] border-[#2a8a82]/35",          ring: "bg-[#3aada3]",   chip: { bg: "#a8d2d0", fg: "#115250", dot: "#2a8a82" } },
   closed:        { label: "Closed Out",  next: null,            color: "bg-white/10 text-[#567090] border-white/10",                  ring: "bg-white/30",    chip: { bg: "#f6f9fc", fg: "#64748d", dot: "#94a3b8" } },
 };
 
@@ -234,12 +234,12 @@ export function CenterPointJobs() {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => window.dispatchEvent(new CustomEvent('changeView', { detail: 'dashboard' }))}
-            className="p-3 rounded-full bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all"
+            className="p-3 rounded-[14px] bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="min-w-0">
-            <h2 className="text-2xl font-display font-medium tracking-tight">CenterPoint Jobs</h2>
+            <h2 className="text-2xl font-inter font-medium tracking-tight">CenterPoint Jobs</h2>
             <div className="flex items-center gap-3 mt-1 flex-wrap">
               <p className="text-sm text-[#567090]">
                 {totalJobs.toLocaleString()} jobs
@@ -247,12 +247,12 @@ export function CenterPointJobs() {
               </p>
               {syncStatus.lastSync && (
                 <span className="flex items-center gap-1 text-[10px] font-mono text-[#354D6F] uppercase tracking-widest">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-500/50" />
+                  <CheckCircle2 className="w-3 h-3 text-[#2a8a82]/50" />
                   synced {new Date(syncStatus.lastSync).toLocaleString()}
                 </span>
               )}
               {syncStatus.result && (
-                <span className="text-[10px] font-mono text-indigo-400/70">{syncStatus.result}</span>
+                <span className="text-[10px] font-mono text-[#2563ba]/70">{syncStatus.result}</span>
               )}
             </div>
           </div>
@@ -262,10 +262,10 @@ export function CenterPointJobs() {
               onClick={handleSync}
               disabled={syncStatus.syncing}
               className={cn(
-                "flex items-center gap-2 px-4 py-2.5 rounded-full border text-xs font-display transition-all",
+                "flex items-center gap-2 px-4 py-2.5 rounded-[14px] border text-xs font-inter transition-all",
                 syncStatus.syncing
-                  ? "bg-indigo-500/10 border-indigo-500/20 text-indigo-400/50 cursor-not-allowed"
-                  : "bg-indigo-500/10 border-indigo-500/20 text-indigo-300 hover:bg-indigo-500/20"
+                  ? "bg-[#2563ba]/10 border-[#2563ba]/20 text-[#2563ba]/50 cursor-not-allowed"
+                  : "bg-[#2563ba]/10 border-[#2563ba]/20 text-[#4a8fd4] hover:bg-[#2563ba]/20"
               )}
             >
               <CloudDownload className={cn("w-3.5 h-3.5", syncStatus.syncing && "animate-pulse")} />
@@ -274,7 +274,7 @@ export function CenterPointJobs() {
             {/* Refresh list from Supabase */}
             <button
               onClick={() => fetchJobs({ refresh: true, newPage: 1 })}
-              className={cn("p-3 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all", refreshing && "animate-spin")}
+              className={cn("p-3 bg-white/5 border border-white/10 rounded-[14px] hover:bg-white/10 transition-all", refreshing && "animate-spin")}
             >
               <RefreshCw className="w-4 h-4 text-[#7090B0]" />
             </button>
@@ -289,9 +289,9 @@ export function CenterPointJobs() {
             placeholder="Search by job number or property name..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full bg-white/[0.03] border border-white/[0.1] rounded-2xl py-3.5 pl-12 pr-32 text-sm outline-none focus:border-indigo-500/50 transition-all"
+            className="w-full bg-white/[0.03] border border-white/[0.1] rounded-2xl py-3.5 pl-12 pr-32 text-sm outline-none focus:border-[#2563ba]/50 transition-all"
           />
-          <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-indigo-500/20 border border-indigo-500/30 rounded-xl text-xs text-indigo-300 hover:bg-indigo-500/30 transition-all">
+          <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-[#2563ba]/20 border border-[#2563ba]/30 rounded-xl text-xs text-[#4a8fd4] hover:bg-[#2563ba]/30 transition-all">
             Search
           </button>
         </form>
@@ -309,7 +309,7 @@ export function CenterPointJobs() {
         ) : jobs.length === 0 ? (
           <div className="py-20 text-center opacity-30">
             <Building2 className="w-12 h-12 mx-auto mb-4" />
-            <p className="font-display">No jobs found</p>
+            <p className="font-inter">No jobs found</p>
           </div>
         ) : (
           <>
@@ -325,7 +325,7 @@ export function CenterPointJobs() {
                 <motion.div
                   key={job.id}
                   layout
-                  className="rounded-[28px] bg-white/[0.02] border border-white/[0.06] hover:border-white/15 transition-all overflow-hidden"
+                  className="rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-white/15 transition-all overflow-hidden"
                 >
                   {/* Job row */}
                   <button
@@ -355,7 +355,7 @@ export function CenterPointJobs() {
 
                       <div className="min-w-0">
                         <div className="flex items-center gap-3 mb-0.5 flex-wrap">
-                          <span className="text-base font-display font-medium text-[#E8EDF8] truncate">
+                          <span className="text-base font-inter font-medium text-[#E8EDF8] truncate">
                             {attr.propertyName || attr.name || `Job #${job.id}`}
                           </span>
                           <span className="text-[9px] font-mono text-[#3F5878] tracking-widest">#{attr.name}</span>
@@ -410,7 +410,7 @@ export function CenterPointJobs() {
                                 return (
                                   <div key={s} className="flex items-center gap-1 shrink-0">
                                     <div className={cn(
-                                      "px-3 py-1.5 rounded-full text-[9px] font-mono uppercase tracking-widest border transition-all",
+                                      "px-3 py-1.5 rounded-lg text-[9px] font-mono uppercase tracking-widest border transition-all",
                                       isCurrent ? stage.color + " ring-1 ring-white/20" :
                                       isPast ? "bg-white/5 text-[#2D4060] border-white/5" :
                                       "bg-transparent text-[#293A58] border-white/[0.04]"
@@ -441,7 +441,7 @@ export function CenterPointJobs() {
                               <div key={item.label} className="space-y-1">
                                 <p className="text-[9px] font-mono text-[#354D6F] uppercase tracking-widest">{item.label}</p>
                                 <p
-                                  className="text-xs text-[#AABDCF] font-display"
+                                  className="text-xs text-[#AABDCF] font-inter"
                                   style={item.isMoney ? { fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: '"ss01" 1, "tnum" 1', letterSpacing: "-0.39px", fontWeight: 400 } : undefined}
                                 >
                                   {item.value}
@@ -469,10 +469,10 @@ export function CenterPointJobs() {
                                           handleStageTransition(job, s);
                                         }}
                                         className={cn(
-                                          "px-3 py-1.5 rounded-full text-[9px] font-mono uppercase tracking-widest border transition-all",
+                                          "px-3 py-1.5 rounded-lg text-[9px] font-mono uppercase tracking-widest border transition-all",
                                           s === attr.status
                                             ? "bg-white/5 text-[#3F5878] border-white/5 cursor-default"
-                                            : "bg-white/[0.03] border-white/10 text-[#7090B0] hover:bg-indigo-500/20 hover:border-indigo-500/40 hover:text-indigo-300 active:scale-95"
+                                            : "bg-white/[0.03] border-white/10 text-[#7090B0] hover:bg-[#2563ba]/20 hover:border-[#2563ba]/40 hover:text-[#4a8fd4] active:scale-95"
                                         )}
                                       >
                                         {STAGES[s]?.label ?? s}
@@ -480,7 +480,7 @@ export function CenterPointJobs() {
                                     ))}
                                     <button
                                       onClick={() => setStagePickerJobId(null)}
-                                      className="px-3 py-1.5 rounded-full text-[9px] font-mono uppercase tracking-widest border border-white/[0.04] text-[#2D4060] hover:bg-white/5 hover:text-[#567090] transition-all"
+                                      className="px-3 py-1.5 rounded-lg text-[9px] font-mono uppercase tracking-widest border border-white/[0.04] text-[#2D4060] hover:bg-white/5 hover:text-[#567090] transition-all"
                                     >
                                       Cancel
                                     </button>
@@ -492,7 +492,7 @@ export function CenterPointJobs() {
                                     <button
                                       onClick={() => handleStageTransition(job, nextStage)}
                                       disabled={isTransitioning}
-                                      className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 text-[#E8EDF8] text-xs font-display font-medium hover:bg-white/20 active:scale-95 transition-all disabled:opacity-50"
+                                      className="flex items-center gap-2 px-5 py-2.5 rounded-[14px] bg-white/10 text-[#E8EDF8] text-xs font-inter font-medium hover:bg-white/20 active:scale-95 transition-all disabled:opacity-50"
                                     >
                                       {isTransitioning ? (
                                         <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -504,14 +504,14 @@ export function CenterPointJobs() {
                                   ) : null}
                                   <button
                                     onClick={() => setStagePickerJobId(job.id)}
-                                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-white/[0.03] border border-white/[0.08] text-[#567090] text-[10px] font-mono uppercase tracking-widest hover:bg-white/[0.07] hover:text-[#7090B0] hover:border-white/15 active:scale-95 transition-all"
+                                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-[14px] bg-white/[0.03] border border-white/[0.08] text-[#567090] text-[10px] font-mono uppercase tracking-widest hover:bg-white/[0.07] hover:text-[#7090B0] hover:border-white/15 active:scale-95 transition-all"
                                   >
                                     <RefreshCw className="w-3 h-3" />
                                     Change Stage
                                   </button>
 
                                 {job.inbox_status === 'imported_to_pipeline' ? (
-                                  <span className="flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-display text-emerald-400 overflow-hidden">
+                                  <span className="flex items-center gap-1 rounded-[14px] bg-[#2a8a82]/10 border border-[#2a8a82]/25 text-xs font-inter text-[#3aada3] overflow-hidden">
                                     <span className="flex items-center gap-2 pl-4 pr-2 py-2.5">
                                       <CheckCircle2 className="w-3.5 h-3.5" />
                                       In Pipeline
@@ -535,7 +535,7 @@ export function CenterPointJobs() {
                                       }}
                                       disabled={unlinkingId === job.id}
                                       title="Remove from Pipeline"
-                                      className="pr-3 pl-1 py-2.5 text-emerald-400/50 hover:text-rose-400 hover:bg-rose-500/10 transition-all disabled:opacity-40"
+                                      className="pr-3 pl-1 py-2.5 text-[#3aada3]/50 hover:text-rose-400 hover:bg-rose-500/10 transition-all disabled:opacity-40"
                                     >
                                       <X className="w-3 h-3" />
                                     </button>
@@ -543,7 +543,7 @@ export function CenterPointJobs() {
                                 ) : (
                                   <button
                                     disabled={promotingId === job.id}
-                                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-indigo-500 text-[#E8EDF8] text-xs font-display font-medium hover:bg-indigo-400 active:scale-95 transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)] disabled:opacity-50"
+                                    className="flex items-center gap-2 px-5 py-2.5 rounded-[14px] bg-[#2563ba] text-white text-xs font-inter font-medium hover:bg-[#1e4d8c] active:scale-95 transition-all disabled:opacity-50"
                                     onClick={async () => {
                                       setPromotingId(job.id);
                                       setImportError(null);
@@ -591,7 +591,7 @@ export function CenterPointJobs() {
             {jobs.length < totalJobs && (
               <button
                 onClick={handleLoadMore}
-                className="w-full py-4 rounded-2xl border border-white/10 text-[#567090] text-sm font-display hover:bg-white/5 hover:text-[#AABDCF] transition-all"
+                className="w-full py-4 rounded-2xl border border-white/10 text-[#567090] text-sm font-inter hover:bg-white/5 hover:text-[#AABDCF] transition-all"
               >
                 Load more · {(totalJobs - jobs.length).toLocaleString()} remaining
               </button>

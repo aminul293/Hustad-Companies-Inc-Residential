@@ -237,7 +237,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                   key={tab.id}
                   onClick={() => r.setView(tab.id)}
                   className={cn(
-                    "px-4 py-2 rounded-full text-xs font-display transition-all",
+                    "px-4 py-2 rounded-full text-xs font-inter transition-all",
                     r.view === tab.id ? "bg-white text-black" : "text-[#567090] hover:text-[#E8EDF8]"
                   )}
                 >{tab.label}</button>
@@ -263,14 +263,14 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
             {/* ── Stripi-style KPI balance cards ── */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               {[
-                { label: "Active sessions", value: r.stats.active,         sub: "in field or drafting",      dot: "#533afd", dotBg: "rgba(83,58,253,0.12)"  },
+                { label: "Active sessions", value: r.stats.active,         sub: "in field or drafting",      dot: "#2563ba", dotBg: "rgba(37,99,186,0.12)"  },
                 { label: "Pending review",  value: r.stats.pending,        sub: "deferred or locked",        dot: "#29b572", dotBg: "rgba(41,181,114,0.12)" },
                 { label: "Needs attention", value: r.stats.missing,        sub: "missing required fields",   dot: "#d24c47", dotBg: "rgba(210,76,71,0.12)"  },
                 { label: "Reconciliation",  value: r.stats.reconciliation, sub: "discrepancies to resolve",  dot: "#d6a800", dotBg: "rgba(214,168,0,0.12)"  },
               ].map((s, i) => (
                 <div
                   key={i}
-                  className="rounded-xl border border-white/[0.08] bg-white/[0.025] backdrop-blur-xl p-4 md:p-5 hover:border-white/[0.16] hover:bg-white/[0.04] transition-all duration-200"
+                  className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-4 md:p-5 hover:border-white/[0.16] hover:bg-white/[0.04] transition-all duration-200"
                   style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }}
                 >
                   <div className="flex items-center justify-between mb-3">
@@ -312,7 +312,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                   placeholder="Search address or homeowner..."
                   value={r.search}
                   onChange={(e) => r.setSearch(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/[0.1] rounded-t-2xl rounded-b-none py-3 md:py-3.5 pl-11 pr-6 text-sm outline-none focus:border-indigo-500/50 transition-all"
+                  className="w-full bg-white/[0.03] border border-white/[0.1] rounded-t-2xl rounded-b-none py-3 md:py-3.5 pl-11 pr-6 text-sm outline-none focus:border-[#2563ba]/60 transition-all"
                 />
               </div>
               {/* Stripi tab-bar r.filter */}
@@ -333,11 +333,11 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                     onClick={() => r.setFilter(f.id)}
                     className="px-3 py-2.5 text-xs font-inter whitespace-nowrap transition-all duration-150"
                     style={{
-                      color:        r.filter === f.id ? "#533afd" : "#567090",
+                      color:        r.filter === f.id ? "#2563ba" : "#567090",
                       borderTop:    "none",
                       borderLeft:   "none",
                       borderRight:  "none",
-                      borderBottom: r.filter === f.id ? "2px solid #533afd" : "2px solid transparent",
+                      borderBottom: r.filter === f.id ? "2px solid #2563ba" : "2px solid transparent",
                       marginBottom: -1,
                       background:   "transparent",
                       fontWeight:   r.filter === f.id ? 500 : 300,
@@ -371,7 +371,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
             {/* ── Upcoming Scheduled Inspections from Pipeline ── */}
             {r.scheduledLeads.length > 0 && (
               <div className="mb-2">
-                <p className="text-[9px] font-mono text-emerald-400/60 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                <p className="text-[9px] font-mono uppercase tracking-[0.2em] mb-3 flex items-center gap-2" style={{ color: "rgba(58,173,163,0.70)" }}>
                   <CalendarDays className="w-3 h-3" />
                   Upcoming · {r.scheduledLeads.length} scheduled
                 </p>
@@ -387,11 +387,11 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                     return (
                       <div
                         key={lead.id}
-                        className="group p-5 rounded-[24px] bg-emerald-500/[0.04] border border-emerald-500/[0.12] hover:border-emerald-500/25 transition-all flex items-center justify-between"
+                        className="group p-5 rounded-[24px] transition-all flex items-center justify-between" style={{ background: "rgba(42,138,130,0.05)", border: "1px solid rgba(42,138,130,0.14)" }}
                       >
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center shrink-0">
-                            <CalendarDays className="w-4 h-4 text-emerald-400" />
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(42,138,130,0.12)", border: "1px solid rgba(42,138,130,0.18)" }}>
+                            <CalendarDays className="w-4 h-4" style={{ color: "#3aada3" }} />
                           </div>
                           <div>
                             <p className="text-sm font-display font-medium text-[#E8EDF8]">
@@ -408,7 +408,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                             const apptId = lead.appointments?.find((a: any) => a.assigned_rep_id === currentRep.id)?.id || lead.appointments?.[0]?.id;
                             window.dispatchEvent(new CustomEvent("launchPipelineSession", { detail: { ...lead, appointmentId: apptId } }));
                           }}
-                          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/25 text-emerald-300 hover:bg-emerald-500/25 active:scale-95 transition-all text-xs font-medium shrink-0"
+                          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl active:scale-95 transition-all text-xs font-inter font-medium shrink-0" style={{ background: "rgba(42,138,130,0.14)", border: "1px solid rgba(42,138,130,0.26)", color: "#3aada3" }}
                         >
                           <PlayCircle className="w-3.5 h-3.5" />
                           Start Inspection
@@ -452,10 +452,10 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
         ) : (
           <div className="max-w-3xl space-y-8">
             {/* ── Signed-in account ── */}
-            <div className="p-6 rounded-[28px] bg-white/[0.03] border border-white/[0.08] flex items-center justify-between gap-4">
+            <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-between gap-4">
               <div className="flex items-center gap-4 min-w-0">
-                <div className="w-10 h-10 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center shrink-0">
-                  <Shield className="w-5 h-5 text-indigo-400" />
+                <div className="w-10 h-10 rounded-full bg-[#1e4d8c]/20 border border-[#2563ba]/25 flex items-center justify-center shrink-0">
+                  <Shield className="w-5 h-5 text-[#4a8fd4]" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-display font-medium text-[#E8EDF8] truncate">{currentRep.name}</p>
@@ -479,7 +479,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
               </div>
               <button 
                 onClick={() => r.setIsAdding(!r.isAdding)}
-                className="flex items-center gap-2 text-xs font-display text-indigo-400 hover:text-indigo-300 transition-colors"
+                className="flex items-center gap-2 text-xs font-inter text-[#4a8fd4] hover:text-[#8BA5C5] transition-colors"
               >
                 <UserPlus className="w-4 h-4" />
                 Add New Rep
@@ -487,16 +487,16 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
             </div>
 
             {r.isAdding && (
-              <div className="p-6 rounded-[32px] bg-white/[0.03] border border-white/10 space-y-4">
+              <div className="p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <input 
-                    className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-indigo-500/50" 
+                    className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#2563ba]/60" 
                     placeholder="Rep Full Name" 
                     value={r.newRep.name}
                     onChange={(e) => r.setNewRep({...r.newRep, name: e.target.value})}
                   />
                   <input 
-                    className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-indigo-500/50" 
+                    className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#2563ba]/60" 
                     placeholder="Role (e.g. Director)" 
                     value={r.newRep.role}
                     onChange={(e) => r.setNewRep({...r.newRep, role: e.target.value})}
@@ -511,7 +511,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                       r.setNewRep({ name: "", role: "" });
                       r.setLiveReps(getLiveReps());
                     }}
-                    className="bg-indigo-500 text-[#E8EDF8] px-6 py-2 rounded-full text-xs font-medium"
+                    className="bg-[#2563ba] text-[#E8EDF8] px-6 py-2 rounded-2xl text-xs font-inter font-medium"
                   >
                     Save Operative
                   </button>
@@ -521,7 +521,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
 
             <div className="grid grid-cols-1 gap-3">
               {r.liveReps.map((rep) => (
-                <div key={rep.id} className="p-5 rounded-[24px] bg-white/[0.02] border border-white/[0.05] flex items-center justify-between group hover:bg-white/[0.04] transition-all">
+                <div key={rep.id} className="p-5 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-between group hover:bg-white/[0.04] transition-all">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                       <User className="w-5 h-5 text-[#567090]" />
@@ -559,19 +559,19 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
             onClick={() => { r.setView(tab.id); r.setMoreOpen(false); }}
             className={cn(
               "flex flex-col items-center gap-1 py-3 px-4 min-w-[56px] transition-all active:scale-95",
-              r.view === tab.id ? "text-indigo-400" : "text-[#3F5878]"
+              r.view === tab.id ? "text-[#4a8fd4]" : "text-[#3F5878]"
             )}
           >
-            <tab.icon className={cn("w-5 h-5 transition-all", r.view === tab.id && "drop-shadow-[0_0_6px_rgba(129,140,248,0.6)]")} />
+            <tab.icon className="w-5 h-5" />
             <span className="text-[9px] font-mono uppercase tracking-wider">{tab.label}</span>
-            {r.view === tab.id && <span className="absolute bottom-0 w-5 h-0.5 rounded-full bg-indigo-400" />}
+            {r.view === tab.id && <span className="absolute bottom-0 w-5 h-0.5 rounded-full bg-[#4a8fd4]" />}
           </button>
         ))}
         <button
           onClick={() => r.setMoreOpen(prev => !prev)}
           className={cn(
             "flex flex-col items-center gap-1 py-3 px-4 min-w-[56px] transition-all active:scale-95 relative",
-            r.moreOpen || ["calendar","tickets","manager"].includes(r.view) ? "text-indigo-400" : "text-[#3F5878]"
+            r.moreOpen || ["calendar","tickets","manager"].includes(r.view) ? "text-[#4a8fd4]" : "text-[#3F5878]"
           )}
         >
           <MoreHorizontal className="w-5 h-5" />

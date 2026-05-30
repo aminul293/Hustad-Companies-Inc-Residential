@@ -64,12 +64,12 @@ const DURATIONS = [
 ];
 
 const STATUS_CFG: Record<string, { label: string; color: string; dot: string; bg: string }> = {
-  scheduled:   { label: "Scheduled",   color: "text-emerald-400", dot: "bg-emerald-400", bg: "border-emerald-500/25 bg-emerald-500/[0.08]" },
+  scheduled:   { label: "Scheduled",   color: "text-[#3aada3]",   dot: "bg-[#2a8a82]",   bg: "border-[#2a8a82]/25 bg-[#2a8a82]/[0.08]" },
   confirmed:   { label: "Confirmed",   color: "text-sky-400",     dot: "bg-sky-400",     bg: "border-sky-500/25 bg-sky-500/[0.08]" },
   rescheduled: { label: "Rescheduled", color: "text-amber-400",   dot: "bg-amber-400",   bg: "border-amber-500/25 bg-amber-500/[0.08]" },
   no_show:     { label: "No Show",     color: "text-rose-400",    dot: "bg-rose-400",    bg: "border-rose-500/25 bg-rose-500/[0.08]" },
-  cancelled:   { label: "Cancelled",   color: "text-[#3F5878]",    dot: "bg-white/20",    bg: "border-white/10 bg-white/[0.03]" },
-  completed:   { label: "Completed",   color: "text-purple-400",  dot: "bg-purple-400",  bg: "border-purple-500/25 bg-purple-500/[0.08]" },
+  cancelled:   { label: "Cancelled",   color: "text-[#3F5878]",   dot: "bg-white/20",    bg: "border-white/10 bg-white/[0.03]" },
+  completed:   { label: "Completed",   color: "text-[#2563ba]",   dot: "bg-[#2563ba]",   bg: "border-[#2563ba]/25 bg-[#2563ba]/[0.08]" },
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -330,10 +330,10 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
       <div className="p-6 pb-4 border-b border-white/[0.06] space-y-4 shrink-0">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           {/* View toggle */}
-          <div className="flex items-center gap-1 p-1 bg-white/5 border border-white/10 rounded-full">
+          <div className="flex items-center gap-1 p-1 bg-white/5 border border-white/10 rounded-xl">
             {(["day", "week"] as CalView[]).map(v => (
               <button key={v} onClick={() => setCalView(v)}
-                className={cn("px-5 py-2 rounded-full text-xs font-display transition-all capitalize",
+                className={cn("px-5 py-2 rounded-lg text-xs font-inter transition-all capitalize",
                   calView === v ? "bg-white text-black" : "text-[#567090] hover:text-[#E8EDF8]"
                 )}>{v}</button>
             ))}
@@ -518,14 +518,14 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4">
             <motion.div initial={{ scale: 0.96, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96 }}
               transition={{ type: "spring", damping: 28, stiffness: 320 }}
-              className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 w-full max-w-sm shadow-2xl">
+              className="bg-[#0d0d0d] border border-white/10 rounded-3xl p-8 w-full max-w-sm shadow-2xl">
               <div className="flex items-start justify-between mb-7">
                 <div>
                   <div className="flex items-center gap-2.5 mb-1">
                     {followUpPrompt.action === "no_show"
                       ? <UserX className="w-5 h-5 text-rose-400" />
                       : <XCircle className="w-5 h-5 text-[#567090]" />}
-                    <h3 className="text-xl font-display font-medium">
+                    <h3 className="text-xl font-inter font-medium">
                       {followUpPrompt.action === "no_show" ? "No Show" : "Cancel Appointment"}
                     </h3>
                   </div>
@@ -580,12 +580,12 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4">
             <motion.div initial={{ scale: 0.96, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96 }}
               transition={{ type: "spring", damping: 28, stiffness: 320 }}
-              className="bg-[#0d0d0d] border border-white/10 rounded-[32px] p-8 w-full max-w-md shadow-2xl">
+              className="bg-[#0d0d0d] border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl">
               <div className="flex items-start justify-between mb-7">
                 <div>
                   <div className="flex items-center gap-2.5 mb-1">
                     <RotateCcw className="w-5 h-5 text-amber-400" />
-                    <h3 className="text-xl font-display font-medium">Reschedule</h3>
+                    <h3 className="text-xl font-inter font-medium">Reschedule</h3>
                   </div>
                   <p className="text-sm text-[#4D678A] font-light">{reschedModal.label}</p>
                 </div>
@@ -689,8 +689,8 @@ function DayGrid({ appts, conflictIds, currentTimeTop, selectedId, actionLoading
           <div className="absolute left-0 right-0 z-10 pointer-events-none"
             style={{ top: currentTimeTop }}>
             <div className="flex items-center gap-0">
-              <div className="w-2 h-2 rounded-full bg-indigo-400 shrink-0 -ml-1" />
-              <div className="flex-1 h-px bg-indigo-400/60" />
+              <div className="w-2 h-2 rounded-full bg-[#2563ba] shrink-0 -ml-1" />
+              <div className="flex-1 h-px bg-[#2563ba]/60" />
             </div>
           </div>
         )}
@@ -745,7 +745,7 @@ function DayGrid({ appts, conflictIds, currentTimeTop, selectedId, actionLoading
                   {fmtTime(appt.appointment_start_at)}
                 </p>
                 {height > 50 && (
-                  <p className="text-xs font-display font-medium text-[#DDE5F5] leading-tight truncate mt-0.5">
+                  <p className="text-xs font-inter font-medium text-[#DDE5F5] leading-tight truncate mt-0.5">
                     {address}
                   </p>
                 )}
@@ -756,7 +756,7 @@ function DayGrid({ appts, conflictIds, currentTimeTop, selectedId, actionLoading
                   <div className="mt-auto flex items-center gap-1 pt-1 border-t border-white/10">
                     {canStart && (
                       <button onClick={e => { e.stopPropagation(); onStartInspection(appt); }}
-                        className="flex items-center gap-1 text-[9px] font-mono text-emerald-400 hover:text-emerald-300">
+                        className="flex items-center gap-1 text-[9px] font-mono text-[#3aada3] hover:text-[#2a8a82]">
                         <PlayCircle className="w-3 h-3" /> Start
                       </button>
                     )}
@@ -807,7 +807,7 @@ function WeekGrid({ days, appts, conflictIds, selectedId, onSelectDay, onSelect 
                   isToday ? "bg-white/[0.06]" : "bg-white/[0.02]"
                 )}>
                 <div className="flex items-center justify-between">
-                  <span className={cn("text-xs font-display font-medium",
+                  <span className={cn("text-xs font-inter font-medium",
                     isToday ? "text-[#E8EDF8]" : "text-[#8BA5C5]")}>{fmtDayLabel(day)}</span>
                   {hasConflict && <AlertTriangle className="w-3 h-3 text-amber-400" />}
                 </div>
@@ -836,7 +836,7 @@ function WeekGrid({ days, appts, conflictIds, selectedId, onSelectDay, onSelect 
                           isConflict ? "border-amber-500/30 bg-amber-500/10" : cfg.bg
                         )}>
                         <p className={cn("font-mono", cfg.color)}>{fmtTime(appt.appointment_start_at)}</p>
-                        <p className="text-[#AABDCF] truncate font-display leading-tight">{address}</p>
+                        <p className="text-[#AABDCF] truncate font-inter leading-tight">{address}</p>
                       </button>
                     );
                   })
@@ -888,7 +888,7 @@ function AppointmentDetailPanel({
               <AlertTriangle className="w-3 h-3" /> Scheduling conflict
             </div>
           )}
-          <p className="text-base font-display font-medium text-[#E8EDF8] leading-tight">{address}</p>
+          <p className="text-base font-inter font-medium text-[#E8EDF8] leading-tight">{address}</p>
           {owner && <p className="text-[10px] font-mono text-[#4D678A] uppercase tracking-wider">{owner}</p>}
         </div>
         <button onClick={onClose} className="p-2 rounded-xl text-[#3F5878] hover:text-[#E8EDF8] hover:bg-white/5 transition-all shrink-0">
@@ -900,7 +900,7 @@ function AppointmentDetailPanel({
         {/* Status + time */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className={cn("text-[10px] font-mono uppercase tracking-wider px-3 py-1.5 rounded-full border",
+            <span className={cn("text-[10px] font-mono uppercase tracking-wider px-3 py-1.5 rounded-lg border",
               `${cfg.color} bg-white/5 border-white/10`)}>{cfg.label}</span>
             {appt.pipeline_leads?.pipeline_status && (
               <span className="text-[9px] font-mono text-[#354D6F] uppercase">
@@ -976,7 +976,7 @@ function AppointmentDetailPanel({
         {/* Start inspection */}
         {canStart && (
           <button disabled={busy} onClick={onStartInspection}
-            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25 disabled:opacity-40 transition-all font-display font-medium">
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#2a8a82]/20 border border-[#2a8a82]/30 text-[#3aada3] hover:bg-[#2a8a82]/30 disabled:opacity-40 transition-all font-inter font-medium">
             <PlayCircle className="w-5 h-5" /> Start Inspection
           </button>
         )}

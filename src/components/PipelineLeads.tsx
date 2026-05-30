@@ -29,27 +29,27 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
         <div className="flex items-center gap-6">
           <button
             onClick={() => window.dispatchEvent(new CustomEvent("changeView", { detail: "dashboard" }))}
-            className="p-4 rounded-3xl bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all shadow-2xl"
+            className="p-4 rounded-[14px] bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all shadow-2xl"
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
           <div>
-            <h2 className="text-4xl font-display font-medium tracking-tight">Sales Pipeline</h2>
+            <h2 className="text-4xl font-inter font-medium tracking-tight">Sales Pipeline</h2>
             <p className="text-[#567090] text-sm mt-1 font-light tracking-wide">Lead lifecycle and field conversion intelligence</p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           {[
-            { label: "Active Leads", value: p.stats.total,       sub: `${p.stats.urgent} need attention`, icon: Activity, color: "text-indigo-400" },
-            { label: "Scheduled",    value: p.stats.scheduled,   sub: "upcoming inspections",            icon: CalendarDays, color: "text-emerald-400" },
+            { label: "Active Leads", value: p.stats.total,       sub: `${p.stats.urgent} need attention`, icon: Activity, color: "text-[#2563ba]" },
+            { label: "Scheduled",    value: p.stats.scheduled,   sub: "upcoming inspections",            icon: CalendarDays, color: "text-[#3aada3]" },
             { label: "Avg Touches",  value: p.stats.avgAttempts, sub: "contact attempts",                icon: Phone, color: "text-sky-400" },
           ].map((s, i) => (
-            <div key={i} className="px-5 py-4 rounded-[24px] bg-white/[0.03] border border-white/[0.08] min-w-[148px]">
+            <div key={i} className="px-5 py-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] min-w-[148px]">
               <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-[0.2em] mb-1">{s.label}</p>
               <div className="flex items-baseline gap-2">
                 <s.icon className={cn("w-3.5 h-3.5 shrink-0", s.color)} />
-                <p className="text-xl font-display font-semibold">{s.value}</p>
+                <p className="text-xl font-inter font-light">{s.value}</p>
               </div>
               <p className="text-[10px] text-[#2D4060] mt-1 font-light truncate">{s.sub}</p>
             </div>
@@ -61,7 +61,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
       {p.isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {[1, 2, 3].map(i => (
-            <div key={i} className="bg-[#0b0b0b] border border-white/[0.07] rounded-[36px] h-64 animate-pulse" />
+            <div key={i} className="bg-[#0b0b0b] border border-white/[0.07] rounded-2xl h-64 animate-pulse" />
           ))}
         </div>
       ) : p.leads.length === 0 ? (

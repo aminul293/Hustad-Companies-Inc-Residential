@@ -31,11 +31,11 @@ export const STATUS_CONFIG: Record<string, { label: string; color: string; bar: 
   new_lead:               { label: "New Lead",   color: "text-sky-400 bg-sky-400/10 border-sky-400/20",          bar: "bg-sky-500",      icon: Clock },
   follow_up_needed:       { label: "Follow Up",  color: "text-orange-400 bg-orange-400/10 border-orange-400/20", bar: "bg-orange-500",   icon: Clock },
   contact_attempted:      { label: "Attempted",  color: "text-amber-400 bg-amber-400/10 border-amber-400/20",    bar: "bg-amber-500",    icon: Phone },
-  contacted:              { label: "Contacted",  color: "text-indigo-400 bg-indigo-400/10 border-indigo-400/20", bar: "bg-indigo-500",   icon: MessageSquare },
-  scheduled:              { label: "Scheduled",  color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20", bar: "bg-emerald-500", icon: CalendarDays },
+  contacted:              { label: "Contacted",  color: "text-[#2563ba] bg-[#2563ba]/10 border-[#2563ba]/20",   bar: "bg-[#2563ba]",   icon: MessageSquare },
+  scheduled:              { label: "Scheduled",  color: "text-[#3aada3] bg-[#3aada3]/10 border-[#3aada3]/20",   bar: "bg-[#2a8a82]",   icon: CalendarDays },
   appointment_confirmed:  { label: "Confirmed",  color: "text-sky-400 bg-sky-400/10 border-sky-400/20",          bar: "bg-sky-500",      icon: CheckCircle2 },
-  inspection_in_progress: { label: "In Field",   color: "text-purple-400 bg-purple-400/10 border-purple-400/20", bar: "bg-purple-500",   icon: PlayCircle },
-  inspection_completed:   { label: "Inspected",  color: "text-purple-300 bg-purple-300/10 border-purple-300/20", bar: "bg-purple-400",   icon: CheckCircle2 },
+  inspection_in_progress: { label: "In Field",   color: "text-[#2a8a82] bg-[#2a8a82]/10 border-[#2a8a82]/20",   bar: "bg-[#2a8a82]",   icon: PlayCircle },
+  inspection_completed:   { label: "Inspected",  color: "text-[#4a8fd4] bg-[#4a8fd4]/10 border-[#4a8fd4]/20",   bar: "bg-[#4a8fd4]",   icon: CheckCircle2 },
   dead_lead:              { label: "Dead Lead",  color: "text-rose-400 bg-rose-400/10 border-rose-400/20",       bar: "bg-rose-500/50",  icon: XCircle },
   signed:                 { label: "Signed",     color: "text-green-400 bg-green-400/10 border-green-400/20",    bar: "bg-green-500",    icon: CheckCircle2 },
   closed:                 { label: "Closed",     color: "text-[#3F5878] bg-white/5 border-white/10",             bar: "bg-white/20",     icon: CheckCircle2 },
@@ -123,8 +123,8 @@ export const resolveEmail = (lead: PipelineLead): string | null => {
 };
 
 export const noteEntryIcon = (content: string) => {
-  if (content.startsWith("Email sent"))    return { icon: require("lucide-react").Mail,         color: "text-indigo-400 bg-indigo-400/10" };
-  if (content.startsWith("Reached"))       return { icon: Phone,                                color: "text-emerald-400 bg-emerald-400/10" };
+  if (content.startsWith("Email sent"))    return { icon: require("lucide-react").Mail,         color: "text-[#2563ba] bg-[#2563ba]/10" };
+  if (content.startsWith("Reached"))       return { icon: Phone,                                color: "text-[#3aada3] bg-[#3aada3]/10" };
   if (content.startsWith("No Answer"))     return { icon: Phone,                                color: "text-amber-400 bg-amber-400/10" };
   if (content.startsWith("Voicemail"))     return { icon: Phone,                                color: "text-sky-400 bg-sky-400/10" };
   if (content.startsWith("Wrong Number"))  return { icon: Phone,                                color: "text-rose-400 bg-rose-400/10" };

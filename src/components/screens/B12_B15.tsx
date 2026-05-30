@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Shield, Zap, Eye, Wrench, FileText, AlertTriangle, ChevronRight, ArrowLeft,
   Unlock, CheckCircle2, Camera, MapPin, Clock, ExternalLink, ShieldCheck,
-  XCircle, MessageSquare, Calendar, CloudLightning, ShieldAlert, ArrowRight,
+  XCircle, Calendar, CloudLightning, ShieldAlert, ArrowRight,
   ChevronDown, ChevronUp, Layers, BookOpen, Hammer, Sparkles, FileCheck,
   MessageCircle, Home,
 } from "lucide-react";
@@ -235,24 +235,21 @@ const PAGE_CONFIGS: Record<PathKey, PageConfig> = {
 // ── Design tokens ─────────────────────────────────────────────────────────────
 
 const DS = {
-  // Page background — spec-exact cinematic deep navy
+  // Page background — deep navy, no violet
   pageBg: {
     background: [
-      "radial-gradient(circle at top right,    rgba(61,90,254,0.20),  transparent 28%)",
-      "radial-gradient(circle at left center,  rgba(139,92,255,0.10), transparent 34%)",
-      "radial-gradient(circle at bottom center,rgba(77,111,255,0.08), transparent 40%)",
+      "radial-gradient(circle at top right,    rgba(30,77,140,0.16),  transparent 28%)",
+      "radial-gradient(circle at bottom center,rgba(15,29,53,0.12),   transparent 40%)",
       "linear-gradient(180deg, #081120 0%, #050816 100%)",
     ].join(", "),
   } as React.CSSProperties,
 
-  // Standard glass card — slightly more opaque for color pop
+  // Solid surface card — Glass Protocol: glass only on footer + modals
   card: {
-    background: "linear-gradient(180deg, rgba(20,32,58,0.88) 0%, rgba(10,16,32,0.96) 100%)",
-    border: "1px solid rgba(255,255,255,0.11)",
-    boxShadow: "0 20px 60px rgba(0,0,0,0.50), 0 0 40px rgba(77,111,255,0.08)",
-    backdropFilter: "blur(20px)",
-    WebkitBackdropFilter: "blur(20px)",
-    borderRadius: "20px",
+    background: "#0d1525",
+    border: "1px solid rgba(255,255,255,0.08)",
+    boxShadow: "0 2px 16px rgba(15,29,53,0.10), 0 1px 3px rgba(15,29,53,0.06)",
+    borderRadius: "16px",
   } as React.CSSProperties,
 
   // Typography
@@ -275,8 +272,8 @@ const DS = {
       badgeText:      "#a8c0ff",
       cardBorder:     "rgba(91,127,255,0.28)",
       cardGlow:       "rgba(91,127,255,0.14)",
-      btnGrad:        "linear-gradient(90deg, #4A6FFF, #7B61FF, #9B5BFF)",
-      btnGlow:        "0 8px 32px rgba(77,111,255,0.50)",
+      btnGrad:        "#0f1d35",
+      btnGlow:        "0 4px 20px rgba(15,29,53,0.45)",
       iconBg:         "rgba(91,127,255,0.14)",
       recheckActive:  "background: rgba(91,127,255,0.18); border-color: rgba(91,127,255,0.45);",
     },
@@ -290,8 +287,8 @@ const DS = {
       badgeText:      "#ffb0b8",
       cardBorder:     "rgba(255,90,107,0.28)",
       cardGlow:       "rgba(255,90,107,0.12)",
-      btnGrad:        "linear-gradient(90deg, #FF5A6B, #FF4D8D, #FF3D99)",
-      btnGlow:        "0 8px 32px rgba(255,90,107,0.50)",
+      btnGrad:        "#2a8a82",
+      btnGlow:        "0 4px 20px rgba(42,138,130,0.35)",
       iconBg:         "rgba(255,90,107,0.14)",
       recheckActive:  "background: rgba(255,90,107,0.18); border-color: rgba(255,90,107,0.45);",
     },
@@ -305,25 +302,14 @@ const DS = {
       badgeText:      "#9de8c0",
       cardBorder:     "rgba(67,209,125,0.24)",
       cardGlow:       "rgba(67,209,125,0.10)",
-      btnGrad:        "linear-gradient(90deg, #43D17D, #2EC09A, #1BB5B0)",
-      btnGlow:        "0 8px 32px rgba(67,209,125,0.45)",
+      btnGrad:        "#0f1d35",
+      btnGlow:        "0 4px 20px rgba(15,29,53,0.45)",
       iconBg:         "rgba(67,209,125,0.14)",
       recheckActive:  "background: rgba(67,209,125,0.18); border-color: rgba(67,209,125,0.45);",
     },
   },
 };
 
-// Helper — themed card with accent glow
-function themedCard(tk: typeof DS.theme[keyof typeof DS.theme]): React.CSSProperties {
-  return {
-    background: "linear-gradient(180deg, rgba(20,32,58,0.90) 0%, rgba(10,16,32,0.97) 100%)",
-    border: `1px solid ${tk.cardBorder}`,
-    boxShadow: `0 20px 60px rgba(0,0,0,0.50), 0 0 80px ${tk.cardGlow}, inset 0 1px 0 rgba(255,255,255,0.06)`,
-    backdropFilter: "blur(20px)",
-    WebkitBackdropFilter: "blur(20px)",
-    borderRadius: "20px",
-  };
-}
 
 function getDynamicDS(theme: string) {
   const isDark = theme === "dark" || theme === "high-contrast";
@@ -335,12 +321,10 @@ function getDynamicDS(theme: string) {
       text: DS.text,
       theme: DS.theme,
       themedCard: (tk: any) => ({
-        background: "linear-gradient(180deg, rgba(20,32,58,0.90) 0%, rgba(10,16,32,0.97) 100%)",
+        background: "#141f33",
         border: `1px solid ${tk.cardBorder}`,
-        boxShadow: `0 20px 60px rgba(0,0,0,0.50), 0 0 80px ${tk.cardGlow}, inset 0 1px 0 rgba(255,255,255,0.06)`,
-        borderRadius: "20px",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
+        boxShadow: "0 2px 16px rgba(15,29,53,0.10), 0 1px 3px rgba(15,29,53,0.06)",
+        borderRadius: "16px",
       } as React.CSSProperties),
     };
   }
@@ -356,7 +340,7 @@ function getDynamicDS(theme: string) {
       badgeText:      "#1D55C4",
       cardBorder:     "rgba(29,85,196,0.15)",
       cardGlow:       "rgba(29,85,196,0.04)",
-      btnGrad:        "linear-gradient(90deg, #1D55C4, #1540A0, #0f2e75)",
+      btnGrad:        "#1D55C4",
       btnGlow:        "0 4px 18px rgba(29,85,196,0.20)",
       iconBg:         "rgba(29,85,196,0.07)",
       recheckActive:  "background: rgba(29,85,196,0.12); border-color: rgba(29,85,196,0.32);",
@@ -371,8 +355,8 @@ function getDynamicDS(theme: string) {
       badgeText:      "#B91C1C",
       cardBorder:     "rgba(185,28,28,0.15)",
       cardGlow:       "rgba(185,28,28,0.04)",
-      btnGrad:        "linear-gradient(90deg, #B91C1C, #991B1B, #7F1D1D)",
-      btnGlow:        "0 4px 18px rgba(185,28,28,0.20)",
+      btnGrad:        "#2a8a82",
+      btnGlow:        "0 4px 18px rgba(42,138,130,0.20)",
       iconBg:         "rgba(185,28,28,0.07)",
       recheckActive:  "background: rgba(185,28,28,0.12); border-color: rgba(185,28,28,0.32);",
     },
@@ -386,8 +370,8 @@ function getDynamicDS(theme: string) {
       badgeText:      "#15803D",
       cardBorder:     "rgba(21,128,61,0.15)",
       cardGlow:       "rgba(21,128,61,0.04)",
-      btnGrad:        "linear-gradient(90deg, #15803D, #166534, #14532D)",
-      btnGlow:        "0 4px 18px rgba(21,128,61,0.20)",
+      btnGrad:        "#1D55C4",
+      btnGlow:        "0 4px 18px rgba(29,85,196,0.20)",
       iconBg:         "rgba(21,128,61,0.07)",
       recheckActive:  "background: rgba(21,128,61,0.12); border-color: rgba(21,128,61,0.32);",
     },
@@ -402,7 +386,7 @@ function getDynamicDS(theme: string) {
       background: "#FFFFFF",
       border: "1px solid rgba(27,43,75,0.10)",
       boxShadow: "0 1px 4px rgba(27,43,75,0.06), 0 2px 12px rgba(27,43,75,0.07)",
-      borderRadius: "20px",
+      borderRadius: "16px",
     } as React.CSSProperties,
     text: {
       primary:   "#1B2B4B",
@@ -415,7 +399,7 @@ function getDynamicDS(theme: string) {
       background: "#FFFFFF",
       border: `1px solid ${tk.cardBorder}`,
       boxShadow: "0 1px 4px rgba(27,43,75,0.06), 0 2px 12px rgba(27,43,75,0.07)",
-      borderRadius: "20px",
+      borderRadius: "16px",
     } as React.CSSProperties),
   };
 }
@@ -658,47 +642,43 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
             borderRadius: "0",
           }} />
 
-          {/* L4 — Ambient glow · top-right · themed · 30s drift */}
-          <motion.div
-            animate={{ scale: [1, 1.12, 1.04, 1], opacity: [0.16, 0.22, 0.18, 0.16] }}
-            transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
+          {/* L4 — Ambient glow · top-right · themed */}
+          <div
             className="absolute -top-40 -right-40 w-[780px] h-[780px] rounded-full"
             style={{
-              background: `radial-gradient(circle, ${tk.accentGlow.replace("0.10", "0.28")}, transparent 68%)`,
+              background: `radial-gradient(circle, ${tk.accentGlow.replace("0.10", "0.22")}, transparent 68%)`,
               filter: "blur(120px)",
+              opacity: 0.18,
             }}
           />
 
-          {/* L5 — Ambient glow · bottom-left · purple · 38s drift */}
-          <motion.div
-            animate={{ scale: [1, 1.09, 1.05, 1], opacity: [0.10, 0.16, 0.12, 0.10] }}
-            transition={{ duration: 38, repeat: Infinity, ease: "easeInOut", delay: 10 }}
+          {/* L5 — Ambient glow · bottom-left · navy */}
+          <div
             className="absolute -bottom-52 -left-52 w-[680px] h-[680px] rounded-full"
             style={{
-              background: "radial-gradient(circle, rgba(139,92,255,0.22), transparent 68%)",
+              background: "radial-gradient(circle, rgba(30,77,140,0.16), transparent 68%)",
               filter: "blur(120px)",
+              opacity: 0.12,
             }}
           />
 
-          {/* L6 — Soft blue bloom · top-left accent · 24s drift */}
-          <motion.div
-            animate={{ scale: [1, 1.07, 1], opacity: [0.07, 0.12, 0.07] }}
-            transition={{ duration: 24, repeat: Infinity, ease: "easeInOut", delay: 6 }}
+          {/* L6 — Soft blue bloom · top-left */}
+          <div
             className="absolute top-16 -left-28 w-[440px] h-[440px] rounded-full"
             style={{
-              background: "radial-gradient(circle, rgba(77,111,255,0.20), transparent 65%)",
+              background: "radial-gradient(circle, rgba(30,77,140,0.14), transparent 65%)",
               filter: "blur(100px)",
+              opacity: 0.08,
             }}
           />
 
-          {/* L7 — Horizon bloom · center-bottom · very faint · 40s drift */}
-          <motion.div
-            animate={{ scale: [1, 1.14, 1], opacity: [0.05, 0.09, 0.05] }}
-            transition={{ duration: 40, repeat: Infinity, ease: "easeInOut", delay: 18 }}
+          {/* L7 — Horizon bloom · center-bottom */}
+          <div
             className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[900px] h-[360px] rounded-full"
             style={{
-              background: "radial-gradient(ellipse, rgba(61,90,254,0.14), transparent 60%)",
+              background: "radial-gradient(ellipse, rgba(30,77,140,0.10), transparent 60%)",
               filter: "blur(110px)",
+              opacity: 0.06,
             }}
           />
 
@@ -861,7 +841,7 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
 
             {/* Property & Inspection */}
             <div style={DS.card} className="p-7 space-y-5">
-              <MicroLabel icon={MapPin} accent={tk.accent}>Property &amp; Inspection Details</MicroLabel>
+              <p className="font-inter text-[12px] font-medium tracking-wide" style={{ color: DS.text.muted }}>Property &amp; Inspection Details</p>
               {/* Ultra-thin separator */}
               <div style={{ height: "1px", background: "rgba(255,255,255,0.05)" }} />
               <div className="space-y-3.5 font-inter text-[13px]">
@@ -882,7 +862,7 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
 
             {/* Finding Stats — premium metric widgets */}
             <div style={DS.card} className="p-7 space-y-5">
-              <MicroLabel icon={Layers} accent={tk.accent}>Finding Summary</MicroLabel>
+              <p className="font-inter text-[12px] font-medium tracking-wide" style={{ color: DS.text.muted }}>Finding Summary</p>
               <div style={{ height: "1px", background: "rgba(255,255,255,0.05)" }} />
               <div className="grid grid-cols-3 gap-3">
                 {stats.map((s) => (
@@ -911,7 +891,7 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
 
               {session.buyerData?.buyerPriorities && session.buyerData.buyerPriorities.length > 0 && (
                 <div className="pt-4 space-y-3" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-                  <MicroLabel>Your Stated Priorities</MicroLabel>
+                  <p className="font-inter text-[12px] font-medium tracking-wide" style={{ color: DS.text.muted }}>Your Stated Priorities</p>
                   <div className="flex flex-wrap gap-2">
                     {session.buyerData.buyerPriorities.map(p => (
                       <SemanticBadge
@@ -992,12 +972,10 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
                       onClick={() => setActivePhotoIndex(index)}
                       className="flex flex-col cursor-pointer overflow-hidden group"
                       style={{
-                        background:           "linear-gradient(180deg, rgba(14,22,44,0.82) 0%, rgba(6,10,20,0.96) 100%)",
-                        border:               "1px solid rgba(255,255,255,0.07)",
-                        boxShadow:            "0 16px 48px rgba(0,0,0,0.40)",
-                        backdropFilter:       "blur(14px)",
-                        WebkitBackdropFilter: "blur(14px)",
-                        borderRadius:         "18px",
+                        background:   "#0a1020",
+                        border:       "1px solid rgba(255,255,255,0.07)",
+                        boxShadow:    "0 2px 16px rgba(15,29,53,0.10), 0 1px 3px rgba(15,29,53,0.06)",
+                        borderRadius: "16px",
                       }}
                     >
                       {/* Cinematic 16:9 image */}
@@ -1143,7 +1121,7 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
                   <Shield size={100} strokeWidth={0.6} style={{ color: tk.accent }} />
                 </div>
                 <div>
-                  <MicroLabel accent={tk.accent}>Official Recommendation</MicroLabel>
+                  <p className="font-inter text-[12px] font-medium tracking-wide" style={{ color: tk.accent, opacity: 0.85 }}>Official Recommendation</p>
                   <p className="font-editorial font-medium text-2xl mt-2" style={{ color: tk.accent, lineHeight: 1.1, letterSpacing: "-0.01em" }}>{config.badgeLabel}</p>
                 </div>
                 <div className="space-y-6 pt-5" style={{ borderTop: `1px solid ${tk.accentBorder}` }}>
@@ -1152,7 +1130,7 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
                       <ShieldCheck size={15} strokeWidth={1.5} style={{ color: tk.accent }} />
                     </div>
                     <div className="space-y-1.5">
-                      <MicroLabel accent={tk.accent}>What This Means</MicroLabel>
+                      <p className="font-inter text-[12px] font-medium tracking-wide" style={{ color: DS.text.muted }}>What This Means</p>
                       <p className="font-inter text-[13px] leading-relaxed" style={{ color: DS.text.secondary }}>{config.whatMeans}</p>
                     </div>
                   </div>
@@ -1161,7 +1139,7 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
                       <ArrowRight size={15} strokeWidth={1.5} style={{ color: tk.accent }} />
                     </div>
                     <div className="space-y-1.5">
-                      <MicroLabel accent={tk.accent}>Recommended Next Step</MicroLabel>
+                      <p className="font-inter text-[12px] font-medium tracking-wide" style={{ color: DS.text.muted }}>Recommended Next Step</p>
                       <p className="font-inter text-[13px] leading-relaxed" style={{ color: DS.text.secondary }}>{config.nextStep}</p>
                     </div>
                   </div>
@@ -1172,7 +1150,7 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
             {/* Credibility Block */}
             <div className="lg:col-span-5" style={{ ...DS.card, padding: "32px" }}>
               <div className="space-y-5 h-full">
-                <MicroLabel accent={tk.accent}>What We Are Not Saying</MicroLabel>
+                <p className="font-inter text-[12px] font-medium tracking-wide" style={{ color: DS.text.muted }}>What We Are Not Saying</p>
                 <div className="space-y-4">
                   {config.credibilityLines.map((line, i) => {
                     const isPositive = line.startsWith("We are saying");
@@ -1304,8 +1282,8 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
             width:        "52px",
             height:       "52px",
             borderRadius: "50%",
-            background:   "linear-gradient(135deg, #4D6FFF, #8B5CFF)",
-            boxShadow:    "0 8px 28px rgba(77,111,255,0.45)",
+            background:   "#1e4d8c",
+            boxShadow:    "0 4px 20px rgba(30,77,140,0.40)",
           }}
         >
           <BookOpen size={20} strokeWidth={1.5} color="white" />
@@ -1641,7 +1619,7 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
                   className="flex-1 py-3.5 rounded-xl font-inter font-semibold text-[14px] transition-all"
                   style={companionSaved
                     ? { background: "rgba(67,209,125,0.14)", border: "1px solid rgba(67,209,125,0.35)", color: "#43D17D" }
-                    : { background: "linear-gradient(90deg, #4D6FFF, #8B5CFF)", color: "white", boxShadow: "0 4px 20px rgba(77,111,255,0.30)" }}
+                    : { background: "#2a8a82", color: "white", boxShadow: "0 4px 20px rgba(42,138,130,0.30)" }}
                 >
                   {companionSaved ? "Answers Saved ✓" : "Save Answers"}
                 </motion.button>
@@ -1815,7 +1793,7 @@ const B14_PATH_CONFIGS: Record<B13PathKey, B13Config> = {
 
 const B13_PRIORITY_LABELS: Record<string, { label: string; icon: any; accent: string }> = {
   roof_longevity:     { label: "Roof Longevity",     icon: Shield,      accent: "#4D6FFF" },
-  insurance_process:  { label: "Insurance Process",  icon: FileCheck,   accent: "#8B5CFF" },
+  insurance_process:  { label: "Insurance Process",  icon: FileCheck,   accent: "#2563ba" },
   repair_speed:       { label: "Repair Speed",        icon: Zap,         accent: "#FF7849" },
   cost_clarity:       { label: "Cost Clarity",        icon: Eye,         accent: "#43D17D" },
   warranty_coverage:  { label: "Warranty Coverage",   icon: ShieldCheck, accent: "#FF4D8D" },
@@ -1896,35 +1874,27 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
           <div className="absolute inset-0" style={{ boxShadow: "inset 0 0 220px rgba(0,0,0,0.38), inset 0 0 80px rgba(0,0,0,0.20)" }} />
 
           {/* L4 — Themed ambient glow top-right */}
-          <motion.div
-            animate={{ scale: [1, 1.12, 1.04, 1], opacity: [0.16, 0.22, 0.18, 0.16] }}
-            transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
+          <div
             className="absolute -top-40 -right-40 w-[780px] h-[780px] rounded-full"
-            style={{ background: `radial-gradient(circle, ${tk.accentGlow.replace("0.10", "0.28")}, transparent 68%)`, filter: "blur(120px)" }}
+            style={{ background: `radial-gradient(circle, ${tk.accentGlow.replace("0.10", "0.22")}, transparent 68%)`, filter: "blur(120px)", opacity: 0.18 }}
           />
 
-          {/* L5 — Purple ambient glow bottom-left */}
-          <motion.div
-            animate={{ scale: [1, 1.09, 1.05, 1], opacity: [0.10, 0.16, 0.12, 0.10] }}
-            transition={{ duration: 38, repeat: Infinity, ease: "easeInOut", delay: 10 }}
+          {/* L5 — Ambient glow bottom-left · navy */}
+          <div
             className="absolute -bottom-52 -left-52 w-[680px] h-[680px] rounded-full"
-            style={{ background: "radial-gradient(circle, rgba(139,92,255,0.22), transparent 68%)", filter: "blur(120px)" }}
+            style={{ background: "radial-gradient(circle, rgba(30,77,140,0.16), transparent 68%)", filter: "blur(120px)", opacity: 0.12 }}
           />
 
           {/* L6 — Blue bloom top-left */}
-          <motion.div
-            animate={{ scale: [1, 1.07, 1], opacity: [0.07, 0.12, 0.07] }}
-            transition={{ duration: 24, repeat: Infinity, ease: "easeInOut", delay: 6 }}
+          <div
             className="absolute top-16 -left-28 w-[440px] h-[440px] rounded-full"
-            style={{ background: "radial-gradient(circle, rgba(77,111,255,0.20), transparent 65%)", filter: "blur(100px)" }}
+            style={{ background: "radial-gradient(circle, rgba(30,77,140,0.14), transparent 65%)", filter: "blur(100px)", opacity: 0.08 }}
           />
 
           {/* L7 — Horizon bloom */}
-          <motion.div
-            animate={{ scale: [1, 1.14, 1], opacity: [0.05, 0.09, 0.05] }}
-            transition={{ duration: 40, repeat: Infinity, ease: "easeInOut", delay: 18 }}
+          <div
             className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[900px] h-[360px] rounded-full"
-            style={{ background: "radial-gradient(ellipse, rgba(61,90,254,0.14), transparent 60%)", filter: "blur(110px)" }}
+            style={{ background: "radial-gradient(ellipse, rgba(30,77,140,0.10), transparent 60%)", filter: "blur(110px)", opacity: 0.06 }}
           />
         </div>
       )}
@@ -1962,7 +1932,7 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
               </span>
             </div>
             <div className="w-[200px] h-[2px] rounded-full" style={{ background: "rgba(255,255,255,0.06)" }}>
-              <div className="h-full rounded-full" style={{ width: "82%", background: `linear-gradient(90deg, ${tk.accent}, ${tk.accent}88)`, transition: "width 0.7s ease" }} />
+              <div className="h-full rounded-full" style={{ width: "82%", background: `linear-gradient(90deg, ${tk.accent}, ${tk.accent}88)` }} />
             </div>
           </div>
 
@@ -2188,7 +2158,7 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
                   style={{ ...DS.card, padding: "20px" }}
                 >
                   <div className="space-y-3">
-                    <MicroLabel icon={Sparkles} accent="rgba(130,160,255,0.75)">Your Priorities</MicroLabel>
+                    <p className="font-inter text-[12px] font-medium tracking-wide" style={{ color: DS.text.muted }}>Your Priorities</p>
                     <div className="flex flex-wrap gap-2">
                       {(session.buyerData?.buyerPriorities || []).map((p: BuyerPriority) => {
                         const meta = B13_PRIORITY_LABELS[p];
@@ -2214,7 +2184,7 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
                 style={{ ...DS.card, padding: "22px" }}
               >
                 <div className="space-y-3.5">
-                  <MicroLabel accent="rgba(130,160,255,0.75)">What We Are Not Saying</MicroLabel>
+                  <p className="font-inter text-[12px] font-medium tracking-wide" style={{ color: DS.text.muted }}>What We Are Not Saying</p>
                   <div className="space-y-2.5">
                     {config.credibilityLines.map((line, i) => {
                       const isPositive = line.startsWith("We are saying");
@@ -2247,7 +2217,7 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
                 {pathKey === "carrier_review" ? "Storm Evidence Documentation" : pathKey === "direct_repair" ? "Repair Scope Documentation" : "Inspection Documentation"}
               </MicroLabel>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {proofPhotos.map((photo, index) => {
+                {proofPhotos.map((photo) => {
                   const meta = getPhotoMeta(photo, legacyPK);
                   const BadgeIcon = meta.BadgeIcon;
                   return (
@@ -2398,7 +2368,7 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
           whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}
           onClick={() => setShowCompanion(true)}
           className="absolute bottom-32 right-6 z-40 flex items-center justify-center"
-          style={{ width: "52px", height: "52px", borderRadius: "50%", background: "linear-gradient(135deg, #4D6FFF, #8B5CFF)", boxShadow: "0 8px 28px rgba(77,111,255,0.45)" }}
+          style={{ width: "52px", height: "52px", borderRadius: "50%", background: "#1e4d8c", boxShadow: "0 4px 20px rgba(30,77,140,0.40)" }}
         >
           <BookOpen size={20} strokeWidth={1.5} color="white" />
         </motion.button>
@@ -2420,15 +2390,15 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
               style={{ ...DS.card, borderRadius: "24px", maxHeight: "72vh", overflowY: "auto" }}
             >
               <div className="flex items-center justify-between">
-                <MicroLabel icon={BookOpen} accent="#8B5CFF">Rep Companion · Page {config.variantLabel}</MicroLabel>
+                <MicroLabel icon={BookOpen} accent={tk.accent}>Rep Companion · Page {config.variantLabel}</MicroLabel>
                 <button onClick={() => setShowCompanion(false)} style={{ color: DS.text.muted }}>
                   <XCircle size={18} strokeWidth={1.5} />
                 </button>
               </div>
 
               {/* Opening approach */}
-              <div className="space-y-2 p-4 rounded-[14px]" style={{ background: "rgba(139,92,255,0.06)", border: "1px solid rgba(139,92,255,0.16)" }}>
-                <MicroLabel accent="#8B5CFF">Opening Approach</MicroLabel>
+              <div className="space-y-2 p-4 rounded-[14px]" style={{ background: tk.accentSoft, border: `1px solid ${tk.accentBorder}` }}>
+                <MicroLabel accent={tk.accent}>Opening Approach</MicroLabel>
                 <p style={{ fontFamily: "'Inter'", fontSize: "12.5px", lineHeight: 1.6, color: DS.text.secondary, fontStyle: "italic" }}>
                   "{config.repOpeningLine}"
                 </p>
@@ -2442,7 +2412,7 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
                     <div key={i} className="space-y-1.5">
                       <div className="flex items-center gap-2">
                         <div className="w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-mono font-bold"
-                          style={{ background: "rgba(139,92,255,0.14)", color: "#8B5CFF" }}>{i + 1}</div>
+                          style={{ background: tk.iconBg, color: tk.accent }}>{i + 1}</div>
                         <span style={{ fontFamily: "'Inter'", fontSize: "9px", letterSpacing: "1.5px", textTransform: "uppercase", color: DS.text.muted }}>Question {i + 1}</span>
                       </div>
                       <p style={{ fontFamily: "'Inter'", fontSize: "12px", lineHeight: 1.55, color: DS.text.secondary }}>{q}</p>
@@ -2473,9 +2443,9 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium"
                 style={{
                   fontFamily: "'Inter'",
-                  background: companionSaved ? "rgba(67,209,125,0.18)" : "rgba(139,92,255,0.20)",
-                  border:     `1px solid ${companionSaved ? "rgba(67,209,125,0.35)" : "rgba(139,92,255,0.36)"}`,
-                  color:      companionSaved ? "#79E5A2" : "#C4AEFF",
+                  background: companionSaved ? "rgba(67,209,125,0.18)" : "#2a8a82",
+                  border:     `1px solid ${companionSaved ? "rgba(67,209,125,0.35)" : "#2a8a82"}`,
+                  color:      companionSaved ? "#79E5A2" : "white",
                   transition: "background 0.25s ease, border-color 0.25s ease, color 0.25s ease",
                 }}
               >
@@ -2543,7 +2513,7 @@ export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props
             </h1>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className={cn("relative p-10 rounded-[48px] border text-left space-y-6", isDark ? "bg-rose-500/[0.03] border-rose-500/[0.1] backdrop-blur-3xl" : "bg-rose-50/50 border-rose-200")}>
+            <div className={cn("relative p-10 rounded-2xl border text-left space-y-6", isDark ? "bg-rose-500/[0.03] border-rose-500/[0.1] backdrop-blur-3xl" : "bg-rose-50/50 border-rose-200")}>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-rose-500/20 flex items-center justify-center"><AlertTriangle className="w-6 h-6 text-rose-500" /></div>
                 <p className={cn("text-lg font-display font-medium", isDark ? "text-[#E8EDF8]" : "text-[#1B2B4B]")}>Loss Containment Recommended</p>
@@ -2564,7 +2534,7 @@ export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props
                 const isSelected = authorized === opt.val;
                 return (
                   <motion.button key={String(opt.val)} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} onClick={() => setAuthorized(opt.val)}
-                    className={cn("w-full text-left p-6 rounded-[32px] border transition-all duration-300 group overflow-hidden relative",
+                    className={cn("w-full text-left p-6 rounded-2xl border transition-all duration-300 group overflow-hidden relative",
                       isDark
                         ? (isSelected ? (opt.val ? "bg-rose-500/10 border-rose-500/40 shadow-2xl" : "bg-white/10 border-white/20 shadow-xl") : "bg-white/[0.02] border-white/[0.05] hover:border-white/20")
                         : (isSelected ? (opt.val ? "bg-rose-50 border-rose-300 shadow-sm" : "bg-white border-zinc-400 shadow-sm") : "bg-white border-zinc-200 hover:bg-zinc-50")
@@ -2598,14 +2568,14 @@ export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props
       </div>
       <div className={cn("absolute bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30", isDark ? "bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent" : "bg-gradient-to-t from-[#F7F5F1] via-[#F7F5F1]/90 to-transparent")}>
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3 md:gap-6">
-          <button onClick={onBack} className={cn("group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full border transition-all duration-300 shrink-0", isDark ? "bg-white/10 border-white/20 hover:bg-white/20" : "bg-white border-zinc-200 hover:bg-zinc-50")}>
+          <button onClick={onBack} className={cn("group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-[14px] border transition-all duration-300 shrink-0", isDark ? "bg-white/10 border-white/20 hover:bg-white/20" : "bg-white border-zinc-200 hover:bg-zinc-50")}>
             <ArrowLeft className={cn("w-4 h-4 group-hover:-translate-x-1 transition-transform", isDark ? "text-[#DDE5F5]" : "text-zinc-600")} />
             <span className={cn("text-sm font-display font-medium", isDark ? "text-[#E8EDF8]" : "text-zinc-800")}>Back</span>
           </button>
           <StarButton onClick={handleContinue} disabled={authorized === null} 
             lightColor={isDark ? "#FAFAFA" : "#FFFFFF"} 
             backgroundColor={isDark ? "#060606" : (authorized ? "#B91C1C" : "#1B2B4B")}
-            className={cn("flex-1 max-w-md h-20 rounded-full transition-all group", 
+            className={cn("flex-1 max-w-md h-20 rounded-[14px] transition-all group",
               authorized === null 
                 ? "opacity-20 grayscale" 
                 : (isDark ? "shadow-[0_20px_60px_rgba(244,63,94,0.2)] active:scale-95" : "active:scale-95 shadow-sm")
