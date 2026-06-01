@@ -259,6 +259,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const draft = loadDraftById(sessionId, authRep.id);
     if (draft) {
       const ownedDraft = stampSessionWithRep(draft, authRep);
+      const isClosed = ownedDraft.sessionStatus.startsWith("closed_") || 
+                       ownedDraft.sessionStatus === "signed" || 
+                       ownedDraft.sessionStatus === "deferred";
       if (ownedDraft.currentScreen === "P00_rep_launch") {
         // Only advance to the presentation if the intake form is complete;
         // otherwise stay at P00 so the rep can fill in the missing address.
@@ -267,6 +270,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         } else {
           setSession(ownedDraft);
         }
+      } else if (isClosed) {
+        setSession(navigateTo(ownedDraft, "B12_findings_summary"));
       } else {
         setSession(ownedDraft);
       }
@@ -277,12 +282,17 @@ export function SessionProvider({ children }: { children: ReactNode }) {
           const ownedDraft = stampSessionWithRep(serverSession, authRep);
           saveSession(ownedDraft);
           localStorage.setItem("hustad_draft_" + sessionId, JSON.stringify(ownedDraft));
+          const isClosed = ownedDraft.sessionStatus.startsWith("closed_") || 
+                           ownedDraft.sessionStatus === "signed" || 
+                           ownedDraft.sessionStatus === "deferred";
           if (ownedDraft.currentScreen === "P00_rep_launch") {
             if (ownedDraft.property.address) {
               setSession(navigateTo(ownedDraft, "A01_welcome"));
             } else {
               setSession(ownedDraft);
             }
+          } else if (isClosed) {
+            setSession(navigateTo(ownedDraft, "B12_findings_summary"));
           } else {
             setSession(ownedDraft);
           }
