@@ -36,6 +36,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
   const outcome = session.findings.outcomeType || "no_damage";
   const isSigned = !!session.signatureData.signedAt;
   const isDeferred = session.sessionStatus === "deferred";
+  const isSessionClosed = session.sessionStatus.startsWith("closed_") || session.sessionStatus === "signed";
   const outcomeKey = isDeferred ? "deferred" : (outcome || "no_damage");
   const config = NEXT_STEPS_CONFIG[outcomeKey] || NEXT_STEPS_CONFIG.no_damage;
   const [exported, setExported] = useState(false);
@@ -620,15 +621,21 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
       <div className="absolute bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30 pointer-events-none">
         <div className={cn("absolute inset-0 pt-20", isDark ? "bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent" : "bg-gradient-to-t from-[#F7F5F1] via-[#F7F5F1]/90 to-transparent")} />
         <div className="relative max-w-5xl mx-auto flex items-center justify-between gap-3 md:gap-6 pointer-events-auto">
-          <button onClick={onBack} className={cn("group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full border transition-all duration-300 shrink-0", isDark ? "bg-white/10 border-white/20 text-[#DDE5F5] hover:bg-white/20" : "bg-white border-zinc-200 text-[#1B2B4B] hover:bg-zinc-50")}>
-            <ArrowLeft className={cn("w-4 h-4 group-hover:-translate-x-1 transition-transform", isDark ? "text-[#DDE5F5]" : "text-zinc-600")} />
-            <span className={cn("text-sm font-display font-medium", isDark ? "text-[#E8EDF8]" : "text-[#1B2B4B]")}>Back</span>
-          </button>
+          {!isSessionClosed && (
+            <button onClick={onBack} className={cn("group flex items-center gap-2 md:gap-3 px-4 md:px-8 py-4 md:py-5 rounded-full border transition-all duration-300 shrink-0", isDark ? "bg-white/10 border-white/20 text-[#DDE5F5] hover:bg-white/20" : "bg-white border-zinc-200 text-[#1B2B4B] hover:bg-zinc-50")}>
+              <ArrowLeft className={cn("w-4 h-4 group-hover:-translate-x-1 transition-transform", isDark ? "text-[#DDE5F5]" : "text-zinc-600")} />
+              <span className={cn("text-sm font-display font-medium", isDark ? "text-[#E8EDF8]" : "text-[#1B2B4B]")}>Back</span>
+            </button>
+          )}
           <StarButton 
-            onClick={handleFinish} 
+            onClick={isSessionClosed ? onFinish : handleFinish} 
             lightColor={isDark ? "#FAFAFA" : "#FFFFFF"}
             backgroundColor={isDark ? "#060606" : "#1D55C4"}
-            className={cn("flex-1 max-w-md h-18 rounded-full transition-transform active:scale-95 disabled:opacity-50 disabled:pointer-events-none", isDark ? "shadow-[0_20px_60px_rgba(99,102,241,0.2)]" : "shadow-sm")} 
+            className={cn(
+              "flex-1 rounded-full transition-transform active:scale-95 disabled:opacity-50 disabled:pointer-events-none",
+              isSessionClosed ? "max-w-xl mx-auto" : "max-w-md",
+              isDark ? "shadow-[0_20px_60px_rgba(99,102,241,0.2)]" : "shadow-sm"
+            )} 
             disabled={isSyncing}
           >
             <div className="flex items-center gap-4">
@@ -639,7 +646,9 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
                 </>
               ) : (
                 <>
-                  <span className="text-lg font-display font-medium tracking-wide">{config.finishLabel}</span>
+                  <span className="text-lg font-display font-medium tracking-wide">
+                    {isSessionClosed ? "Return to Inspections Dashboard" : config.finishLabel}
+                  </span>
                   <ChevronRight className={cn("w-5 h-5", isDark ? "text-[#DDE5F5]" : "text-white")} />
                 </>
               )}

@@ -68,7 +68,7 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
   }, []);
 
   return (
-    <div className="relative flex flex-col h-screen w-full overflow-hidden bg-[var(--bg-base)] text-[var(--tx1)]">
+    <div className="relative flex flex-col h-full min-h-screen w-full overflow-y-auto bg-[var(--bg-base)] text-[var(--tx1)]">
       <div className="absolute inset-0 pointer-events-none overflow-hidden theme-graphic">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.04),transparent_70%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_70%,rgba(99,102,241,0.03),transparent_50%)]" />
@@ -81,7 +81,7 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
         </div>
       </div>
 
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 text-center">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 pt-16 pb-48 text-center">
         <div className="max-w-4xl w-full space-y-12">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}

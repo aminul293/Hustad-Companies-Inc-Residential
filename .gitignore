@@ -8,3 +8,8 @@ out/
 data/
 .vercel
 .env.local.backup
+
+# Testing rewrites and scratch scripts
+scratch/
+test-rogue.js
+test-rogue2.js

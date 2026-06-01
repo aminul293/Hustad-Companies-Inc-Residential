@@ -9,7 +9,7 @@ async function test() {
 
   const { data, error } = await supabase.from('audit_events')
       .select('*')
-      .eq('action', 'rogue_session_blocked')
+      .eq('event_name', 'rogue_session_blocked')
       .order('occurred_at', { ascending: false })
       .limit(1);
     

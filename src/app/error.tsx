@@ -44,7 +44,9 @@ export default function Error({
         <div className="p-4 rounded-2xl bg-black/40 border border-white/5 text-left">
            <p className="text-[10px] font-mono text-rose-400/70 uppercase tracking-widest mb-1">Diagnostic Info</p>
            <p className="text-[11px] font-mono text-[#567090] break-all overflow-hidden line-clamp-3">
-             {error.message || "Unknown error"}
+             {process.env.NODE_ENV === 'production'
+               ? `An unexpected error occurred. Please try reloading or contact support${error.digest ? ` (Code: ${error.digest})` : ''}.`
+               : (error.message || "Unknown error")}
            </p>
         </div>
 

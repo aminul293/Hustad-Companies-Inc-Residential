@@ -18,21 +18,16 @@ interface PdfPhoto {
   category: string;
   description?: string;
   severity?: string;
-  annotations?: Array<{type:string;x:number;y:number;toX?:number;toY?:number;radius?:number;color:string;text?:string}>;
+  annotations?: Array<{ type: string; x: number; y: number; toX?: number; toY?: number; radius?: number; color: string; text?: string }>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PATH CONFIGURATION
 // ─────────────────────────────────────────────────────────────────────────────
 const PATH_CFG: Record<PathType, {
-  badgeLabel: string;
-  headline: string;
-  subhead: string;
-  whatMeans: string;
-  nextStep: string;
-  credibilityLines: string[];
-  proofLabel: string;
-  showWeather: boolean;
+  badgeLabel: string; headline: string; subhead: string;
+  whatMeans: string; nextStep: string; credibilityLines: string[];
+  proofLabel: string; showWeather: boolean;
 }> = {
   carrier_review: {
     badgeLabel: "Carrier review candidate",
@@ -81,9 +76,9 @@ const PATH_CFG: Record<PathType, {
 };
 
 const HOW_IT_WORKS = [
-  { num: "01", headline: "Document damage",           body: "Hustad has completed the exterior inspection and organized all findings, photos, and documentation into a structured report prepared for carrier review." },
-  { num: "02", headline: "Coordinate carrier review",  body: "If you authorize, Hustad will coordinate the carrier inspection process and present the documented findings clearly to your insurer. Hustad does not negotiate your claim." },
-  { num: "03", headline: "Confirm scope and coverage", body: "Your insurance carrier reviews the documented evidence and makes the coverage determination under your policy. Hustad cannot predict or guarantee any coverage outcome." },
+  { num: "01", headline: "Document damage",              body: "Hustad has completed the exterior inspection and organized all findings, photos, and documentation into a structured report prepared for carrier review." },
+  { num: "02", headline: "Coordinate carrier review",    body: "If you authorize, Hustad will coordinate the carrier inspection process and present the documented findings clearly to your insurer. Hustad does not negotiate your claim." },
+  { num: "03", headline: "Confirm scope and coverage",   body: "Your insurance carrier reviews the documented evidence and makes the coverage determination under your policy. Hustad cannot predict or guarantee any coverage outcome." },
   { num: "04", headline: "Move forward only if you agree", body: "No repair work begins until your carrier issues a written determination, you confirm the scope, and you authorize production in writing. You stay in control at every step." },
 ];
 
@@ -94,57 +89,69 @@ const PLAIN_ENGLISH = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DESIGN TOKENS — Premium Light Theme
-// Single cohesive light system, no dark sections
+// DESIGN TOKENS
 // ─────────────────────────────────────────────────────────────────────────────
 const T = {
-  // Page & surface
-  pageBg:    [248, 247, 243] as C3,   // premium warm off-white #F8F7F3
-  surface:   [255, 255, 255] as C3,   // card white
-  surface2:  [250, 249, 246] as C3,   // premium light off-white section
-  surface3:  [243, 242, 238] as C3,   // subtle container
+  // Page surfaces
+  pageBg:    [248, 247, 243] as C3,
+  surface:   [255, 255, 255] as C3,
+  surface2:  [250, 249, 246] as C3,
+  surface3:  [243, 242, 238] as C3,
+
+  // Cover header — deep navy band
+  headerBg:  [13,  21,  37]  as C3,
+  headerMid: [40,  58,  88]  as C3,
+  headerDim: [100, 120, 155] as C3,
 
   // Borders
   border:    [228, 225, 218] as C3,
   borderMid: [208, 204, 195] as C3,
 
   // Typography
-  text:      [26,  25,  23]  as C3,   // charcoal
-  textMid:   [80,  76,  70]  as C3,   // secondary (darker for high readability)
-  textFaint: [118, 114, 107] as C3,   // muted (darker for high readability)
+  text:      [26,  25,  23]  as C3,
+  textMid:   [80,  76,  70]  as C3,
+  textFaint: [118, 114, 107] as C3,
 
-  // Blue — informational / carrier review
-  blue:      [37,   99, 235] as C3,
+  // Blue — carrier review / informational
+  blue:      [37,  99,  235] as C3,
   blueMid:   [96,  165, 250] as C3,
   blueBg:    [239, 246, 255] as C3,
   blueBdr:   [191, 219, 254] as C3,
 
-  // Amber — review / caution
-  amber:     [180,  83,   9] as C3,
-  amberMid:  [217, 119,   6] as C3,
+  // Amber — caution / rescheduled
+  amber:     [180, 83,   9]  as C3,
+  amberMid:  [217, 119,  6]  as C3,
   amberBg:   [255, 251, 235] as C3,
   amberBdr:  [252, 211,  77] as C3,
 
-  // Green — safe / complete / no_action
+  // Green — no action / complete
   green:     [22,  163,  74] as C3,
   greenBg:   [240, 253, 244] as C3,
   greenBdr:  [167, 243, 208] as C3,
 
   // Red — urgent
-  red:       [220,  38,  38] as C3,
+  red:       [220, 38,   38] as C3,
   redBg:     [254, 242, 242] as C3,
   redBdr:    [252, 165, 165] as C3,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// LAYOUT
+// ─────────────────────────────────────────────────────────────────────────────
+const M   = 18;          // page margin
+const PW  = 210;
+const PH  = 297;
+const CW  = PW - M * 2; // 174 — content width
+const HDR = 52;          // cover dark header band height
+
+// ─────────────────────────────────────────────────────────────────────────────
 // SESSION HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
-
 function derivePathType(s: SessionState): PathType {
   const o = s.findings.outcomeType;
   const u = s.findings.urgentItemsCount;
-  if (u > 0 || o === "repair_only")                                          return "urgent_repair";
-  if (o === "claim_review_candidate" || o === "full_restoration_candidate")  return "carrier_review";
+  if (u > 0 || o === "repair_only")                                         return "urgent_repair";
+  if (o === "claim_review_candidate" || o === "full_restoration_candidate") return "carrier_review";
   return "no_action";
 }
 
@@ -175,22 +182,14 @@ function classifyPdfPhoto(label: string, cat: string, desc: string): PhotoCat {
 
 function photoBadge(pc: PhotoCat, pt: PathType): { label: string; color: C3; bg: C3; bdr: C3; why: string } {
   switch (pc) {
-    case "urgent":      return { label: "Urgent protection", color: T.red,       bg: T.redBg,   bdr: T.redBdr,   why: "Creates a near-term risk of water entry or additional property damage. Should be addressed promptly." };
-    case "storm":       return { label: "Storm evidence",    color: T.blue,      bg: T.blueBg,  bdr: T.blueBdr,  why: pt === "carrier_review" ? "Supports the carrier review recommendation. Provides the type of documentation a carrier inspection requires." : "Documents storm-related impact on the property surface." };
-    case "repair":      return { label: "Repair item",       color: T.blue,      bg: T.blueBg,  bdr: T.blueBdr,  why: "Can be addressed with a targeted repair. Doesn't require a full system decision." };
-    case "maintenance": return { label: "Maintenance",       color: T.amber,     bg: T.amberBg, bdr: T.amberBdr, why: "Doesn't support an insurance action today. Recommended to protect system life and drainage." };
-    case "monitor":     return { label: "Monitor",           color: T.amber,     bg: T.amberBg, bdr: T.amberBdr, why: "No action needed today. Documented as a baseline for comparison after any future storm event." };
-    default:            return { label: "Overview",          color: T.textFaint, bg: T.surface2,bdr: T.border,   why: "General property and roof surface context for the inspection record." };
+    case "urgent":      return { label: "Urgent protection", color: T.red,       bg: T.redBg,    bdr: T.redBdr,   why: "Creates a near-term risk of water entry or additional property damage. Should be addressed promptly." };
+    case "storm":       return { label: "Storm evidence",    color: T.blue,      bg: T.blueBg,   bdr: T.blueBdr,  why: pt === "carrier_review" ? "Supports the carrier review recommendation. Provides the type of documentation a carrier inspection requires." : "Documents storm-related impact on the property surface." };
+    case "repair":      return { label: "Repair item",       color: T.blue,      bg: T.blueBg,   bdr: T.blueBdr,  why: "Can be addressed with a targeted repair. Doesn't require a full system decision." };
+    case "maintenance": return { label: "Maintenance",       color: T.amber,     bg: T.amberBg,  bdr: T.amberBdr, why: "Doesn't support an insurance action today. Recommended to protect system life and drainage." };
+    case "monitor":     return { label: "Monitor",           color: T.amber,     bg: T.amberBg,  bdr: T.amberBdr, why: "No action needed today. Documented as a baseline for comparison after any future storm event." };
+    default:            return { label: "Overview",          color: T.textFaint, bg: T.surface2, bdr: T.border,   why: "General property and roof surface context for the inspection record." };
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// LAYOUT CONSTANTS
-// ─────────────────────────────────────────────────────────────────────────────
-const M  = 18;
-const PW = 210;
-const PH = 297;
-const CW = PW - M * 2;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PRIMITIVES
@@ -199,85 +198,56 @@ function sf(d: jsPDF, c: C3) { d.setFillColor(c[0], c[1], c[2]); }
 function sd(d: jsPDF, c: C3) { d.setDrawColor(c[0], c[1], c[2]); }
 function st(d: jsPDF, c: C3) { d.setTextColor(c[0], c[1], c[2]); }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CARD COMPONENTS
-// ─────────────────────────────────────────────────────────────────────────────
-
 function baseCard(d: jsPDF, x: number, y: number, w: number, h: number, bg?: C3, bdr?: C3) {
   sf(d, bg ?? T.surface);
   d.roundedRect(x, y, w, h, 2, 2, "F");
   sd(d, bdr ?? T.border);
-  d.setLineWidth(0.2);
+  d.setLineWidth(0.18);
   d.roundedRect(x, y, w, h, 2, 2, "S");
 }
 
-function accentCard(d: jsPDF, x: number, y: number, w: number, h: number, accent: C3, accentBg: C3, accentBdr: C3) {
-  sf(d, accentBg);
+function accentCard(d: jsPDF, x: number, y: number, w: number, h: number, accent: C3, bg: C3, bdr: C3) {
+  sf(d, bg);
   d.roundedRect(x, y, w, h, 2.5, 2.5, "F");
-  sd(d, accentBdr);
-  d.setLineWidth(0.25);
+  sd(d, bdr);
+  d.setLineWidth(0.22);
   d.roundedRect(x, y, w, h, 2.5, 2.5, "S");
-  // Left accent line (inset to avoid corner clashing)
   sd(d, accent);
-  d.setLineWidth(1.6);
-  d.line(x + 1.2, y + 3, x + 1.2, y + h - 3);
+  d.setLineWidth(2);
+  d.line(x + 1.4, y + 4, x + 1.4, y + h - 4);
 }
 
-function statCard(d: jsPDF, value: string | number, label: string, x: number, y: number, w: number, h: number, accent: C3, accentBg: C3, accentBdr: C3) {
-  baseCard(d, x, y, w, h, accentBg, accentBdr);
-  sf(d, accent); d.rect(x, y, w, 1.5, "F");
-  st(d, accent); d.setFont("times", "bold"); d.setFontSize(24);
+function statCard(d: jsPDF, value: string | number, label: string, x: number, y: number, w: number, h: number, accent: C3, bg: C3, bdr: C3) {
+  baseCard(d, x, y, w, h, bg, bdr);
+  sf(d, accent); d.rect(x, y, w, 2, "F");
+  st(d, accent); d.setFont("times", "bold"); d.setFontSize(28);
   d.text(String(value), x + w / 2, y + h * 0.58, { align: "center" });
-  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7);
-  d.text(label, x + w / 2, y + h - 5, { align: "center" });
+  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
+  d.text(label, x + w / 2, y + h - 5.5, { align: "center" });
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// BADGE PILL
-// ─────────────────────────────────────────────────────────────────────────────
 
 function badgePill(d: jsPDF, label: string, x: number, y: number, color: C3, bg: C3, bdr: C3, minW?: number): number {
   const tw = (d.getStringUnitWidth(label) * 7) / (d.internal.scaleFactor ?? 2.83);
   const w  = Math.max(tw + 14, minW ?? 0);
   const h  = 7.5;
   sf(d, bg); d.roundedRect(x, y, w, h, 1.5, 1.5, "F");
-  sd(d, bdr); d.setLineWidth(0.25); d.roundedRect(x, y, w, h, 1.5, 1.5, "S");
+  sd(d, bdr); d.setLineWidth(0.2); d.roundedRect(x, y, w, h, 1.5, 1.5, "S");
   sf(d, color); d.circle(x + 5, y + h / 2, 1.3, "F");
   st(d, color); d.setFont("helvetica", "bold"); d.setFontSize(6.5);
   d.text(label, x + 9, y + 5.2);
   return w;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// RULE / DIVIDER
-// ─────────────────────────────────────────────────────────────────────────────
-
-function rule(d: jsPDF, x: number, y: number, w: number, color?: C3) {
-  sf(d, color ?? T.border); d.rect(x, y, w, 0.2, "F");
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MICRO LABEL
-// ─────────────────────────────────────────────────────────────────────────────
-
-function label(d: jsPDF, text: string, x: number, y: number, color?: C3) {
+function microLabel(d: jsPDF, text: string, x: number, y: number, color?: C3) {
   st(d, color ?? T.textFaint); d.setFont("helvetica", "bold"); d.setFontSize(6.5);
   d.text(text.toUpperCase(), x, y);
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SECTION NUMBER BADGE
-// ─────────────────────────────────────────────────────────────────────────────
 
 function sectionNumBadge(d: jsPDF, num: number, cx: number, cy: number, r: number, accent: C3) {
   sf(d, accent); d.circle(cx, cy, r, "F");
   st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(6);
   d.text(String(num), cx, cy + 2.1, { align: "center" });
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// CONFIDENCE / PROGRESS BAR
-// ─────────────────────────────────────────────────────────────────────────────
 
 function confidenceBar(d: jsPDF, x: number, y: number, w: number, filled: number, total: number, accent: C3) {
   const segW = (w - (total - 1) * 2.5) / total;
@@ -291,36 +261,36 @@ function confidenceBar(d: jsPDF, x: number, y: number, w: number, filled: number
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// UNIVERSAL PAGE HEADER & FOOTER — identical across ALL pages
+// PAGE CHROME — header / footer identical on every interior page
 // ─────────────────────────────────────────────────────────────────────────────
-
-function pageStart(d: jsPDF, acc: C3) {
+function interiorPageBg(d: jsPDF) {
   sf(d, T.pageBg); d.rect(0, 0, PW, PH, "F");
-  sf(d, acc);      d.rect(0, 0, PW, 1.2, "F");
 }
 
 function pageHeader(d: jsPDF, rid: string, acc: C3, section: string) {
-  pageStart(d, acc);
+  interiorPageBg(d);
+  // Accent top bar
+  sf(d, acc); d.rect(0, 0, PW, 1.2, "F");
+  // Left: brand
   st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
   d.text("Hustad", M, 9.5);
   st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(7);
   d.text("Madison Residential", M + 14, 9.5);
+  // Center: section name
   st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7);
   d.text(section, PW / 2, 9.5, { align: "center" });
+  // Right: report ID
   st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6.5);
   d.text(`Report ${rid}`, PW - M, 9.5, { align: "right" });
-  rule(d, 0, 12, PW);
+  // Hairline rule
+  sf(d, T.border); d.rect(0, 12.5, PW, 0.2, "F");
 }
 
 function pageFooter(d: jsPDF) {
-  rule(d, 0, PH - 9, PW);
+  sf(d, T.border); d.rect(0, PH - 10, PW, 0.2, "F");
   st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(5.8);
-  d.text("Hustad Companies, Inc.  ·  Homeowner Inspection Report", M, PH - 4);
+  d.text("Hustad Companies, Inc.  ·  Homeowner Inspection Report  ·  Confidential", M, PH - 4);
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// INFO ROW — label + value pair
-// ─────────────────────────────────────────────────────────────────────────────
 
 function infoRow(d: jsPDF, lbl: string, val: string, x: number, y: number, w: number) {
   st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6.5);
@@ -331,124 +301,140 @@ function infoRow(d: jsPDF, lbl: string, val: string, x: number, y: number, w: nu
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PAGE 1 — EXECUTIVE SUMMARY / COVER
+// PAGE 1 — COVER
 // ─────────────────────────────────────────────────────────────────────────────
-
 function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3) {
   const accBg  = getAccentBg(pt);
   const accBdr = getAccentBdr(pt);
   const rid    = s.sessionId.slice(-8).toUpperCase();
+  const cfg    = PATH_CFG[pt];
 
-  pageStart(d, acc);
+  // ── Full page background ──────────────────────────────────────────────────
+  sf(d, T.pageBg); d.rect(0, 0, PW, PH, "F");
 
-  // Header — no section label on cover
-  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
-  d.text("Hustad", M, 9.5);
-  st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(7);
-  d.text("Madison Residential", M + 14, 9.5);
-  st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6.5);
-  d.text(`Report ${rid}`, PW - M, 9.5, { align: "right" });
-  rule(d, 0, 12, PW);
+  // ── Dark navy header band ─────────────────────────────────────────────────
+  sf(d, T.headerBg); d.rect(0, 0, PW, HDR, "F");
+  // Accent stripe at very top
+  sf(d, acc); d.rect(0, 0, PW, 2.5, "F");
+  // Subtle horizontal mid-rule inside header
+  sf(d, T.headerMid); d.rect(M, 33, CW, 0.25, "F");
 
-  let y = 20;
+  // Hustad wordmark — white
+  st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(19);
+  d.text("HUSTAD", M, 22);
+  st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(8.5);
+  d.text("Madison Residential", M + 34, 22);
 
-  // ── PROPERTY IDENTITY ─────────────────────────────────────────────────────
-  st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(8);
-  d.text("Homeowner Inspection Report", M, y);
-  y += 7;
+  // Report meta — right side of header
+  st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(7);
+  d.text(`Report ${rid}`, PW - M, 22, { align: "right" });
+  d.text(fmtDate(s.createdAt), PW - M, 30, { align: "right" });
 
+  // "Homeowner Inspection Report" label
+  st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(7);
+  d.text("HOMEOWNER INSPECTION REPORT", M, 44);
+  // Accent dot before label
+  sf(d, acc); d.circle(M - 4.5, 43, 1.8, "F");
+
+  // Property address inside header (bottom of band) if short
+  if (s.property.address) {
+    st(d, [200, 212, 230] as C3); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
+    const shortAddr = [s.property.address, s.property.cityStateZip].filter(Boolean).join("  ·  ");
+    d.text(shortAddr, PW / 2, 44, { align: "center" });
+  }
+
+  // ── Content area (below header band) ─────────────────────────────────────
+  let y = HDR + 12;
+
+  // Outcome type eyebrow
+  st(d, acc); d.setFont("helvetica", "bold"); d.setFontSize(7);
+  d.text(cfg.badgeLabel.toUpperCase(), M, y);
+  y += 9;
+
+  // Property address — large serif headline
   const addr = s.property.address || "Property Address";
-  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(22);
+  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(26);
   const addrLines = d.splitTextToSize(addr, CW * 0.78) as string[];
-  d.text(addrLines, M, y);
-  y += addrLines.length * 8.5 + 1;
+  d.text(addrLines.slice(0, 2), M, y);
+  y += Math.min(addrLines.length, 2) * 9.5;
 
   if (s.property.cityStateZip) {
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(10.5);
-    d.text(s.property.cityStateZip, M, y);
-    y += 6;
+    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(11);
+    d.text(s.property.cityStateZip, M, y + 2);
+    y += 10;
   }
-  y += 18; // Increased gap to push content down gracefully
+  y += 8;
 
-  // ── RECOMMENDATION CARD ───────────────────────────────────────────────────
-  const hlLines = d.splitTextToSize(PATH_CFG[pt].headline, CW - 18) as string[];
-  const subLines = d.splitTextToSize(PATH_CFG[pt].subhead, CW - 18) as string[];
-  const hlLinesCount = Math.min(hlLines.length, 2);
-  const subLinesCount = Math.min(subLines.length, 3);
-  const hlHeight = hlLinesCount * 6;
-  const subHeight = subLinesCount * 4;
-  const recH = 18 + hlHeight + subHeight + 6;
+  // Thin accent rule under address block
+  sf(d, acc); d.rect(M, y, 32, 1.5, "F");
+  y += 8;
 
-  accentCard(d, M, y, CW, recH, acc, accBg, accBdr);
+  // ── Outcome recommendation card ───────────────────────────────────────────
+  const hlLines  = d.splitTextToSize(cfg.headline, CW - 20) as string[];
+  const subLines = d.splitTextToSize(cfg.subhead,   CW - 20) as string[];
+  const hlH      = Math.min(hlLines.length,  2) * 6.5;
+  const subH     = Math.min(subLines.length, 2) * 4.5;
+  const cardH    = 12 + 8 + hlH + 5 + subH + 10;
 
-  badgePill(d, PATH_CFG[pt].badgeLabel, M + 8, y + 6, acc, T.surface, accBdr);
+  accentCard(d, M, y, CW, cardH, acc, accBg, accBdr);
+  badgePill(d, cfg.badgeLabel, M + 10, y + 9, acc, T.surface, accBdr);
 
-  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(13);
-  d.text(hlLines.slice(0, 2), M + 8, y + 18);
+  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(13.5);
+  d.text(hlLines.slice(0, 2), M + 10, y + 22);
 
-  const bodyY = y + 18 + hlHeight;
   st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
-  d.text(subLines.slice(0, 3), M + 8, bodyY);
-  y += recH + 20; // Increased spacing after recommendation card
+  d.text(subLines.slice(0, 2), M + 10, y + 22 + hlH + 5);
 
-  // ── STAT CARDS — only render metrics that carry real meaning ──────────────
-  const sh = 32;
+  y += cardH + 10;
+
+  // ── Stat cards ────────────────────────────────────────────────────────────
   const urgentCount  = s.findings.urgentItemsCount;
   const stormCount   = s.findings.stormRelatedItemsCount;
   const monitorCount = s.findings.monitorItemsCount;
-  const photoCount   = (s.photoAssets?.filter(p=>p.selectedForSummary).length ?? 0)
-                     + (s.photos?.filter(p=>p.selectedForSummary).length ?? 0);
+  const photoCount   = (s.photoAssets?.filter(p => p.selectedForSummary).length ?? 0)
+                     + (s.photos?.filter(p => p.selectedForSummary).length ?? 0);
 
   type StatDef = { value: number | string; lbl: string; acc: C3; bg: C3; bdr: C3 };
-  const statsToShow: StatDef[] = [];
-  if (urgentCount  > 0) statsToShow.push({ value: urgentCount,  lbl: "Urgent items",    acc: T.red,     bg: T.redBg,   bdr: T.redBdr });
-  if (stormCount   > 0) statsToShow.push({ value: stormCount,   lbl: "Storm findings",  acc: T.blue,    bg: T.blueBg,  bdr: T.blueBdr });
-  if (monitorCount > 0) statsToShow.push({ value: monitorCount, lbl: "Monitor items",   acc: T.amber,   bg: T.amberBg, bdr: T.amberBdr });
-  if (photoCount   > 0) statsToShow.push({ value: photoCount,   lbl: "Evidence photos", acc: T.textMid, bg: T.surface, bdr: T.border });
+  const stats: StatDef[] = [];
+  if (urgentCount  > 0) stats.push({ value: urgentCount,  lbl: "Urgent items",    acc: T.red,     bg: T.redBg,   bdr: T.redBdr   });
+  if (stormCount   > 0) stats.push({ value: stormCount,   lbl: "Storm findings",  acc: T.blue,    bg: T.blueBg,  bdr: T.blueBdr  });
+  if (monitorCount > 0) stats.push({ value: monitorCount, lbl: "Monitor items",   acc: T.amber,   bg: T.amberBg, bdr: T.amberBdr });
+  if (photoCount   > 0) stats.push({ value: photoCount,   lbl: "Evidence photos", acc: T.textMid, bg: T.surface, bdr: T.border   });
 
-  if (statsToShow.length === 0) {
-    // No numeric findings — show an honest "all clear" state
-    const hw2 = (CW - 6) / 2;
-    baseCard(d, M,          y, hw2, sh, T.greenBg, T.greenBdr);
-    sf(d, T.green); d.rect(M, y, hw2, 1.5, "F");
-    st(d, T.green); d.setFont("helvetica", "bold"); d.setFontSize(8.5);
-    d.text("No urgent findings", M + 6, y + 13);
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7);
-    d.text("All surfaces reviewed — inspection complete", M + 6, y + 21);
-
-    baseCard(d, M + hw2 + 6, y, hw2, sh, T.surface, T.border);
-    sf(d, acc); d.rect(M + hw2 + 6, y, hw2, 1.5, "F");
-    st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(8.5);
-    d.text("Property documented", M + hw2 + 12, y + 13);
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7);
-    d.text("Findings organized for your records", M + hw2 + 12, y + 21);
+  const sh = 36;
+  if (stats.length > 0) {
+    const vis = stats.slice(0, 4);
+    const sw  = (CW - (vis.length - 1) * 5) / vis.length;
+    vis.forEach((s2, i) => statCard(d, s2.value, s2.lbl, M + i * (sw + 5), y, sw, sh, s2.acc, s2.bg, s2.bdr));
   } else {
-    const visible = statsToShow.slice(0, 3);
-    const sw = (CW - (visible.length - 1) * 4) / visible.length;
-    visible.forEach((s2, i) => {
-      statCard(d, s2.value, s2.lbl, M + i * (sw + 4), y, sw, sh, s2.acc, s2.bg, s2.bdr);
-    });
+    baseCard(d, M, y, CW, sh, T.greenBg, T.greenBdr);
+    sf(d, T.green); d.rect(M, y, CW, 2, "F");
+    st(d, T.green); d.setFont("helvetica", "bold"); d.setFontSize(9.5);
+    d.text("No urgent findings — inspection complete", M + CW / 2, y + sh / 2 + 3, { align: "center" });
   }
-  y += sh + 22; // Increased spacing after stats row
+  y += sh + 10;
 
-  // ── INSPECTOR INFO ROW ─────────────────────────────────────────────────────
-  y += 2;
-  const iw = (CW - 8) / 3;
-  infoRow(d, "Prepared for",    s.property.homeownerPrimaryName || "Homeowner", M,           y, iw);
-  infoRow(d, "Inspection date", fmtDate(s.createdAt),                           M + iw + 4,  y, iw);
-  infoRow(d, "Representative",  s.repName || "—",                               M + (iw+4)*2,y, iw);
-  y += 28; // Increased spacing before the bottom report structure card
+  // ── Inspector metadata strip ──────────────────────────────────────────────
+  const metaH = 28;
+  baseCard(d, M, y, CW, metaH, T.surface, T.border);
+  const iw = (CW - 12) / 3;
+  // Vertical dividers
+  sf(d, T.border);
+  d.rect(M + iw + 6, y + 6, 0.2, metaH - 12, "F");
+  d.rect(M + (iw + 6) * 2, y + 6, 0.2, metaH - 12, "F");
 
-  // ── WHAT'S IN THIS REPORT ─────────────────────────────────────────────────
-  rule(d, M, y, CW);
-  y += 6;
-  baseCard(d, M, y, CW, 24, T.surface, T.border);
-  st(d, T.textFaint); d.setFont("helvetica", "bold"); d.setFontSize(6.5);
-  d.text("WHAT'S IN THIS REPORT", M + 7, y + 8);
-  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
-  const sections = "Inspection findings  ·  Property details  ·  Storm documentation  ·  Recommended next steps  ·  Agreement guidance";
-  const sLines = d.splitTextToSize(sections, CW - 14) as string[];
-  d.text(sLines, M + 7, y + 15);
+  infoRow(d, "Prepared for",    s.property.homeownerPrimaryName || "Homeowner", M + 6,                y + 6, iw);
+  infoRow(d, "Inspection date", fmtDate(s.createdAt),                           M + iw + 12,          y + 6, iw);
+  infoRow(d, "Representative",  s.repName || "—",                               M + (iw + 6) * 2 + 6, y + 6, iw);
+  y += metaH + 10;
+
+  // ── Contents strip ────────────────────────────────────────────────────────
+  sf(d, T.surface2); d.roundedRect(M, y, CW, 18, 2, 2, "F");
+  sd(d, T.border); d.setLineWidth(0.15); d.roundedRect(M, y, CW, 18, 2, 2, "S");
+  st(d, T.textFaint); d.setFont("helvetica", "bold"); d.setFontSize(6);
+  d.text("THIS REPORT INCLUDES", M + 8, y + 7);
+  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
+  d.text("Inspection findings  ·  Evidence photographs  ·  Our recommendation  ·  Process guide  ·  Agreement guidance", M + 8, y + 14);
 
   pageFooter(d);
 }
@@ -456,139 +442,141 @@ function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3) {
 // ─────────────────────────────────────────────────────────────────────────────
 // PAGE 2 — PROPERTY DETAILS & FINDINGS OVERVIEW
 // ─────────────────────────────────────────────────────────────────────────────
-
 function renderFindingsOverview(d: jsPDF, s: SessionState, pt: PathType, acc: C3) {
   const rid = s.sessionId.slice(-8).toUpperCase();
-
   pageHeader(d, rid, acc, "Inspection overview");
-  let y = 17;
+  let y = 16;
 
-  // Intro heading
-  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(16);
-  d.text("Inspection Findings & Overview", M, y + 10);
-  rule(d, M, y + 13, CW);
-  y += 20;
+  // Section heading
+  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(18);
+  d.text("Inspection Findings & Property Detail", M, y + 11);
+  sf(d, acc); d.rect(M, y + 14, 28, 1.5, "F");
+  y += 22;
 
-  const hw = CW / 2 - 3;
+  const hw   = CW / 2 - 3;
   const col2 = M + hw + 6;
 
+  // ── Left: property detail table ──────────────────────────────────────────
   const rows: [string, string][] = [
-    ["Property",       s.property.address || "—"],
-    ["Inspection date",fmtDate(s.createdAt)],
-    ...(s.property.workingDateOfLoss ? [["Storm date",       fmtDate(s.property.workingDateOfLoss)] as [string,string]] : []),
-    ["Inspector",      s.repName || "—"],
-    ...(s.property.stormBasis       ? [["Storm basis",       s.property.stormBasis] as [string,string]] : []),
-    ...(s.property.insurerNameKnown  ? [["Insurance carrier", s.property.insurerNameKnown] as [string,string]] : []),
-    ...(s.property.claimNumberKnown  ? [["Claim number",      s.property.claimNumberKnown] as [string,string]] : []),
+    ["Property",        s.property.address || "—"],
+    ["Inspection date", fmtDate(s.createdAt)],
+    ...(s.property.workingDateOfLoss  ? [["Storm date",        fmtDate(s.property.workingDateOfLoss)]  as [string,string]] : []),
+    ["Inspector",       s.repName || "—"],
+    ...(s.property.stormBasis        ? [["Storm basis",        s.property.stormBasis]                  as [string,string]] : []),
+    ...(s.property.insurerNameKnown   ? [["Insurance carrier",  s.property.insurerNameKnown]             as [string,string]] : []),
+    ...(s.property.claimNumberKnown   ? [["Claim number",       s.property.claimNumberKnown]             as [string,string]] : []),
   ];
 
   const prios = s.buyerData?.buyerPriorities ?? [];
   const prioMap: Record<string, string> = {
     roof_longevity: "Roof longevity", insurance_process: "Insurance process",
-    repair_speed: "Repair speed", cost_clarity: "Cost clarity",
-    warranty_coverage: "Warranty coverage", minimal_disruption: "Minimal disruption",
+    repair_speed: "Repair speed",     cost_clarity: "Cost clarity",
+    warranty_coverage: "Warranty",    minimal_disruption: "Low disruption",
   };
 
-  // Determine dynamic height for the two top columns side-by-side
-  const leftCardH = 16 + rows.length * 9.5;
-  const rightCardH = prios.length > 0 ? 56 + Math.ceil(prios.length / 2) * 9.5 : 54;
-  const overviewH = Math.max(leftCardH, rightCardH);
+  const leftH  = 14 + rows.length * 10 + 2;
+  const rightH = 54 + (prios.length > 0 ? 10 + Math.ceil(prios.length / 2) * 10 : 0);
+  const colH   = Math.max(leftH, rightH);
 
-  // ── PROPERTY & INSPECTION DETAILS ─────────────────────────────────────────
-  baseCard(d, M, y, hw, overviewH, T.surface, T.border);
-  label(d, "Property & inspection", M + 6, y + 8, T.textFaint);
-  rule(d, M + 6, y + 10.5, hw - 12, T.border);
+  // Property detail card
+  baseCard(d, M, y, hw, colH, T.surface, T.border);
+  sf(d, acc); d.rect(M, y, hw, 2, "F");
+  microLabel(d, "Property & Inspection", M + 6, y + 9, T.textFaint);
+  sf(d, T.border); d.rect(M + 6, y + 11.5, hw - 12, 0.2, "F");
 
-  let rY = y + 16;
-  rows.forEach(([lbl, val]) => {
+  let rY = y + 18;
+  rows.forEach(([lbl, val], idx) => {
+    if (idx % 2 === 1) { sf(d, T.surface2); d.rect(M + 1, rY - 5, hw - 2, 9.5, "F"); }
     st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(7);
     d.text(lbl, M + 6, rY);
-    st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
-    const vLines = d.splitTextToSize(val, hw - 46) as string[];
-    d.text(vLines[0], M + hw - 4, rY, { align: "right" });
-    rule(d, M + 6, rY + 3, hw - 12, T.border);
-    rY += 9.5;
+    st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(8);
+    const vLines = d.splitTextToSize(val, hw - 48) as string[];
+    d.text(vLines[0], M + hw - 5, rY, { align: "right" });
+    sf(d, T.border); d.rect(M + 6, rY + 2.5, hw - 12, 0.15, "F");
+    rY += 10;
   });
 
-  // ── FINDING SUMMARY ───────────────────────────────────────────────────────
-  baseCard(d, col2, y, hw, overviewH, T.surface, T.border);
-  label(d, "Finding summary", col2 + 6, y + 8, T.textFaint);
-  rule(d, col2 + 6, y + 10.5, hw - 12, T.border);
+  // ── Right: finding summary + priorities ───────────────────────────────────
+  baseCard(d, col2, y, hw, colH, T.surface, T.border);
+  sf(d, acc); d.rect(col2, y, hw, 2, "F");
+  microLabel(d, "Finding Summary", col2 + 6, y + 9, T.textFaint);
+  sf(d, T.border); d.rect(col2 + 6, y + 11.5, hw - 12, 0.2, "F");
 
+  // 3 mini stat tiles inside card
   const fsw = (hw - 14) / 3;
   [
     [s.findings.urgentItemsCount,       "Urgent",        T.red,   T.redBg,   T.redBdr],
     [s.findings.stormRelatedItemsCount, "Storm-related", T.blue,  T.blueBg,  T.blueBdr],
     [s.findings.monitorItemsCount,      "Monitor",       T.amber, T.amberBg, T.amberBdr],
   ].forEach(([cnt, lbl, col, bg, bdr], i) => {
-    statCard(d, cnt as number, lbl as string, col2 + 6 + i * (fsw + 3), y + 15, fsw, 32,
+    statCard(d, cnt as number, lbl as string, col2 + 6 + i * (fsw + 3), y + 15, fsw, 34,
       col as C3, bg as C3, bdr as C3);
   });
 
-  // Homeowner priorities inside Finding Summary card
+  // Homeowner priorities
   if (prios.length > 0) {
-    let pY = y + 54;
-    label(d, "Homeowner priorities", col2 + 6, pY, T.textFaint);
-    pY += 6;
+    let pY = y + 56;
+    microLabel(d, "Homeowner Priorities", col2 + 6, pY, T.textFaint);
+    pY += 8;
     prios.forEach((p, i) => {
       const px = col2 + 6 + (i % 2) * ((hw - 14) / 2 + 3);
-      const py = pY + Math.floor(i / 2) * 9.5;
-      baseCard(d, px, py - 5, (hw - 16) / 2, 8, T.surface, T.border);
+      const py = pY + Math.floor(i / 2) * 10;
+      baseCard(d, px, py - 5.5, (hw - 16) / 2, 9, T.surface2, T.border);
       st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7);
       d.text(prioMap[p] ?? p.replace(/_/g, " "), px + 4, py);
     });
   }
-  y += overviewH + 8;
 
-  // ── WEATHER EVENTS ────────────────────────────────────────────────────────
+  y += colH + 10;
+
+  // ── Weather events (carrier review only) ─────────────────────────────────
   if (pt === "carrier_review" && (s.findings.stormSummary || (s.findings.weatherEvents ?? []).length > 0)) {
-    const stLines = s.findings.stormSummary ? d.splitTextToSize(s.findings.stormSummary, CW - 14) as string[] : [];
-    const events = s.findings.weatherEvents ?? [];
-    const tableHeight = events.length > 0 ? 12 + events.length * 7 + 4 : 0;
-    const weatherH = 15 + Math.min(stLines.length, 3) * 4.5 + tableHeight + 4;
+    const stLines = s.findings.stormSummary ? d.splitTextToSize(s.findings.stormSummary, CW - 16) as string[] : [];
+    const events  = s.findings.weatherEvents ?? [];
+    const tblH    = events.length > 0 ? 14 + events.length * 7.5 : 0;
+    const wH      = 15 + Math.min(stLines.length, 3) * 5 + tblH + 8;
 
-    baseCard(d, M, y, CW, weatherH, T.surface, T.border);
-    sf(d, acc); d.rect(M, y, CW, 1.5, "F");
-    label(d, "Weather event documentation", M + 6, y + 9, acc);
-    rule(d, M + 6, y + 11.5, CW - 12, T.border);
+    baseCard(d, M, y, CW, wH, T.surface, T.border);
+    sf(d, acc); d.rect(M, y, CW, 2, "F");
+    microLabel(d, "Weather Event Documentation", M + 6, y + 9, acc);
+    sf(d, T.border); d.rect(M + 6, y + 11.5, CW - 12, 0.2, "F");
 
     if (s.findings.stormSummary) {
-      st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
-      d.text(stLines.slice(0, 3), M + 6, y + 16);
+      st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8.5);
+      d.text(stLines.slice(0, 3), M + 6, y + 17);
     }
 
     if (events.length > 0) {
       autoTable(d, {
-        startY: y + 16 + Math.min(stLines.length, 3) * 4.5 + 2,
+        startY: y + 17 + Math.min(stLines.length, 3) * 5 + 4,
         margin: { left: M + 5 }, tableWidth: CW - 10,
         head: [["Date / time", "Reference", "Property relevance"]],
         body: events.map(e => [e.time, e.reference, e.relevance]),
         theme: "plain",
-        headStyles:   { fillColor: [250,249,246], textColor: [80,76,70], fontSize: 6.5, fontStyle: "bold" },
-        styles:       { fillColor: [255,255,255], textColor: [26,25,23],   fontSize: 7,   cellPadding: 2, lineColor: [228,225,218], lineWidth: 0.15 },
-        alternateRowStyles: { fillColor: [250,249,246] },
+        headStyles:  { fillColor: [250, 249, 246], textColor: [80, 76, 70], fontSize: 6.5, fontStyle: "bold" },
+        styles:      { fillColor: [255, 255, 255], textColor: [26, 25, 23], fontSize: 7.5, cellPadding: 2.5, lineColor: [228, 225, 218], lineWidth: 0.15 },
+        alternateRowStyles: { fillColor: [250, 249, 246] },
       });
     }
-    y += weatherH + 8;
+    y += wH + 10;
   }
 
-  // ── VALUE CHIPS ──────────────────────────────────────────────────────────
+  // ── Value chips ───────────────────────────────────────────────────────────
   const chips: [string, string][] = [];
   if (s.findings.estimatedClaimValue)    chips.push(["Estimated value",  s.findings.estimatedClaimValue]);
   if (s.findings.roofingArea)            chips.push(["Roof area",        `${s.findings.roofingArea} SF`]);
   if (s.pathData.manufacturerSelected)   chips.push(["Manufacturer",     s.pathData.manufacturerSelected]);
   if (s.pathData.warrantyOptionSelected) chips.push(["Warranty",         s.pathData.warrantyOptionSelected]);
 
-  if (chips.length > 0) {
-    const cw = (CW - (chips.length - 1) * 4) / chips.length;
+  if (chips.length > 0 && y + 26 < PH - 14) {
+    const cw2 = (CW - (chips.length - 1) * 5) / chips.length;
     chips.forEach(([lbl, val], i) => {
-      const cx = M + i * (cw + 4);
-      baseCard(d, cx, y, cw, 22, T.surface, T.border);
-      sf(d, acc); d.rect(cx, y, cw, 1.5, "F");
-      st(d, T.textFaint); d.setFont("helvetica", "bold"); d.setFontSize(6.5);
-      d.text(lbl.toUpperCase(), cx + 6, y + 9);
-      st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(10);
-      d.text(val, cx + 6, y + 18);
+      const cx = M + i * (cw2 + 5);
+      baseCard(d, cx, y, cw2, 24, T.surface, T.border);
+      sf(d, acc); d.rect(cx, y, cw2, 2, "F");
+      microLabel(d, lbl, cx + 6, y + 9);
+      st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(11);
+      d.text(val, cx + 6, y + 19);
     });
   }
 
@@ -598,7 +586,6 @@ function renderFindingsOverview(d: jsPDF, s: SessionState, pt: PathType, acc: C3
 // ─────────────────────────────────────────────────────────────────────────────
 // PAGE 3 — RECOMMENDATION & FINDINGS DETAIL
 // ─────────────────────────────────────────────────────────────────────────────
-
 function renderRecommendation(d: jsPDF, s: SessionState, pt: PathType, acc: C3) {
   const accBg  = getAccentBg(pt);
   const accBdr = getAccentBdr(pt);
@@ -606,165 +593,148 @@ function renderRecommendation(d: jsPDF, s: SessionState, pt: PathType, acc: C3) 
   const cfg    = PATH_CFG[pt];
 
   pageHeader(d, rid, acc, "Recommendation");
-  let y = 17;
+  let y = 16;
 
-  // Intro heading
-  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(16);
-  d.text("Recommended Routing & Action", M, y + 10);
-  rule(d, M, y + 13, CW);
-  y += 20;
+  // Section heading
+  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(18);
+  d.text("Our Recommendation", M, y + 11);
+  sf(d, acc); d.rect(M, y + 14, 24, 1.5, "F");
+  y += 22;
 
-  // ── HERO BANNER ────────────────────────────────────────────────────────────
-  const heroH = 48;
-  sf(d, accBg); d.roundedRect(M, y, CW, heroH, 2, 2, "F");
-  sd(d, accBdr); d.setLineWidth(0.3); d.roundedRect(M, y, CW, heroH, 2, 2, "S");
-  sf(d, acc); d.rect(M, y, 4, heroH, "F");         // left accent
+  // ── Hero recommendation banner ────────────────────────────────────────────
+  const heroHL  = d.splitTextToSize(cfg.headline, CW - 22) as string[];
+  const heroSub = d.splitTextToSize(cfg.subhead,   CW - 22) as string[];
+  const heroH   = 14 + 8 + Math.min(heroHL.length, 2) * 7 + 6 + Math.min(heroSub.length, 3) * 5 + 10;
 
-  badgePill(d, cfg.badgeLabel, M + 10, y + 6, acc, T.surface, accBdr);
+  sf(d, accBg); d.roundedRect(M, y, CW, heroH, 3, 3, "F");
+  sd(d, accBdr); d.setLineWidth(0.25); d.roundedRect(M, y, CW, heroH, 3, 3, "S");
+  sf(d, acc); d.roundedRect(M, y, 5, heroH, 1.5, 1.5, "F");
+
+  badgePill(d, cfg.badgeLabel, M + 12, y + 9, acc, T.surface, accBdr);
 
   st(d, T.text); d.setFont("times", "bold"); d.setFontSize(14);
-  const heroHL = d.splitTextToSize(cfg.headline, CW - 20) as string[];
-  d.text(heroHL.slice(0, 2), M + 10, y + 19);
+  const hl1Y = y + 22;
+  d.text(heroHL.slice(0, 2), M + 12, hl1Y);
 
-  const heroSubY = y + 19 + Math.min(heroHL.length, 2) * 7 + 2;
-  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
-  const heroSub = d.splitTextToSize(cfg.subhead, CW - 20) as string[];
-  d.text(heroSub.slice(0, 2), M + 10, heroSubY);
+  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8.5);
+  d.text(heroSub.slice(0, 3), M + 12, hl1Y + Math.min(heroHL.length, 2) * 7 + 5);
 
-  y += heroH + 6;
+  y += heroH + 8;
 
-  // ── EVIDENCE CONFIDENCE BAR ────────────────────────────────────────────────
-  const photoCountR = (s.photoAssets?.filter(p => p.selectedForSummary).length ?? 0)
-                    + (s.photos?.filter(p => p.selectedForSummary).length ?? 0);
-  const confSegments: boolean[] = [
+  // ── Evidence confidence bar ───────────────────────────────────────────────
+  const photoCount = (s.photoAssets?.filter(p => p.selectedForSummary).length ?? 0)
+                   + (s.photos?.filter(p => p.selectedForSummary).length ?? 0);
+  const confSegs = [
     s.findings.stormRelatedItemsCount > 0,
-    photoCountR > 0,
+    photoCount > 0,
     (s.findings.weatherEvents ?? []).length > 0 || !!s.findings.stormSummary,
     s.findings.urgentItemsCount > 0 || s.findings.monitorItemsCount > 0,
     !!s.findings.summaryBody,
   ];
-  const filledCount = confSegments.filter(Boolean).length;
+  const filled = confSegs.filter(Boolean).length;
 
-  baseCard(d, M, y, CW, 20, T.surface, T.border);
-  label(d, "Evidence confidence", M + 6, y + 9, T.textFaint);
-  confidenceBar(d, M + 74, y + 5.5, CW - 80, filledCount, 5, acc);
-  st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6);
-  d.text(`${filledCount} of 5 evidence types documented`, M + 74, y + 17);
+  baseCard(d, M, y, CW, 22, T.surface, T.border);
+  microLabel(d, "Evidence Confidence", M + 6, y + 9, T.textFaint);
+  confidenceBar(d, M + 70, y + 6, CW - 76, filled, 5, acc);
+  st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6.5);
+  d.text(`${filled} of 5 evidence types documented`, M + 70, y + 18, { maxWidth: CW - 76 });
+  y += 30;
 
-  y += 26;
+  // ── What this means (full width) ──────────────────────────────────────────
+  const wmLines = d.splitTextToSize(cfg.whatMeans, CW - 16) as string[];
+  const wmH     = 14 + Math.min(wmLines.length, 6) * 5 + 8;
 
-  // ── TWO COLUMNS — what it means + credibility ──────────────────────────────
-  const hw = CW / 2 - 3;
-  const col2 = M + hw + 6;
-  const colH = 86;
+  baseCard(d, M, y, CW, wmH, accBg, accBdr);
+  sf(d, acc); d.rect(M, y, 4, wmH, "F");
+  microLabel(d, "What this finding means", M + 10, y + 9, acc);
+  sf(d, accBdr); d.rect(M + 10, y + 11.5, CW - 16, 0.2, "F");
+  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8.5);
+  d.text(wmLines.slice(0, 6), M + 10, y + 17);
+  y += wmH + 8;
 
-  baseCard(d, M, y, hw, colH, accBg, accBdr);
-  sf(d, acc); d.rect(M, y, 3, colH, "F");
-  label(d, "What this finding means", M + 8, y + 9, acc);
-  rule(d, M + 8, y + 11.5, hw - 16, accBdr);
-  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
-  const wmLines = d.splitTextToSize(cfg.whatMeans, hw - 16) as string[];
-  d.text(wmLines.slice(0, 8), M + 8, y + 18);
+  // ── Credibility lines ─────────────────────────────────────────────────────
+  const crdLabel = "What we want you to know";
+  microLabel(d, crdLabel, M, y, T.textFaint);
+  y += 7;
 
-  baseCard(d, col2, y, hw, colH, T.surface, T.border);
-  label(d, "What we want you to know", col2 + 6, y + 9, T.textFaint);
-  rule(d, col2 + 6, y + 11.5, hw - 12, T.border);
-
-  let cY = y + 18;
   cfg.credibilityLines.forEach(line => {
     const isPositive = line.startsWith("We are saying");
-    const lbg: C3  = isPositive ? accBg   : T.surface;
-    const lbdr: C3 = isPositive ? accBdr  : T.border;
-    const ll = d.splitTextToSize(line, hw - 20) as string[];
-    const lh = 8 + ll.length * 3.8;
-    baseCard(d, col2 + 5, cY - 4, hw - 10, lh, lbg, lbdr);
-    if (isPositive) { sf(d, acc); d.rect(col2 + 5, cY - 4, 2.5, lh, "F"); }
+    const ll    = d.splitTextToSize(line, CW - 20) as string[];
+    const lh    = 8 + ll.length * 4.2;
+    const lbg   = isPositive ? accBg   : T.surface;
+    const lbdr  = isPositive ? accBdr  : T.border;
+
+    baseCard(d, M, y, CW, lh, lbg, lbdr);
+    if (isPositive) { sf(d, acc); d.rect(M, y, 4, lh, "F"); }
     st(d, isPositive ? T.text : T.textMid);
-    d.setFont("helvetica", isPositive ? "bold" : "normal"); d.setFontSize(7.5);
-    d.text(ll, col2 + 11, cY + 1);
-    cY += lh + 2;
+    d.setFont("helvetica", isPositive ? "bold" : "normal"); d.setFontSize(8);
+    d.text(ll, isPositive ? M + 10 : M + 6, y + 6);
+    y += lh + 4;
   });
 
-  y += colH + 8;
+  y += 4;
 
-  // ── RECOMMENDED NEXT STEP — prominent CTA strip ────────────────────────────
-  const ctaH = 28;
-  baseCard(d, M, y, CW, ctaH, T.surface, T.border);
-  sf(d, acc); d.rect(M, y, CW, 2, "F");
-  label(d, "Recommended next step", M + 6, y + 11, acc);
-  st(d, T.text); d.setFont("helvetica", "normal"); d.setFontSize(8);
-  const nsLines = d.splitTextToSize(cfg.nextStep, CW - 14) as string[];
-  d.text(nsLines.slice(0, 2), M + 6, y + 20);
+  // ── Recommended next step CTA ─────────────────────────────────────────────
+  if (y + 30 < PH - 14) {
+    const nsLines = d.splitTextToSize(cfg.nextStep, CW - 16) as string[];
+    const nsH     = 14 + Math.min(nsLines.length, 2) * 5 + 8;
 
-  y += ctaH + 6;
-
-  // ── COVERAGE NOTICE ───────────────────────────────────────────────────────
-  const coverageH = 22;
-  baseCard(d, M, y, CW, coverageH, T.amberBg, T.amberBdr);
-  sf(d, T.amber); d.rect(M, y, 3, coverageH, "F");
-  st(d, T.amber); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
-  d.text("Coverage notice:", M + 8, y + 8);
-  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
-  const gLines = d.splitTextToSize(
-    "Your insurance provider reviews the documented findings and makes the final coverage determination under your policy. This report documents observed conditions and does not guarantee any specific outcome.",
-    CW - 14
-  ) as string[];
-  d.text(gLines.slice(0, 2), M + 8, y + 15);
-
-  y += coverageH + 8;
-
-  // ── SUMMARY BODY (optional) ───────────────────────────────────────────────
-  if ((s.findings.summaryBody || s.findings.summaryHeadline) && y + 44 < PH - 20) {
-    baseCard(d, M, y, CW, 44, T.surface, T.border);
-    sf(d, acc); d.rect(M, y, 3, 44, "F");
-    if (s.findings.summaryHeadline) {
-      st(d, T.text); d.setFont("times", "bold"); d.setFontSize(12);
-      d.text(s.findings.summaryHeadline, M + 8, y + 10);
-    }
-    if (s.findings.summaryBody) {
-      st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
-      const sbLines = d.splitTextToSize(s.findings.summaryBody, CW - 14) as string[];
-      d.text(sbLines.slice(0, 3), M + 8, s.findings.summaryHeadline ? y + 20 : y + 10);
-    }
-    y += 52;
+    baseCard(d, M, y, CW, nsH, T.surface, T.border);
+    sf(d, acc); d.rect(M, y, CW, 2, "F");
+    microLabel(d, "Recommended Next Step", M + 6, y + 10, acc);
+    st(d, T.text); d.setFont("helvetica", "normal"); d.setFontSize(8.5);
+    d.text(nsLines.slice(0, 2), M + 6, y + 19);
+    y += nsH + 8;
   }
 
-  // ── CATEGORY CHIPS (optional) ─────────────────────────────────────────────
-  const cats = s.findings.findingCategories ?? [];
-  if (cats.length > 0 && y + 22 < PH - 20) {
-    const catMap: Record<string,string> = {
-      urgent: "Urgent", storm_related: "Storm-related", monitor_only: "Monitor",
-      general: "General", shingle: "Shingles", ridge: "Ridge",
-      soft_metal: "Soft metals", siding: "Siding", screen: "Screens",
-      gutter: "Gutters", flashing: "Flashing", urgent_protection: "Urgent protection",
-    };
-    label(d, "Documented categories", M, y, T.textFaint);
-    y += 6;
-    const catW = (CW - (Math.min(cats.length, 6) - 1) * 4) / Math.min(cats.length, 6);
-    cats.slice(0, 6).forEach((cat, i) => {
-      const cx = M + i * (catW + 4);
-      baseCard(d, cx, y, catW, 13, T.surface2, T.border);
-      st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7);
-      d.text(catMap[cat] ?? cat.replace(/_/g, " "), cx + catW / 2, y + 9, { align: "center" });
-    });
+  // ── Coverage notice ───────────────────────────────────────────────────────
+  if (y + 22 < PH - 14) {
+    baseCard(d, M, y, CW, 22, T.amberBg, T.amberBdr);
+    sf(d, T.amber); d.rect(M, y, 4, 22, "F");
+    st(d, T.amber); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
+    d.text("Coverage notice:", M + 10, y + 8);
+    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
+    const gLines = d.splitTextToSize(
+      "Your insurance provider reviews the documented findings and makes the final coverage determination. This report documents observed conditions and does not guarantee any specific outcome.",
+      CW - 16
+    ) as string[];
+    d.text(gLines.slice(0, 2), M + 10, y + 15);
+  }
+
+  // ── Optional AI summary ───────────────────────────────────────────────────
+  if (s.findings.summaryBody || s.findings.summaryHeadline) {
+    const sbY = y + 30;
+    if (sbY + 44 < PH - 14) {
+      baseCard(d, M, sbY, CW, 44, T.surface, T.border);
+      sf(d, acc); d.rect(M, sbY, 4, 44, "F");
+      if (s.findings.summaryHeadline) {
+        st(d, T.text); d.setFont("times", "bold"); d.setFontSize(12);
+        d.text(s.findings.summaryHeadline, M + 10, sbY + 11);
+      }
+      if (s.findings.summaryBody) {
+        st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8.5);
+        const sbL = d.splitTextToSize(s.findings.summaryBody, CW - 16) as string[];
+        d.text(sbL.slice(0, 4), M + 10, s.findings.summaryHeadline ? sbY + 20 : sbY + 11);
+      }
+    }
   }
 
   pageFooter(d);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PAGE 4+ — EVIDENCE GALLERY
+// PAGE 4+ — EVIDENCE GALLERY  (2 rows × 2 cols = 4 photos per page)
+// Photos are 30% taller than v1 for greater visual impact
 // ─────────────────────────────────────────────────────────────────────────────
-
 async function renderEvidenceGallery(d: jsPDF, photos: PdfPhoto[], pt: PathType, acc: C3, rid: string) {
   if (photos.length === 0) return;
 
-  const imgW  = (CW - 7) / 2;
-  const imgH  = 50;
-  const metaH = 48;
-  const cardH = imgH + metaH;
   const colGap = 7;
   const rowGap = 8;
+  const imgW   = (CW - colGap) / 2;
+  const imgH   = 65;     // 30 % taller than v1 (was 50 mm)
+  const metaH  = 50;
+  const cardH  = imgH + metaH;
 
   let photoIdx = 0;
   let firstPage = true;
@@ -772,14 +742,13 @@ async function renderEvidenceGallery(d: jsPDF, photos: PdfPhoto[], pt: PathType,
   while (photoIdx < photos.length) {
     d.addPage();
     pageHeader(d, rid, acc, "Evidence documentation");
-    let y = 17;
+    let y = 16;
 
     if (firstPage) {
-      // Section heading
-      st(d, T.text); d.setFont("times", "bold"); d.setFontSize(14);
-      d.text(PATH_CFG[pt].proofLabel, M, y + 8);
-      rule(d, M, y + 11, CW);
-      y += 18;
+      st(d, T.text); d.setFont("times", "bold"); d.setFontSize(16);
+      d.text(PATH_CFG[pt].proofLabel, M, y + 9);
+      sf(d, acc); d.rect(M, y + 12, 22, 1.5, "F");
+      y += 20;
       firstPage = false;
     }
 
@@ -787,20 +756,20 @@ async function renderEvidenceGallery(d: jsPDF, photos: PdfPhoto[], pt: PathType,
 
     for (let i = 0; i < chunk.length; i++) {
       const photo = chunk[i];
-      const col = i % 2;
-      const row = Math.floor(i / 2);
-      const cx  = M + col * (imgW + colGap);
-      const cy  = y + row * (cardH + rowGap);
+      const col   = i % 2;
+      const row   = Math.floor(i / 2);
+      const cx    = M + col * (imgW + colGap);
+      const cy    = y + row * (cardH + rowGap);
 
       const pc    = classifyPdfPhoto(photo.label ?? "", photo.category ?? "", photo.description ?? "");
       const badge = photoBadge(pc, pt);
 
-      // ── CARD SHELL ─────────────────────────────────────────────────────────
+      // Card shell
       baseCard(d, cx, cy, imgW, cardH, T.surface, badge.bdr);
 
-      // ── PHOTO ──────────────────────────────────────────────────────────────
+      // Photo
       try {
-        let compressed = await compressImage(photo.dataUrl, 650);
+        let compressed = await compressImage(photo.dataUrl, 800);
         if (compressed.startsWith("http")) {
           const img = await new Promise<HTMLImageElement>((resolve, reject) => {
             const tempImg = new Image();
@@ -816,7 +785,7 @@ async function renderEvidenceGallery(d: jsPDF, photos: PdfPhoto[], pt: PathType,
 
         // Annotations
         if (photo.annotations && photo.annotations.length > 0) {
-          d.setLineWidth(0.6);
+          d.setLineWidth(0.7);
           for (const ann of photo.annotations) {
             const ac: C3 = ann.color === "#ef4444" ? T.red : T.blue;
             sd(d, ac);
@@ -826,52 +795,56 @@ async function renderEvidenceGallery(d: jsPDF, photos: PdfPhoto[], pt: PathType,
               d.line(cx + ann.x * imgW / 100, cy + ann.y * imgH / 100, cx + (ann.toX ?? ann.x) * imgW / 100, cy + (ann.toY ?? ann.y) * imgH / 100);
             } else if (ann.type === "label" && ann.text) {
               sf(d, ac); d.rect(cx + ann.x * imgW / 100 - 10, cy + ann.y * imgH / 100 - 3.5, 20, 7, "F");
-              st(d, [255,255,255] as C3); d.setFontSize(5.5);
+              st(d, [255, 255, 255] as C3); d.setFontSize(5.5);
               d.text(ann.text.toUpperCase(), cx + ann.x * imgW / 100, cy + ann.y * imgH / 100 + 1.5, { align: "center" });
             }
           }
         }
 
-        // Subtle bottom scrim for badge legibility
-        sf(d, T.surface);
-        d.rect(cx, cy + imgH - 12, imgW, 12, "F");
+        // Bottom scrim for badge legibility
+        sf(d, T.surface); d.rect(cx, cy + imgH - 12, imgW, 12, "F");
 
       } catch (_) {
         sf(d, T.surface2); d.rect(cx, cy, imgW, imgH, "F");
-        st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(7);
+        st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
         d.text("Photo unavailable", cx + imgW / 2, cy + imgH / 2, { align: "center" });
       }
 
-      // Badge on image
-      badgePill(d, badge.label, cx + 3, cy + imgH - 10, badge.color, badge.bg, badge.bdr);
+      // Badge pill on image bottom
+      badgePill(d, badge.label, cx + 4, cy + imgH - 11, badge.color, badge.bg, badge.bdr);
 
-      // Photo number
+      // Photo sequence number
       st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6);
       d.text(`${photoIdx + i + 1}`, cx + imgW - 4, cy + imgH - 4, { align: "right" });
 
-      // ── CAPTION ZONE ───────────────────────────────────────────────────────
-      const capY = cy + imgH + 2;
+      // ── Caption zone ────────────────────────────────────────────────────────
+      const capY = cy + imgH + 3;
 
-      const capTxt = photo.label || photo.description || badge.label;
-      st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(8);
-      d.text(d.splitTextToSize(capTxt, imgW - 8)[0] as string, cx + 4, capY + 7);
+      // Label
+      const capTxt = photo.label || badge.label;
+      st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(8.5);
+      const capLines = d.splitTextToSize(capTxt, imgW - 8) as string[];
+      d.text(capLines.slice(0, 2), cx + 4, capY + 7);
+      const capLH = Math.min(capLines.length, 2) * 5.5;
 
-      // Why it matters
-      rule(d, cx + 4, capY + 10, imgW - 8, T.border);
+      // "Why it matters" section
+      const wyY = capY + 8 + capLH;
+      sf(d, badge.bg); d.roundedRect(cx + 4, wyY, imgW - 8, 22, 1.5, 1.5, "F");
+      sd(d, badge.bdr); d.setLineWidth(0.15); d.roundedRect(cx + 4, wyY, imgW - 8, 22, 1.5, 1.5, "S");
       st(d, badge.color); d.setFont("helvetica", "bold"); d.setFontSize(6);
-      d.text("Why it matters", cx + 4, capY + 16);
+      d.text("WHY IT MATTERS", cx + 8, wyY + 6);
       st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7);
-      const whyLines = d.splitTextToSize(badge.why, imgW - 8) as string[];
-      d.text(whyLines.slice(0, 2), cx + 4, capY + 22);
+      const whyLines = d.splitTextToSize(badge.why, imgW - 14) as string[];
+      d.text(whyLines.slice(0, 2), cx + 8, wyY + 12);
 
-      // Inspector note
-      if (photo.description) {
-        rule(d, cx + 4, capY + 31, imgW - 8, T.border);
+      // Inspector note (if present)
+      if (photo.description && photo.description.length > 0) {
+        const noteY = wyY + 26;
         st(d, T.textFaint); d.setFont("helvetica", "bold"); d.setFontSize(6);
-        d.text("Inspector note", cx + 4, capY + 37);
-        st(d, T.textMid); d.setFont("helvetica", "italic"); d.setFontSize(7);
+        d.text("INSPECTOR NOTE", cx + 4, noteY);
+        st(d, T.textMid); d.setFont("helvetica", "italic"); d.setFontSize(7.5);
         const noteLines = d.splitTextToSize(`"${photo.description}"`, imgW - 8) as string[];
-        d.text(noteLines[0] as string, cx + 4, capY + 43);
+        d.text(noteLines.slice(0, 2), cx + 4, noteY + 6);
       }
     }
 
@@ -881,169 +854,163 @@ async function renderEvidenceGallery(d: jsPDF, photos: PdfPhoto[], pt: PathType,
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// HOW THE PROCESS WORKS
+// HOW THE PROCESS WORKS — horizontal step strips (replaces 2×2 grid)
 // ─────────────────────────────────────────────────────────────────────────────
-
 function renderHowItWorks(d: jsPDF, acc: C3, rid: string) {
   pageHeader(d, rid, acc, "Process overview");
-  let y = 17;
+  let y = 16;
 
-  // Intro heading
-  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(16);
-  d.text("How the process works", M, y + 10);
-  rule(d, M, y + 13, CW);
-  y += 20;
+  // Section heading
+  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(18);
+  d.text("How the Process Works", M, y + 11);
+  sf(d, acc); d.rect(M, y + 14, 22, 1.5, "F");
+  y += 22;
 
-  // Info bar
-  baseCard(d, M, y, CW, 14, T.blueBg, T.blueBdr);
-  sf(d, T.blue); d.rect(M, y, 3, 14, "F");
-  st(d, T.blue); d.setFont("helvetica", "normal"); d.setFontSize(8);
-  const infoLines = d.splitTextToSize("Reading this page doesn't commit you to anything. Review the four steps below, then decide whether to move forward.", CW - 14) as string[];
-  d.text(infoLines, M + 8, y + 5.5);
-  y += 20;
+  // Info banner
+  const infoText = "Reading this page doesn't commit you to anything. Review the four steps, then decide.";
+  baseCard(d, M, y, CW, 18, T.blueBg, T.blueBdr);
+  sf(d, T.blue); d.rect(M, y, 4, 18, "F");
+  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8.5);
+  d.text(infoText, M + 10, y + 11);
+  y += 26;
 
-  // 2×2 step cards
-  const cw = (CW - 6) / 2;
-  const ch = 56;
+  // Step strips
+  const stepH    = 42;
+  const stepGap  = 6;
+  const numR     = 10;  // number circle radius
+  const numCX    = M + numR + 2;
+  const textX    = M + numR * 2 + 10;
+  const textW    = CW - numR * 2 - 14;
 
   HOW_IT_WORKS.forEach((step, i) => {
-    const col = i % 2;
-    const row = Math.floor(i / 2);
-    const cx  = M + col * (cw + 6);
-    const cy  = y + row * (ch + 6);
+    const sy = y + i * (stepH + stepGap);
 
-    baseCard(d, cx, cy, cw, ch, T.surface, T.border);
-    sf(d, acc); d.rect(cx, cy, cw, 1.5, "F");
+    baseCard(d, M, sy, CW, stepH, i % 2 === 0 ? T.surface : T.surface2, T.border);
+    sf(d, acc); d.rect(M, sy, CW, 2, "F");
 
-    // Step number
-    st(d, T.border); d.setFont("times", "normal"); d.setFontSize(28);
-    d.text(step.num, cx + cw - 8, cy + 18, { align: "right" });
-
-    // Icon circle
-    baseCard(d, cx + 6, cy + 7, 14, 14, T.blueBg, T.blueBdr);
-    sf(d, acc); d.circle(cx + 13, cy + 14, 3, "F");
+    // Number circle
+    sf(d, acc); d.circle(numCX, sy + stepH / 2, numR, "F");
+    // Large ghost number in background
+    st(d, T.surface3); d.setFont("times", "bold"); d.setFontSize(36);
+    d.text(step.num, numCX + numR + 2, sy + stepH / 2 + 6, { align: "left" });
+    // White number in circle
+    st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(10);
+    d.text(step.num.replace(/^0/, ""), numCX, sy + stepH / 2 + 3.5, { align: "center" });
 
     // Headline
-    st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(9.5);
-    d.text(step.headline, cx + 6, cy + 28);
+    st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(10.5);
+    d.text(step.headline, textX, sy + 14);
 
     // Body
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
-    const bLines = d.splitTextToSize(step.body, cw - 12) as string[];
-    d.text(bLines.slice(0, 4), cx + 6, cy + 36);
+    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
+    const bLines = d.splitTextToSize(step.body, textW) as string[];
+    d.text(bLines.slice(0, 3), textX, sy + 23);
   });
 
-  y += ch * 2 + 6 + 14;
+  y += HOW_IT_WORKS.length * (stepH + stepGap) + 6;
 
   // Important notice
-  baseCard(d, M, y, CW, 24, T.amberBg, T.amberBdr);
-  sf(d, T.amber); d.rect(M, y, 3, 24, "F");
-  st(d, T.amber); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
-  d.text("Important to know:", M + 8, y + 9);
-  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
   const noticeLines = d.splitTextToSize(
     "This agreement does not guarantee claim approval, coverage, deductible waiver, a free roof, or construction start. Your insurance provider makes all coverage decisions under your policy.",
-    CW - 14
+    CW - 16
   ) as string[];
-  d.text(noticeLines.slice(0, 2), M + 8, y + 16);
+  const noticeH = 12 + noticeLines.length * 5 + 8;
+
+  baseCard(d, M, y, CW, noticeH, T.amberBg, T.amberBdr);
+  sf(d, T.amber); d.rect(M, y, 4, noticeH, "F");
+  st(d, T.amber); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
+  d.text("Important to know:", M + 10, y + 9);
+  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
+  d.text(noticeLines, M + 10, y + 16);
 
   pageFooter(d);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AGREEMENT REVIEW
+// AGREEMENT REVIEW (plain-English + full legal text)
 // ─────────────────────────────────────────────────────────────────────────────
-
 function renderAgreementReview(d: jsPDF, s: SessionState, acc: C3) {
   const rid = s.sessionId.slice(-8).toUpperCase();
   pageHeader(d, rid, acc, "Agreement review");
-  let y = 17;
+  let y = 16;
 
-  // Section heading
-  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(16);
-  d.text("Insurance Contingency Agreement", M, y + 10);
-  rule(d, M, y + 13, CW);
-  y += 20;
+  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(18);
+  d.text("Insurance Contingency Agreement", M, y + 11);
+  sf(d, acc); d.rect(M, y + 14, 28, 1.5, "F");
+  y += 22;
 
-  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(9);
+  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(9.5);
   d.text("Before authorizing, here's the agreement in plain language.", M, y);
-  y += 10;
+  y += 12;
 
-  // Plain-English 3 cards
-  const pcw = (CW - 8) / 3;
-  const pch = 68;
+  // Plain-English cards — stacked full-width for readability
   PLAIN_ENGLISH.forEach((card, i) => {
-    const cx = M + i * (pcw + 4);
-    baseCard(d, cx, y, pcw, pch, T.surface, T.border);
-    sf(d, acc); d.rect(cx, y, pcw, 1.5, "F");
+    const titleLines = d.splitTextToSize(card.title, CW - 52) as string[];
+    const bodyLines  = d.splitTextToSize(card.body,  CW - 52) as string[];
+    const cardH      = Math.max(46, 12 + titleLines.length * 6 + 4 + bodyLines.length * 5 + 10);
 
-    // Icon
-    baseCard(d, cx + 6, y + 7, 14, 14, T.blueBg, T.blueBdr);
-    sf(d, acc); d.circle(cx + 13, y + 14, 3, "F");
+    baseCard(d, M, y, CW, cardH, i % 2 === 0 ? T.surface : T.surface2, T.border);
+    sf(d, acc); d.rect(M, y, 4, cardH, "F");
 
-    st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(8);
-    const titleLines = d.splitTextToSize(card.title, pcw - 12) as string[];
-    d.text(titleLines, cx + 6, y + 27);
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
-    const cLines = d.splitTextToSize(card.body, pcw - 12) as string[];
-    d.text(cLines.slice(0, 8), cx + 6, y + 27 + titleLines.length * 5);
+    // Icon circle
+    baseCard(d, M + 8, y + (cardH - 18) / 2, 18, 18, T.blueBg, T.blueBdr);
+    sf(d, acc); d.circle(M + 17, y + cardH / 2, 4, "F");
+    sectionNumBadge(d, i + 1, M + 17, y + cardH / 2, 4, acc);
+
+    st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(9);
+    d.text(titleLines, M + 34, y + 13);
+    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
+    d.text(bodyLines, M + 34, y + 13 + titleLines.length * 6 + 4);
+    y += cardH + 6;
   });
-  y += pch + 10;
+
+  y += 4;
 
   // Wisconsin notice
   const wLines = WISCONSIN_CLAIM_NOTICE.lines;
-  const wH = 14 + wLines.length * 5.2;
-  baseCard(d, M, y, CW, wH, T.amberBg, T.amberBdr);
-  sf(d, T.amber); d.rect(M, y, 3, wH, "F");
-  st(d, T.amber); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
-  d.text(WISCONSIN_CLAIM_NOTICE.heading, M + 8, y + 8);
-  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7);
-  wLines.forEach((line, i) => { d.text(`• ${line}`, M + 8, y + 14 + i * 5.2, { maxWidth: CW - 16 }); });
-  y += wH + 12;
+  const wH     = 14 + wLines.length * 5.5;
+  if (y + wH < PH - 14) {
+    baseCard(d, M, y, CW, wH, T.amberBg, T.amberBdr);
+    sf(d, T.amber); d.rect(M, y, 4, wH, "F");
+    st(d, T.amber); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
+    d.text(WISCONSIN_CLAIM_NOTICE.heading, M + 10, y + 9);
+    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
+    wLines.forEach((line, i) => { d.text(`• ${line}`, M + 10, y + 15 + i * 5.5, { maxWidth: CW - 16 }); });
+  }
 
-  // Force page break so that the full agreement text starts on a fresh page
+  // New page for full agreement text
   pageFooter(d);
   d.addPage();
   pageHeader(d, rid, acc, "Agreement details");
-  y = 17;
+  y = 16;
 
-  // Agreement text header
-  rule(d, M, y, CW);
-  y += 5;
-  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(9);
-  d.text("Full agreement text — Insurance Contingency Agreement", M, y);
-  y += 8;
-  rule(d, M, y, CW);
-  y += 6;
+  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(9.5);
+  d.text("Full Agreement Text — Insurance Contingency Agreement", M, y + 6);
+  sf(d, T.border); d.rect(M, y + 9, CW, 0.2, "F");
+  y += 16;
 
   const newPage = () => {
     pageFooter(d);
     d.addPage();
     pageHeader(d, rid, acc, "Agreement (continued)");
-    y = 17;
+    y = 16;
   };
 
-  AGREEMENT_SECTIONS.forEach((sec, secIdx) => {
-    const bodyLines = d.splitTextToSize(sec.body, CW - 30) as string[];
-    const cardH = 9 + bodyLines.length * 4.4 + 14;
-    if (y + cardH > PH - 14) newPage();
+  AGREEMENT_SECTIONS.forEach((sec, idx) => {
+    const bodyLines = d.splitTextToSize(sec.body, CW - 28) as string[];
+    const ch        = 10 + bodyLines.length * 4.6 + 14;
+    if (y + ch > PH - 14) newPage();
 
-    const cardBg: C3 = secIdx % 2 === 0 ? T.surface : T.surface2;
-    baseCard(d, M, y, CW, cardH, cardBg, T.border);
-
-    // Numbered circle badge
-    sectionNumBadge(d, secIdx + 1, M + 9, y + cardH / 2, 5, acc);
-
-    // Accent top bar
-    sf(d, acc); d.rect(M, y, CW, 1.5, "F");
+    const bg: C3 = idx % 2 === 0 ? T.surface : T.surface2;
+    baseCard(d, M, y, CW, ch, bg, T.border);
+    sf(d, acc); d.rect(M, y, CW, 2, "F");
+    sectionNumBadge(d, idx + 1, M + 9, y + ch / 2, 5, acc);
 
     st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(8.5);
     d.text(sec.heading, M + 20, y + 10);
-
     st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
-    d.text(bodyLines, M + 20, y + 16);
-
-    y += cardH + 3;
+    d.text(bodyLines, M + 20, y + 17);
+    y += ch + 4;
   });
 
   pageFooter(d);
@@ -1052,88 +1019,87 @@ function renderAgreementReview(d: jsPDF, s: SessionState, acc: C3) {
 // ─────────────────────────────────────────────────────────────────────────────
 // AUTHORIZATION & SIGNATURE
 // ─────────────────────────────────────────────────────────────────────────────
-
 function renderSignature(d: jsPDF, s: SessionState, acc: C3) {
-  const rid = s.sessionId.slice(-8).toUpperCase();
+  const rid    = s.sessionId.slice(-8).toUpperCase();
   pageHeader(d, rid, acc, "Authorization");
-  let y = 17;
+  let y = 16;
 
-  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(16);
-  d.text("Authorization & Signature", M, y + 10);
-  rule(d, M, y + 13, CW);
-  y += 22;
+  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(18);
+  d.text("Authorization & Signature", M, y + 11);
+  sf(d, acc); d.rect(M, y + 14, 24, 1.5, "F");
+  y += 24;
 
   const sig      = s.signatureData;
   const isSigned = !!(sig.signatureImage && sig.signedAt);
 
   // Status badge
-  const statusColor  = isSigned ? T.green  : T.amber;
-  const statusBg     = isSigned ? T.greenBg : T.amberBg;
-  const statusBdr    = isSigned ? T.greenBdr : T.amberBdr;
-  const statusLabel  = isSigned ? "Agreement executed" : "Signature pending";
-  badgePill(d, statusLabel, M, y, statusColor, statusBg, statusBdr, 72);
-  y += 14;
+  const sColor = isSigned ? T.green  : T.amber;
+  const sBg    = isSigned ? T.greenBg : T.amberBg;
+  const sBdr   = isSigned ? T.greenBdr : T.amberBdr;
+  badgePill(d, isSigned ? "Agreement executed" : "Signature pending", M, y, sColor, sBg, sBdr, 72);
+  y += 16;
 
-  const hw = CW / 2 - 3;
+  const hw   = CW / 2 - 3;
   const col2 = M + hw + 6;
 
   if (isSigned) {
-    baseCard(d, M,    y, hw, 26, T.surface, T.border);
-    baseCard(d, col2, y, hw, 26, T.surface, T.border);
-    infoRow(d, "Signer name",  sig.signerName || "On file",         M    + 6, y + 8, hw - 10);
-    infoRow(d, "Signed at",    fmtDT(sig.signedAt),                 col2 + 6, y + 8, hw - 10);
-    y += 32;
+    // Info grid — 2×2
+    baseCard(d, M,    y, hw, 30, T.surface, T.border);
+    baseCard(d, col2, y, hw, 30, T.surface, T.border);
+    infoRow(d, "Signer name",  sig.signerName  || "On file",      M    + 6, y + 8, hw - 10);
+    infoRow(d, "Signed at",    fmtDT(sig.signedAt),               col2 + 6, y + 8, hw - 10);
+    y += 36;
 
-    baseCard(d, M,    y, hw, 26, T.surface, T.border);
-    baseCard(d, col2, y, hw, 26, T.surface, T.border);
-    infoRow(d, "Signer email", sig.signerEmail || "Not provided",   M    + 6, y + 8, hw - 10);
-    infoRow(d, "Property",     s.property.address || "On file",     col2 + 6, y + 8, hw - 10);
-    y += 32;
+    baseCard(d, M,    y, hw, 30, T.surface, T.border);
+    baseCard(d, col2, y, hw, 30, T.surface, T.border);
+    infoRow(d, "Signer email", sig.signerEmail || "Not provided",  M    + 6, y + 8, hw - 10);
+    infoRow(d, "Property",     s.property.address || "On file",    col2 + 6, y + 8, hw - 10);
+    y += 38;
 
     if (sig.signatureImage) {
-      label(d, "Authorized owner signature", M, y, T.textFaint);
-      y += 5;
-      try { d.addImage(sig.signatureImage, "PNG", M, y, 80, 30); } catch (_) {}
-      rule(d, M, y + 30, 80, T.borderMid);
-      y += 38;
+      microLabel(d, "Authorized Owner Signature", M, y, T.textFaint);
+      y += 8;
+      baseCard(d, M, y, 90, 36, T.surface, T.border);
+      try { d.addImage(sig.signatureImage, "PNG", M + 2, y + 2, 86, 32); } catch (_) {}
+      y += 44;
     }
 
     st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8.5);
     d.text("Agreed to: Insurance Contingency Agreement — Hustad Companies, Inc.", M, y);
-    y += 14;
+    y += 16;
 
   } else {
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(9);
+    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(9.5);
     d.text("Signature has not yet been collected. Authorization is not complete.", M, y);
-    y += 10;
+    y += 12;
     if (sig.deferralReason) {
       st(d, T.textFaint); d.setFont("helvetica", "italic"); d.setFontSize(8.5);
-      d.text(`Deferral note: ${sig.deferralReason}`, M, y + 6);
+      d.text(`Deferral note: ${sig.deferralReason}`, M, y + 4);
       y += 16;
     }
+    y += 8;
   }
 
-  // Signature lines
-  y += 10;
-  sd(d, T.borderMid); d.setLineWidth(0.5);
-  d.line(M, y, M + 88, y);
-  d.line(PW - M - 88, y, PW - M, y);
+  // Signature lines for wet-ink backup
+  sd(d, T.borderMid); d.setLineWidth(0.4);
+  d.line(M, y, M + 86, y);
+  d.line(PW - M - 86, y, PW - M, y);
   st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(7);
-  d.text("Authorized owner signature / date", M, y + 5);
-  d.text("Hustad Companies authorized signatory / date", PW - M - 88, y + 5);
-  y += 24;
+  d.text("Owner signature / date", M, y + 5.5);
+  d.text("Hustad Companies authorized signatory / date", PW - M - 86, y + 5.5);
+  y += 22;
 
-  // Final notice
-  const g1 = "Final work begins only after final scope, materials, schedule, and homeowner responsibilities are confirmed in writing.";
-  const g2 = "Your insurance provider determines coverage. Hustad Companies makes no guarantee of claim approval or specific outcome.";
-  const gl = [...(d.splitTextToSize(g1, CW - 14) as string[]), ...(d.splitTextToSize(g2, CW - 14) as string[])];
-  const gH = 12 + gl.length * 4.8;
+  // Final authorization notice
+  const g1    = "Final work begins only after final scope, materials, schedule, and homeowner responsibilities are confirmed in writing.";
+  const g2    = "Your insurance provider determines coverage. Hustad Companies makes no guarantee of claim approval or specific outcome.";
+  const gl    = [...(d.splitTextToSize(g1, CW - 16) as string[]), ...(d.splitTextToSize(g2, CW - 16) as string[])];
+  const gH    = 12 + gl.length * 5 + 8;
   baseCard(d, M, y, CW, gH, T.amberBg, T.amberBdr);
-  sf(d, T.amber); d.rect(M, y, 3, gH, "F");
+  sf(d, T.amber); d.rect(M, y, 4, gH, "F");
   st(d, T.amber); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
-  d.text("Final work authorization:", M + 8, y + 8);
-  st(d, T.textMid); d.setFont("helvetica", "normal");
-  d.text(gl, M + 8, y + 14);
+  d.text("Final work authorization:", M + 10, y + 9);
+  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
+  d.text(gl, M + 10, y + 16);
 
   pageFooter(d);
 }
@@ -1141,7 +1107,6 @@ function renderSignature(d: jsPDF, s: SessionState, acc: C3) {
 // ─────────────────────────────────────────────────────────────────────────────
 // PHOTO COLLECTION
 // ─────────────────────────────────────────────────────────────────────────────
-
 async function collectPhotos(s: SessionState): Promise<PdfPhoto[]> {
   const result: PdfPhoto[] = [];
   for (const p of (s.photoAssets ?? []).filter(a => a.selectedForSummary && !a.isSensitive)) {
@@ -1161,7 +1126,6 @@ async function collectPhotos(s: SessionState): Promise<PdfPhoto[]> {
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN GENERATOR
 // ─────────────────────────────────────────────────────────────────────────────
-
 async function generateReport(session: SessionState): Promise<jsPDF> {
   const doc    = new jsPDF({ compress: true });
   const photos = await collectPhotos(session);
@@ -1177,12 +1141,12 @@ async function generateReport(session: SessionState): Promise<jsPDF> {
   doc.addPage(); renderAgreementReview(doc, session, acc);
   doc.addPage(); renderSignature(doc, session, acc);
 
-  // Add professional Page X of Y numbers on all pages in a second pass
-  const totalPages = doc.getNumberOfPages();
-  for (let i = 1; i <= totalPages; i++) {
+  // Page X of Y — second pass
+  const total = doc.getNumberOfPages();
+  for (let i = 1; i <= total; i++) {
     doc.setPage(i);
     st(doc, T.textFaint); doc.setFont("helvetica", "normal"); doc.setFontSize(5.8);
-    doc.text(`Page ${i} of ${totalPages}`, PW - M, PH - 4, { align: "right" });
+    doc.text(`Page ${i} of ${total}`, PW - M, PH - 4, { align: "right" });
   }
 
   return doc;
@@ -1192,7 +1156,7 @@ async function generateReport(session: SessionState): Promise<jsPDF> {
 // PUBLIC ENTRY POINTS
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Returns the PDF as raw base64 (no data-URI prefix). Used for email delivery. */
+/** Returns PDF as raw base64 (no data-URI prefix). Used for email delivery. */
 export async function getSummaryPDFBase64(session: SessionState): Promise<string> {
   const doc = await generateReport(session);
   return doc.output("datauristring").split(",")[1];

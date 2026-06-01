@@ -54,7 +54,7 @@ export async function advanceWorkflowToTarget(
     const currentStatus = data.data?.attributes?.status;
 
     // Check if we reached the target stage or status
-    if (stageName === "Closed" || currentStatus === targetStatus || transitions.length === 0) {
+    if (stageName === "Closed" || transitions.length === 0) {
       break;
     }
     
