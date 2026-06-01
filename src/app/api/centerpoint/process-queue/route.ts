@@ -147,6 +147,20 @@ export async function POST(request: NextRequest) {
         });
 
         if (!res.ok) {
+          if (res.status === 404) {
+            console.warn(`[WORKER] Target ID ${item.target_id} returned 404 from CenterPoint. Skipping further retries.`);
+            await supabase
+              .from("outbound_queue")
+              .update({ 
+                status: "synced", 
+                synced_at: new Date().toISOString(),
+                error: `Skipped: Resource does not exist on CenterPoint Connect (status: 404)`,
+                retry_count: item.retry_count + 1 
+              })
+              .eq("id", item.id);
+            results.push({ id: item.id, success: true, skipped: true, reason: "Resource not found (404)" });
+            continue;
+          }
           const errData = await res.json().catch(() => ({}));
           throw new Error(`CenterPoint API error: ${JSON.stringify(errData)}`);
         }
