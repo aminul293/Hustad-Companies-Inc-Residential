@@ -430,9 +430,12 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                     retryingSessionId={r.retryingSessionId}
                     confirmDeleteId={r.confirmDeleteId}
                     copiedSessionId={r.copiedSessionId}
+                    exportingPDFId={r.exportingPDFId}
                     onOpen={onLoadDraft}
                     onRetry={r.handleManualRetry}
                     onDelete={r.handleDeleteDraft}
+                    onReopen={r.handleReopen}
+                    onExportPDF={r.handleExportPDF}
                     onCopy={sessionId => {
                       const url = `${typeof window !== "undefined" ? window.location.origin : ""}/rep-capture?s=${sessionId}`;
                       navigator.clipboard.writeText(url);

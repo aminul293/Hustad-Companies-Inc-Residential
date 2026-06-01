@@ -2,6 +2,7 @@
 import {
   ChevronRight, AlertCircle, AlertTriangle, RefreshCw,
   User, Calendar, Smartphone, Copy, Check as CheckIcon, Trash,
+  FileDown, RotateCcw, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,17 +23,21 @@ interface Props {
   retryingSessionId: string | null;
   confirmDeleteId: string | null;
   copiedSessionId: string | null;
+  exportingPDFId: string | null;
   onOpen:       (sessionId: string) => void;
   onRetry:      (sessionId: string) => void;
   onDelete:     (sessionId: string) => void;
+  onReopen:     (sessionId: string) => void;
+  onExportPDF:  (sessionId: string) => void;
   onCopy:       (sessionId: string) => void;
 }
 
 export function SessionCard({
   draft: d,
-  retryingSessionId, confirmDeleteId, copiedSessionId,
-  onOpen, onRetry, onDelete, onCopy,
+  retryingSessionId, confirmDeleteId, copiedSessionId, exportingPDFId,
+  onOpen, onRetry, onDelete, onReopen, onExportPDF, onCopy,
 }: Props) {
+  const isClosed = d.sessionStatus.startsWith("closed_");
   return (
     <div
       onClick={() => onOpen(d.sessionId)}
@@ -114,20 +119,6 @@ export function SessionCard({
             </p>
           </div>
 
-          {/* Delete button */}
-          <button
-            onClick={e => { e.stopPropagation(); onDelete(d.sessionId); }}
-            className={cn(
-              "flex items-center gap-1.5 rounded-xl transition-all shrink-0",
-              confirmDeleteId === d.sessionId
-                ? "px-3 py-2 bg-rose-500/20 border border-rose-500/40 text-rose-300 text-[9px] font-mono uppercase tracking-widest"
-                : "p-2 text-[#2D4060] hover:text-rose-400 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100"
-            )}
-          >
-            <Trash className="w-4 h-4 shrink-0" />
-            {confirmDeleteId === d.sessionId && <span>Confirm</span>}
-          </button>
-
           <div className="h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:scale-105 transition-all">
             <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-[#E8EDF8] group-hover:text-black transition-colors" />
           </div>
@@ -160,6 +151,44 @@ export function SessionCard({
           {copiedSessionId === d.sessionId
             ? <><CheckIcon className="w-3.5 h-3.5" /> Copied!</>
             : <><Copy className="w-3.5 h-3.5" /> Copy</>}
+        </button>
+      </div>
+
+      {/* Action buttons */}
+      <div
+        className="mt-3 pt-3 border-t border-white/[0.04] flex items-center gap-2 relative z-10 flex-wrap"
+        onClick={e => e.stopPropagation()}
+      >
+        <button
+          onClick={() => onExportPDF(d.sessionId)}
+          disabled={exportingPDFId === d.sessionId}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 hover:bg-indigo-500/20 active:scale-95 transition-all text-[10px] font-mono disabled:opacity-50 disabled:pointer-events-none"
+        >
+          {exportingPDFId === d.sessionId
+            ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Generating…</>
+            : <><FileDown className="w-3.5 h-3.5" /> Export PDF</>}
+        </button>
+
+        {isClosed && (
+          <button
+            onClick={() => onReopen(d.sessionId)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 hover:bg-emerald-500/20 active:scale-95 transition-all text-[10px] font-mono"
+          >
+            <RotateCcw className="w-3.5 h-3.5" /> Reopen
+          </button>
+        )}
+
+        <button
+          onClick={() => onDelete(d.sessionId)}
+          className={cn(
+            "flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all text-[10px] font-mono ml-auto",
+            confirmDeleteId === d.sessionId
+              ? "bg-rose-500/20 border border-rose-500/40 text-rose-300"
+              : "bg-rose-500/5 border border-rose-500/15 text-rose-400/60 hover:bg-rose-500/15 hover:text-rose-300"
+          )}
+        >
+          <Trash className="w-3.5 h-3.5 shrink-0" />
+          {confirmDeleteId === d.sessionId ? "Confirm Delete" : "Delete"}
         </button>
       </div>
     </div>

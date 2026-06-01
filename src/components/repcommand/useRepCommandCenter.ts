@@ -122,6 +122,7 @@ export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart
   const [draftRefreshKey, setDraftRefreshKey] = useState(0);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [copiedSessionId, setCopiedSessionId] = useState<string | null>(null);
+  const [exportingPDFId, setExportingPDFId]   = useState<string | null>(null);
   const [moreOpen, setMoreOpen]               = useState(false);
 
   const serverSessionsRef = useRef<any[]>([]);
@@ -432,6 +433,28 @@ export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart
     if (isActive && onResetSession) onResetSession();
   };
 
+  const handleReopen = (sessionId: string) => {
+    const draft = loadDraftById(sessionId);
+    if (!draft) return;
+    saveSession({ ...draft, sessionStatus: "summary_locked" });
+    onLoadDraft(sessionId);
+  };
+
+  const handleExportPDF = async (sessionId: string) => {
+    if (exportingPDFId) return;
+    setExportingPDFId(sessionId);
+    try {
+      const draft = loadDraftById(sessionId);
+      if (!draft) return;
+      const { downloadSummaryPDF } = await import("@/lib/pdf-export");
+      await downloadSummaryPDF(draft);
+    } catch (err) {
+      console.error("PDF export failed", err);
+    } finally {
+      setExportingPDFId(null);
+    }
+  };
+
   const handleAddRep = () => {
     saveCustomRep({ id: `custom_${Date.now()}`, name: newRep.name, role: newRep.role, active: true });
     setIsAdding(false);
@@ -499,6 +522,7 @@ export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart
     // session actions
     retryingSessionId, handleManualRetry,
     confirmDeleteId, handleDeleteDraft,
+    handleReopen, handleExportPDF, exportingPDFId,
     copiedSessionId, setCopiedSessionId,
     // sync
     pendingCompletions, syncWarning, setSyncWarning,
