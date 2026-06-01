@@ -74,7 +74,21 @@ export function PipelineLeadCard({
       <div className="p-7 flex flex-col flex-1">
         {/* Stage dots */}
         <div className="flex gap-1.5 mb-5">
-          {STAGE_LABELS.map((label, i) => {
+          {STAGE_LABELS.map((_, i) => {
+            const { label, hint } = (() => {
+              if (i === 4) {
+                if (lead.pipeline_status === "inspection_completed") {
+                  return { label: "Inspected", hint: "Inspection complete & synced" };
+                }
+                if (lead.pipeline_status === "signed") {
+                  return { label: "Signed", hint: "Agreement signed" };
+                }
+                if (lead.pipeline_status === "closed") {
+                  return { label: "Closed", hint: "Lead closed/archived" };
+                }
+              }
+              return { label: STAGE_LABELS[i], hint: STAGE_HINTS[i] };
+            })();
             const clickable = i !== 4 && !isBlocked;
             const isCurrent = i === stageIdx;
             const isPast    = i < stageIdx;
@@ -83,7 +97,7 @@ export function PipelineLeadCard({
                 <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/dot:opacity-100 transition-opacity z-10">
                   <div className="bg-[#111] border border-white/10 rounded-xl px-3 py-2 text-center" style={{ minWidth: "140px", maxWidth: "200px" }}>
                     <p className="text-[9px] font-mono text-[#AABDCF] uppercase tracking-widest mb-0.5">{label}</p>
-                    <p className="text-[9px] text-[#4D678A] font-light leading-snug">{STAGE_HINTS[i]}</p>
+                    <p className="text-[9px] text-[#4D678A] font-light leading-snug">{hint}</p>
                   </div>
                 </div>
                 <button
