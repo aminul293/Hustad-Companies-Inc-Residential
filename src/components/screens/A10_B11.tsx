@@ -18,7 +18,6 @@ import {
   ChevronRight,
   ArrowLeft,
   AlertCircle,
-  Clock,
   ShieldCheck,
   Zap,
   Eye,
@@ -51,18 +50,113 @@ interface HoldProps {
   onBack: () => void;
 }
 
+const PIN_STORAGE_KEY = "hustad_rep_pin";
+const DEFAULT_PIN = "1234";
+
+function getStoredPin(): string {
+  if (typeof window === "undefined") return DEFAULT_PIN;
+  return localStorage.getItem(PIN_STORAGE_KEY) || DEFAULT_PIN;
+}
+
+function RepPinModal({ onSuccess, onCancel }: { onSuccess: () => void; onCancel: () => void }) {
+  const [pin, setPin] = useState("");
+  const [shake, setShake] = useState(false);
+
+  const handleDigit = (d: string) => {
+    if (pin.length >= 4) return;
+    const next = pin + d;
+    setPin(next);
+    if (next.length === 4) {
+      if (next === getStoredPin()) {
+        setTimeout(onSuccess, 150);
+      } else {
+        setShake(true);
+        setTimeout(() => { setPin(""); setShake(false); }, 600);
+      }
+    }
+  };
+
+  const handleBack = () => setPin(p => p.slice(0, -1));
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/70 backdrop-blur-md"
+      onClick={onCancel}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.94, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.94, y: 20 }}
+        transition={{ type: "spring", damping: 26, stiffness: 320 }}
+        onClick={e => e.stopPropagation()}
+        className="w-full max-w-sm bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-[40px] p-8 space-y-8"
+      >
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mx-auto">
+            <Shield className="w-7 h-7 text-indigo-400" />
+          </div>
+          <h2 className="text-xl font-display font-medium text-[var(--tx1)] mt-4">Rep Authorization Required</h2>
+          <p className="text-sm text-[var(--tx3)] font-light">Enter your 4-digit rep PIN to proceed.</p>
+        </div>
+
+        {/* PIN dots */}
+        <motion.div
+          animate={shake ? { x: [-8, 8, -6, 6, -4, 4, 0] } : {}}
+          transition={{ duration: 0.4 }}
+          className="flex items-center justify-center gap-4"
+        >
+          {[0, 1, 2, 3].map(i => (
+            <div
+              key={i}
+              className={cn(
+                "w-4 h-4 rounded-full border-2 transition-all duration-200",
+                i < pin.length
+                  ? shake ? "bg-rose-500 border-rose-500" : "bg-indigo-500 border-indigo-500"
+                  : "bg-transparent border-[var(--border-color)]"
+              )}
+            />
+          ))}
+        </motion.div>
+
+        {/* Numpad */}
+        <div className="grid grid-cols-3 gap-3">
+          {["1","2","3","4","5","6","7","8","9","","0","⌫"].map((key, i) => (
+            <button
+              key={i}
+              onClick={() => key === "⌫" ? handleBack() : key ? handleDigit(key) : undefined}
+              disabled={!key}
+              className={cn(
+                "h-14 rounded-2xl font-display text-lg font-medium transition-all active:scale-95",
+                !key ? "invisible" : key === "⌫"
+                  ? "bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--tx3)] hover:text-[var(--tx1)] hover:bg-[var(--bg-base)]"
+                  : "bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--tx1)] hover:bg-[var(--bg-base)] hover:border-indigo-500/30"
+              )}
+            >
+              {key}
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={onCancel}
+          className="w-full text-center text-[10px] font-mono uppercase tracking-widest text-[var(--tx4)] hover:text-[var(--tx2)] transition-colors"
+        >
+          Cancel
+        </button>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
-  const { theme } = useTheme();
-  const isHighContrast = theme === "high-contrast";
-  const [showRepReturn, setShowRepReturn] = useState(false);
-  const [wakeCount, setWakeCount] = useState(0);
+  const [showPinModal, setShowPinModal] = useState(false);
 
   useEffect(() => {
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible") {
-        setWakeCount((c) => c + 1);
-      }
-    };
+    const handleVisibility = () => { /* wake signal */ };
     document.addEventListener("visibilitychange", handleVisibility);
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, []);
@@ -131,77 +225,42 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
         </div>
       </div>
 
+      {/* PIN modal */}
+      <AnimatePresence>
+        {showPinModal && (
+          <RepPinModal
+            onSuccess={() => { setShowPinModal(false); onRepReturn(); }}
+            onCancel={() => setShowPinModal(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Bottom Navigation — in flex flow so it never overlaps content */}
       <div className="relative z-30 shrink-0 px-4 pb-4 md:pb-6 pt-4">
         <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-transparent to-[var(--bg-base)] pointer-events-none" />
         <div className="relative max-w-2xl mx-auto">
-          <AnimatePresence mode="wait">
-            {!showRepReturn ? (
-              <motion.div
-                key="ready"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 8 }}
-                className="flex items-center gap-3"
-              >
-                <button
-                  onClick={onBack}
-                  className="flex items-center gap-2 px-5 py-4 rounded-full bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--tx3)] hover:text-[var(--tx1)] hover:bg-[var(--bg-subtle)] transition-all text-[10px] font-mono uppercase tracking-widest active:scale-95 shrink-0"
-                >
-                  <ArrowLeft className="w-3 h-3" />
-                  Rep: Return to Prep
-                </button>
-                <button
-                  onClick={() => setShowRepReturn(true)}
-                  className="flex-1 py-5 rounded-full bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--tx1)] font-display text-sm hover:bg-[var(--bg-subtle)] transition-all active:scale-[0.98]"
-                >
-                  I am ready for the review
-                </button>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="takeover"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                className="space-y-3"
-              >
-                <div className="flex items-center justify-center gap-3">
-                  <Clock className="w-4 h-4 text-amber-500" />
-                  <p className="text-[10px] font-mono text-amber-500 uppercase tracking-widest pt-0.5">
-                    Rep Takeover Required
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={onBack}
-                    className="flex items-center gap-2 px-5 py-5 rounded-full bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--tx3)] hover:text-[var(--tx1)] hover:bg-[var(--bg-subtle)] transition-all text-[10px] font-mono uppercase tracking-widest active:scale-95 shrink-0"
-                  >
-                    <ArrowLeft className="w-3 h-3" />
-                    Rep: Return to Prep
-                  </button>
-                  <StarButton
-                    onClick={onRepReturn}
-                    lightColor={isHighContrast ? "#000000" : "#FAFAFA"}
-                    backgroundColor={isHighContrast ? "#FFFFFF" : "#060606"}
-                    className={cn(
-                      "flex-1 h-20 rounded-3xl active:scale-95 transition-transform group",
-                      isHighContrast
-                        ? "bg-white text-black border-2 border-black"
-                        : "shadow-[0_20px_60px_rgba(99,102,241,0.2)] text-white"
-                    )}
-                  >
-                    <div className="flex items-center gap-4 text-inherit">
-                      <span className="text-sm md:text-xl font-display font-semibold tracking-tight text-inherit">Begin Findings Review</span>
-                      <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform text-indigo-300 shrink-0" />
-                    </div>
-                  </StarButton>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3"
+          >
+            <button
+              onClick={onBack}
+              className="flex items-center gap-2 px-5 py-4 rounded-full bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--tx3)] hover:text-[var(--tx1)] hover:bg-[var(--bg-subtle)] transition-all text-[10px] font-mono uppercase tracking-widest active:scale-95 shrink-0"
+            >
+              <ArrowLeft className="w-3 h-3" />
+              Rep: Return to Prep
+            </button>
+            <button
+              onClick={() => setShowPinModal(true)}
+              className="flex-1 py-5 rounded-full bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--tx1)] font-display text-sm hover:bg-[var(--bg-subtle)] transition-all active:scale-[0.98]"
+            >
+              I am ready for the review
+            </button>
+          </motion.div>
         </div>
       </div>
+
     </div>
   );
 }
