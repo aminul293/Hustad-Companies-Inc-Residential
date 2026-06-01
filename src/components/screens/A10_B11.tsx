@@ -68,7 +68,7 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
   }, []);
 
   return (
-    <div className="relative flex flex-col h-full min-h-screen w-full bg-[var(--bg-base)] text-[var(--tx1)]">
+    <div className="relative flex flex-col h-screen w-full bg-[var(--bg-base)] text-[var(--tx1)]">
       <div className="absolute inset-0 pointer-events-none overflow-hidden theme-graphic">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.04),transparent_70%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_70%,rgba(99,102,241,0.03),transparent_50%)]" />
@@ -132,7 +132,7 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
       </div>
 
       {/* Bottom Navigation — in flex flow so it never overlaps content */}
-      <div className="relative z-30 shrink-0 px-4 pb-8 pt-5">
+      <div className="relative z-30 shrink-0 px-4 pb-4 md:pb-6 pt-4">
         <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-transparent to-[var(--bg-base)] pointer-events-none" />
         <div className="relative max-w-2xl mx-auto">
           <AnimatePresence mode="wait">
