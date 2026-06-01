@@ -63,7 +63,7 @@ export function usePipelineLeads(repId?: string, repEmail?: string) {
   // ── Data fetching ──────────────────────────────────────────────────────────
   const reloadLeads = async () => {
     try {
-      const data = await fetchLeads(repId);
+      const data = await fetchLeads();
       setLeads(data);
     } catch {
       setLeads([]);

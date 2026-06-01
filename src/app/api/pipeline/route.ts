@@ -65,36 +65,7 @@ export async function GET(request: NextRequest) {
       `)
       .order('created_at', { ascending: false });
 
-    const isMockRep = IS_QA_MODE && repId === 'rep_001';
-
-    if (repId && !isMockRep) {
-      // Load all appointments once, then compute set operations in JS
-      const { data: allAppts } = await supabase
-        .from('appointments')
-        .select('pipeline_lead_id, assigned_rep_id');
-
-      const appts = allAppts ?? [];
-
-      // Leads explicitly assigned to this rep
-      const myLeadIds = new Set<string>(
-        appts
-          .filter((a: any) => a.assigned_rep_id === repId && a.pipeline_lead_id)
-          .map((a: any) => a.pipeline_lead_id)
-      );
-
-      // Leads assigned to other reps but NOT also to this rep (exclude these)
-      const exclusivelyOtherIds = appts
-        .filter((a: any) => a.assigned_rep_id !== repId && a.pipeline_lead_id && !myLeadIds.has(a.pipeline_lead_id))
-        .map((a: any) => a.pipeline_lead_id as string);
-
-      // Deduplicate
-      const excludeIds = [...new Set(exclusivelyOtherIds)];
-
-      if (excludeIds.length > 0) {
-        query = query.not('id', 'in', `(${excludeIds.join(',')})`);
-      }
-      // If excludeIds is empty, all leads are visible (newly imported unassigned leads included)
-    }
+    // No rep-specific isolation filter — returns all pipeline leads for all users
 
     const { data, error } = await query;
     if (error) throw error;

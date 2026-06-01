@@ -148,7 +148,7 @@ export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart
         // Purge stale local drafts that were archived/deleted on the server from another device.
         // A synced draft missing from the server list means it was archived elsewhere.
         const serverIds = new Set(live.map((s: any) => s.session_id));
-        const localDrafts = listDrafts(currentRep.id);
+        const localDrafts = listDrafts();
         localDrafts.forEach(draft => {
           if (draft.syncStatus === "synced" && !serverIds.has(draft.sessionId)) {
             deleteDraft(draft.sessionId);
@@ -162,7 +162,7 @@ export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart
 
     const loadScheduledLeads = async () => {
       try {
-        const data = await fetchLeads(currentRep.id);
+        const data = await fetchLeads();
         setScheduledLeads(data.filter((l: any) => ["scheduled","appointment_confirmed"].includes(l.pipeline_status)));
       } catch { /* non-fatal */ }
     };
@@ -442,7 +442,7 @@ export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart
   // ── Derived data ───────────────────────────────────────────────────────────
 
   const drafts = useMemo(() => {
-    const local  = listDrafts(currentRep.id);
+    const local  = listDrafts();
     const merged = [...local];
     serverSessions.forEach(s => {
       if (!merged.find(m => m.sessionId === s.session_id)) {

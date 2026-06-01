@@ -11,7 +11,6 @@ export async function GET(req: NextRequest) {
     const { data: sessions, error } = await db
       .from("inspection_sessions")
       .select("*")
-      .eq("rep_id", payload.repId)
       .neq("session_status", "archived")
       .order("updated_at", { ascending: false });
 
