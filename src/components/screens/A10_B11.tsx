@@ -81,12 +81,12 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
         </div>
       </div>
 
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 pt-16 pb-48 text-center">
-        <div className="max-w-4xl w-full space-y-12">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-8 pt-16 md:pt-24 pb-52 text-center">
+        <div className="max-w-4xl w-full space-y-8 md:space-y-12">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="relative w-full h-[350px] rounded-[48px] overflow-hidden bg-[var(--bg-surface)] border border-[var(--border-color)] backdrop-blur-3xl group flex flex-col items-center justify-center"
+            className="relative w-full h-[220px] md:h-[300px] lg:h-[350px] rounded-[48px] overflow-hidden bg-[var(--bg-surface)] border border-[var(--border-color)] backdrop-blur-3xl group flex flex-col items-center justify-center"
           >
             <div className="absolute inset-0 z-0 opacity-20 bg-[url('/images/grid.png')] bg-repeat" />
             <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/10 to-transparent opacity-50" />
@@ -118,7 +118,7 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
           </motion.div>
 
           <div className="space-y-4">
-            <h1 className="text-3xl md:text-6xl lg:text-8xl font-display font-medium text-[var(--tx1)] tracking-tight leading-[1.05]">
+            <h1 className="text-3xl md:text-5xl lg:text-7xl xl:text-8xl font-display font-medium text-[var(--tx1)] tracking-tight leading-[1.05]">
               Your Hustad rep is finishing
               <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-[var(--tx1)] to-indigo-500 dark:from-indigo-300 dark:via-white dark:to-indigo-300">the exterior review.</span>
