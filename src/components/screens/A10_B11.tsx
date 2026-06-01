@@ -68,7 +68,7 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
   }, []);
 
   return (
-    <div className="relative flex flex-col h-full min-h-screen w-full overflow-y-auto bg-[var(--bg-base)] text-[var(--tx1)]">
+    <div className="relative flex flex-col h-full min-h-screen w-full bg-[var(--bg-base)] text-[var(--tx1)]">
       <div className="absolute inset-0 pointer-events-none overflow-hidden theme-graphic">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.04),transparent_70%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_70%,rgba(99,102,241,0.03),transparent_50%)]" />
@@ -81,7 +81,8 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
         </div>
       </div>
 
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-8 pt-16 md:pt-24 pb-52 text-center">
+      {/* Scrollable content area — grows to fill space above the sticky footer */}
+      <div className="relative z-10 flex-1 overflow-y-auto flex flex-col items-center justify-center px-8 py-16 text-center min-h-0">
         <div className="max-w-4xl w-full space-y-8 md:space-y-12">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -90,7 +91,7 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
           >
             <div className="absolute inset-0 z-0 opacity-20 bg-[url('/images/grid.png')] bg-repeat" />
             <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/10 to-transparent opacity-50" />
-            
+
             <div className="relative z-10 flex flex-col items-center justify-center space-y-6 pointer-events-none">
               <div className="relative">
                 <div className="w-20 h-20 rounded-full border border-indigo-500/30 bg-[var(--bg-base)] flex items-center justify-center shadow-[0_0_40px_rgba(99,102,241,0.2)]">
@@ -103,7 +104,7 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
                   Status
                 </p>
                 <div className="h-6 overflow-hidden relative">
-                  <motion.div 
+                  <motion.div
                     animate={{ y: [0, -24, -48, 0] }}
                     transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                     className="flex flex-col text-sm text-[var(--tx2)] uppercase tracking-widest font-mono"
@@ -130,10 +131,10 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
         </div>
       </div>
 
-      {/* Bottom Navigation — back button + action button in one row */}
-      <div className="absolute bottom-0 inset-x-0 px-4 pb-8 pt-16 z-30 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-base)] via-[var(--bg-base)]/80 to-transparent" />
-        <div className="relative max-w-2xl mx-auto pointer-events-auto">
+      {/* Bottom Navigation — in flex flow so it never overlaps content */}
+      <div className="relative z-30 shrink-0 px-4 pb-8 pt-5">
+        <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-transparent to-[var(--bg-base)] pointer-events-none" />
+        <div className="relative max-w-2xl mx-auto">
           <AnimatePresence mode="wait">
             {!showRepReturn ? (
               <motion.div
