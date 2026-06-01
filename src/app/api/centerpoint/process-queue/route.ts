@@ -147,21 +147,26 @@ export async function POST(request: NextRequest) {
         });
 
         if (!res.ok) {
-          if (res.status === 404) {
-            console.warn(`[WORKER] Target ID ${item.target_id} returned 404 from CenterPoint. Skipping further retries.`);
+          const errData = await res.json().catch(() => ({}));
+          const errStr = JSON.stringify(errData).toLowerCase();
+          const isGone = res.status === 404 || res.status === 410 ||
+            errStr.includes("does not exist") || errStr.includes("not found") ||
+            errStr.includes("no resource") || errStr.includes("cannot be found");
+
+          if (isGone) {
+            console.warn(`[WORKER] Target ID ${item.target_id} not found in CenterPoint (HTTP ${res.status}). Auto-skipping.`);
             await supabase
               .from("outbound_queue")
-              .update({ 
-                status: "synced", 
+              .update({
+                status: "synced",
                 synced_at: new Date().toISOString(),
-                error: `Skipped: Resource does not exist on CenterPoint Connect (status: 404)`,
-                retry_count: item.retry_count + 1 
+                error: `Skipped: Resource ${item.target_id} not found in CenterPoint (HTTP ${res.status})`,
+                retry_count: item.retry_count + 1,
               })
               .eq("id", item.id);
-            results.push({ id: item.id, success: true, skipped: true, reason: "Resource not found (404)" });
+            results.push({ id: item.id, success: true, skipped: true, reason: `Resource not found (${res.status})` });
             continue;
           }
-          const errData = await res.json().catch(() => ({}));
           throw new Error(`CenterPoint API error: ${JSON.stringify(errData)}`);
         }
 

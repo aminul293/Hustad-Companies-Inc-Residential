@@ -1,11 +1,11 @@
 "use client";
 
-import { fetchManagerAppointments, fetchReps, processQueue, patchAppointment } from "@/lib/api";
+import { fetchManagerAppointments, fetchReps, processQueue, patchAppointment, dismissQueueItems, dismissAllQueueFailures } from "@/lib/api";
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CalendarDays, UserX, AlarmClock, CheckCircle2, AlertTriangle,
-  RefreshCw, ChevronDown, Users, Zap,
+  RefreshCw, ChevronDown, Users, Zap, X,
   Clock, Phone, Navigation2, PlayCircle, Database,
   Activity, UserPlus
 } from "lucide-react";
@@ -110,6 +110,7 @@ export function ManagerDashboard({ currentRep }: Props) {
   const [error, setError]     = useState<string | null>(null);
   const [expandedRep, setExpandedRep] = useState<string | null>(null);
   const [retryCooldown, setRetryCooldown] = useState(false);
+  const [dismissing, setDismissing] = useState<string | "all" | null>(null);
   const [dbReps, setDbReps]   = useState<{ id: string; name: string; email: string }[]>([]);
 
   const resolveRepName = (id: string) => {
@@ -377,37 +378,58 @@ export function ManagerDashboard({ currentRep }: Props) {
         <section className="space-y-4">
           <SectionHeader icon={Database} label="Failed Outbound Queue" count={outbound_failures.length} color="text-red-400" />
           <div className="space-y-2">
-            {outbound_failures.map((item, i) => (
-              <motion.div key={item.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-                className="p-4 rounded-2xl bg-red-500/[0.04] border border-red-500/15 space-y-2">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[10px] font-mono text-[#8BA5C5] uppercase">{item.target_system}</span>
-                      <span className="text-[10px] font-mono text-[#3F5878]">→</span>
-                      <span className="text-[10px] font-mono text-[#567090]">{item.action}</span>
+            <AnimatePresence initial={false}>
+              {outbound_failures.map((item, i) => (
+                <motion.div key={item.id}
+                  initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  transition={{ delay: i * 0.04 }}
+                  className="p-4 rounded-2xl bg-red-500/[0.04] border border-red-500/15 space-y-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] font-mono text-[#8BA5C5] uppercase">{item.target_system}</span>
+                        <span className="text-[10px] font-mono text-[#3F5878]">→</span>
+                        <span className="text-[10px] font-mono text-[#567090]">{item.action}</span>
+                      </div>
+                      {item.target_id && (
+                        <p className="text-[10px] font-mono text-[#354D6F] mt-0.5 truncate">ID: {item.target_id}</p>
+                      )}
                     </div>
-                    {item.target_id && (
-                      <p className="text-[10px] font-mono text-[#354D6F] mt-0.5 truncate">ID: {item.target_id}</p>
-                    )}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[9px] font-mono text-red-400/70 uppercase">{item.retry_count} retries</span>
+                      <div className="w-2 h-2 rounded-full bg-red-500" />
+                      <button
+                        disabled={dismissing !== null}
+                        onClick={async () => {
+                          setDismissing(item.id);
+                          try {
+                            await dismissQueueItems([item.id]);
+                            await fetchData();
+                          } finally {
+                            setDismissing(null);
+                          }
+                        }}
+                        className="p-1 rounded-lg text-[#3F5878] hover:text-red-400 hover:bg-red-500/10 transition-all disabled:opacity-30"
+                        title="Dismiss">
+                        {dismissing === item.id
+                          ? <RefreshCw className="w-3 h-3 animate-spin" />
+                          : <X className="w-3 h-3" />}
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[9px] font-mono text-red-400/70 uppercase">{item.retry_count} retries</span>
-                    <div className="w-2 h-2 rounded-full bg-red-500" />
-                  </div>
-                </div>
-                {item.error && (
-                  <p className="text-[10px] font-mono text-red-400/60 bg-red-500/10 rounded-lg px-3 py-2 leading-relaxed">
-                    {item.error.slice(0, 120)}{item.error.length > 120 ? "…" : ""}
+                  {item.error && (
+                    <p className="text-[10px] font-mono text-red-400/60 bg-red-500/10 rounded-lg px-3 py-2 leading-relaxed">
+                      {item.error.slice(0, 120)}{item.error.length > 120 ? "…" : ""}
+                    </p>
+                  )}
+                  <p className="text-[9px] font-mono text-[#2D4060]">
+                    Failed {fmtShortDate(item.updated_at)} · Created {fmtShortDate(item.created_at)}
                   </p>
-                )}
-                <p className="text-[9px] font-mono text-[#2D4060]">
-                  Failed {fmtShortDate(item.updated_at)} · Created {fmtShortDate(item.created_at)}
-                </p>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))}
+            </AnimatePresence>
 
-            <div className="pt-2">
+            <div className="pt-2 flex items-center gap-2">
               <button
                 disabled={retryCooldown}
                 onClick={async () => {
@@ -422,6 +444,23 @@ export function ManagerDashboard({ currentRep }: Props) {
                 className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-[#567090] hover:text-[#E8EDF8] hover:bg-white/10 transition-all disabled:opacity-40">
                 <Zap className="w-3.5 h-3.5" />
                 {retryCooldown ? "Retrying…" : "Retry Failed Items"}
+              </button>
+              <button
+                disabled={dismissing !== null}
+                onClick={async () => {
+                  setDismissing("all");
+                  try {
+                    await dismissAllQueueFailures();
+                    await fetchData();
+                  } finally {
+                    setDismissing(null);
+                  }
+                }}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-500/[0.06] border border-red-500/15 text-xs font-mono text-red-400/60 hover:text-red-300 hover:bg-red-500/10 transition-all disabled:opacity-40">
+                {dismissing === "all"
+                  ? <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  : <X className="w-3.5 h-3.5" />}
+                Dismiss All
               </button>
             </div>
           </div>

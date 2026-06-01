@@ -28,3 +28,19 @@ export async function fetchCenterpointMe(): Promise<Response> {
 export async function processQueue(): Promise<Response> {
   return fetch(`${BASE}/process-queue`, { method: "POST" });
 }
+
+export async function dismissQueueItems(ids: string[]): Promise<Response> {
+  return fetch("/api/outbound-queue/dismiss", {
+    method: "POST",
+    headers: JSON_HEADERS,
+    body: JSON.stringify({ ids }),
+  });
+}
+
+export async function dismissAllQueueFailures(): Promise<Response> {
+  return fetch("/api/outbound-queue/dismiss", {
+    method: "POST",
+    headers: JSON_HEADERS,
+    body: JSON.stringify({ all: true }),
+  });
+}
