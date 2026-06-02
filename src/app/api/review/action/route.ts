@@ -93,6 +93,9 @@ export async function POST(request: Request) {
     const repEmail = session.repEmail?.trim() || '';
     const address  = session.property?.address || 'the property';
 
+    // Thread notifications under the original dossier email
+    const threadSubject = `Re: Forensic Dossier Ready — ${address}`;
+
     // CC Dustin on repair/service path sessions
     const isRepairPath =
       session.findings?.outcomeType === 'repair_only' ||
@@ -132,7 +135,7 @@ export async function POST(request: Request) {
         if (repEmail) {
           notifyRep(
             repEmail,
-            `Question from homeowner — ${address}`,
+            threadSubject,
             `<div style="font-family:sans-serif;background:#060606;color:#E8EDF8;padding:40px;border-radius:16px;">
               <h2 style="color:#a78bfa;margin-bottom:8px;">Homeowner Question</h2>
               <p style="color:#7090B0;margin-bottom:24px;font-size:13px;">${address} · ${new Date(now).toLocaleString()}</p>
@@ -158,7 +161,7 @@ export async function POST(request: Request) {
         if (repEmail) {
           notifyRep(
             repEmail,
-            `Callback requested — ${address}`,
+            threadSubject,
             `<div style="font-family:sans-serif;background:#060606;color:#E8EDF8;padding:40px;border-radius:16px;">
               <h2 style="color:#34d399;margin-bottom:8px;">Callback Request</h2>
               <p style="color:#7090B0;margin-bottom:24px;font-size:13px;">${address} · ${new Date(now).toLocaleString()}</p>
@@ -182,7 +185,7 @@ export async function POST(request: Request) {
         if (repEmail) {
           notifyRep(
             repEmail,
-            `Homeowner approved — ${address}`,
+            threadSubject,
             `<div style="font-family:sans-serif;background:#060606;color:#E8EDF8;padding:40px;border-radius:16px;">
               <h2 style="color:#34d399;margin-bottom:8px;">Approval Received</h2>
               <p style="color:#7090B0;font-size:13px;">${address} — the homeowner has approved the next step (no signature required).</p>
@@ -217,7 +220,7 @@ export async function POST(request: Request) {
         if (repEmail) {
           notifyRep(
             repEmail,
-            `Authorization signed — ${address}`,
+            threadSubject,
             `<div style="font-family:sans-serif;background:#060606;color:#E8EDF8;padding:40px;border-radius:16px;">
               <h2 style="color:#34d399;margin-bottom:8px;">Document Signed</h2>
               <p style="color:#7090B0;font-size:13px;">${address} — <strong style="color:#E8EDF8;">${payload?.signerName || 'Homeowner'}</strong> has remotely signed the authorization dossier.</p>
@@ -237,7 +240,7 @@ export async function POST(request: Request) {
         if (repEmail) {
           notifyRep(
             repEmail,
-            `Review deferred — ${address}`,
+            threadSubject,
             `<div style="font-family:sans-serif;background:#060606;color:#E8EDF8;padding:40px;border-radius:16px;">
               <h2 style="color:#f87171;margin-bottom:8px;">Review Deferred</h2>
               <p style="color:#7090B0;margin-bottom:24px;font-size:13px;">${address} · ${new Date(now).toLocaleString()}</p>
