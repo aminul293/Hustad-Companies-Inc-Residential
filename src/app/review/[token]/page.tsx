@@ -24,7 +24,8 @@ export default function RemoteReviewPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isVerified, setIsVerified] = useState(false);
-  const [verifyInput, setVerifyInput] = useState("");
+  const [pinDigits, setPinDigits] = useState(["", "", "", ""]);
+  const pinRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
   const [signerName, setSignerName] = useState("");
   const [selectedPath, setSelectedPath] = useState<SelectedPath>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -88,7 +89,7 @@ export default function RemoteReviewPage() {
 
   const handleVerify = (inputOverride?: string) => {
     if (!session) return;
-    const digits = (inputOverride ?? verifyInput).replace(/\D/g, "");
+    const digits = (inputOverride ?? pinDigits.join("")).replace(/\D/g, "");
     const phone  = (session.property.homeownerPrimaryMobile || "").replace(/\D/g, "").trim();
     const last4  = phone.slice(-4);
 
@@ -219,22 +220,39 @@ export default function RemoteReviewPage() {
           </p>
         </div>
 
-        <input
-          type="tel"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          maxLength={4}
-          value={verifyInput}
-          onChange={(e) => {
-            const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
-            setVerifyInput(digits);
-            if (digits.length === 4) handleVerify(digits);
-          }}
-          onKeyDown={(e) => e.key === "Enter" && handleVerify()}
-          autoComplete="one-time-code"
-          className="w-full bg-white/5 border border-white/10 rounded-3xl py-6 text-center text-5xl font-mono tracking-[0.5em] text-[#E8EDF8] outline-none focus:border-indigo-500/50 transition-all placeholder:text-[#1F2E48]"
-          placeholder="••••"
-        />
+        <div className="flex items-center justify-center gap-3">
+          {pinDigits.map((digit, i) => (
+            <input
+              key={i}
+              ref={pinRefs[i]}
+              type="tel"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={1}
+              value={digit}
+              autoComplete={i === 0 ? "one-time-code" : "off"}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, "").slice(-1);
+                const next = [...pinDigits];
+                next[i] = val;
+                setPinDigits(next);
+                if (val && i < 3) {
+                  pinRefs[i + 1].current?.focus();
+                }
+                const joined = next.join("");
+                if (joined.length === 4) handleVerify(joined);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Backspace" && !digit && i > 0) {
+                  pinRefs[i - 1].current?.focus();
+                }
+                if (e.key === "Enter") handleVerify(pinDigits.join(""));
+              }}
+              onFocus={(e) => e.target.select()}
+              className="w-16 h-20 bg-white/5 border border-white/10 rounded-2xl text-center text-3xl font-mono text-[#E8EDF8] outline-none focus:border-indigo-500/60 focus:bg-indigo-500/5 transition-all caret-indigo-400"
+            />
+          ))}
+        </div>
 
         <StarButton 
           onClick={() => handleVerify()}
