@@ -16,9 +16,10 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = new URL(req.url);
-  const page   = Math.max(1, Number(searchParams.get("page") ?? "1"));
-  const size   = Math.min(50, Math.max(1, Number(searchParams.get("size") ?? "25")));
-  const search = searchParams.get("search")?.trim() ?? "";
+  const page         = Math.max(1, Number(searchParams.get("page") ?? "1"));
+  const size         = Math.min(50, Math.max(1, Number(searchParams.get("size") ?? "25")));
+  const search       = searchParams.get("search")?.trim() ?? "";
+  const statusFilter = searchParams.get("status")?.trim() ?? "";
 
   const supabase = getServiceClient();
 
@@ -30,6 +31,10 @@ export async function GET(req: NextRequest) {
 
   if (search) {
     query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`);
+  }
+
+  if (statusFilter) {
+    query = query.eq("status", statusFilter);
   }
 
   const { data, count, error } = await query;
