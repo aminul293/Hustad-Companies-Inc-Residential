@@ -496,7 +496,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
                   })}
                 </div>
                 {/* Quick-Fix Email Terminal */}
-                {!(session.signatureData.signerEmail || session.property.homeownerPrimaryEmail) && (
+                {!(session.signatureData.signerEmail || session.property.homeownerPrimaryEmail || session.signatureData.summarySendRecipient) && (
                   <motion.div 
                     initial={{ opacity: 0, height: 0 }} 
                     animate={{ opacity: 1, height: "auto" }} 
