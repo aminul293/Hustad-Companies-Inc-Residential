@@ -247,13 +247,13 @@ export default function RemoteReviewPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
               {[
-                { label: "Homeowner", value: (session!.property.homeownerPrimaryName || '').split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || '—' },
-                { label: "Carrier", value: session!.property.insurerNameKnown || '—' },
-                { label: "Storm Basis", value: session!.property.stormBasis || '—' },
-                { label: "Lead Inspector", value: session!.repName },
-                { label: "Working DOL", value: session!.property.workingDateOfLoss || '—' },
+                { label: "Homeowner", value: (session!.property.homeownerPrimaryName || '').split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || '' },
+                { label: "Carrier", value: session!.property.insurerNameKnown || '' },
+                { label: "Storm Basis", value: session!.property.stormBasis || '' },
+                { label: "Lead Inspector", value: session!.repName || '' },
+                { label: "Working DOL", value: session!.property.workingDateOfLoss || '' },
                 { label: "Session ID", value: session!.sessionId.slice(-6).toUpperCase(), isId: true },
-              ].map((item, idx) => (
+              ].filter(item => !!item.value).map((item, idx) => (
                 <motion.div 
                   key={idx}
                   initial={{ opacity: 0, scale: 0.95 }}
