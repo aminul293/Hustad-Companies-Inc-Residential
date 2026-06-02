@@ -6,6 +6,46 @@ import { createOpportunity } from "@/lib/centerpoint/createOpportunity";
 
 export const dynamic = "force-dynamic";
 
+// ─── GET /api/centerpoint/opportunities ──────────────────────────────────────
+// Returns session-created opportunities stored in Supabase, newest first.
+export async function GET(req: NextRequest) {
+  try {
+    await requireAuth(req);
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const page   = Math.max(1, Number(searchParams.get("page") ?? "1"));
+  const size   = Math.min(50, Math.max(1, Number(searchParams.get("size") ?? "25")));
+  const search = searchParams.get("search")?.trim() ?? "";
+
+  const supabase = getServiceClient();
+
+  let query = supabase
+    .from("centerpoint_opportunities")
+    .select("*", { count: "exact" })
+    .order("cp_created_at", { ascending: false })
+    .range((page - 1) * size, page * size - 1);
+
+  if (search) {
+    query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`);
+  }
+
+  const { data, count, error } = await query;
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({
+    data: data ?? [],
+    meta: { page, size, total: count ?? 0 },
+  });
+}
+
+// ─── POST /api/centerpoint/opportunities ─────────────────────────────────────
+// Creates an opportunity in CenterPoint and caches it in Supabase.
 export async function POST(req: NextRequest) {
   try {
     await requireAuth(req);
@@ -46,9 +86,10 @@ export async function POST(req: NextRequest) {
   let resolvedName = name;
   let resolvedDescription = description || "Opportunity created via tablet app";
 
+  const supabase = getServiceClient();
+
   if (centerpointId) {
     try {
-      const supabase = getServiceClient();
       const { data: cpJob, error } = await supabase
         .from("centerpoint_jobs")
         .select("billed_company_id, name, property_name, description")
@@ -108,10 +149,26 @@ export async function POST(req: NextRequest) {
       opportunityType,
     }, apiKey);
 
-    return NextResponse.json({
-      success: true,
-      opportunity: opp,
-    });
+    // Cache the created opportunity in Supabase so the Opportunities Inbox can list it.
+    const now = new Date().toISOString();
+    await supabase
+      .from("centerpoint_opportunities")
+      .upsert({
+        cp_id:          String(opp.id),
+        name:           resolvedName,
+        opportunity_type: opportunityType ?? null,
+        domain:         domain ?? "Sales",
+        status:         "lead_pending",
+        display_status: opp.status || targetStage,
+        description:    resolvedDescription,
+        billed_company_id: resolvedBilledCompanyId,
+        price:          0,
+        cp_created_at:  now,
+        cp_updated_at:  now,
+        synced_at:      now,
+      }, { onConflict: "cp_id" });
+
+    return NextResponse.json({ success: true, opportunity: opp });
   } catch (err: any) {
     console.error("[CREATE_OPPORTUNITY_API] Error:", err);
     return NextResponse.json(

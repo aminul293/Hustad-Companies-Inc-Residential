@@ -47,6 +47,7 @@ import { SessionCard }        from "./repcommand/SessionCard";
 import { ImportConfirmModal } from "./repcommand/ImportConfirmModal";
 import { MobileMoreDrawer }   from "./repcommand/MobileMoreDrawer";
 import { CenterPointJobs } from "@/components/CenterPointJobs";
+import { CenterPointOpportunities } from "@/components/CenterPointOpportunities";
 import { HustadTickets } from "@/components/HustadTickets";
 import { PipelineLeads } from "@/components/PipelineLeads";
 import { MySchedule } from "@/components/MySchedule";
@@ -206,7 +207,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
                 <h1 className="text-xl md:text-3xl font-display font-medium tracking-tight">
-                  {{ dashboard: "Inspections", pipeline: "Pipeline", schedule: "My Schedule", calendar: "Calendar", centerpoint: "CP Inbox", tickets: "Tickets", manager: "Manager", settings: "Settings" }[r.view]}
+                  {{ dashboard: "Inspections", pipeline: "Pipeline", schedule: "My Schedule", calendar: "Calendar", centerpoint: "CP Inbox", opportunities: "Opportunities", tickets: "Tickets", manager: "Manager", settings: "Settings" }[r.view]}
                 </h1>
                 {r.pendingCompletions > 0 && (
                   <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/25 text-[9px] font-mono text-amber-400 uppercase tracking-widest">
@@ -216,7 +217,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                 )}
               </div>
               <p className="hidden md:block text-sm text-[#7090B0] font-light">
-                {{ dashboard: "Field intelligence and session management.", pipeline: "Manage leads from reach-out to appointment scheduling.", schedule: "Appointments, conflicts, and daily work queue.", calendar: "Day and week r.view with conflict detection and route navigation.", centerpoint: "Jobs synced from CenterPoint Connect.", tickets: "Your managed pipeline — stages, touches, and write-back.", manager: "All-rep activity, no-shows, follow-ups, and queue health.", settings: "Manage field identities and operational parameters." }[r.view]}
+                {{ dashboard: "Field intelligence and session management.", pipeline: "Manage leads from reach-out to appointment scheduling.", schedule: "Appointments, conflicts, and daily work queue.", calendar: "Day and week r.view with conflict detection and route navigation.", centerpoint: "Jobs synced from CenterPoint Connect.", opportunities: "Sales opportunities created from inspection sessions.", tickets: "Your managed pipeline — stages, touches, and write-back.", manager: "All-rep activity, no-shows, follow-ups, and queue health.", settings: "Manage field identities and operational parameters." }[r.view]}
               </p>
             </div>
           </div>
@@ -229,6 +230,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                 { id: "schedule", label: "My Schedule" },
                 { id: "calendar", label: "Calendar" },
                 { id: "centerpoint", label: "CP Inbox" },
+                { id: "opportunities", label: "Opps" },
                 { id: "tickets", label: "Tickets" },
                 { id: "manager", label: "Manager" },
                 { id: "settings", label: "Settings" },
@@ -359,6 +361,8 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
           <ManagerDashboard currentRep={currentRep} />
         ) : r.view === "centerpoint" ? (
           <CenterPointJobs />
+        ) : r.view === "opportunities" ? (
+          <CenterPointOpportunities />
         ) : r.view === "schedule" ? (
           <MySchedule currentRep={currentRep} />
         ) : r.view === "pipeline" ? (

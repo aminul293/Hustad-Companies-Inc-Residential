@@ -44,3 +44,16 @@ export async function dismissAllQueueFailures(): Promise<Response> {
     body: JSON.stringify({ all: true }),
   });
 }
+
+// ─── Opportunities ────────────────────────────────────────────────────────────
+export async function fetchCenterpointOpportunities(params: Record<string, string>): Promise<Response> {
+  return fetch(`${BASE}/opportunities?${new URLSearchParams(params).toString()}&t=${Date.now()}`);
+}
+
+export async function triggerOpportunitiesSync(): Promise<Response> {
+  return fetch(`${BASE}/opportunities/sync`, { method: "POST" });
+}
+
+export async function fetchOpportunitiesSyncStatus(): Promise<Response> {
+  return fetch(`${BASE}/opportunities/sync`);
+}

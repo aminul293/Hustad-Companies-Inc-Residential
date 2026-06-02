@@ -91,7 +91,7 @@ export function normalizeImportData(raw: {
 
 export type CommandCenterView =
   | "dashboard" | "pipeline" | "schedule" | "calendar"
-  | "centerpoint" | "tickets" | "manager" | "settings";
+  | "centerpoint" | "opportunities" | "tickets" | "manager" | "settings";
 
 interface Props {
   currentRep: AuthenticatedRep;
