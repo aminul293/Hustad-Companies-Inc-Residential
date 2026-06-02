@@ -277,7 +277,7 @@ export default function RemoteReviewPage() {
   const photos = (session!.photoAssets || []).filter(p => p.selectedForSummary && !p.isSensitive);
 
   return (
-    <div className="relative min-h-screen bg-[#060606] text-[#E8EDF8] font-sans selection:bg-indigo-500/30 overflow-y-auto custom-scrollbar pb-32">
+    <div className="fixed inset-0 overflow-y-auto bg-[#060606] text-[#E8EDF8] font-sans selection:bg-indigo-500/30 custom-scrollbar pb-32">
       {/* HUD Background Layers */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.04),transparent_70%)]" />
