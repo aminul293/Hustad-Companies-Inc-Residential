@@ -199,7 +199,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
         const pdfBase64 = await getSummaryPDFBase64(session);
 
         // 2. Prepare recipients (Sanitize empty strings)
-        const currentEmail = (session.signatureData.signerEmail || session.property.homeownerPrimaryEmail || "").trim();
+        const currentEmail = (session.signatureData.signerEmail || session.signatureData.summarySendRecipient || session.property.homeownerPrimaryEmail || "").trim();
         const primaryEmail = currentEmail || quickEmail.trim();
         const decisionMakerEmail = (session.buyerData.decisionMakerEmail || "").trim();
 
