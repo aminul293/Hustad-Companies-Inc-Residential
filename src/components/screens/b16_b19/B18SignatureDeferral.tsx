@@ -27,7 +27,10 @@ interface Props {
 export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Props) {
   const { theme } = useTheme();
   const isDark = theme === "dark" || theme === "high-contrast";
-  const [mode, setMode] = useState<"sign" | "defer" | null>(null);
+  const [mode, setMode] = useState<"sign" | "defer" | null>(
+    session.sessionStatus === "authorization_pending" ? "sign" :
+    session.sessionStatus === "deferred" ? "defer" : null
+  );
   const [signerName, setSignerName] = useState(session.signatureData.signerName || session.property.homeownerPrimaryName);
   const [signerEmail, setSignerEmail] = useState(session.signatureData.signerEmail || session.property.homeownerPrimaryEmail);
   const [deferEmail, setDeferEmail] = useState(session.signatureData.summarySendRecipient || session.buyerData.decisionMakerEmail);
@@ -118,12 +121,15 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
               <span className={cn("text-[10px] font-mono uppercase tracking-[0.2em] pt-0.5", isDark ? "text-indigo-300" : "text-[#1D55C4]")}>Authorization</span>
             </div>
             <h1 className={cn("text-3xl md:text-6xl lg:text-8xl font-display font-medium tracking-tight leading-[1.05]", isDark ? "text-[#E8EDF8]" : "text-[#1B2B4B]")}>
-              Ready to authorize,
+              {mode === "sign" ? "Authorization" : mode === "defer" ? "Send for Review" : "Ready to authorize,"}
               <br />
-              <span className={cn("bg-clip-text text-transparent bg-gradient-to-r", isDark ? "from-indigo-300 via-white to-indigo-300" : "from-[#1D55C4] to-[#1540A0]")}>or send for review?</span>
+              <span className={cn("bg-clip-text text-transparent bg-gradient-to-r", isDark ? "from-indigo-300 via-white to-indigo-300" : "from-[#1D55C4] to-[#1540A0]")}>
+                {mode === "sign" ? "Sign today" : mode === "defer" ? "Share with a co-decision-maker" : "or send for review?"}
+              </span>
             </h1>
           </motion.div>
 
+          {mode === null && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
             {[
               { id: "sign" as const, label: "Authorize Now", detail: "Sign today and confirm next steps.", icon: PenTool },
@@ -157,6 +163,7 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
               </button>
             ))}
           </div>
+          )}
 
           <AnimatePresence mode="wait">
             {mode === "sign" && (
