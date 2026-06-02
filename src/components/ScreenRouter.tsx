@@ -284,7 +284,7 @@ export function ScreenRouter() {
       {session.mode === "rep" && session.currentScreen.startsWith("B") && (
         <>
           {/* Desktop/Tablet Floating Panel */}
-          <div className="absolute bottom-4 right-4 z-50 max-w-xs origin-bottom-right hidden md:block opacity-30 hover:opacity-100 transition-opacity">
+          <div className="absolute bottom-24 right-6 z-50 max-w-xs origin-bottom-right hidden md:block transition-all">
             <RepCompanionPanel session={session} />
           </div>
 
