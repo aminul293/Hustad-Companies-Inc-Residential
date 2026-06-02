@@ -252,7 +252,7 @@ export default function RemoteReviewPage() {
                 { label: "Storm Basis", value: session!.property.stormBasis || '' },
                 { label: "Lead Inspector", value: session!.repName || '' },
                 { label: "Working DOL", value: session!.property.workingDateOfLoss || '' },
-                { label: "Session ID", value: session!.sessionId.slice(-6).toUpperCase(), isId: true },
+                { label: "Ticket ID", value: session!.centerpointId || '', isId: true },
               ].filter(item => !!item.value).map((item, idx) => (
                 <motion.div 
                   key={idx}
