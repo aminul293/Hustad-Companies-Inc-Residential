@@ -6,22 +6,57 @@ import { Search, ChevronRight, RefreshCw, TrendingUp, ArrowLeft, CheckCircle2, X
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
-// ─── Stage pipeline ────────────────────────────────────────────────────────────
-// Status values from CP: lead_opened → lead_pending → lead_quoted → lead_sold
-// Terminal negative: lead_dead
-const STAGES: Record<string, {
-  label: string;
-  color: string;
-  chip: { bg: string; fg: string; dot: string };
-}> = {
-  lead_opened:  { label: "Opened",  color: "bg-[#2563ba]/20 text-[#4a8fd4] border-[#2563ba]/30",    chip: { bg: "#c5daf4", fg: "#163975", dot: "#2563ba" } },
-  lead_pending: { label: "Pending", color: "bg-[#d6a800]/15 text-[#f0c000] border-[#d6a800]/30",    chip: { bg: "#fef3c7", fg: "#92400e", dot: "#d97706" } },
-  lead_quoted:  { label: "Quoted",  color: "bg-[#7C3AED]/15 text-[#a78bfa] border-[#7C3AED]/30",    chip: { bg: "#ede9fe", fg: "#4c1d95", dot: "#7C3AED" } },
-  lead_sold:    { label: "Accepted",color: "bg-[#2a8a82]/20 text-[#3aada3] border-[#2a8a82]/30",    chip: { bg: "#a8d2d0", fg: "#115250", dot: "#2a8a82" } },
-  lead_dead:    { label: "Dead",    color: "bg-white/5 text-[#567090] border-white/10",              chip: { bg: "#f1f5f9", fg: "#64748b", dot: "#94a3b8" } },
+// ─── Status chip colours (keyed on CP status field) ────────────────────────────
+const STATUS_CHIP: Record<string, { label: string; color: string; chip: { bg: string; fg: string; dot: string } }> = {
+  lead_opened:  { label: "Opened",   color: "bg-[#2563ba]/20 text-[#4a8fd4] border-[#2563ba]/30", chip: { bg: "#c5daf4", fg: "#163975", dot: "#2563ba" } },
+  lead_pending: { label: "Pending",  color: "bg-[#d6a800]/15 text-[#f0c000] border-[#d6a800]/30", chip: { bg: "#fef3c7", fg: "#92400e", dot: "#d97706" } },
+  lead_quoted:  { label: "Quoted",   color: "bg-[#7C3AED]/15 text-[#a78bfa] border-[#7C3AED]/30", chip: { bg: "#ede9fe", fg: "#4c1d95", dot: "#7C3AED" } },
+  lead_sold:    { label: "Accepted", color: "bg-[#2a8a82]/20 text-[#3aada3] border-[#2a8a82]/30", chip: { bg: "#a8d2d0", fg: "#115250", dot: "#2a8a82" } },
+  lead_dead:    { label: "Dead",     color: "bg-white/5 text-[#567090] border-white/10",           chip: { bg: "#f1f5f9", fg: "#64748b", dot: "#94a3b8" } },
 };
 
-const STAGE_ORDER = ["lead_opened", "lead_pending", "lead_quoted", "lead_sold"];
+// ─── Real CenterPoint workflow stages (condensed) ──────────────────────────────
+// Full CP order: Qualify → Meeting → Inspection → Finalize Repairs → Quote Repairs
+// → Pre-Approve Replacement → Estimate → Finalize Replacement → Quote Replacement
+// → Presentation → Pending → Accepted → Declined
+const CP_STAGES = [
+  { key: "qualify",      label: "Qualify" },
+  { key: "inspection",   label: "Inspection" },
+  { key: "quoted",       label: "Quoted" },
+  { key: "presentation", label: "Presentation" },
+  { key: "pending",      label: "Pending" },
+  { key: "accepted",     label: "Accepted" },
+];
+
+// Map displayStatus (from CP API) to a CP_STAGES key
+const DISPLAY_TO_STAGE: Record<string, string> = {
+  "qualify":                    "qualify",
+  "meeting":                    "qualify",
+  "inspection":                 "inspection",
+  "finalize repairs":           "quoted",
+  "quote repairs":              "quoted",
+  "pre-approve replacement":    "quoted",
+  "estimate":                   "quoted",
+  "finalize replacement":       "quoted",
+  "quote replacement":          "quoted",
+  "quoted":                     "quoted",
+  "presentation":               "presentation",
+  "pending":                    "pending",
+  "accepted":                   "accepted",
+};
+
+// Fallback: map status field → stage key
+const STATUS_TO_STAGE: Record<string, string> = {
+  lead_opened:  "qualify",
+  lead_quoted:  "quoted",
+  lead_pending: "pending",
+  lead_sold:    "accepted",
+};
+
+function resolveStageKey(status: string, displayStatus: string): string {
+  const ds = displayStatus.toLowerCase().trim();
+  return DISPLAY_TO_STAGE[ds] ?? STATUS_TO_STAGE[status] ?? "qualify";
+}
 
 const OPP_TYPE_COLORS: Record<string, { bg: string; fg: string }> = {
   "Service":          { bg: "rgba(37,99,186,0.10)",  fg: "#4a8fd4" },
@@ -144,7 +179,7 @@ export function CenterPointOpportunities() {
     setSearch(searchInput);
   };
 
-  const stageIndex = (status: string) => STAGE_ORDER.indexOf(status);
+  const stageIndex = (stageKey: string) => CP_STAGES.findIndex(s => s.key === stageKey);
 
   return (
     <div className="flex flex-col h-full">
@@ -230,9 +265,10 @@ export function CenterPointOpportunities() {
         ) : (
           <>
             {opps.map(opp => {
-              const stage = STAGES[opp.status] ?? STAGES["lead_opened"];
+              const stage = STATUS_CHIP[opp.status] ?? STATUS_CHIP["lead_opened"];
               const isDead = opp.status === "lead_dead";
-              const currentIdx = stageIndex(opp.status);
+              const currentStageKey = resolveStageKey(opp.status, opp.display_status);
+              const currentIdx = stageIndex(currentStageKey);
               const isExpanded = expandedId === opp.id;
               const address = extractAddress(opp.description);
               const typeColors = OPP_TYPE_COLORS[opp.opportunity_type ?? ""] ?? { bg: "rgba(255,255,255,0.04)", fg: "#567090" };
@@ -321,38 +357,30 @@ export function CenterPointOpportunities() {
                             <div>
                               <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest mb-3">Stage Pipeline</p>
                               <div className="flex items-center gap-1 flex-wrap">
-                                {STAGE_ORDER.map((s, i) => {
+                                {CP_STAGES.map((s, i) => {
                                   const isPast    = i < currentIdx;
                                   const isCurrent = i === currentIdx;
-                                  const stageInfo = STAGES[s];
+                                  const activeColor =
+                                    s.key === "accepted"  ? "bg-[#2a8a82]/20 text-[#3aada3] border-[#2a8a82]/30" :
+                                    s.key === "pending"   ? "bg-[#d6a800]/15 text-[#f0c000] border-[#d6a800]/30" :
+                                    s.key === "quoted"    ? "bg-[#7C3AED]/15 text-[#a78bfa] border-[#7C3AED]/30" :
+                                                            "bg-[#2563ba]/20 text-[#4a8fd4] border-[#2563ba]/30";
                                   return (
-                                    <div key={s} className="flex items-center gap-1 shrink-0">
+                                    <div key={s.key} className="flex items-center gap-1 shrink-0">
                                       <div className={cn(
                                         "px-3 py-1.5 rounded-lg text-[9px] font-mono uppercase tracking-widest border transition-all",
-                                        isCurrent ? stageInfo.color + " ring-1 ring-white/20" :
+                                        isCurrent ? activeColor + " ring-1 ring-white/20" :
                                         isPast    ? "bg-white/5 text-[#2D4060] border-white/5" :
                                                     "bg-transparent text-[#293A58] border-white/[0.04]"
                                       )}>
-                                        {stageInfo.label}
+                                        {s.label}
                                       </div>
-                                      {i < STAGE_ORDER.length - 1 && (
+                                      {i < CP_STAGES.length - 1 && (
                                         <div className={cn("w-4 h-[1px]", isPast ? "bg-white/20" : "bg-white/[0.05]")} />
                                       )}
                                     </div>
                                   );
                                 })}
-                                {/* Accepted is the positive terminal */}
-                                <div className="flex items-center gap-1 shrink-0">
-                                  <div className="w-4 h-[1px] bg-white/[0.05]" />
-                                  <div className={cn(
-                                    "px-3 py-1.5 rounded-lg text-[9px] font-mono uppercase tracking-widest border",
-                                    opp.status === "lead_sold"
-                                      ? STAGES["lead_sold"].color + " ring-1 ring-white/20"
-                                      : "bg-transparent text-[#293A58] border-white/[0.04]"
-                                  )}>
-                                    Accepted
-                                  </div>
-                                </div>
                               </div>
                             </div>
                           )}
