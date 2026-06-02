@@ -31,32 +31,43 @@ interface CaptureOverlay {
 // ── Section meta ──────────────────────────────────────────────────────────────
 
 const SECTION_META: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  "Roof Inspection Photos": { label: "Roof",       icon: Home, color: "text-indigo-400" },
-  "Storm Inspection":       { label: "Storm",      icon: Zap,  color: "text-sky-400"    },
-  "Hail/Wind Shot List":    { label: "Hail & Wind",icon: Wind, color: "text-rose-400"   },
+  "General Exterior": { label: "Exterior",      icon: Home, color: "text-indigo-400" },
+  "General Roof":     { label: "Roof",          icon: Zap,  color: "text-sky-400"    },
+  "Hail and Wind":    { label: "Hail & Wind",   icon: Wind, color: "text-rose-400"   },
+  "Urgent Repairs":   { label: "Urgent Repairs",icon: AlertCircle, color: "text-amber-400" },
 };
 
 const CAPTURE_HINTS: Record<string, string> = {
-  general_observations:     "Step back. Capture the full roof slope from eave to ridge.",
-  membrane_shingle_condition:"Fill the frame with the shingle surface. Granule loss or splits should be clear.",
-  edge_metal_detail:        "Photograph along the drip edge or gutter apron — show dents or separation.",
-  roof_assembly_core_cut:   "Show all layers clearly: felt, substrate, shingles.",
-  eave_edge_detail:         "Lift the first course slightly to show the underlayment at the eave.",
-  roof_to_wall_detail:      "Focus on counter flashing and any gaps where the roof meets the wall.",
-  headwall_flashing:        "Show the full headwall flashing width — rust, gaps, or lifting.",
-  roof_penetrations:        "Pipe boots, chimney base, any penetration. Focus on the seal.",
-  roof_ventilation:         "Ridge vents or box vents — show dents, crushed louvers, or debris.",
-  non_storm_deficiencies:   "Document wear not related to the storm. Keep separate from damage.",
-  test_squares:             "Show the full chalk outline of the 10×10 ft test square.",
-  best_hail_hit_closeups:   "Get within 12 inches. Each impact should fill 25% of the frame.",
-  collateral_damage:        "AC units, fences, siding — any non-roof storm impact.",
-  test_square_hits_circled: "Circle every hit with chalk. Photograph the entire square.",
-  hip_ridge_hits:           "Impacts on ridge or hip cap — high-value insurance evidence.",
-  soft_metal_dents:         "Turtle vents, box vents, skylight frames. Angle to catch the shadows.",
-  siding_paint_damage:      "Chips or cracks in siding/trim. Include a coin for scale if possible.",
-  gutters_downspouts_damage:"Dents, bends, or detachment along the gutter and downspout.",
-  broken_glass_casings:     "Cracked panes or damaged window frames from arm's length.",
-  vehicle_damage:           "Whole vehicle first, then close-up of individual dents.",
+  // General Exterior
+  front_elevation:           "Step back to the street. Capture the full front facade, gutters, siding, and garage.",
+  left_elevation:            "Show the full left side — roof edge, downspouts, AC units, fencing, and access.",
+  rear_elevation:            "Show decks, patios, rear gutters, windows, and landscaping slope.",
+  right_elevation:           "Show the full right side — roof edge, downspouts, AC units, fencing, and access.",
+  exterior_collateral_damage:"Document any non-roof storm damage visible from the exterior.",
+  access_site_constraints:   "Photograph anything that may limit roof access — gates, steep grade, obstructions.",
+  // General Roof
+  roof_general:              "Wide shot from the roof. Show all planes, valleys, slope, and overall layout.",
+  roof_assembly:             "Show layers clearly — shingles, felt, substrate. Decking visible where possible.",
+  roof_to_wall_detail:       "Focus on counter flashing, step flashing, siding tie-ins, and any prior repairs.",
+  pipe_flashings:            "Photograph each unique pipe boot type. Note damaged seals or replacements needed.",
+  roof_vents:                "Photograph each unique vent type — show dents, crushed louvers, or debris.",
+  ridge_cap:                 "Document full ridge cap condition. Note if ridge vent is present.",
+  chimney_skylight_details:  "Show chimney flashing and condition. Skylights — include quantity and any damage.",
+  // Hail and Wind
+  test_squares:              "Show the full chalk outline of the 10×10 test square. Two largest roof planes.",
+  hail_hits_closeup:         "Get within 12 inches. 4 minimum — show bruise, fracture, granule loss, or mat break.",
+  hail_hits_hip_ridge:       "Impacts on hip shingles or ridge cap — high-value insurance evidence.",
+  soft_metal_damage:         "Angle the shot to catch shadows in dents. Vents, flashing, AC fins, gutters.",
+  damaged_siding_paint:      "Close-up by elevation. Note material type and affected area in each photo.",
+  damaged_gutters_downspouts:"Show denting, displacement, tearing, or detachment along gutter and downspout.",
+  broken_glass_window_casing:"Photograph each affected window. Note elevation, quantity, and screen/casing damage.",
+  collateral_damage:         "Document non-roof storm indicators — fences, AC units, and property damage.",
+  non_roof_storm_damage:     "AC units, decks, garage doors, light fixtures, exterior trim, personal property.",
+  // Urgent Repairs
+  urgent_repair_1:           "Active leak, safety concern, or immediate repair needed. Note location clearly.",
+  urgent_repair_2:           "Active leak, safety concern, or immediate repair needed. Note location clearly.",
+  urgent_repair_3:           "Active leak, safety concern, or immediate repair needed. Note location clearly.",
+  urgent_repair_4:           "Active leak, safety concern, or immediate repair needed. Note location clearly.",
 };
 
 // ── Main page component ───────────────────────────────────────────────────────
