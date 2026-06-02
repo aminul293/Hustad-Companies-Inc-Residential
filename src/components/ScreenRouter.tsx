@@ -72,7 +72,7 @@ export function ScreenRouter() {
     repJumpTo, resetSession, loadDraft, isOnline,
   } = useSession();
 
-  const [isMobileCompanionOpen, setIsMobileCompanionOpen] = useState(false);
+  const [isCompanionOpen, setIsCompanionOpen] = useState(false);
 
   const props = {
     session,
@@ -284,14 +284,37 @@ export function ScreenRouter() {
       {session.mode === "rep" && session.currentScreen.startsWith("B") && (
         <>
           {/* Desktop/Tablet Floating Panel */}
-          <div className="absolute bottom-24 right-6 z-50 max-w-xs origin-bottom-right hidden md:block transition-all">
-            <RepCompanionPanel session={session} />
+          <div className="absolute bottom-24 right-6 z-50 hidden md:flex flex-col items-end gap-4">
+            <AnimatePresence>
+              {isCompanionOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                  className="max-w-xs origin-bottom-right"
+                >
+                  <RepCompanionPanel session={session} onClose={() => setIsCompanionOpen(false)} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+            
+            {!isCompanionOpen && (
+              <motion.button
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                onClick={() => setIsCompanionOpen(true)}
+                className="px-4 py-3 bg-[#1C2127] border border-indigo-500/30 rounded-full text-indigo-400 shadow-2xl hover:bg-indigo-500/10 hover:border-indigo-400 transition-all flex items-center gap-2"
+              >
+                <MessageSquare size={18} />
+                <span className="text-[11px] font-bold tracking-wide uppercase">Sales Brain</span>
+              </motion.button>
+            )}
           </div>
 
           {/* Mobile FAB */}
           <div className="absolute bottom-4 right-4 z-50 md:hidden">
             <button
-              onClick={() => setIsMobileCompanionOpen(true)}
+              onClick={() => setIsCompanionOpen(true)}
               className="p-3 bg-indigo-500 rounded-full text-white shadow-xl hover:bg-indigo-400 transition-colors"
             >
               <MessageSquare size={20} />
@@ -301,8 +324,8 @@ export function ScreenRouter() {
           {/* Mobile Bottom Drawer */}
           <MobileCompanionDrawer 
             session={session} 
-            open={isMobileCompanionOpen} 
-            onClose={() => setIsMobileCompanionOpen(false)} 
+            open={isCompanionOpen} 
+            onClose={() => setIsCompanionOpen(false)} 
           />
         </>
       )}

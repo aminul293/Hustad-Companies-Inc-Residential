@@ -77,12 +77,20 @@ function CompanionContent({ session }: { session: SessionState }) {
 }
 
 // Tablet/Desktop Overlay Component
-export function RepCompanionPanel({ session }: { session: SessionState }) {
+export function RepCompanionPanel({ session, onClose }: { session: SessionState, onClose?: () => void }) {
   const activePrompt = session ? getActivePrompt(session) : null;
   if (!activePrompt) return null;
 
   return (
-    <div className="bg-[#1C2127] border border-white/10 rounded-2xl p-4 flex flex-col shadow-xl">
+    <div className="bg-[#1C2127] border border-white/10 rounded-2xl p-4 flex flex-col shadow-xl relative">
+      {onClose && (
+        <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors bg-white/5 p-1 rounded-full"
+        >
+          <X size={14} />
+        </button>
+      )}
       <CompanionContent session={session} />
     </div>
   );
