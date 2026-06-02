@@ -412,7 +412,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
                   Full Agreement Preview
                 </span>
                 <span style={{ color: LM.navyLight, fontSize: "11px" }}>
-                  — Contingency Contract Template ( Wisconsin DATCP )
+                  — Contingency Contract ( Wisconsin DATCP )
                 </span>
               </div>
             </button>
