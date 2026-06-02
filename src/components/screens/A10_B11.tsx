@@ -16,21 +16,9 @@ import {
   Plus, 
   Minus,
   ChevronRight,
-  ArrowLeft,
-  AlertCircle,
-  ShieldCheck,
-  Zap,
-  Eye,
-  EyeOff,
-  Trash2,
-  FileText,
-  Upload,
-  Wrench,
-  Scan,
-  Database,
-  Shield,
-  Layers
+  FileText, Check, AlertCircle, Camera, Search, Lock, Scan, CheckCircle2, ChevronRight, EyeOff, Database, Trash2, ArrowLeft, Loader2, Sparkles, Activity
 } from "lucide-react";
+import { containsBlockedLanguage } from "@/lib/language-blocker";
 import { cn } from "@/lib/utils";
 import { lockSummary, setOutcomeType } from "@/lib/session";
 import { AIAssistSummary } from "@/components/AIAssistSummary";
@@ -598,6 +586,18 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
     const photos = session.photoAssets?.map(p => p.dataUrl).filter(Boolean) ?? [];
     const inspectionPhotos = session.photos?.map(p => p.localUri || p.remoteUrl).filter(Boolean) ?? [];
     const allPhotos = [...photos, ...inspectionPhotos];
+    
+    // Check for blocked language
+    const headlineCheck = containsBlockedLanguage(headline);
+    const bodyCheck = containsBlockedLanguage(body);
+    if (headlineCheck.hasBlocked || bodyCheck.hasBlocked) {
+      const blocked = [...headlineCheck.matchedWords, ...bodyCheck.matchedWords];
+      setErrors((err) => ({
+        ...err,
+        language: `Please remove restricted terminology: ${blocked.join(", ")}. Use factual, evidence-based descriptions.`
+      }));
+      return;
+    }
 
     if (allPhotos.length === 0) {
       setAutoClassifyError("No photos found. Upload inspection photos using the camera below first.");
@@ -1448,7 +1448,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                     className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl py-5 px-6 text-[var(--tx1)] text-lg font-display placeholder:text-[var(--tx4)] outline-none focus:border-indigo-500/40 focus:bg-[var(--bg-base)] transition-all"
                     placeholder="E.g. Documented Storm Damage File"
                     value={headline}
-                    onChange={(e) => { setHeadline(e.target.value); setErrors((err) => { const n = { ...err }; delete n.headline; return n; }); }}
+                    onChange={(e) => { setHeadline(e.target.value); setErrors((err) => { const n = { ...err }; delete n.headline; delete n.language; return n; }); }}
                   />
                 </div>
                 <div className="space-y-4">
@@ -1457,8 +1457,14 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                     className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-3xl p-6 text-[var(--tx1)] text-sm font-light leading-relaxed placeholder:text-[var(--tx4)] outline-none focus:border-indigo-500/40 focus:bg-[var(--bg-base)] transition-all resize-none min-h-[160px] custom-scrollbar"
                     placeholder="Input detailed findings summary here..."
                     value={body}
-                    onChange={(e) => { setBody(e.target.value); setErrors((err) => { const n = { ...err }; delete n.body; return n; }); }}
+                    onChange={(e) => { setBody(e.target.value); setErrors((err) => { const n = { ...err }; delete n.body; delete n.language; return n; }); }}
                   />
+                  {errors.language && (
+                    <div className="flex items-center gap-2 text-rose-500 text-xs bg-rose-500/10 p-2 rounded-lg mt-2">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      {errors.language}
+                    </div>
+                  )}
                 </div>
               </div>
             </section>

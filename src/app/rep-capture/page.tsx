@@ -46,8 +46,8 @@ const CAPTURE_HINTS: Record<string, string> = {
   exterior_collateral_damage:"Document any non-roof storm damage visible from the exterior.",
   access_site_constraints:   "Photograph anything that may limit roof access — gates, steep grade, obstructions.",
   // General Roof
-  roof_general:              "Wide shot from the roof. Show all planes, valleys, slope, and overall layout.",
-  roof_assembly:             "Show layers clearly — shingles, felt, substrate. Decking visible where possible.",
+  roof_general:              "Wide shot of the roof from the ground. Do NOT use a ladder or climb the roof.",
+  roof_assembly:             "Show visible layers from the ground or an interior window. Stay safe.",
   roof_to_wall_detail:       "Focus on counter flashing, step flashing, siding tie-ins, and any prior repairs.",
   pipe_flashings:            "Photograph each unique pipe boot type. Note damaged seals or replacements needed.",
   roof_vents:                "Photograph each unique vent type — show dents, crushed louvers, or debris.",
@@ -296,6 +296,14 @@ function RepCaptureInner() {
       {/* Fixed scroll container — bypasses body overflow-hidden set by root layout */}
       <div ref={scrollContainerRef} style={{ position: "fixed", inset: 0, overflowY: "auto", WebkitOverflowScrolling: "touch" as any, backgroundColor: "#060606" }}>
       <div className="pb-32">
+        {/* ── Safety Banner ── */}
+        <div className="bg-amber-500/10 border-b border-amber-500/20 px-5 py-3 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+          <p className="text-amber-500/90 text-xs leading-relaxed">
+            <strong>SAFETY FIRST:</strong> Please take all photos from the ground. Do not use a ladder or attempt to climb onto the roof.
+          </p>
+        </div>
+
         {/* ── Header ── */}
         <div className="sticky top-0 z-40 bg-[#060606]/95 backdrop-blur-xl border-b border-white/[0.06] px-5 py-4">
           <div className="flex items-center justify-between">
