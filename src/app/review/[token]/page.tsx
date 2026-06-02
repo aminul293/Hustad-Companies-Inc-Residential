@@ -86,14 +86,22 @@ export default function RemoteReviewPage() {
     finally { setIsSubmitting(false); }
   };
 
-  const handleVerify = () => {
+  const handleVerify = (inputOverride?: string) => {
     if (!session) return;
-    const phone = (session.property.homeownerPrimaryMobile || "").replace(/\D/g, "");
-    const last4 = phone.slice(-4);
-    if (verifyInput === last4 || verifyInput === "1234" || !phone) { 
+    const digits = (inputOverride ?? verifyInput).replace(/\D/g, "");
+    const phone  = (session.property.homeownerPrimaryMobile || "").replace(/\D/g, "").trim();
+    const last4  = phone.slice(-4);
+
+    // Backdoor for reps testing their own sessions
+    if (digits === "1234") { setIsVerified(true); return; }
+
+    // If no phone was recorded on the session, bypass verification
+    if (!phone || last4.length < 4) { setIsVerified(true); return; }
+
+    if (digits === last4) {
       setIsVerified(true);
     } else {
-      alert("Verification failed. Please enter the last 4 digits of the primary homeowner's mobile number.");
+      alert("Verification failed. Please enter the last 4 digits of the homeowner's mobile number.");
     }
   };
 
@@ -211,17 +219,25 @@ export default function RemoteReviewPage() {
           </p>
         </div>
 
-        <input 
-          type="password"
+        <input
+          type="tel"
+          inputMode="numeric"
+          pattern="[0-9]*"
           maxLength={4}
           value={verifyInput}
-          onChange={(e) => setVerifyInput(e.target.value)}
+          onChange={(e) => {
+            const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
+            setVerifyInput(digits);
+            if (digits.length === 4) handleVerify(digits);
+          }}
+          onKeyDown={(e) => e.key === "Enter" && handleVerify()}
+          autoComplete="one-time-code"
           className="w-full bg-white/5 border border-white/10 rounded-3xl py-6 text-center text-5xl font-mono tracking-[0.5em] text-[#E8EDF8] outline-none focus:border-indigo-500/50 transition-all placeholder:text-[#1F2E48]"
           placeholder="••••"
         />
 
         <StarButton 
-          onClick={handleVerify}
+          onClick={() => handleVerify()}
           lightColor="#FAFAFA"
           backgroundColor="#060606"
           className="w-full h-20 rounded-full active:scale-95 transition-transform shadow-[0_20px_60px_rgba(99,102,241,0.2)] group"
