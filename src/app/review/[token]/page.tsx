@@ -423,7 +423,16 @@ export default function RemoteReviewPage() {
             </div>
             <div className="space-y-3">
               <h3 className="text-3xl font-display font-medium text-[#E8EDF8]">Response Received</h3>
-              <p className="text-[#567090] text-sm font-light max-w-sm mx-auto leading-relaxed uppercase tracking-widest">Your {actionSent.replace('_',' ')} has been securely transmitted to the Hustad Forensic terminal.</p>
+              <p className="text-[#567090] text-sm font-light max-w-sm mx-auto leading-relaxed uppercase tracking-widest">
+                {{
+                  question: 'Your question has been sent to your Hustad representative.',
+                  callback: 'Callback request received. Your rep will be in touch shortly.',
+                  approve: 'Approval confirmed. Your representative has been notified.',
+                  sign: 'Signature submitted. Authorization is complete.',
+                  decline: 'Response received. Your representative has been notified.',
+                  needs_more_time: 'Got it — your rep will follow up with you soon.',
+                }[actionSent] ?? 'Your response has been securely transmitted.'}
+              </p>
             </div>
           </motion.section>
         ) : (
