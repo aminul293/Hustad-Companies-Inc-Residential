@@ -24,36 +24,41 @@ const STATUS_FILTERS = [
   { id: "lead_dead",    label: "Dead" },
 ];
 
-// ─── Exact CenterPoint workflow stages in order ───────────────────────────────
+// ─── Real CP workflow stage pipeline ──────────────────────────────────────────
 const CP_STAGES = [
-  "Qualify",
-  "Meeting",
-  "Inspection",
-  "Finalize Repairs",
-  "Quote Repairs",
-  "Pre-Approve Replacement",
-  "Estimate",
-  "Finalize Replacement",
-  "Quote Replacement",
-  "Presentation",
-  "Pending",
-  "Accepted",
-  "Declined",
+  { key: "qualify",      label: "Qualify" },
+  { key: "inspection",   label: "Inspection" },
+  { key: "quoted",       label: "Quoted" },
+  { key: "presentation", label: "Presentation" },
+  { key: "pending",      label: "Pending" },
+  { key: "accepted",     label: "Accepted" },
 ];
 
-// Fallback: map lead status → approximate stage name when workflowStageName is absent
-const STATUS_TO_STAGE: Record<string, string> = {
-  lead_opened:  "Qualify",
-  lead_quoted:  "Quote Repairs",
-  lead_pending: "Pending",
-  lead_sold:    "Accepted",
-  lead_dead:    "Declined",
+const NAME_TO_STAGE: Record<string, string> = {
+  "qualify": "qualify", "meeting": "qualify",
+  "inspection": "inspection",
+  "finalize repairs": "quoted", "quote repairs": "quoted",
+  "pre-approve replacement": "quoted", "estimate": "quoted",
+  "finalize replacement": "quoted", "quote replacement": "quoted",
+  "quoted": "quoted",
+  "presentation": "presentation",
+  "pending": "pending",
+  "accepted": "accepted",
 };
 
-function resolveCurrentStage(status: string, workflowStageName: string | null): string {
-  // workflowStageName is the real CP stage name — use it directly when available
-  if (workflowStageName) return workflowStageName;
-  return STATUS_TO_STAGE[status] ?? "Qualify";
+const STATUS_TO_STAGE: Record<string, string> = {
+  lead_opened: "qualify", lead_quoted: "quoted",
+  lead_pending: "pending", lead_sold: "accepted",
+};
+
+function resolveStageKey(status: string, displayStatus: string, workflowStageName: string | null): string {
+  if (workflowStageName) {
+    const k = NAME_TO_STAGE[workflowStageName.toLowerCase().trim()];
+    if (k) return k;
+  }
+  const dk = NAME_TO_STAGE[displayStatus.toLowerCase().trim()];
+  if (dk) return dk;
+  return STATUS_TO_STAGE[status] ?? "qualify";
 }
 
 const OPP_TYPE_COLORS: Record<string, { bg: string; fg: string }> = {
@@ -153,7 +158,7 @@ export function CenterPointOpportunities() {
   useEffect(() => { fetchCount(); }, [fetchCount]);
   useEffect(() => { setPage(1); fetchOpps({ newPage: 1 }); }, [search, statusFilter]);
 
-  const stageIndex = (stageName: string) => CP_STAGES.findIndex(s => s === stageName);
+  const stageIndex = (key: string) => CP_STAGES.findIndex(s => s.key === key);
 
   return (
     <div className="flex flex-col h-full">
@@ -256,8 +261,8 @@ export function CenterPointOpportunities() {
             {opps.map(opp => {
               const status     = STATUSES[opp.status] ?? STATUSES["lead_opened"];
               const isDead     = opp.status === "lead_dead";
-              const currentStage = resolveCurrentStage(opp.status, opp.workflow_stage_name ?? null);
-              const currentIdx   = stageIndex(currentStage);
+              const stageKey   = resolveStageKey(opp.status, opp.display_status, opp.workflow_stage_name ?? null);
+              const currentIdx = stageIndex(stageKey);
               const isExpanded = expandedId === opp.id;
               const address    = extractAddress(opp.description);
               const typeColors = OPP_TYPE_COLORS[opp.opportunity_type ?? ""] ?? { bg: "rgba(255,255,255,0.04)", fg: "#567090" };
@@ -354,21 +359,20 @@ export function CenterPointOpportunities() {
                                   const isPast    = i < currentIdx;
                                   const isCurrent = i === currentIdx;
                                   const activeColor =
-                                    s === "Accepted"              ? "bg-[#2a8a82]/20 text-[#3aada3] border-[#2a8a82]/30" :
-                                    s === "Declined"              ? "bg-rose-500/15 text-rose-400 border-rose-500/25" :
-                                    s === "Pending"               ? "bg-[#d6a800]/15 text-[#f0c000] border-[#d6a800]/30" :
-                                    s === "Presentation"          ? "bg-sky-500/15 text-sky-300 border-sky-500/25" :
-                                    s.startsWith("Quote")         ? "bg-[#7C3AED]/15 text-[#a78bfa] border-[#7C3AED]/30" :
-                                                                    "bg-[#2563ba]/20 text-[#4a8fd4] border-[#2563ba]/30";
+                                    s.key === "accepted"    ? "bg-[#2a8a82]/20 text-[#3aada3] border-[#2a8a82]/30" :
+                                    s.key === "pending"     ? "bg-[#d6a800]/15 text-[#f0c000] border-[#d6a800]/30" :
+                                    s.key === "quoted"      ? "bg-[#7C3AED]/15 text-[#a78bfa] border-[#7C3AED]/30" :
+                                    s.key === "presentation"? "bg-sky-500/15 text-sky-300 border-sky-500/25" :
+                                                              "bg-[#2563ba]/20 text-[#4a8fd4] border-[#2563ba]/30";
                                   return (
-                                    <div key={s} className="flex items-center gap-1 shrink-0">
+                                    <div key={s.key} className="flex items-center gap-1 shrink-0">
                                       <div className={cn(
                                         "px-3 py-1.5 rounded-lg text-[9px] font-mono uppercase tracking-widest border transition-all",
                                         isCurrent ? activeColor + " ring-1 ring-white/20" :
                                         isPast    ? "bg-white/5 text-[#2D4060] border-white/5" :
                                                     "bg-transparent text-[#293A58] border-white/[0.04]"
                                       )}>
-                                        {s}
+                                        {s.label}
                                       </div>
                                       {i < CP_STAGES.length - 1 && (
                                         <div className={cn("w-4 h-[1px]", isPast ? "bg-white/20" : "bg-white/[0.05]")} />
