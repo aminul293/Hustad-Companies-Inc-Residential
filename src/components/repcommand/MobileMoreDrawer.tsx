@@ -2,7 +2,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CalendarDays, CheckCircle2, Activity, Settings,
-  PlayCircle, Check as CheckIcon, X,
+  PlayCircle, Check as CheckIcon, X, TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CommandCenterView } from "./useRepCommandCenter";
@@ -16,10 +16,11 @@ interface Props {
 }
 
 const ITEMS = [
-  { id: "calendar" as const, label: "Calendar",          icon: CalendarDays, sub: "Day & week view" },
-  { id: "tickets"  as const, label: "Hustad Tickets",    icon: CheckCircle2, sub: "Pipeline write-back" },
-  { id: "manager"  as const, label: "Manager Dashboard", icon: Activity,     sub: "All-rep activity" },
-  { id: "settings" as const, label: "Settings",          icon: Settings,     sub: "Reps & configuration" },
+  { id: "opportunities" as const, label: "Opportunities",    icon: TrendingUp,  sub: "Sales opps from sessions" },
+  { id: "calendar"      as const, label: "Calendar",         icon: CalendarDays, sub: "Day & week view" },
+  { id: "tickets"       as const, label: "Hustad Tickets",   icon: CheckCircle2, sub: "Pipeline write-back" },
+  { id: "manager"       as const, label: "Manager Dashboard",icon: Activity,     sub: "All-rep activity" },
+  { id: "settings"      as const, label: "Settings",         icon: Settings,     sub: "Reps & configuration" },
 ] as const;
 
 export function MobileMoreDrawer({ open, view, onNavigate, onClose, onNewSession }: Props) {

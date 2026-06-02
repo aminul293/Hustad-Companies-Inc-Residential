@@ -578,7 +578,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
           onClick={() => r.setMoreOpen(prev => !prev)}
           className={cn(
             "flex flex-col items-center gap-1 py-3 px-4 min-w-[56px] transition-all active:scale-95 relative",
-            r.moreOpen || ["calendar","tickets","manager"].includes(r.view) ? "text-[#4a8fd4]" : "text-[#3F5878]"
+            r.moreOpen || ["opportunities","calendar","tickets","manager"].includes(r.view) ? "text-[#4a8fd4]" : "text-[#3F5878]"
           )}
         >
           <MoreHorizontal className="w-5 h-5" />
