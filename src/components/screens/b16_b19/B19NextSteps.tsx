@@ -310,7 +310,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
               sentAt: new Date().toISOString(),
               statusHistory: [
                 ...(session.remoteReview?.statusHistory || []),
-                { status: "sent", at: new Date().toISOString() }
+                { status: "sent" as any, at: new Date().toISOString() }
               ]
             }
           };
@@ -375,7 +375,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
               sentAt: new Date().toISOString(),
               statusHistory: [
                 ...(session.remoteReview?.statusHistory || []),
-                { status: "sent", at: new Date().toISOString() }
+                { status: "sent" as any, at: new Date().toISOString() }
               ]
             }
           };
