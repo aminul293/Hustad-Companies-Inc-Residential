@@ -113,10 +113,11 @@ export async function POST(req: NextRequest) {
   if (!listErr && stored && stored.length > 0) {
     for (const row of stored) {
       try {
-        const res = await fetch(`${CP_BASE}/productions/${row.cp_id}`, {
-          headers: { Accept: "application/json", Authorization: apiKey },
-          cache: "no-store",
-        });
+        // include=workflowStage gives us the ACTUAL stage name CenterPoint shows
+        const res = await fetch(
+          `${CP_BASE}/productions/${row.cp_id}?include=workflowStage`,
+          { headers: { Accept: "application/json", Authorization: apiKey }, cache: "no-store" }
+        );
 
         if (!res.ok) { failed++; continue; }
 
@@ -124,11 +125,18 @@ export async function POST(req: NextRequest) {
         const a = json?.data?.attributes;
         if (!a) { failed++; continue; }
 
+        // Extract workflow stage name from included relationships
+        const workflowStageEntry = (json?.included ?? [])
+          .find((x: any) => x.type === "workflow_stages");
+        const workflowStageName: string | null =
+          workflowStageEntry?.attributes?.name ?? null;
+
         await supabase
           .from("centerpoint_opportunities")
           .update({
             status:                       normaliseStatus(a.status ?? ""),
             display_status:               a.displayStatus ?? a.status ?? "",
+            workflow_stage_name:          workflowStageName,
             price:                        a.price ?? 0,
             cp_updated_at:                a.updatedAt ?? null,
             latest_stage_transitioned_at: a.latestStageTransitionedAt ?? null,

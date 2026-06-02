@@ -28,8 +28,8 @@ const CP_STAGES = [
   { key: "accepted",     label: "Accepted" },
 ];
 
-// Map displayStatus (from CP API) to a CP_STAGES key
-const DISPLAY_TO_STAGE: Record<string, string> = {
+// Map a CP stage name (workflowStage or displayStatus) → CP_STAGES key
+const NAME_TO_STAGE: Record<string, string> = {
   "qualify":                    "qualify",
   "meeting":                    "qualify",
   "inspection":                 "inspection",
@@ -53,9 +53,15 @@ const STATUS_TO_STAGE: Record<string, string> = {
   lead_sold:    "accepted",
 };
 
-function resolveStageKey(status: string, displayStatus: string): string {
-  const ds = displayStatus.toLowerCase().trim();
-  return DISPLAY_TO_STAGE[ds] ?? STATUS_TO_STAGE[status] ?? "qualify";
+// Priority: workflowStageName (actual CP stage) > displayStatus > status field
+function resolveStageKey(status: string, displayStatus: string, workflowStageName: string | null): string {
+  if (workflowStageName) {
+    const key = NAME_TO_STAGE[workflowStageName.toLowerCase().trim()];
+    if (key) return key;
+  }
+  const dsKey = NAME_TO_STAGE[displayStatus.toLowerCase().trim()];
+  if (dsKey) return dsKey;
+  return STATUS_TO_STAGE[status] ?? "qualify";
 }
 
 const OPP_TYPE_COLORS: Record<string, { bg: string; fg: string }> = {
@@ -78,6 +84,7 @@ interface CPOpportunity {
   cp_created_at: string | null;
   cp_updated_at: string | null;
   latest_stage_transitioned_at: string | null;
+  workflow_stage_name: string | null;
   synced_at: string;
 }
 
@@ -267,7 +274,7 @@ export function CenterPointOpportunities() {
             {opps.map(opp => {
               const stage = STATUS_CHIP[opp.status] ?? STATUS_CHIP["lead_opened"];
               const isDead = opp.status === "lead_dead";
-              const currentStageKey = resolveStageKey(opp.status, opp.display_status);
+              const currentStageKey = resolveStageKey(opp.status, opp.display_status, opp.workflow_stage_name ?? null);
               const currentIdx = stageIndex(currentStageKey);
               const isExpanded = expandedId === opp.id;
               const address = extractAddress(opp.description);
