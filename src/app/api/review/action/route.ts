@@ -3,6 +3,58 @@ import { getSessionByToken, upsertSession } from '@/lib/supabase-relay';
 
 export const dynamic = 'force-dynamic';
 
+// ── Microsoft Graph mailer (server-side, no user auth needed) ─────────────────
+const CLIENT_ID     = process.env.AZURE_AD_CLIENT_ID;
+const TENANT_ID     = process.env.AZURE_AD_TENANT_ID;
+const CLIENT_SECRET = process.env.AZURE_AD_CLIENT_SECRET;
+const SENDER_EMAIL  = process.env.SENDER_EMAIL || 'info@hustadcompanies.com';
+
+async function getGraphToken(): Promise<string | null> {
+  if (!CLIENT_ID || !TENANT_ID || !CLIENT_SECRET) return null;
+  try {
+    const res = await fetch(
+      `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id:     CLIENT_ID,
+          client_secret: CLIENT_SECRET,
+          scope:         'https://graph.microsoft.com/.default',
+          grant_type:    'client_credentials',
+        }).toString(),
+      }
+    );
+    const data = await res.json();
+    return data.access_token ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function notifyRep(to: string, subject: string, html: string) {
+  const token = await getGraphToken();
+  if (!token) return;
+  try {
+    await fetch(`https://graph.microsoft.com/v1.0/users/${SENDER_EMAIL}/sendMail`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: {
+          subject,
+          body: { contentType: 'HTML', content: html },
+          toRecipients: [{ emailAddress: { address: to } }],
+        },
+        saveToSentItems: 'true',
+      }),
+    });
+  } catch (e) {
+    console.warn('[REVIEW_ACTION] Notification email failed silently:', e);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -31,6 +83,9 @@ export async function POST(request: Request) {
         statusHistory: []
       };
     }
+
+    const repEmail = session.repEmail?.trim() || '';
+    const address  = session.property?.address || 'the property';
 
     switch (action) {
       case 'opened': {
@@ -61,6 +116,22 @@ export async function POST(request: Request) {
         session.remoteReview.questions.push(question);
         session.remoteReview.status = 'question_submitted';
         session.remoteReview.statusHistory.push({ status: 'question_submitted', at: now });
+
+        if (repEmail) {
+          notifyRep(
+            repEmail,
+            `Question from homeowner — ${address}`,
+            `<div style="font-family:sans-serif;background:#060606;color:#E8EDF8;padding:40px;border-radius:16px;">
+              <h2 style="color:#a78bfa;margin-bottom:8px;">Homeowner Question</h2>
+              <p style="color:#7090B0;margin-bottom:24px;font-size:13px;">${address} · ${new Date(now).toLocaleString()}</p>
+              <div style="background:#1a1f2e;border:1px solid #2d3748;border-radius:12px;padding:20px;margin-bottom:24px;">
+                <p style="color:#E8EDF8;font-size:16px;margin:0;">"${question.questionText}"</p>
+                <p style="color:#567090;font-size:11px;margin-top:12px;">— ${question.askerName}</p>
+              </div>
+              <p style="color:#567090;font-size:12px;">Log in to the Hustad platform to respond to this question.</p>
+            </div>`
+          );
+        }
         break;
       }
 
@@ -70,6 +141,22 @@ export async function POST(request: Request) {
         session.remoteReview.callbackPreferredTime = payload?.preferredTime || '';
         session.remoteReview.status = 'callback_requested';
         session.remoteReview.statusHistory.push({ status: 'callback_requested', at: now });
+
+        if (repEmail) {
+          notifyRep(
+            repEmail,
+            `Callback requested — ${address}`,
+            `<div style="font-family:sans-serif;background:#060606;color:#E8EDF8;padding:40px;border-radius:16px;">
+              <h2 style="color:#34d399;margin-bottom:8px;">Callback Request</h2>
+              <p style="color:#7090B0;margin-bottom:24px;font-size:13px;">${address} · ${new Date(now).toLocaleString()}</p>
+              <div style="background:#1a1f2e;border:1px solid #2d3748;border-radius:12px;padding:20px;margin-bottom:24px;">
+                <p style="color:#E8EDF8;margin:0;"><strong style="color:#567090;font-size:11px;display:block;margin-bottom:4px;">PHONE</strong>${session.remoteReview.callbackPhone || '—'}</p>
+                <p style="color:#E8EDF8;margin-top:16px;"><strong style="color:#567090;font-size:11px;display:block;margin-bottom:4px;">PREFERRED TIME</strong>${session.remoteReview.callbackPreferredTime || '—'}</p>
+              </div>
+              <p style="color:#567090;font-size:12px;">Call them back at your earliest convenience.</p>
+            </div>`
+          );
+        }
         break;
       }
 
@@ -77,6 +164,17 @@ export async function POST(request: Request) {
         session.remoteReview.approvedAt = now;
         session.remoteReview.status = 'approved';
         session.remoteReview.statusHistory.push({ status: 'approved', at: now });
+
+        if (repEmail) {
+          notifyRep(
+            repEmail,
+            `Homeowner approved — ${address}`,
+            `<div style="font-family:sans-serif;background:#060606;color:#E8EDF8;padding:40px;border-radius:16px;">
+              <h2 style="color:#34d399;margin-bottom:8px;">Approval Received</h2>
+              <p style="color:#7090B0;font-size:13px;">${address} — the homeowner has approved the next step (no signature required).</p>
+            </div>`
+          );
+        }
         break;
       }
 
@@ -100,6 +198,17 @@ export async function POST(request: Request) {
             metadata: { method: 'remote_portal', signerName: payload?.signerName }
           }
         ];
+
+        if (repEmail) {
+          notifyRep(
+            repEmail,
+            `Authorization signed — ${address}`,
+            `<div style="font-family:sans-serif;background:#060606;color:#E8EDF8;padding:40px;border-radius:16px;">
+              <h2 style="color:#34d399;margin-bottom:8px;">Document Signed</h2>
+              <p style="color:#7090B0;font-size:13px;">${address} — <strong style="color:#E8EDF8;">${payload?.signerName || 'Homeowner'}</strong> has remotely signed the authorization dossier.</p>
+            </div>`
+          );
+        }
         break;
       }
 
@@ -108,6 +217,22 @@ export async function POST(request: Request) {
         session.remoteReview.declineReason = payload?.reason || '';
         session.remoteReview.status = 'declined';
         session.remoteReview.statusHistory.push({ status: 'declined', at: now });
+
+        if (repEmail) {
+          notifyRep(
+            repEmail,
+            `Review deferred — ${address}`,
+            `<div style="font-family:sans-serif;background:#060606;color:#E8EDF8;padding:40px;border-radius:16px;">
+              <h2 style="color:#f87171;margin-bottom:8px;">Review Deferred</h2>
+              <p style="color:#7090B0;margin-bottom:24px;font-size:13px;">${address} · ${new Date(now).toLocaleString()}</p>
+              ${session.remoteReview.declineReason
+                ? `<div style="background:#1a1f2e;border:1px solid #2d3748;border-radius:12px;padding:20px;">
+                    <p style="color:#E8EDF8;margin:0;">"${session.remoteReview.declineReason}"</p>
+                  </div>`
+                : ''}
+            </div>`
+          );
+        }
         break;
       }
 
@@ -118,15 +243,15 @@ export async function POST(request: Request) {
     // Upsert back to Supabase
     await upsertSession(session);
 
-    console.log(`[SUPABASE_RELAY] Action: ${action} | Session: ${session.sessionId} | Status: ${session.remoteReview.status}`);
+    console.log(`[REVIEW_ACTION] action=${action} session=${session.sessionId} status=${session.remoteReview.status} notified=${!!repEmail}`);
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       status: session.remoteReview.status,
-      remoteReview: session.remoteReview 
+      remoteReview: session.remoteReview
     });
   } catch (error: any) {
-    console.error('[SUPABASE_RELAY] Action Error:', error);
+    console.error('[REVIEW_ACTION] Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
