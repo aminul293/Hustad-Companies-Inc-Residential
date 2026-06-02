@@ -593,8 +593,9 @@ export default function RemoteReviewPage() {
                   <div className="space-y-6">
                     <p className="text-[10px] font-mono text-[#3F5878] uppercase tracking-[0.4em] pl-1 font-bold">Digital Authorization Signature</p>
                     <input value={signerName} onChange={e => setSignerName(e.target.value)} placeholder="Full Legal Name" className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-[#E8EDF8] outline-none focus:border-indigo-500/40 text-xl font-display" />
-                    <div className="h-56 bg-white/[0.02] border border-dashed border-white/10 rounded-[40px] overflow-hidden group hover:border-indigo-500/30 transition-colors">
-                      <SignatureCanvas ref={sigPad} penColor="white" canvasProps={{className:'w-full h-full cursor-crosshair'}} />
+                    <div className="h-56 bg-white rounded-[40px] overflow-hidden border border-white/20 hover:border-indigo-500/30 transition-colors relative">
+                      <p className="absolute inset-0 flex items-center justify-center text-[#c8c4bb] text-sm font-light pointer-events-none select-none">Sign here</p>
+                      <SignatureCanvas ref={sigPad} penColor="#1a1917" canvasProps={{ className: 'w-full h-full cursor-crosshair', style: { background: 'transparent' } }} />
                     </div>
                   </div>
                   <StarButton 
