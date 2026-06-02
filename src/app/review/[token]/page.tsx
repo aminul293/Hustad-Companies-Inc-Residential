@@ -457,6 +457,18 @@ export default function RemoteReviewPage() {
                 </button>
               ))}
 
+              {/* Need More Time — full-width tile */}
+              <button
+                onClick={() => sendAction('needs_more_time', {})}
+                disabled={isSubmitting}
+                className="col-span-2 p-6 rounded-[32px] border text-left transition-all duration-500 flex items-center gap-4 group bg-amber-500/[0.04] border-amber-500/15 hover:bg-amber-500/10 hover:border-amber-500/30 disabled:opacity-50"
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-amber-500/10 text-amber-400 group-hover:bg-amber-500 group-hover:text-white transition-all">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <p className="text-sm font-display font-medium tracking-tight text-amber-400/80 group-hover:text-amber-300">Give Me More Time</p>
+              </button>
+
               {/* Approve — full-width tile spanning both columns */}
               <button
                 onClick={() => sendAction('approve', {})}

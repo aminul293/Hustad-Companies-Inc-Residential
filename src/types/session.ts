@@ -97,6 +97,7 @@ export type RemoteReviewStatus =
   | "approved"
   | "signed"
   | "declined"
+  | "needs_more_time"
   | "expired";
 
 export interface RemoteQuestion {

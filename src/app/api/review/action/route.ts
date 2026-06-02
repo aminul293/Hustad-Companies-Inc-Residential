@@ -256,6 +256,25 @@ export async function POST(request: Request) {
         break;
       }
 
+      case 'needs_more_time': {
+        session.remoteReview.status = 'needs_more_time';
+        session.remoteReview.statusHistory.push({ status: 'needs_more_time', at: now });
+
+        if (repEmail) {
+          notifyRep(
+            repEmail,
+            threadSubject,
+            `<div style="font-family:sans-serif;background:#060606;color:#E8EDF8;padding:40px;border-radius:16px;">
+              <h2 style="color:#f59e0b;margin-bottom:8px;">Needs More Time</h2>
+              <p style="color:#7090B0;margin-bottom:24px;font-size:13px;">${address} · ${new Date(now).toLocaleString()}</p>
+              <p style="color:#E8EDF8;font-size:15px;">The homeowner has reviewed the dossier and needs more time before making a decision. Consider following up in a day or two.</p>
+            </div>`,
+            cc
+          );
+        }
+        break;
+      }
+
       default:
         return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
     }
