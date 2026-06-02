@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { MessageSquare } from "lucide-react";
 import { useSession } from "@/components/SessionProvider";
 import { navigateTo } from "@/lib/session";
 import { P00RepLaunch } from "@/components/screens/P00RepLaunch";
 import { A01Welcome } from "@/components/screens/A01Welcome";
 import { A02WhyInspection } from "@/components/screens/A02WhyInspection";
-import { RepCompanionPanel } from "@/components/repcommand/RepCompanionPanel";
+import { RepCompanionPanel, MobileCompanionDrawer } from "@/components/repcommand/RepCompanionPanel";
 import {
   A03WhatWeInspect,
   A04HowFindingsSorted,
@@ -70,6 +71,8 @@ export function ScreenRouter() {
     session, updateSession, goNext, goBack, jumpTo,
     repJumpTo, resetSession, loadDraft, isOnline,
   } = useSession();
+
+  const [isMobileCompanionOpen, setIsMobileCompanionOpen] = useState(false);
 
   const props = {
     session,
@@ -279,9 +282,29 @@ export function ScreenRouter() {
       
       {/* Rep Companion Panel Overlay - only visible if in rep mode */}
       {session.mode === "rep" && session.currentScreen.startsWith("B") && (
-        <div className="absolute bottom-4 right-4 z-50 max-w-xs origin-bottom-right hidden md:block opacity-30 hover:opacity-100 transition-opacity">
-          <RepCompanionPanel session={session} />
-        </div>
+        <>
+          {/* Desktop/Tablet Floating Panel */}
+          <div className="absolute bottom-4 right-4 z-50 max-w-xs origin-bottom-right hidden md:block opacity-30 hover:opacity-100 transition-opacity">
+            <RepCompanionPanel session={session} />
+          </div>
+
+          {/* Mobile FAB */}
+          <div className="absolute bottom-4 right-4 z-50 md:hidden">
+            <button
+              onClick={() => setIsMobileCompanionOpen(true)}
+              className="p-3 bg-indigo-500 rounded-full text-white shadow-xl hover:bg-indigo-400 transition-colors"
+            >
+              <MessageSquare size={20} />
+            </button>
+          </div>
+
+          {/* Mobile Bottom Drawer */}
+          <MobileCompanionDrawer 
+            session={session} 
+            open={isMobileCompanionOpen} 
+            onClose={() => setIsMobileCompanionOpen(false)} 
+          />
+        </>
       )}
     </div>
   );
