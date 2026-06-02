@@ -215,7 +215,8 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
                     isDark 
                       ? (errors.deferEmail ? "border-rose-500/50" : "border-white/[0.1]") + " bg-white/[0.04] text-[#E8EDF8] placeholder:text-[#7090B0] focus:border-indigo-500/50"
                       : (errors.deferEmail ? "border-rose-500" : "border-zinc-200") + " bg-white text-[#1B2B4B] placeholder:text-zinc-400 focus:border-indigo-400"
-                  )} type="email" value={deferEmail} onChange={(e) => setDeferEmail(e.target.value)} placeholder="Decision maker's email" />
+                  )} type="email" value={deferEmail} onChange={(e) => { setDeferEmail(e.target.value); setErrors({...errors, deferEmail: ""}); }} placeholder="Decision maker's email" />
+                  {errors.deferEmail && <p className="text-rose-500 text-xs pl-2">{errors.deferEmail}</p>}
                 </div>
                 
                 <div className="space-y-2">
@@ -237,6 +238,7 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
                     <option value="agreement_review" className={isDark ? "bg-[#060606] text-[#E8EDF8]" : "bg-white text-[#1B2B4B]"}>Agreement review</option>
                     <option value="other" className={isDark ? "bg-[#060606] text-[#E8EDF8]" : "bg-white text-[#1B2B4B]"}>Other</option>
                   </select>
+                  {errors.deferReason && <p className="text-rose-500 text-xs pl-2">{errors.deferReason}</p>}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -245,26 +247,32 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
                     <input 
                       type="date" 
                       value={deferFollowUpDate} 
-                      onChange={(e) => setDeferFollowUpDate(e.target.value)}
-                      className={cn("w-full border rounded-2xl py-4 px-6 outline-none transition-all", 
+                      onClick={(e) => e.currentTarget.showPicker?.()}
+                      onFocus={(e) => e.currentTarget.showPicker?.()}
+                      onChange={(e) => { setDeferFollowUpDate(e.target.value); setErrors({...errors, deferDate: ""}); }}
+                      className={cn("w-full border rounded-2xl py-4 px-6 outline-none transition-all cursor-pointer", 
                         isDark 
                           ? (errors.deferDate ? "border-rose-500/50" : "border-white/[0.1]") + " bg-white/[0.04] text-[#E8EDF8] focus:border-indigo-500/50"
                           : (errors.deferDate ? "border-rose-500" : "border-zinc-200") + " bg-white text-[#1B2B4B] focus:border-indigo-400"
                       )}
                     />
+                    {errors.deferDate && <p className="text-rose-500 text-xs pl-2">{errors.deferDate}</p>}
                   </div>
                   <div className="space-y-2">
                     <p className={cn("text-[10px] font-mono uppercase tracking-widest pl-2", isDark ? "text-[#AABDCF]" : "text-zinc-500")}>Time</p>
                     <input 
                       type="time" 
                       value={deferFollowUpTime} 
-                      onChange={(e) => setDeferFollowUpTime(e.target.value)}
-                      className={cn("w-full border rounded-2xl py-4 px-6 outline-none transition-all", 
+                      onClick={(e) => e.currentTarget.showPicker?.()}
+                      onFocus={(e) => e.currentTarget.showPicker?.()}
+                      onChange={(e) => { setDeferFollowUpTime(e.target.value); setErrors({...errors, deferTime: ""}); }}
+                      className={cn("w-full border rounded-2xl py-4 px-6 outline-none transition-all cursor-pointer", 
                         isDark 
                           ? (errors.deferTime ? "border-rose-500/50" : "border-white/[0.1]") + " bg-white/[0.04] text-[#E8EDF8] focus:border-indigo-500/50"
                           : (errors.deferTime ? "border-rose-500" : "border-zinc-200") + " bg-white text-[#1B2B4B] focus:border-indigo-400"
                       )}
                     />
+                    {errors.deferTime && <p className="text-rose-500 text-xs pl-2">{errors.deferTime}</p>}
                   </div>
                 </div>
 
