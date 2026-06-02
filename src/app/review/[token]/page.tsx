@@ -460,10 +460,12 @@ export default function RemoteReviewPage() {
             <span className="text-[10px] font-mono text-[#567090] uppercase tracking-[0.3em] pt-0.5">Restoration Roadmap</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {[
+            {([
               { id: "claim_review" as SelectedPath, label: "Insurance Path", detail: "Forensic filing for carrier determination.", icon: FileText, color: "indigo" },
               { id: "direct_repair" as SelectedPath, label: "Direct Path", detail: "Authorized restoration without carrier filing.", icon: Wrench, color: "emerald" }
-            ].map(path => {
+            ] as const).filter(path =>
+              outcome === "repair_only" ? path.id === "direct_repair" : true
+            ).map(path => {
               const isSelected = selectedPath === path.id;
               const isOtherSelected = selectedPath && !isSelected;
               return (
