@@ -1,5 +1,19 @@
 import { NextResponse } from 'next/server';
 import { getSessionByToken, upsertSession } from '@/lib/supabase-relay';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+async function updatePipelineLeadStatus(pipelineLeadId: string | null | undefined, status: string) {
+  if (!pipelineLeadId) return;
+  await supabase
+    .from('pipeline_leads')
+    .update({ pipeline_status: status })
+    .eq('id', pipelineLeadId);
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -182,6 +196,8 @@ export async function POST(request: Request) {
         session.remoteReview.status = 'approved';
         session.remoteReview.statusHistory.push({ status: 'approved', at: now });
 
+        await updatePipelineLeadStatus(session.pipelineLeadId, 'co_decision_accepted');
+
         if (repEmail) {
           notifyRep(
             repEmail,
@@ -216,6 +232,8 @@ export async function POST(request: Request) {
             metadata: { method: 'remote_portal', signerName: payload?.signerName }
           }
         ];
+
+        await updatePipelineLeadStatus(session.pipelineLeadId, 'signed');
 
         if (repEmail) {
           notifyRep(
