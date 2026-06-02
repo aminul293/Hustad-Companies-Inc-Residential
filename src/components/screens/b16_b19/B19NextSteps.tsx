@@ -148,7 +148,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
       reason = "Follow-up required";
     }
 
-    if (reason && !session.followUpTasks.some(t => t.reason === reason)) {
+    if (reason && !(session.followUpTasks || []).some(t => t.reason === reason)) {
       onUpdate(createFollowUpTask(session, reason));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -52,7 +52,7 @@ export function RemoteStatusTracker({ token, recipientEmail, recipientName }: Pr
 
   useEffect(() => { fetchStatus(); const i = setInterval(fetchStatus, 15000); return () => clearInterval(i); }, [token]);
 
-  const config = STATUS_CONFIG[status];
+  const config = STATUS_CONFIG[status] ?? STATUS_CONFIG["sent"];
   const StatusIcon = config.icon;
 
   const TIMELINE_STEPS: RemoteReviewStatus[] = ["sent","opened","viewed","signed"];
