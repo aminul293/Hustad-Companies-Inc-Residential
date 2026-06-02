@@ -302,7 +302,20 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
         const result = await response.json();
         if (result.success) {
           setDeliverySent("email");
-          onUpdate(addAuditEvent(session, "summary_delivery_success", { method: "email", recipient: primaryEmail }));
+          const nextSession = {
+            ...session,
+            remoteReview: {
+              ...(session.remoteReview || {}),
+              status: "sent" as any,
+              sentAt: new Date().toISOString(),
+              statusHistory: [
+                ...(session.remoteReview?.statusHistory || []),
+                { status: "sent", at: new Date().toISOString() }
+              ]
+            }
+          };
+          onUpdate(addAuditEvent(nextSession, "summary_delivery_success", { method: "email", recipient: primaryEmail }));
+          await syncSession(nextSession);
         } else {
           throw new Error(result.error || "Email delivery failed");
         }
@@ -354,7 +367,20 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
         const result = await response.json();
         if (result.success) {
           setDeliverySent("text");
-          onUpdate(addAuditEvent(session, "summary_delivery_success", { method: "text", recipient: phone }));
+          const nextSession = {
+            ...session,
+            remoteReview: {
+              ...(session.remoteReview || {}),
+              status: "sent" as any,
+              sentAt: new Date().toISOString(),
+              statusHistory: [
+                ...(session.remoteReview?.statusHistory || []),
+                { status: "sent", at: new Date().toISOString() }
+              ]
+            }
+          };
+          onUpdate(addAuditEvent(nextSession, "summary_delivery_success", { method: "text", recipient: phone }));
+          await syncSession(nextSession);
         } else {
           throw new Error(result.error || "SMS delivery failed");
         }
