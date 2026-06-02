@@ -262,7 +262,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
             Page 17 · Agreement Summary
           </p>
           <h1 style={{ color: LM.navy, fontSize: "clamp(26px, 4vw, 36px)", fontWeight: 700, lineHeight: 1.08, letterSpacing: "-0.02em", marginTop: "4px" }}>
-            Insurance Contingency Agreement Review
+            {isClaimPath ? "Insurance Contingency Agreement Review" : "Direct Repair Agreement Review"}
           </h1>
           <p style={{ color: LM.navyMid, fontSize: "14.5px", lineHeight: 1.5, marginTop: "6px" }}>
             Review what you are authorizing before you proceed.
@@ -457,25 +457,39 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
               <ArrowLeft className="w-4 h-4" />
               <span>Back</span>
             </button>
-            <button 
-              onClick={handleContinue} 
-              disabled={isSubmitting}
-              className="flex-1 flex items-center justify-center gap-3 h-[52px] rounded-[12px] text-[15px] font-semibold text-white transition-all active:scale-[0.99] disabled:opacity-50"
-              style={{ background: LM.blue, boxShadow: "0 4px 18px rgba(29,85,196,0.28)" }}
-            >
-              <span>{isSubmitting ? "Authorizing..." : "Continue to Authorization"}</span>
-              {!isSubmitting && <ChevronRight size={17} strokeWidth={2} />}
-            </button>
+            {isClaimPath ? (
+              <button 
+                onClick={handleContinue} 
+                disabled={isSubmitting}
+                className="flex-1 flex items-center justify-center gap-3 h-[52px] rounded-[12px] text-[15px] font-semibold text-white transition-all active:scale-[0.99] disabled:opacity-50"
+                style={{ background: LM.blue, boxShadow: "0 4px 18px rgba(29,85,196,0.28)" }}
+              >
+                <span>{isSubmitting ? "Authorizing..." : "Continue to Authorization"}</span>
+                {!isSubmitting && <ChevronRight size={17} strokeWidth={2} />}
+              </button>
+            ) : (
+              <button
+                onClick={handleSendForReview}
+                disabled={isSubmitting}
+                className="flex-1 flex items-center justify-center gap-3 h-[52px] rounded-[12px] text-[15px] font-semibold text-white transition-all active:scale-[0.99] disabled:opacity-50"
+                style={{ background: LM.blue, boxShadow: "0 4px 18px rgba(29,85,196,0.28)" }}
+              >
+                <Send className="w-4 h-4" />
+                <span>{isSubmitting ? "Sending..." : "Send Agreement for Review"}</span>
+              </button>
+            )}
           </div>
-          <button
-            onClick={handleSendForReview}
-            disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2.5 h-[44px] rounded-[10px] text-[14px] font-medium transition-all disabled:opacity-50 hover:opacity-75"
-            style={{ color: LM.blue, border: `1px solid ${LM.blueBorder}`, background: LM.blueLight }}
-          >
-            <Send className="w-4 h-4" />
-            {isSubmitting ? "Sending..." : "Send Agreement for Review"}
-          </button>
+          {isClaimPath && (
+            <button
+              onClick={handleSendForReview}
+              disabled={isSubmitting}
+              className="w-full flex items-center justify-center gap-2.5 h-[44px] rounded-[10px] text-[14px] font-medium transition-all disabled:opacity-50 hover:opacity-75"
+              style={{ color: LM.blue, border: `1px solid ${LM.blueBorder}`, background: LM.blueLight }}
+            >
+              <Send className="w-4 h-4" />
+              {isSubmitting ? "Sending..." : "Send Agreement for Review"}
+            </button>
+          )}
         </div>
       </div>
     </div>
