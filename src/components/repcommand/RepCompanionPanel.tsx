@@ -3,12 +3,11 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, ShieldAlert, CheckCircle2 } from "lucide-react";
-import { useSession } from "@/lib/SessionProvider";
 import { getActivePrompt } from "@/lib/prompt-engine";
 import { cn } from "@/lib/utils";
+import type { SessionState } from "@/types/session";
 
-export function RepCompanionPanel() {
-  const { session, updateSession } = useSession();
+export function RepCompanionPanel({ session }: { session: SessionState }) {
   const activePrompt = session ? getActivePrompt(session) : null;
   const [logged, setLogged] = useState(false);
 

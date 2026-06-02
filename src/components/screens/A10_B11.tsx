@@ -8,15 +8,10 @@ import { StarButton } from "@/components/ui/star-button";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { useTheme } from "@/components/ThemeProvider";
 import { 
-  Activity, 
-  Camera, 
-  Lock, 
-  Check, 
-  LayoutGrid, 
-  Plus, 
-  Minus,
-  ChevronRight,
-  FileText, Check, AlertCircle, Camera, Search, Lock, Scan, CheckCircle2, ChevronRight, EyeOff, Database, Trash2, ArrowLeft, Loader2, Sparkles, Activity
+  Activity, Camera, Lock, Check, LayoutGrid, Plus, Minus, ChevronRight,
+  ArrowLeft, AlertCircle, ShieldCheck, Zap, Eye, EyeOff, Trash2, FileText,
+  Upload, Wrench, Scan, Database, Shield, Layers,
+  Search, CheckCircle2, Loader2, Sparkles
 } from "lucide-react";
 import { containsBlockedLanguage } from "@/lib/language-blocker";
 import { cn } from "@/lib/utils";

@@ -4,19 +4,19 @@ export function generateCrmNote(session: SessionState): string {
   const motion = session.findings.outcomeType;
   const nextStepOwner = "Rep";
   const nextStepDate = session.followUpTasks?.[0]?.dueDate || "Unknown";
-  const nextStepAction = session.followUpTasks?.[0]?.description || "Follow up";
+  const nextStepAction = session.followUpTasks?.[0]?.reason || "Follow up";
   const nextStep = `[${nextStepOwner} / ${nextStepAction} / ${nextStepDate}]`;
 
-  const buyerState = session.buyerData?.buyerState || "Unknown";
-  const decisionStyle = session.buyerData?.decisionStyle || "Unknown";
-  const recommendedPath = session.pathData?.selectedPath || "None selected";
+  const buyerState = session.sessionStatus || "Unknown";
+  const decisionStyle = "Unknown";
+  const recommendedPath = session.findings.recommendedPath || "None selected";
   const recommendation = `${recommendedPath} selected`;
 
   if (motion === "claim_review_candidate") {
-    const concern = session.buyerData?.primaryConcern || "Storm damage";
+    const concern = session.buyerData?.buyerPriorities?.join(", ") || "Storm damage";
     const eventDate = "Unknown"; // Update as needed based on session data
     const activeLeak = session.findings?.urgentProtectionRecommended ? "Yes" : "No";
-    const claimStatus = session.buyerData?.claimStatus || "Not filed";
+    const claimStatus = session.buyerData?.insurerContactStatus || "Not filed";
     
     return [
       `Motion: Storm documentation review.`,
@@ -34,7 +34,7 @@ export function generateCrmNote(session: SessionState): string {
   }
 
   if (motion === "repair_only") {
-    const symptom = session.buyerData?.primaryConcern || "Repair needed";
+    const symptom = session.buyerData?.buyerPriorities?.join(", ") || "Repair needed";
     const urgency = session.findings?.urgentProtectionRecommended ? "Active" : "Stable";
 
     return [
@@ -50,9 +50,9 @@ export function generateCrmNote(session: SessionState): string {
   }
 
   if (motion === "full_restoration_candidate") {
-    const goal = session.buyerData?.primaryConcern || "Replacement";
+    const goal = session.buyerData?.buyerPriorities?.join(", ") || "Replacement";
     const decisionMakers = session.buyerData?.decisionMakerName || "Homeowner";
-    const financing = session.buyerData?.financingInterest ? "Yes" : "No";
+    const financing = "Unknown";
 
     return [
       `Motion: Direct-buy replacement.`,
@@ -71,7 +71,7 @@ export function generateCrmNote(session: SessionState): string {
     `Motion: Maintenance/tune-up.`,
     `Reason: Routine.`,
     `Roof age: Unknown.`,
-    `Findings: ${session.findings?.repNotes || "No notes"}.`,
+    `Findings: ${session.findings?.internalNotes || "No notes"}.`,
     `Recommendation: ${recommendation}.`,
     `Next review trigger: Next storm.`,
     `Next step: ${nextStep}.`

@@ -280,7 +280,7 @@ export function ScreenRouter() {
       {/* Rep Companion Panel Overlay - only visible if in rep mode */}
       {session.mode === "rep" && session.currentScreen.startsWith("B") && (
         <div className="absolute bottom-4 right-4 z-50 max-w-xs origin-bottom-right hidden md:block opacity-30 hover:opacity-100 transition-opacity">
-          <RepCompanionPanel />
+          <RepCompanionPanel session={session} />
         </div>
       )}
     </div>

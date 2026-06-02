@@ -19,7 +19,7 @@ export const PROMPT_RULES: PromptRule[] = [
     priority_rank: 10, // Higher is higher priority
     trigger: (session) => {
       const isClaimCandidate = session.findings.outcomeType === "claim_review_candidate";
-      const isWaiting = session.buyerData?.claimStatus === "waiting_for_inspection" || !session.buyerData?.claimStatus;
+      const isWaiting = session.buyerData?.insurerContactStatus === "not_yet" || !session.buyerData?.insurerContactStatus;
       return isClaimCandidate && isWaiting;
     },
     rep_script: "I will keep this clean: what we documented, what it may indicate, and what your carrier decides.",
