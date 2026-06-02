@@ -143,6 +143,7 @@ export default function RemoteReviewPage() {
       const res = await syncSession(updatedSession);
 
       if (!res.ok) throw new Error("Failed to submit authorization.");
+      setSession(updatedSession);
       setSuccess(true);
     } catch (err: any) {
       alert(err.message);
@@ -240,7 +241,8 @@ export default function RemoteReviewPage() {
   );
 
   if (success) return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#060606] px-6 text-center overflow-hidden">
+    <div className="fixed inset-0 overflow-y-auto bg-[#060606]">
+    <div className="flex flex-col items-center justify-center min-h-full px-6 text-center py-20">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.06),transparent_70%)]" />
       
       <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative z-10 w-24 h-24 rounded-full bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center mb-10">
@@ -253,7 +255,7 @@ export default function RemoteReviewPage() {
         Thank you. Your digital authorization has been securely transmitted to Hustad Residential. A finalized copy of your Forensic Dossier is being sent to your inbox.
       </p>
 
-      <StarButton 
+      <StarButton
         onClick={handleDownload}
         lightColor="#FAFAFA"
         backgroundColor="#060606"
@@ -265,10 +267,11 @@ export default function RemoteReviewPage() {
         </div>
       </StarButton>
 
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-2.5 opacity-20">
+      <div className="mt-12 flex items-center gap-2.5 opacity-20">
         <span className="font-display font-bold text-[#E8EDF8] text-lg tracking-[0.15em]">HUSTAD</span>
         <span className="text-[8px] font-mono text-[#AABDCF] uppercase tracking-[0.4em] pt-0.5">Madison Residential</span>
       </div>
+    </div>
     </div>
   );
 
