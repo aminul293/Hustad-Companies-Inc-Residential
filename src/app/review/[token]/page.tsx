@@ -7,7 +7,7 @@ import type { SessionState, SelectedPath, Annotation } from "@/types/session";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ShieldCheck, FileText, PenTool, CheckCircle2, AlertTriangle,
-  Download, ChevronRight, Camera, MapPin, Lock, ArrowRight,
+  Download, ChevronRight, Camera, MapPin, ArrowRight,
   Wrench, Zap, Eye, MessageSquare, Phone, Clock, XCircle,
   ThumbsUp, Send, User, Home, Shield, CalendarDays, ArrowLeft,
   Scan, Database, ShieldAlert, X
@@ -23,9 +23,6 @@ export default function RemoteReviewPage() {
   const [session, setSession] = useState<SessionState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isVerified, setIsVerified] = useState(false);
-  const [pinDigits, setPinDigits] = useState(["", "", "", ""]);
-  const pinRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
   const [signerName, setSignerName] = useState("");
   const [selectedPath, setSelectedPath] = useState<SelectedPath>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,25 +82,6 @@ export default function RemoteReviewPage() {
       setActionSent(action);
     } catch { alert('Failed to submit. Please try again.'); }
     finally { setIsSubmitting(false); }
-  };
-
-  const handleVerify = (inputOverride?: string) => {
-    if (!session) return;
-    const digits = (inputOverride ?? pinDigits.join("")).replace(/\D/g, "");
-    const phone  = (session.property.homeownerPrimaryMobile || "").replace(/\D/g, "").trim();
-    const last4  = phone.slice(-4);
-
-    // Backdoor for reps testing their own sessions
-    if (digits === "1234") { setIsVerified(true); return; }
-
-    // If no phone was recorded on the session, bypass verification
-    if (!phone || last4.length < 4) { setIsVerified(true); return; }
-
-    if (digits === last4) {
-      setIsVerified(true);
-    } else {
-      alert("Verification failed. Please enter the last 4 digits of the homeowner's mobile number.");
-    }
   };
 
   const handleSubmit = async () => {
@@ -184,93 +162,6 @@ export default function RemoteReviewPage() {
       <AlertTriangle className="w-12 h-12 text-rose-500 mb-6" />
       <h1 className="text-2xl font-display font-medium text-[#E8EDF8] mb-2 tracking-tight">Access Denied</h1>
       <p className="text-[#7090B0] font-light max-w-sm leading-relaxed">{error}</p>
-    </div>
-  );
-
-  if (!isVerified && !success) return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#060606] px-6 overflow-hidden">
-      {/* Background Assets */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.06),transparent_70%)]" />
-        <motion.div 
-          animate={{ opacity: [0.03, 0.05, 0.03], scale: [1, 1.02, 1] }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0"
-        >
-          <img src="/images/forensic_hud.png" alt="" className="w-full h-full object-cover mix-blend-screen opacity-20 grayscale" />
-        </motion.div>
-      </div>
-
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 max-w-md w-full p-10 rounded-[48px] bg-white/[0.03] border border-white/10 backdrop-blur-3xl space-y-10 text-center shadow-[0_40px_100px_rgba(0,0,0,0.5)]"
-      >
-        <div className="relative mx-auto w-20 h-20">
-          <div className="absolute inset-0 rounded-full border border-indigo-500/20 animate-ping" />
-          <div className="relative w-20 h-20 rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center">
-            <Lock className="w-10 h-10 text-indigo-400" />
-          </div>
-        </div>
-        
-        <div className="space-y-3">
-          <h1 className="text-3xl font-display font-medium text-[#E8EDF8] tracking-tight leading-tight">Identity Verification</h1>
-          <p className="text-[#567090] text-[11px] font-mono uppercase tracking-widest leading-relaxed">
-            Enter the last 4 digits of the primary mobile number to access this dossier.
-          </p>
-        </div>
-
-        <div className="flex items-center justify-center gap-3">
-          {pinDigits.map((digit, i) => (
-            <input
-              key={i}
-              ref={pinRefs[i]}
-              type="tel"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={1}
-              value={digit}
-              autoComplete={i === 0 ? "one-time-code" : "off"}
-              onChange={(e) => {
-                const val = e.target.value.replace(/\D/g, "").slice(-1);
-                const next = [...pinDigits];
-                next[i] = val;
-                setPinDigits(next);
-                if (val && i < 3) {
-                  pinRefs[i + 1].current?.focus();
-                }
-                const joined = next.join("");
-                if (joined.length === 4) handleVerify(joined);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Backspace" && !digit && i > 0) {
-                  pinRefs[i - 1].current?.focus();
-                }
-                if (e.key === "Enter") handleVerify(pinDigits.join(""));
-              }}
-              onFocus={(e) => e.target.select()}
-              className="w-16 h-20 bg-white/5 border border-white/10 rounded-2xl text-center text-3xl font-mono text-[#E8EDF8] outline-none focus:border-indigo-500/60 focus:bg-indigo-500/5 transition-all caret-indigo-400"
-            />
-          ))}
-        </div>
-
-        <StarButton 
-          onClick={() => handleVerify()}
-          lightColor="#FAFAFA"
-          backgroundColor="#060606"
-          className="w-full h-20 rounded-full active:scale-95 transition-transform shadow-[0_20px_60px_rgba(99,102,241,0.2)] group"
-        >
-          <div className="flex items-center justify-center gap-4">
-            <span className="text-xl font-display font-bold tracking-tight">Verify & Access</span>
-            <ArrowRight className="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
-          </div>
-        </StarButton>
-      </motion.div>
-
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-2.5 opacity-20">
-        <span className="font-display font-bold text-[#E8EDF8] text-lg tracking-[0.15em]">HUSTAD</span>
-        <span className="text-[8px] font-mono text-[#AABDCF] uppercase tracking-[0.4em] pt-0.5">Madison Residential</span>
-      </div>
     </div>
   );
 
