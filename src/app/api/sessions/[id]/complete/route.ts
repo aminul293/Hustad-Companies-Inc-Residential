@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase-server";
 import { requireAuth } from "@/lib/auth";
 import { CP_BASE, cpJsonHeaders, advanceWorkflowToTarget, getCpToken } from "@/lib/centerpoint/client";
+import { generateCrmNote } from "@/lib/crm-notes";
 
 const TERMINAL_STATUSES = [
   "signed", "deferred", "closed_no_damage", "closed_monitor_only",
@@ -47,7 +48,7 @@ export async function POST(
     // 1. Fetch session
     const { data: session, error: sessionErr } = await supabase
       .from("inspection_sessions")
-      .select("session_id, session_status, pipeline_lead_id, property_address, homeowner_name, rep_id")
+      .select("session_id, session_status, pipeline_lead_id, property_address, homeowner_name, rep_id, payload")
       .eq("session_id", sessionId)
       .single();
 
@@ -120,6 +121,12 @@ export async function POST(
         attrs.openedAt = nowStr;
       }
       
+      // Generate standard CRM note based on session payload
+      if (session.payload) {
+        const crmNote = generateCrmNote(session.payload as any);
+        attrs.custom = { description: crmNote };
+      }
+
       try {
         const cpHeaders = cpJsonHeaders();
         const cpRes = await fetch(`${CP_BASE}/services/${cpJobId}`, {
