@@ -7,6 +7,7 @@ import { navigateTo } from "@/lib/session";
 import { P00RepLaunch } from "@/components/screens/P00RepLaunch";
 import { A01Welcome } from "@/components/screens/A01Welcome";
 import { A02WhyInspection } from "@/components/screens/A02WhyInspection";
+import { RepCompanionPanel } from "@/components/repcommand/RepCompanionPanel";
 import {
   A03WhatWeInspect,
   A04HowFindingsSorted,
@@ -261,7 +262,7 @@ export function ScreenRouter() {
 
   return (
     <div className="relative w-full h-full overflow-hidden">
-      <AnimatePresence mode="sync" initial={false} custom={directionRef.current}>
+      <AnimatePresence initial={false} custom={directionRef.current}>
         <motion.div
           key={session.currentScreen}
           custom={directionRef.current}
@@ -269,12 +270,19 @@ export function ScreenRouter() {
           initial="enter"
           animate="center"
           exit="exit"
-          transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           className="absolute inset-0"
         >
           {content}
         </motion.div>
       </AnimatePresence>
+      
+      {/* Rep Companion Panel Overlay - only visible if in rep mode */}
+      {session.mode === "rep" && session.currentScreen.startsWith("B") && (
+        <div className="absolute bottom-4 right-4 z-50 max-w-xs origin-bottom-right hidden md:block opacity-30 hover:opacity-100 transition-opacity">
+          <RepCompanionPanel />
+        </div>
+      )}
     </div>
   );
 }
