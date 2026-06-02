@@ -121,7 +121,7 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
               <span className={cn("text-[10px] font-mono uppercase tracking-[0.2em] pt-0.5", isDark ? "text-indigo-300" : "text-[#1D55C4]")}>Authorization</span>
             </div>
             <h1 className={cn("text-3xl md:text-6xl lg:text-8xl font-display font-medium tracking-tight leading-[1.05]", isDark ? "text-[#E8EDF8]" : "text-[#1B2B4B]")}>
-              {mode === "sign" ? "Authorization" : mode === "defer" ? "Send for Review" : "Ready to authorize,"}
+              {mode === "sign" ? "Authorization" : mode === "defer" ? "Setup Remote Review" : "Ready to authorize,"}
               <br />
               <span className={cn("bg-clip-text text-transparent bg-gradient-to-r", isDark ? "from-indigo-300 via-white to-indigo-300" : "from-[#1D55C4] to-[#1540A0]")}>
                 {mode === "sign" ? "Sign today" : mode === "defer" ? "Share with a co-decision-maker" : "or send for review?"}
@@ -301,7 +301,7 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
           >
             <div className="flex items-center justify-center gap-4">
               <span className="text-sm md:text-xl font-display font-semibold tracking-tight">
-                {mode === "sign" ? "Submit Authorization" : mode === "defer" ? "Send for Review" : "Continue"}
+                {mode === "sign" ? "Submit Authorization" : mode === "defer" ? "Continue to Next Steps" : "Continue"}
               </span>
               <ChevronRight className={cn("w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform shrink-0", isDark ? "text-indigo-400" : "text-white")} />
             </div>
