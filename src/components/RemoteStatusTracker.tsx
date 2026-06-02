@@ -26,6 +26,7 @@ const STATUS_CONFIG: Record<RemoteReviewStatus, { label: string; icon: any; colo
   approved: { label: "Approved", icon: CheckCircle2, color: "text-emerald-400" },
   signed: { label: "Signed Remotely", icon: PenTool, color: "text-emerald-500" },
   declined: { label: "Declined", icon: XCircle, color: "text-rose-400" },
+  needs_more_time: { label: "Needs More Time", icon: Clock, color: "text-amber-400" },
   expired: { label: "Expired", icon: Clock, color: "text-[#2D4060]" },
 };
 
