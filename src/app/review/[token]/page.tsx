@@ -439,11 +439,11 @@ export default function RemoteReviewPage() {
                 {id:'sign' as const, label:'Sign Remotely', icon: PenTool, color:'indigo'},
                 {id:'decline' as const, label:'Defer Review', icon: XCircle, color:'rose'},
               ].map(a => (
-                <button 
-                  key={a.id} 
-                  onClick={() => setActivePanel(a.id)} 
+                <button
+                  key={a.id}
+                  onClick={() => setActivePanel(a.id)}
                   className={cn(
-                    'p-6 rounded-[32px] border text-left transition-all duration-500 flex flex-col items-start gap-4 group', 
+                    'p-6 rounded-[32px] border text-left transition-all duration-500 flex flex-col items-start gap-4 group',
                     activePanel === a.id ? `bg-${a.color}-500/10 border-${a.color}-500/30` : 'bg-white/[0.02] border-white/5 hover:border-white/15'
                   )}
                 >
@@ -456,20 +456,19 @@ export default function RemoteReviewPage() {
                   <p className={cn("text-sm font-display font-medium tracking-tight", activePanel === a.id ? "text-[#E8EDF8]" : "text-[#8BA5C5]")}>{a.label}</p>
                 </button>
               ))}
-            </div>
 
-            <StarButton 
-              onClick={() => sendAction('approve', {})} 
-              disabled={isSubmitting} 
-              lightColor="#10B981" 
-              backgroundColor="#060606"
-              className="w-full h-20 rounded-full border border-emerald-500/20 shadow-[0_20px_60px_rgba(16,185,129,0.1)] group"
-            >
-              <div className="flex items-center justify-center gap-4">
-                <ThumbsUp className="w-5 h-5 text-emerald-400" />
-                <span className="text-xl font-display font-bold text-emerald-400/90 tracking-tight">Approve Next Step (No Signature)</span>
-              </div>
-            </StarButton>
+              {/* Approve — full-width tile spanning both columns */}
+              <button
+                onClick={() => sendAction('approve', {})}
+                disabled={isSubmitting}
+                className="col-span-2 p-6 rounded-[32px] border text-left transition-all duration-500 flex items-center gap-4 group bg-emerald-500/[0.04] border-emerald-500/15 hover:bg-emerald-500/10 hover:border-emerald-500/30 disabled:opacity-50"
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                  <ThumbsUp className="w-5 h-5" />
+                </div>
+                <p className="text-sm font-display font-medium tracking-tight text-emerald-400/80 group-hover:text-emerald-300">Approve Next Step</p>
+              </button>
+            </div>
 
             <AnimatePresence mode="wait">
               {activePanel === 'question' && (
