@@ -108,7 +108,10 @@ export function CenterPointOpportunities() {
       const res  = await triggerOpportunitiesSync();
       const data = await res.json();
       if (data.ok) {
-        setSyncResult(`Refreshed ${data.refreshed} opportunities`);
+        const parts = [];
+        if (data.discovered > 0) parts.push(`${data.discovered} discovered`);
+        if (data.refreshed  > 0) parts.push(`${data.refreshed} refreshed`);
+        setSyncResult(parts.length ? parts.join(" · ") : "Up to date");
         setTimeout(() => {
           setOpps([]);
           fetchOpps({ refresh: true, newPage: 1 });
