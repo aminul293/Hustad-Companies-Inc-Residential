@@ -32,10 +32,15 @@ async function getGraphToken(): Promise<string | null> {
   }
 }
 
-async function notifyRep(to: string, subject: string, html: string) {
+const DUSTIN_EMAIL = 'dustin@hustadcompanies.com';
+
+async function notifyRep(to: string, subject: string, html: string, cc?: string) {
   const token = await getGraphToken();
   if (!token) return;
   try {
+    const ccRecipients = cc
+      ? cc.split(',').map(e => ({ emailAddress: { address: e.trim() } }))
+      : [];
     await fetch(`https://graph.microsoft.com/v1.0/users/${SENDER_EMAIL}/sendMail`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -44,6 +49,7 @@ async function notifyRep(to: string, subject: string, html: string) {
           subject,
           body: { contentType: 'HTML', content: html },
           toRecipients: [{ emailAddress: { address: to } }],
+          ...(ccRecipients.length ? { ccRecipients } : {}),
         },
         saveToSentItems: 'true',
       }),
@@ -87,6 +93,12 @@ export async function POST(request: Request) {
     const repEmail = session.repEmail?.trim() || '';
     const address  = session.property?.address || 'the property';
 
+    // CC Dustin on repair/service path sessions
+    const isRepairPath =
+      session.findings?.outcomeType === 'repair_only' ||
+      session.pathData?.selectedPath === 'direct_repair';
+    const cc = isRepairPath ? DUSTIN_EMAIL : undefined;
+
     switch (action) {
       case 'opened': {
         if (!session.remoteReview.openedAt) {
@@ -129,7 +141,8 @@ export async function POST(request: Request) {
                 <p style="color:#567090;font-size:11px;margin-top:12px;">— ${question.askerName}</p>
               </div>
               <p style="color:#567090;font-size:12px;">Log in to the Hustad platform to respond to this question.</p>
-            </div>`
+            </div>`,
+            cc
           );
         }
         break;
@@ -154,7 +167,8 @@ export async function POST(request: Request) {
                 <p style="color:#E8EDF8;margin-top:16px;"><strong style="color:#567090;font-size:11px;display:block;margin-bottom:4px;">PREFERRED TIME</strong>${session.remoteReview.callbackPreferredTime || '—'}</p>
               </div>
               <p style="color:#567090;font-size:12px;">Call them back at your earliest convenience.</p>
-            </div>`
+            </div>`,
+            cc
           );
         }
         break;
@@ -172,7 +186,8 @@ export async function POST(request: Request) {
             `<div style="font-family:sans-serif;background:#060606;color:#E8EDF8;padding:40px;border-radius:16px;">
               <h2 style="color:#34d399;margin-bottom:8px;">Approval Received</h2>
               <p style="color:#7090B0;font-size:13px;">${address} — the homeowner has approved the next step (no signature required).</p>
-            </div>`
+            </div>`,
+            cc
           );
         }
         break;
@@ -206,7 +221,8 @@ export async function POST(request: Request) {
             `<div style="font-family:sans-serif;background:#060606;color:#E8EDF8;padding:40px;border-radius:16px;">
               <h2 style="color:#34d399;margin-bottom:8px;">Document Signed</h2>
               <p style="color:#7090B0;font-size:13px;">${address} — <strong style="color:#E8EDF8;">${payload?.signerName || 'Homeowner'}</strong> has remotely signed the authorization dossier.</p>
-            </div>`
+            </div>`,
+            cc
           );
         }
         break;
@@ -230,7 +246,8 @@ export async function POST(request: Request) {
                     <p style="color:#E8EDF8;margin:0;">"${session.remoteReview.declineReason}"</p>
                   </div>`
                 : ''}
-            </div>`
+            </div>`,
+            cc
           );
         }
         break;
