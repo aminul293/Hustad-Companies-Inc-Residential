@@ -246,6 +246,18 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       console.error(`[API] Session archive failed (non-fatal):`, archiveError);
     }
 
+    // 6. If forced delete (testing cleanup), also clean up local centerpoint_opportunities cache
+    if (force && lead.cpc_ticket_id) {
+      const { error: oppDeleteError } = await supabase
+        .from('centerpoint_opportunities')
+        .delete()
+        .eq('name', lead.cpc_ticket_id);
+        
+      if (oppDeleteError) {
+        console.error(`[API] Opportunity cleanup failed (non-fatal):`, oppDeleteError);
+      }
+    }
+
     console.log(`[API] Removal successful for: ${params.id}`);
     return NextResponse.json({ success: true });
   } catch (error: any) {

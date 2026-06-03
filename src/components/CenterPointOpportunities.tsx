@@ -2,7 +2,7 @@
 
 import { fetchCenterpointOpportunities, triggerOpportunitiesSync, fetchOpportunitiesSyncStatus } from "@/lib/api";
 import { useState, useEffect, useCallback } from "react";
-import { Search, RefreshCw, TrendingUp, ArrowLeft, ChevronRight, AlertCircle, Zap, X } from "lucide-react";
+import { Search, RefreshCw, TrendingUp, ArrowLeft, ChevronRight, AlertCircle, Zap, X, Trash } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -159,6 +159,21 @@ export function CenterPointOpportunities() {
   useEffect(() => { setPage(1); fetchOpps({ newPage: 1 }); }, [search, statusFilter]);
 
   const stageIndex = (key: string) => CP_STAGES.findIndex(s => s.key === key);
+
+  const handleDelete = async (cpId: string) => {
+    if (!confirm("Are you sure you want to delete this opportunity? This will remove it from the tablet cache.")) return;
+    try {
+      const res = await fetch(`/api/centerpoint/opportunities/${cpId}`, { method: "DELETE" });
+      if (res.ok) {
+        setOpps(prev => prev.filter(o => o.cp_id !== cpId));
+        setTotal(prev => prev - 1);
+      } else {
+        alert("Failed to delete opportunity");
+      }
+    } catch (e: any) {
+      alert(`Error: ${e.message}`);
+    }
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -417,12 +432,20 @@ export function CenterPointOpportunities() {
                           )}
 
                           {/* Actions */}
-                          <div className="flex items-center gap-2 pt-2 border-t border-white/[0.05]">
+                          <div className="flex items-center gap-2 pt-2 border-t border-white/[0.05] justify-between">
                             <button
                               onClick={() => window.dispatchEvent(new CustomEvent("changeView", { detail: "centerpoint" }))}
                               className="flex items-center gap-2 px-5 py-2.5 rounded-[14px] bg-white/5 border border-white/10 text-[#7090B0] text-xs font-inter hover:bg-white/10 hover:text-[#E8EDF8] hover:border-white/20 active:scale-95 transition-all"
                             >
                               View Service Job in CP Inbox
+                            </button>
+                            
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleDelete(opp.cp_id); }}
+                              className="flex items-center gap-2 px-4 py-2.5 rounded-[14px] bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-inter hover:bg-rose-500/20 active:scale-95 transition-all"
+                            >
+                              <Trash className="w-4 h-4" />
+                              Force Delete
                             </button>
                           </div>
                         </div>
