@@ -133,12 +133,59 @@ export default function RemoteReviewPage() {
         selectedPath
       });
 
-      if (!res.ok) throw new Error("Failed to submit authorization.");
+      if (!res.ok) {
+        let errStr = "Failed to submit authorization.";
+        try {
+           const errJson = await res.json();
+           errStr = errJson.error || errStr;
+        } catch(e) {}
+        throw new Error(errStr);
+      }
+
+      // Generate PDF and send via /api/send-email so the signed copy goes out
+      try {
+        const { getSummaryPDFBase64 } = await import("@/lib/pdf-export");
+        const pdfBase64 = await getSummaryPDFBase64(updatedSession);
+        
+        const repEmail = updatedSession.repEmail || "info@hustadcompanies.com";
+        const homeownerEmail = updatedSession.property.homeownerPrimaryEmail;
+        const to = homeownerEmail ? `${homeownerEmail},${repEmail}` : repEmail;
+        const cc = "dustin@hustadcompanies.com";
+        const subject = `Hustad Forensic Dossier: ${updatedSession.property.address}`;
+        const html = `
+          <div style="font-family:sans-serif;color:#111827;">
+            <h2 style="color:#16a34a;margin-bottom:8px;">Document Signed</h2>
+            <p><strong>${signerName}</strong> has remotely signed the authorization dossier for <strong>${updatedSession.property.address}</strong>.</p>
+            <p>The finalized, signed PDF is attached for your records.</p>
+          </div>
+        `;
+
+        const emailRes = await fetch("/api/send-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            to,
+            cc,
+            subject,
+            html,
+            pdfBase64,
+            fileName: `Hustad_Dossier_${updatedSession.property.address?.replace(/\\W+/g, "_") || "Signed"}.pdf`,
+            sessionId: updatedSession.sessionId
+          })
+        });
+
+        if (!emailRes.ok) {
+          console.warn("Failed to send signed PDF email:", await emailRes.text());
+        }
+      } catch (pdfErr) {
+        console.error("PDF generation/email failed:", pdfErr);
+      }
+
       // Note: we still update local state so the UI reflects the signed status immediately
       setSession(updatedSession);
       setSuccess(true);
     } catch (err: any) {
-      alert(err.message);
+      alert(`Error: ${err.message}`);
     } finally {
       setIsSubmitting(false);
     }

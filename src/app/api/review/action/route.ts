@@ -265,18 +265,6 @@ export async function POST(request: Request) {
             console.error('[OUTBOUND_QUEUE] Failed to queue CP write-back for review action', e);
           }
         }
-
-        if (repEmail) {
-          notifyRep(
-            repEmail,
-            threadSubject,
-            `<div style="font-family:sans-serif;background:#060606;color:#E8EDF8;padding:40px;border-radius:16px;">
-              <h2 style="color:#34d399;margin-bottom:8px;">Document Signed</h2>
-              <p style="color:#7090B0;font-size:13px;">${address} — <strong style="color:#E8EDF8;">${payload?.signerName || 'Homeowner'}</strong> has remotely signed the authorization dossier.</p>
-            </div>`,
-            cc
-          );
-        }
         break;
       }
 
