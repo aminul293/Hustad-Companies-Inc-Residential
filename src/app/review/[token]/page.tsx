@@ -127,9 +127,14 @@ export default function RemoteReviewPage() {
         ]
       };
 
-      const res = await syncSession(updatedSession);
+      const res = await postReviewAction(token, 'sign', {
+        signerName,
+        signatureImage,
+        selectedPath
+      });
 
       if (!res.ok) throw new Error("Failed to submit authorization.");
+      // Note: we still update local state so the UI reflects the signed status immediately
       setSession(updatedSession);
       setSuccess(true);
     } catch (err: any) {

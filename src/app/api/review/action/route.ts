@@ -223,17 +223,39 @@ export async function POST(request: Request) {
           signatureImage: payload?.signatureImage || '',
           signedAt: now,
         };
+
+        if (payload?.selectedPath) {
+          session.pathData = {
+            ...session.pathData,
+            selectedPath: payload.selectedPath
+          };
+        }
+
         session.auditEvents = [
           ...(session.auditEvents || []),
           {
             eventName: 'remote_co_decision_maker_signed',
             actorId: 'co_decision_maker',
             occurredAt: now,
-            metadata: { method: 'remote_portal', signerName: payload?.signerName }
+            metadata: { method: 'remote_portal', signerName: payload?.signerName, path: payload?.selectedPath }
           }
         ];
 
         await updatePipelineLeadStatus(session.pipelineLeadId, 'signed');
+
+        if (session.centerpointId) {
+          try {
+            await supabase.from('outbound_queue').insert({
+              target_system: 'centerpoint',
+              target_id: session.centerpointId, // Opportunity ID
+              action: 'update_status',
+              payload: { status: 'accepted' }
+            });
+            console.log(`[OUTBOUND_QUEUE] Queued CP Opportunity ${session.centerpointId} transition to accepted`);
+          } catch (e) {
+            console.error('[OUTBOUND_QUEUE] Failed to queue CP write-back for review action', e);
+          }
+        }
 
         if (repEmail) {
           notifyRep(
