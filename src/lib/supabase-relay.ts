@@ -1,13 +1,15 @@
-import { supabase } from "./supabase";
+import { getServiceClient } from "./supabase-server";
 import type { SessionState } from "@/types/session";
 
 /**
  * SUPABASE RELAY
  * Handles the bidirectional mapping between the app's nested SessionState
  * and the flattened Supabase relational schema.
+ * Always uses the service-role client — this file is server-side only.
  */
 
 export async function upsertSession(session: SessionState) {
+  const supabase = getServiceClient();
   const { sessionId, repId, property, findings, pathData, signatureData, remoteReview, photoAssets, auditEvents } = session;
 
   // 1. Prepare Session Row
@@ -109,10 +111,11 @@ export async function upsertSession(session: SessionState) {
 }
 
 export async function getSessionByToken(token: string): Promise<SessionState | null> {
+  const supabase = getServiceClient();
   const { data, error } = await supabase
     .from('inspection_sessions')
     .select('payload')
-    .eq('payload->>reviewToken', token) // Query JSONB for the token
+    .eq('payload->>reviewToken', token)
     .single();
 
   if (error || !data) return null;
@@ -120,6 +123,7 @@ export async function getSessionByToken(token: string): Promise<SessionState | n
 }
 
 export async function getSessionById(sessionId: string): Promise<SessionState | null> {
+  const supabase = getServiceClient();
   const { data, error } = await supabase
     .from('inspection_sessions')
     .select('payload')
