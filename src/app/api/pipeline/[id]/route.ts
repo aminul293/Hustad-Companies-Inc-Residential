@@ -215,6 +215,19 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
         .eq('id', cpResetId);
 
       if (cpError) console.error(`[API] CP status reset failed:`, cpError);
+
+      if (force) {
+         const { data: job } = await supabase.from('centerpoint_jobs').select('cp_id').eq('id', cpResetId).maybeSingle();
+         if (job?.cp_id) {
+           await supabase.from('outbound_queue').insert({
+             target_system: 'centerpoint',
+             target_id: job.cp_id,
+             action: 'update_status',
+             payload: { status: 'new_service' }
+           });
+           console.log(`[API] Queued CP status reset to 'new_service' for CP ID: ${job.cp_id}`);
+         }
+      }
     } else if (lead.cpc_ticket_id) {
       const { error: cpError } = await supabase
         .from('centerpoint_jobs')
@@ -222,6 +235,19 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
         .eq('name', lead.cpc_ticket_id);
 
       if (cpError) console.error(`[API] CP status reset fallback failed:`, cpError);
+      
+      if (force) {
+         const { data: job } = await supabase.from('centerpoint_jobs').select('cp_id').eq('name', lead.cpc_ticket_id).maybeSingle();
+         if (job?.cp_id) {
+           await supabase.from('outbound_queue').insert({
+             target_system: 'centerpoint',
+             target_id: job.cp_id,
+             action: 'update_status',
+             payload: { status: 'new_service' }
+           });
+           console.log(`[API] Queued CP status reset to 'new_service' for CP ID: ${job.cp_id}`);
+         }
+      }
     }
 
     // 4. Remove from active pipeline
