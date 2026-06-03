@@ -378,17 +378,17 @@ export async function POST(request: NextRequest) {
 
       // ── Handle Regressions (Hard Reset) ────────────────────────────────────
       try {
-        const cpIds = finalRows.map(r => r.cp_id);
+        const cpNames = finalRows.map(r => r.name);
         const { data: linkedLeads } = await supabase
           .from("pipeline_leads")
           .select("id, cpc_ticket_id, pipeline_status")
-          .in("cpc_ticket_id", cpIds);
+          .in("cpc_ticket_id", cpNames);
           
         if (linkedLeads && linkedLeads.length > 0) {
           const leadsToDelete: string[] = [];
           
           for (const lead of linkedLeads) {
-            const job = finalRows.find(r => r.cp_id === lead.cpc_ticket_id);
+            const job = finalRows.find(r => r.name === lead.cpc_ticket_id);
             if (!job) continue;
             
             // If CP job is back in "New Service" or "Opened", but pipeline is already advanced
