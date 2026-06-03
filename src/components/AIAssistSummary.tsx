@@ -8,12 +8,13 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface Props {
   findings: string[];
+  photosCount: number;
   outcome: string;
   internalNotes?: string;
   onApprove: (data: AISummaryResponse) => void;
 }
 
-export function AIAssistSummary({ findings, outcome, internalNotes, onApprove }: Props) {
+export function AIAssistSummary({ findings, photosCount, outcome, internalNotes, onApprove }: Props) {
   const [isDrafting, setIsDrafting] = useState(false);
   const [draft, setDraft] = useState<AISummaryResponse | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -22,7 +23,7 @@ export function AIAssistSummary({ findings, outcome, internalNotes, onApprove }:
     setIsDrafting(true);
     // Simulate AI thinking
     await new Promise(r => setTimeout(r, 1500));
-    const result = await draftFindingSummary({ findings, photosCount: 4, outcome, internalNotes });
+    const result = await draftFindingSummary({ findings, photosCount, outcome, internalNotes });
     setDraft(result);
     setIsDrafting(false);
   };

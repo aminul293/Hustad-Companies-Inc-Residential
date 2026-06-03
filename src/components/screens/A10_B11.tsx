@@ -1409,7 +1409,8 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
               </div>
 
               <AIAssistSummary 
-                findings={findingCategories.length > 0 ? findingCategories : [OUTCOME_OPTIONS.find(o => o.value === outcomeType)?.label || "General Damage"]}
+                findings={findingCategories}
+                photosCount={session.photos.all.length}
                 outcome={outcomeType || "no_damage"}
                 internalNotes={internalNotes}
                 onApprove={(draft) => {

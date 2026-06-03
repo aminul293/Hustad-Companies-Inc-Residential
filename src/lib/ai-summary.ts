@@ -31,6 +31,7 @@ CRITICAL COMPLIANCE RULES:
 - NEVER state warranty eligibility before manufacturer confirmation.
 - ALWAYS use forensic language: "evidence of impact," "collateral damage observed," "potential for long-term compromise."
 - DO NOT change the outcome_type.
+- STRICT DATA ADHERENCE: If the findings array is empty and there are no internal notes, DO NOT hallucinate, invent, or assume any damage or repairs. Explicitly state that no specific damage was documented. Ensure all sentences are complete.
 
 Return the response as a JSON object matching this schema:
 {
