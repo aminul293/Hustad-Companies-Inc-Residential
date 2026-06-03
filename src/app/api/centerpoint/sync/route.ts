@@ -468,24 +468,71 @@ export async function POST(request: NextRequest) {
           .in("status", ["new_service", "opened"]);
 
         if (regressedJobs && regressedJobs.length > 0) {
-          const regressedNames = new Set(regressedJobs.map((j: any) => j.name));
+          const regressedNames = regressedJobs.map((j: any) => j.name);
+          const regressedNameSet = new Set(regressedNames);
           const sessionIdsToArchive = orphanedSessions
-            .filter((s: any) => regressedNames.has(s.cpc_ticket_id))
+            .filter((s: any) => regressedNameSet.has(s.cpc_ticket_id))
             .map((s: any) => s.session_id);
 
           if (sessionIdsToArchive.length > 0) {
-            console.log(`[SYNC] Archiving ${sessionIdsToArchive.length} orphaned sessions for regressed CP jobs.`);
+            console.log(`[SYNC] Archiving ${sessionIdsToArchive.length} orphaned sessions + clearing inbox badge.`);
+
+            // 1. Archive the sessions
             const { error: archiveErr } = await supabase
               .from("inspection_sessions")
               .update({ session_status: "archived" })
               .in("session_id", sessionIdsToArchive);
             if (archiveErr) console.error("[SYNC] Orphan archive error:", archiveErr.message);
+
+            // 2. ALSO clear the "In Pipeline" badge on those CP jobs
+            const { error: inboxErr } = await supabase
+              .from("centerpoint_jobs")
+              .update({ inbox_status: "new" })
+              .in("name", regressedNames);
+            if (inboxErr) console.error("[SYNC] Orphan inbox reset error:", inboxErr.message);
+            else console.log(`[SYNC] Cleared inbox_status for: ${regressedNames.join(", ")}`);
           }
         }
       }
     } catch (err) {
       console.error("[SYNC] Error cleaning up orphaned sessions:", err);
     }
+
+    // ── Stale Inbox Badge Safety Net ──────────────────────────────────────────
+    // Final sweep: any CP job marked "imported_to_pipeline" but with no matching
+    // pipeline lead should have its badge cleared. Catches any edge case above missed.
+    try {
+      const { data: staleImported } = await supabase
+        .from("centerpoint_jobs")
+        .select("id, name")
+        .eq("inbox_status", "imported_to_pipeline");
+
+      if (staleImported && staleImported.length > 0) {
+        const cpJobIds = staleImported.map((j: any) => j.id);
+
+        // Find which ones have NO matching pipeline lead
+        const { data: activePipelineLeads } = await supabase
+          .from("pipeline_leads")
+          .select("centerpoint_job_id")
+          .in("centerpoint_job_id", cpJobIds);
+
+        const activeLeadJobIds = new Set((activePipelineLeads ?? []).map((l: any) => l.centerpoint_job_id));
+        const orphanedBadgeJobs = staleImported.filter((j: any) => !activeLeadJobIds.has(j.id));
+
+        if (orphanedBadgeJobs.length > 0) {
+          const namesToClear = orphanedBadgeJobs.map((j: any) => j.name);
+          console.log(`[SYNC] Clearing stale "In Pipeline" badge from ${orphanedBadgeJobs.length} CP jobs: ${namesToClear.join(", ")}`);
+          const { error: clearErr } = await supabase
+            .from("centerpoint_jobs")
+            .update({ inbox_status: "new" })
+            .in("id", orphanedBadgeJobs.map((j: any) => j.id));
+          if (clearErr) console.error("[SYNC] Stale badge clear error:", clearErr.message);
+        }
+      }
+    } catch (err) {
+      console.error("[SYNC] Error in stale inbox badge sweep:", err);
+    }
+
 
     // ── Reconciliation: remove records deleted in CenterPoint ────────────────
     // Only runs when CP returned at least one record — guards against deleting
