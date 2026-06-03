@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { setSelectedPath, addAuditEvent, unlockSummary } from "@/lib/session";
 import { PhotoThumbnail } from "@/components/PhotoThumbnail";
 import { useTheme } from "@/components/ThemeProvider";
+import { evaluateScenarios, scanOpenQuestion } from "@/lib/promptEngine";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared interface
@@ -609,6 +610,51 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
   const handlePrevPhoto = () => { if (activePhotoIndex !== null) setActivePhotoIndex((activePhotoIndex - 1 + sortedPhotos.length) % sortedPhotos.length); };
   const handleNextPhoto = () => { if (activePhotoIndex !== null) setActivePhotoIndex((activePhotoIndex + 1) % sortedPhotos.length); };
 
+  // ── Lightbox Accessibility ─────────────────────────────────────────────────
+  useEffect(() => {
+    if (activePhotoIndex === null) return;
+    const previouslyFocusedElement = document.activeElement as HTMLElement;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setActivePhotoIndex(null);
+      }
+      if (e.key === "Tab") {
+        const focusableElements = document.querySelectorAll(
+          '.lightbox-overlay button, .lightbox-overlay [href], .lightbox-overlay input, .lightbox-overlay select, .lightbox-overlay textarea, .lightbox-overlay [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0] as HTMLElement;
+        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            lastElement.focus();
+            e.preventDefault();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            firstElement.focus();
+            e.preventDefault();
+          }
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    // Focus first focusable element on open
+    setTimeout(() => {
+      const focusable = document.querySelector('.lightbox-overlay button') as HTMLElement;
+      focusable?.focus();
+    }, 50);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      previouslyFocusedElement?.focus();
+    };
+  }, [activePhotoIndex]);
+
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="relative flex flex-col h-screen w-full overflow-hidden" style={DS.pageBg}>
@@ -732,7 +778,7 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
       </div>
 
       {/* ── Logo ────────────────────────────────────────────────────────────── */}
-      <div className="absolute top-9 left-10 z-30 hidden lg:flex flex-col items-start pointer-events-none">
+      <div className="absolute top-9 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
           <span className="font-editorial font-medium tracking-[0.06em]" style={{ color: DS.text.primary, fontSize: "22px" }}>HUSTAD</span>
           <span className="font-mono text-[10px] uppercase tracking-[0.28em]" style={{ color: DS.text.faint }}>Madison Residential</span>
@@ -1334,7 +1380,8 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
       <AnimatePresence>
         {activePhotoIndex !== null && sortedPhotos[activePhotoIndex] && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                      className="fixed inset-0 z-[110] flex flex-col select-none"
+                      role="dialog" aria-modal="true" aria-label="Photo detail view"
+                      className="fixed inset-0 z-[110] flex flex-col select-none lightbox-overlay"
                       style={{ background: "rgba(2,4,14,0.97)", backdropFilter: "blur(20px)" }}>
             {/* Top bar */}
             <div className="flex justify-between items-center px-8 py-5" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
@@ -1347,6 +1394,7 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
                 </p>
               </div>
               <button onClick={() => setActivePhotoIndex(null)}
+                      aria-label="Close photo"
                       className="w-11 h-11 rounded-full flex items-center justify-center transition-opacity hover:opacity-70"
                       style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)" }}>
                 <XCircle size={18} strokeWidth={1.5} style={{ color: DS.text.secondary }} />
@@ -1810,9 +1858,44 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
   const config   = B14_PATH_CONFIGS[pathKey];
   const tk       = DS.theme[config.theme];
 
+  const companionData = buildRepCompanion(session, pathKey);
+
   const legacyPK: PathKey = pathKey === "carrier_review" ? "carrier_review" : pathKey === "direct_repair" ? "urgent_repair" : "no_action";
 
   const initialPath = session.pathData.selectedPath ?? config.primaryPathId;
+
+  const handleChipClick = (
+    qObj: { text: string; ruleId: string },
+    action: "understands" | "needs_proof" | "objection" | "moving_forward"
+  ) => {
+    const f = session.findings || {};
+    const rulesFired = new Set(f.rules_fired || []);
+    if (qObj.ruleId !== "fallback") rulesFired.add(qObj.ruleId);
+
+    const promptsShown = new Set(f.prompts_shown || []);
+    promptsShown.add(qObj.text);
+
+    let categoryUnderstood = f.category_understood;
+    let objectionCode = f.objection_code;
+    let photoClarity = f.photo_clarity_score;
+
+    if (action === "understands" || action === "moving_forward") categoryUnderstood = true;
+    if (action === "needs_proof") photoClarity = 1; 
+    if (action === "objection") objectionCode = "flagged_during_companion";
+
+    onUpdate({
+      ...session,
+      findings: {
+        ...session.findings,
+        rules_fired: Array.from(rulesFired),
+        prompts_shown: Array.from(promptsShown),
+        question_helped_flag: true,
+        category_understood: categoryUnderstood,
+        objection_code: objectionCode,
+        photo_clarity_score: photoClarity,
+      } as any
+    });
+  };
   const [chosenPath,      setChosenPath_]      = useState<SelectedPath>(initialPath);
   const [showCompanion,   setShowCompanion]    = useState(false);
   const [companionAns,    setCompanionAns]     = useState({ q1: "", q2: "", q3: "" });
@@ -1925,7 +2008,7 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
           {/* Center phase + progress pill */}
           <div className="hidden md:flex flex-col items-center gap-1.5">
             <div className="flex items-center gap-2 px-4 py-1.5 rounded-full pointer-events-auto"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)" }}>
+              style={{ background: "#0d1525", border: "1px solid rgba(255,255,255,0.08)" }}>
               <div className="w-1.5 h-1.5 rounded-full" style={{ background: tk.accent }} />
               <span style={{ fontFamily: "'Inter'", fontSize: "10px", letterSpacing: "2px", textTransform: "uppercase", color: DS.text.muted }}>
                 Review / Finalize · Phase B · Page {config.variantLabel}
@@ -2016,13 +2099,22 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
           </motion.section>
 
           {/* ── § 2  PATH CARDS — Primary (8-col) + Right Column (4-col) ────────── */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4" role="radiogroup" aria-label="Select inspection path">
 
             {/* Primary Recommendation Card */}
             <motion.div
               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
               onClick={() => setChosenPath_(config.primaryPathId)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setChosenPath_(config.primaryPathId);
+                }
+              }}
+              role="radio"
+              aria-checked={chosenPath === config.primaryPathId}
+              tabIndex={0}
               className="lg:col-span-8 cursor-pointer relative overflow-hidden"
               whileHover={{ y: -2, transition: { duration: 0.18 } }}
               style={{
@@ -2120,6 +2212,15 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
                   transition={{ delay: 0.22 }}
                   whileHover={{ y: -2, transition: { duration: 0.18 } }}
                   onClick={() => setChosenPath_(pathKey === "carrier_review" ? "direct_repair" : null)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setChosenPath_(pathKey === "carrier_review" ? "direct_repair" : null);
+                    }
+                  }}
+                  role="radio"
+                  aria-checked={chosenPath === (pathKey === "carrier_review" ? "direct_repair" : null)}
+                  tabIndex={0}
                   className="cursor-pointer relative overflow-hidden"
                   style={{
                     ...DS.card,
@@ -2266,7 +2367,7 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
           >
             <MicroLabel icon={MessageCircle} accent={tk.accent}>Rep-Guided Questions</MicroLabel>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {config.repGuidedQs.map((q, i) => (
+              {companionData.questions.map((qObj, i) => (
                 <motion.div
                   key={i}
                   whileHover={{ y: -2, transition: { duration: 0.18 } }}
@@ -2275,7 +2376,7 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
                 >
                   <div className="w-6 h-6 rounded-lg flex items-center justify-center font-mono text-[10px] font-bold"
                     style={{ background: tk.iconBg, color: tk.accent }}>{i + 1}</div>
-                  <p style={{ fontFamily: "'Inter'", fontSize: "13px", lineHeight: 1.62, color: DS.text.secondary }}>{q}</p>
+                  <p style={{ fontFamily: "'Inter'", fontSize: "13px", lineHeight: 1.62, color: DS.text.secondary }}>{qObj.text}</p>
                 </motion.div>
               ))}
             </div>
@@ -2400,14 +2501,15 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
               <div className="space-y-2 p-4 rounded-[14px]" style={{ background: tk.accentSoft, border: `1px solid ${tk.accentBorder}` }}>
                 <MicroLabel accent={tk.accent}>Opening Approach</MicroLabel>
                 <p style={{ fontFamily: "'Inter'", fontSize: "12.5px", lineHeight: 1.6, color: DS.text.secondary, fontStyle: "italic" }}>
-                  "{config.repOpeningLine}"
+                  "{companionData.openingLine}"
                 </p>
               </div>
 
               {/* Questions with note fields */}
               <div className="space-y-4">
-                {config.repGuidedQs.map((q, i) => {
+                {companionData.questions.map((qObj, i) => {
                   const key = `q${i + 1}` as "q1" | "q2" | "q3";
+                  const q = qObj.text;
                   return (
                     <div key={i} className="space-y-1.5">
                       <div className="flex items-center gap-2">
@@ -2416,6 +2518,32 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
                         <span style={{ fontFamily: "'Inter'", fontSize: "9px", letterSpacing: "1.5px", textTransform: "uppercase", color: DS.text.muted }}>Question {i + 1}</span>
                       </div>
                       <p style={{ fontFamily: "'Inter'", fontSize: "12px", lineHeight: 1.55, color: DS.text.secondary }}>{q}</p>
+                      
+                      {/* Chips for CRM logging */}
+                      <div className="flex flex-wrap gap-2 pt-1 pb-2">
+                        {[
+                          { label: "Understands", act: "understands" },
+                          { label: "Needs more proof", act: "needs_proof" },
+                          { label: "Objection", act: "objection" },
+                          { label: "Moving forward", act: "moving_forward" }
+                        ].map((chip) => (
+                          <button
+                            key={chip.act}
+                            onClick={() => handleChipClick(qObj, chip.act as any)}
+                            className="px-2 py-1 rounded-md transition-colors"
+                            style={{ 
+                              background: "rgba(255,255,255,0.05)", 
+                              border: "1px solid rgba(255,255,255,0.1)",
+                              fontFamily: "'Inter'", 
+                              fontSize: "10px", 
+                              color: DS.text.secondary 
+                            }}
+                          >
+                            {chip.label}
+                          </button>
+                        ))}
+                      </div>
+
                       <textarea
                         value={companionAns[key]}
                         onChange={(e) => setCompanionAns(prev => ({ ...prev, [key]: e.target.value }))}
@@ -2433,7 +2561,7 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
               <div className="flex items-start gap-2.5 p-3 rounded-[12px]"
                 style={{ background: "rgba(251,191,36,0.05)", border: "1px solid rgba(251,191,36,0.14)" }}>
                 <ShieldAlert size={13} strokeWidth={1.5} className="shrink-0 mt-0.5" style={{ color: "#FBB924" }} />
-                <p style={{ fontFamily: "'Inter'", fontSize: "11px", lineHeight: 1.50, color: "rgba(251,191,36,0.62)" }}>{config.repGuardrail}</p>
+                <p style={{ fontFamily: "'Inter'", fontSize: "11px", lineHeight: 1.50, color: "rgba(251,191,36,0.62)" }}>{companionData.guardrail}</p>
               </div>
 
               {/* Save button */}
@@ -2467,6 +2595,138 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
 // B14 – Path Decision (auto-forwards)
 // ─────────────────────────────────────────────────────────────────────────────
 
+function buildRepCompanion(session: any, pathKey: string) {
+  const bd = session.buyerData || {};
+  const priorities = bd.buyerPriorities || [];
+  const comfort = bd.decisionComfort || "a clear process";
+  const insurerStatus = bd.insurerContactStatus || "not_yet";
+  const hasOtherDecisionMaker = bd.anotherDecisionMakerPresent === true;
+
+  const pLabels: Record<string, string> = {
+    roof_longevity: "roof longevity",
+    insurance_process: "the insurance process",
+    repair_speed: "repair speed",
+    cost_clarity: "cost clarity",
+    warranty_coverage: "warranty coverage",
+    minimal_disruption: "minimal disruption",
+  };
+
+  const topPriorities = priorities.slice(0, 2).map((p: string) => pLabels[p] || p);
+  const priorityStr = topPriorities.length > 1 
+    ? `${topPriorities[0]} and ${topPriorities[1]}`
+    : (topPriorities[0] || "your property's condition");
+
+  const comfortLabels: Record<string, string> = {
+    clear_photos: "clear photos",
+    urgent_vs_monitor: "understanding what is urgent vs monitor",
+    insurance_boundaries: "knowing insurance boundaries",
+    cost_options: "seeing cost options",
+    warranty_coverage: "understanding warranty coverage",
+    spouse_involvement: "including your spouse",
+    timeline: "knowing the timeline",
+  };
+  const comfortStr = comfortLabels[comfort] || comfort;
+
+  const openingLine = `Before we get into the photos, I saw that your main priorities are ${priorityStr}. You also said ${comfortStr} would help you feel comfortable. I'll start there.`;
+
+  // Evaluate Scenario Engine (S01-S30)
+  const scenarios = evaluateScenarios(session);
+  let selectedQs: { text: string, ruleId: string }[] = scenarios.map((s: any) => ({ text: s.question, ruleId: s.id }));
+
+  // §29.7 priority-question fallback mapping (with pathKey consideration where useful)
+  if (selectedQs.length < 3) {
+    const mainP = priorities[0];
+    let fallbacks: string[] = [];
+    if (mainP === "roof_longevity") {
+      fallbacks = [
+        "How long do you expect to stay in this home?",
+        "Are you trying to get a few more years or thinking long-term?",
+        "Does this look like a targeted repair or something bigger from the photos?"
+      ];
+    } else if (mainP === "insurance_process") {
+      fallbacks = [
+        "Have you already contacted the carrier, or were you waiting for findings?",
+        "Would you like a photo summary if you speak with them?",
+        "Is your main question whether this is worth documenting for carrier review?"
+      ];
+    } else if (mainP === "repair_speed") {
+      fallbacks = [
+        "Any active leaks or interior staining?",
+        "If immediate protection is needed, are you comfortable authorizing it while the rest is sorted out?",
+        "Is speed more important than comparing all options?"
+      ];
+    } else if (mainP === "cost_clarity") {
+      fallbacks = [
+        "Would you prefer one recommendation or two options with tradeoffs?",
+        "Is your concern total cost, surprise cost, deductible, or knowing what happens first?",
+        "Would a written scope help?"
+      ];
+    } else if (mainP === "warranty_coverage") {
+      fallbacks = [
+        "Are you looking for the longest possible warranty, or just enough to cover your current plans?",
+        "Is having a single manufacturer responsible for all components important to you?"
+      ];
+    } else if (mainP === "minimal_disruption") {
+      fallbacks = [
+        "Are you mostly concerned about noise, timeline, or mess?",
+        "Do you have pets or children we should plan around?"
+      ];
+    }
+    
+    for (const fb of fallbacks) {
+      if (selectedQs.length >= 3) break;
+      if (!selectedQs.find(q => q.text === fb)) selectedQs.push({ text: fb, ruleId: "fallback" });
+    }
+  }
+
+  if (selectedQs.length < 3) {
+    if (pathKey === "carrier_review" && !selectedQs.find(q => q.text === "Based on the photos, does a carrier review feel like the right next step?")) {
+      selectedQs.push({ text: "Based on the photos, does a carrier review feel like the right next step?", ruleId: "fallback" });
+    } else if (pathKey === "direct_repair" && !selectedQs.find(q => q.text === "Does the repair scope feel aligned with what you saw in the documentation?")) {
+      selectedQs.push({ text: "Does the repair scope feel aligned with what you saw in the documentation?", ruleId: "fallback" });
+    } else if (!selectedQs.find(q => q.text === "Is there anything else you want to review before making a decision?")) {
+      selectedQs.push({ text: "Is there anything else you want to review before making a decision?", ruleId: "fallback" });
+    }
+  }
+
+  const qs = selectedQs.slice(0, 3);
+
+  let guardrail = "Do not expand the scope beyond what the evidence supports. Let the photos do the work.";
+  
+  const tags = scanOpenQuestion(bd.buyerQuestions || "");
+  if (tags.includes("deductible")) {
+    guardrail = "[DEDUCTIBLE] Show deductible guardrail. Do not imply waiver. " + guardrail;
+  } else if (tags.includes("trust_barrier")) {
+    guardrail = "[TRUST] Use trust-first script. Show known vs unknown clearly. " + guardrail;
+  } else if (tags.includes("leak_urgent")) {
+    guardrail = "[URGENT] Focus on immediate protection before broad scope. " + guardrail;
+  } else if (tags.includes("comparison")) {
+    guardrail = "[COMPARE] Offer apples-to-apples comparison without attacking competitors. " + guardrail;
+  } else if (insurerStatus === "already_contacted" && pathKey === "carrier_review") {
+    guardrail = "The homeowner has already contacted insurance. Do not make coverage promises. Focus on how our documentation supports their existing claim.";
+  } else if (insurerStatus === "not_yet" && pathKey === "carrier_review") {
+    guardrail = "Do not discuss coverage probability or claim amounts. Focus entirely on recommending a formal review based on the evidence shown.";
+  } else if (pathKey === "direct_repair") {
+    guardrail = "Do not introduce insurance options unless the homeowner specifically asks. Stay focused on the documented repair items.";
+  }
+
+  let closeSentence = "Confirm the path and proceed to the authorization.";
+  if (hasOtherDecisionMaker) {
+    closeSentence = `Since another decision maker is involved, offer to send a digital copy of the Dossier and schedule a quick follow-up review for ${pathKey === 'carrier_review' ? 'insurance next steps' : 'repair options'}.`;
+  } else if (pathKey === "carrier_review") {
+    closeSentence = "If they agree the evidence warrants a review, move to the Contingency Agreement.";
+  } else if (pathKey === "direct_repair") {
+    closeSentence = "If they agree with the scope, move directly to the Repair Authorization.";
+  }
+
+  return {
+    openingLine,
+    questions: qs,
+    guardrail,
+    closeSentence
+  };
+}
+
 export function B14PathDecision({ onNext }: Pick<Props, "onNext">) {
   useEffect(() => { onNext(); }, [onNext]);
   return null;
@@ -2495,7 +2755,7 @@ export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(244,63,94,0.04),transparent_70%)]" />
         </div>
       )}
-      <div className="absolute top-10 left-10 z-30 hidden lg:flex flex-col items-start pointer-events-none">
+      <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
           <span className={cn("font-display font-bold text-2xl tracking-[0.1em]", isDark ? "text-[#E8EDF8]" : "text-[#1B2B4B]")}>HUSTAD</span>
           <span className={cn("text-[10px] font-mono uppercase tracking-[0.3em]", isDark ? "text-[#AABDCF]" : "text-[rgba(27,43,75,0.62)]")}>Madison Residential</span>
@@ -2513,7 +2773,7 @@ export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props
             </h1>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className={cn("relative p-10 rounded-2xl border text-left space-y-6", isDark ? "bg-rose-500/[0.03] border-rose-500/[0.1] backdrop-blur-3xl" : "bg-rose-50/50 border-rose-200")}>
+            <div className={cn("relative p-10 rounded-2xl border text-left space-y-6", isDark ? "bg-[#0d1525] border-rose-500/[0.1]" : "bg-rose-50/50 border-rose-200")}>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-rose-500/20 flex items-center justify-center"><AlertTriangle className="w-6 h-6 text-rose-500" /></div>
                 <p className={cn("text-lg font-display font-medium", isDark ? "text-[#E8EDF8]" : "text-[#1B2B4B]")}>Loss Containment Recommended</p>

@@ -31,7 +31,7 @@ services:
     name: centerpoint-process-queue
     runtime: node
     plan: free
-    schedule: "*/2 * * * *"
+    schedule: "*/15 * * * *"
     buildCommand: "true"
     startCommand: "curl -s -X POST -H \"Authorization: Bearer $JWT_SECRET\" $NEXT_PUBLIC_APP_URL/api/centerpoint/process-queue"
     envVars:

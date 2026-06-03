@@ -451,9 +451,7 @@ function Step15B({
   const { card: CARD, cardLg: CARD_LG } = getCardStyles(LM);
   const [showAgreement, setShowAgreement] = useState(false);
   const allChecked = acks.every(Boolean);
-  const isClaimPath =
-    session.findings.outcomeType === "claim_review_candidate" ||
-    session.pathData.selectedPath === "claim_review";
+  const isClaimPath = session.pathData.claimRelatedWork === true;
 
   return (
     <div className="relative flex flex-col h-screen" style={{ background: LM.pageBg }}>

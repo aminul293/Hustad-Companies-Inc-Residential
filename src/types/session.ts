@@ -248,6 +248,14 @@ export interface RepFindingsData {
   summaryLockedBy: string | null;
   findingCategories: string[];
   aiPdfCopy: string;
+
+  // Rep Companion CRM Logging Fields
+  rules_fired?: string[];
+  prompts_shown?: string[];
+  question_helped_flag?: boolean;
+  category_understood?: boolean;
+  objection_code?: string;
+  photo_clarity_score?: number;
   aiFollowUpNote: string;
 }
 

@@ -30,9 +30,10 @@ export interface ApprovalRequest {
 }
 
 export async function createApprovalRequest(
-  input: ResidentialRequestInput,
+  input: any,
   requestedBy: string,
-  requestedByEmail: string
+  requestedByEmail: string,
+  statusOverride?: string
 ): Promise<ApprovalRequest> {
   const supabase = getServiceClient();
   const token = generateApprovalToken();
@@ -42,8 +43,8 @@ export async function createApprovalRequest(
     .from("approval_requests")
     .insert({
       approval_token: token,
-      status: "pending_company_approval",
-      company_name: input.name,
+      status: statusOverride || "pending_company_approval",
+      company_name: input.name || "Communications Approval",
       sales_status: input.salesStatus ?? null,
       street_address: input.streetAddress ?? null,
       locality: input.locality ?? null,
@@ -54,7 +55,7 @@ export async function createApprovalRequest(
       requested_by: requestedBy,
       requested_by_email: requestedByEmail,
       expires_at: expiresAt.toISOString(),
-      request_payload: input as unknown as Record<string, unknown>,
+      request_payload: input as Record<string, unknown>,
     })
     .select()
     .single();

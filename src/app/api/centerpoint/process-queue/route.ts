@@ -16,6 +16,9 @@ function cpStatusAdvances(current: string | null | undefined, next: string): boo
   if (curIdx === -1 || nextIdx === -1) return true;
   return nextIdx > curIdx;
 }
+export async function GET() {
+  return NextResponse.json({ status: "ok", service: "centerpoint-queue-worker" });
+}
 
 export async function POST(request: NextRequest) {
   try {

@@ -223,9 +223,7 @@ export function ScreenRouter() {
     case "B17_agreement_summary": {
       const isCarrierReview =
         session.findings.outcomeType === "claim_review_candidate" ||
-        session.findings.outcomeType === "full_restoration_candidate" ||
-        session.pathData.selectedPath === "claim_review" ||
-        session.pathData.selectedPath === "full_restoration";
+        session.findings.outcomeType === "full_restoration_candidate";
       content = isCarrierReview
         ? <B15CarrierReviewAgreement {...props} />
         : <B17AgreementSummary {...props} />;

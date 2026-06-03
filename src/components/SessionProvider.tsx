@@ -6,6 +6,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
   type ReactNode,
 } from "react";
 import { IS_QA_MODE } from "@/lib/qa-mode";
@@ -124,11 +125,17 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [authStatus, authRep?.id, authRep?.name, authRep?.email]);
 
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Autosave locally + sync to server (debounced)
   useEffect(() => {
     if (!session) return;
     if (authStatus !== "authenticated" && !authRep) return;
-    saveSession(session);
+
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      saveSession(session);
+    }, 300);
 
     // Debounced server sync — skip empty setup sessions to avoid orphan DB rows
     const timer = setTimeout(() => {
@@ -142,7 +149,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       }
     }, 2000); // 2 second debounce for server sync
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
   }, [session, authStatus]);
 
   // ── Device sleep/wake handler ──────────────────────────────────────────

@@ -154,9 +154,10 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   console.log(`[API] Start removal for lead ID: ${params.id}`);
   
+  let authPayload;
   try {
     // Authenticate DELETE
-    await requireAuth(request as any);
+    authPayload = await requireAuth(request as any);
   } catch (e: any) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -186,6 +187,15 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     // 2. Case 2: Inspection Started (Blocked unless forced)
     const { searchParams } = new URL(request.url);
     const force = searchParams.get('force') === 'true';
+
+    if (force) {
+      const isManagerRole = authPayload.role === "manager" || authPayload.role === "admin";
+      const managerEmails = ["aminul@hustadcompanies.com", "system@hustadcompanies.com"];
+      if (!isManagerRole && !managerEmails.includes(authPayload.email)) {
+        console.warn(`[API] Force removal blocked for non-manager: ${authPayload.email}`);
+        return NextResponse.json({ error: "Forbidden: Only managers can force remove leads." }, { status: 403 });
+      }
+    }
 
     const blockedStatuses = ['inspection_in_progress', 'inspection_completed', 'signed', 'closed'];
     if (blockedStatuses.includes(lead.pipeline_status) && !force) {

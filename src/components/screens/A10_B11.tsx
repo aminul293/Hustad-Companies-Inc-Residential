@@ -168,7 +168,7 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_70%,rgba(99,102,241,0.03),transparent_50%)]" />
       </div>
 
-      <div className="absolute top-10 left-10 z-30 hidden lg:flex flex-col items-start pointer-events-none">
+      <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
           <span className="font-display font-bold text-[var(--tx1)] text-2xl tracking-[0.1em]">HUSTAD</span>
           <span className="text-[10px] font-mono text-[var(--tx3)] uppercase tracking-[0.3em]">Madison Residential</span>
@@ -1411,6 +1411,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
               <AIAssistSummary 
                 findings={findingCategories.length > 0 ? findingCategories : [OUTCOME_OPTIONS.find(o => o.value === outcomeType)?.label || "General Damage"]}
                 outcome={outcomeType || "no_damage"}
+                internalNotes={internalNotes}
                 onApprove={(draft) => {
                   setHeadline(draft.headline);
                   setBody(draft.findingSummary);
