@@ -213,6 +213,15 @@ export async function POST(request: Request) {
       }
 
       case 'sign': {
+        if (session.sessionStatus === 'signed' || session.remoteReview?.status === 'signed') {
+          console.log(`[REVIEW_ACTION] Session ${session.sessionId} already signed. Skipping duplicate processing.`);
+          return NextResponse.json({
+            success: true,
+            status: session.remoteReview.status,
+            remoteReview: session.remoteReview
+          });
+        }
+
         session.remoteReview.signedAt = now;
         session.remoteReview.status = 'signed';
         session.remoteReview.statusHistory.push({ status: 'signed', at: now });
