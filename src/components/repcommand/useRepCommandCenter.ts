@@ -90,7 +90,7 @@ export function normalizeImportData(raw: {
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export type CommandCenterView =
-  | "workboard" | "dashboard" | "pipeline" | "schedule" | "calendar"
+  | "dashboard" | "pipeline" | "schedule" | "calendar"
   | "centerpoint" | "opportunities" | "tickets" | "manager" | "settings";
 
 interface Props {
@@ -101,7 +101,7 @@ interface Props {
 }
 
 export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart, onResetSession }: Props) {
-  const [view, setView]               = useState<CommandCenterView>("workboard");
+  const [view, setView]               = useState<CommandCenterView>("dashboard");
   const [search, setSearch]           = useState("");
   const [filter, setFilter]           = useState("all");
   const [liveReps, setLiveReps]       = useState<RepIdentity[]>([]);
