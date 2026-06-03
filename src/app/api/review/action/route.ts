@@ -256,16 +256,31 @@ export async function POST(request: Request) {
         if (session.centerpointId) {
           try {
             const cpKey = getCpToken();
-            await acceptOpportunity(session.centerpointId, cpKey);
-            await supabase
+
+            // session.centerpointId is the job reference name (e.g. "1329952"),
+            // not the CenterPoint internal opportunity ID — look it up first.
+            const { data: oppRow } = await supabase
               .from('centerpoint_opportunities')
-              .update({
-                status: 'lead_sold',
-                display_status: 'Accepted',
-                synced_at: now,
-              })
-              .eq('cp_id', session.centerpointId);
-            console.log(`[REVIEW_ACTION] Opportunity ${session.centerpointId} advanced to Accepted`);
+              .select('cp_id')
+              .eq('name', session.centerpointId)
+              .maybeSingle();
+
+            const opportunityCpId = oppRow?.cp_id;
+
+            if (opportunityCpId) {
+              await acceptOpportunity(opportunityCpId, cpKey);
+              await supabase
+                .from('centerpoint_opportunities')
+                .update({
+                  status: 'lead_sold',
+                  display_status: 'Accepted',
+                  synced_at: now,
+                })
+                .eq('cp_id', opportunityCpId);
+              console.log(`[REVIEW_ACTION] Opportunity ${opportunityCpId} advanced to Accepted`);
+            } else {
+              console.warn(`[REVIEW_ACTION] No cached opportunity found for centerpointId=${session.centerpointId}`);
+            }
           } catch (e) {
             console.error('[REVIEW_ACTION] Failed to advance opportunity to Accepted:', e);
           }
