@@ -1410,7 +1410,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
 
               <AIAssistSummary 
                 findings={findingCategories}
-                photosCount={session.photos?.all?.length || 0}
+                photosCount={session.photos?.length || 0}
                 outcome={outcomeType || "no_damage"}
                 internalNotes={internalNotes}
                 onApprove={(draft) => {
