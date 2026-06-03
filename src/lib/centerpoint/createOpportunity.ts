@@ -1,6 +1,7 @@
 import { CP_BASE, cpJsonHeaders } from "./client";
 
 export interface OpportunityInput {
+  id?: string;
   name: string;
   billedCompanyId: number;
   description: string;
@@ -12,27 +13,29 @@ export interface OpportunityInput {
 
 export async function createOpportunity(input: OpportunityInput, apiKey: string) {
   // 1. Check if opportunity already exists
-  let opportunityId = null;
+  let opportunityId = input.id || null;
   let opportunityName = input.name;
   let opportunityStatus = "";
 
   try {
-    const searchUrl = `${CP_BASE}/opportunities?filter[search]=${input.name}`;
-    const searchRes = await fetch(searchUrl, {
-      headers: {
-        Accept: "application/json",
-        Authorization: apiKey,
-      },
-      cache: "no-store",
-    });
-    if (searchRes.ok) {
-      const searchData = await searchRes.json();
-      const match = (searchData.data || []).find((r: any) => r.attributes?.name === input.name && r.attributes?.domain === "Sales");
-      if (match) {
-        opportunityId = match.id;
-        opportunityName = match.attributes?.name ?? input.name;
-        opportunityStatus = match.attributes?.status ?? "";
-        console.log(`[CREATE_OPPORTUNITY] Found existing opportunity for job ${input.name} with ID: ${opportunityId}`);
+    if (!opportunityId) {
+      const searchUrl = `${CP_BASE}/opportunities?filter[search]=${input.name}`;
+      const searchRes = await fetch(searchUrl, {
+        headers: {
+          Accept: "application/json",
+          Authorization: apiKey,
+        },
+        cache: "no-store",
+      });
+      if (searchRes.ok) {
+        const searchData = await searchRes.json();
+        const match = (searchData.data || []).find((r: any) => r.attributes?.name === input.name && r.attributes?.domain === "Sales");
+        if (match) {
+          opportunityId = match.id;
+          opportunityName = match.attributes?.name ?? input.name;
+          opportunityStatus = match.attributes?.status ?? "";
+          console.log(`[CREATE_OPPORTUNITY] Found existing opportunity for job ${input.name} with ID: ${opportunityId}`);
+        }
       }
     }
   } catch (err) {

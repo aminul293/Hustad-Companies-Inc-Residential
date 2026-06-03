@@ -143,8 +143,28 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Fast Supabase deduplication check
+  let existingCpId = undefined;
+  try {
+    const { data: existingOpp } = await supabase
+      .from("centerpoint_opportunities")
+      .select("cp_id")
+      .eq("name", resolvedName)
+      .eq("domain", domain ?? "Sales")
+      .limit(1)
+      .maybeSingle();
+      
+    if (existingOpp) {
+      existingCpId = existingOpp.cp_id;
+      console.log(`[CREATE_OPPORTUNITY_API] Deduped! Opportunity ${resolvedName} already exists with CP ID ${existingCpId}`);
+    }
+  } catch (err) {
+    console.warn("[CREATE_OPPORTUNITY_API] Deduplication lookup failed:", err);
+  }
+
   try {
     const opp = await createOpportunity({
+      id: existingCpId,
       name: resolvedName,
       billedCompanyId: resolvedBilledCompanyId,
       description: resolvedDescription,
