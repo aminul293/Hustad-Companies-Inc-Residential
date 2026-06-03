@@ -160,6 +160,7 @@ export async function POST(request: NextRequest) {
             cpId = jobRow.cp_id;
           }
 
+          // 2a. Update the Service (Job)
           await supabase.from('outbound_queue').insert({
             target_system: 'centerpoint',
             target_id: cpId,
@@ -167,6 +168,18 @@ export async function POST(request: NextRequest) {
             payload: { status: cpStage }
           });
           console.log(`[OUTBOUND_QUEUE] Queued CP Job ${cpId} (from ${session.centerpointId}) transition to ${cpStage}`);
+
+          // 2b. Update the Opportunity (Sales) if it's a signed or deferred terminal state
+          if (session.sessionStatus === 'signed' || session.sessionStatus === 'deferred') {
+            const oppStage = session.sessionStatus === 'signed' ? 'accepted' : 'declined';
+            await supabase.from('outbound_queue').insert({
+              target_system: 'centerpoint',
+              target_id: session.centerpointId, // Opportunity ID
+              action: 'update_status',
+              payload: { status: oppStage }
+            });
+            console.log(`[OUTBOUND_QUEUE] Queued CP Opportunity ${session.centerpointId} transition to ${oppStage}`);
+          }
         } catch (e) {
           console.error('[OUTBOUND_QUEUE] Failed to queue CenterPoint write-back', e);
         }

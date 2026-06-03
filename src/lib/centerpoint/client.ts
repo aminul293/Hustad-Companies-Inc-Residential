@@ -32,6 +32,8 @@ export async function advanceWorkflowToTarget(
     started: ["In Progress"],
     completed: ["Completed"],
     closed: ["Closed"],
+    accepted: ["Accepted"],
+    declined: ["Declined"],
   };
 
   const targetStages = TARGET_STAGE_MAPPING[targetStatus];

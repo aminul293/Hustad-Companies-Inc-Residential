@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 
 const CP_STAGE_ORDER = [
   "new_service","opened","scheduled","started","completed","closed",
+  "accepted", "declined"
 ];
 
 function cpStatusAdvances(current: string | null | undefined, next: string): boolean {
