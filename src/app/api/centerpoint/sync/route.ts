@@ -375,6 +375,56 @@ export async function POST(request: NextRequest) {
 
       if (error) throw new Error(`Supabase upsert failed: ${error.message}`);
       upserted = finalRows.length;
+
+      // ── Handle Regressions (Hard Reset) ────────────────────────────────────
+      try {
+        const cpIds = finalRows.map(r => r.cp_id);
+        const { data: linkedLeads } = await supabase
+          .from("pipeline_leads")
+          .select("id, cpc_ticket_id, pipeline_status")
+          .in("cpc_ticket_id", cpIds);
+          
+        if (linkedLeads && linkedLeads.length > 0) {
+          const leadsToDelete: string[] = [];
+          
+          for (const lead of linkedLeads) {
+            const job = finalRows.find(r => r.cp_id === lead.cpc_ticket_id);
+            if (!job) continue;
+            
+            // If CP job is back in "New Service" or "Opened", but pipeline is already advanced
+            const isCpRegressed = job.status === "new_service" || job.status === "opened";
+            const isPipelineAdvanced = ["scheduled", "inspection_in_progress", "inspection_completed", "drafting", "review", "signed", "closed", "closed_lost", "closed_won"].includes(lead.pipeline_status);
+            
+            if (isCpRegressed && isPipelineAdvanced) {
+              leadsToDelete.push(lead.id);
+            }
+          }
+          
+          if (leadsToDelete.length > 0) {
+            console.log(`[SYNC] Detected ${leadsToDelete.length} regressed jobs. Executing hard reset.`);
+            
+            // 1. Reset CP jobs inbox_status back to 'new'
+            await supabase
+              .from("centerpoint_jobs")
+              .update({ inbox_status: "new" })
+              .in("cp_id", linkedLeads.filter(l => leadsToDelete.includes(l.id)).map(l => l.cpc_ticket_id));
+
+            // 2. Delete the pipeline leads
+            await supabase
+              .from("pipeline_leads")
+              .delete()
+              .in("id", leadsToDelete);
+
+            // 3. Archive associated sessions
+            await supabase
+              .from("inspection_sessions")
+              .update({ session_status: "archived" })
+              .in("pipeline_lead_id", leadsToDelete);
+          }
+        }
+      } catch (err) {
+        console.error("[SYNC] Error processing regressions:", err);
+      }
     }
 
     // ── Reconciliation: remove records deleted in CenterPoint ────────────────
