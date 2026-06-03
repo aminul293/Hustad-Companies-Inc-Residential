@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSessionByToken, upsertSession } from '@/lib/supabase-relay';
 import { createClient } from '@supabase/supabase-js';
+import { getCpToken, acceptOpportunity } from '@/lib/centerpoint/client';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -254,15 +255,19 @@ export async function POST(request: Request) {
 
         if (session.centerpointId) {
           try {
-            await supabase.from('outbound_queue').insert({
-              target_system: 'centerpoint',
-              target_id: session.centerpointId, // Opportunity ID
-              action: 'update_status',
-              payload: { status: 'accepted' }
-            });
-            console.log(`[OUTBOUND_QUEUE] Queued CP Opportunity ${session.centerpointId} transition to accepted`);
+            const cpKey = getCpToken();
+            await acceptOpportunity(session.centerpointId, cpKey);
+            await supabase
+              .from('centerpoint_opportunities')
+              .update({
+                status: 'lead_sold',
+                display_status: 'Accepted',
+                synced_at: now,
+              })
+              .eq('cp_id', session.centerpointId);
+            console.log(`[REVIEW_ACTION] Opportunity ${session.centerpointId} advanced to Accepted`);
           } catch (e) {
-            console.error('[OUTBOUND_QUEUE] Failed to queue CP write-back for review action', e);
+            console.error('[REVIEW_ACTION] Failed to advance opportunity to Accepted:', e);
           }
         }
         break;

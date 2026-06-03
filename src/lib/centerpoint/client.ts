@@ -1,5 +1,54 @@
 export const CP_BASE = "https://api.centerpointconnect.io/centerpoint";
 
+// Advance an existing opportunity to "Accepted" via workflow transitions.
+// Prioritises a transition explicitly named "Accepted" before falling back
+// to the first available transition, so it won't accidentally hit "Declined".
+export async function acceptOpportunity(cpId: string, cpKey: string): Promise<void> {
+  let iterations = 0;
+  while (iterations < 10) {
+    iterations++;
+
+    const res = await fetch(
+      `${CP_BASE}/services/${cpId}?include=availableTransitions,workflowStage`,
+      { headers: { Accept: "application/json", Authorization: cpKey }, cache: "no-store" }
+    );
+    if (!res.ok) break;
+
+    const data = await res.json();
+    const transitions = (data.included ?? []).filter((x: any) => x.type === "workflow_transitions");
+    const currentStage = (data.included ?? []).find((x: any) => x.type === "workflow_stages");
+    const stageName: string = currentStage?.attributes?.name ?? "";
+
+    if (stageName === "Accepted" || transitions.length === 0) break;
+
+    const nextTx =
+      transitions.find((tx: any) => tx.attributes?.name === "Accepted") ?? transitions[0];
+    if (!nextTx) break;
+
+    const txRes = await fetch(`${CP_BASE}/production_stage_transitions`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: cpKey,
+      },
+      body: JSON.stringify({
+        data: {
+          type: "production_stage_transitions",
+          attributes: { note: "Auto-accepted: homeowner signed remotely" },
+          relationships: {
+            production: { data: { type: "productions", id: cpId } },
+            transition: { data: { type: "workflow_transitions", id: nextTx.id } },
+          },
+        },
+      }),
+    });
+    if (!txRes.ok) break;
+
+    await new Promise(r => setTimeout(r, 300));
+  }
+}
+
 export function getCpToken(): string {
   const key = process.env.CENTERPOINT_API_KEY;
   if (!key) throw new Error("CENTERPOINT_API_KEY is not set");
