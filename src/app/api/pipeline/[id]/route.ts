@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServiceClient } from '@/lib/supabase-server';
 import { requireAuth } from '@/lib/auth';
 import { CP_BASE, cpJsonHeaders } from '@/lib/centerpoint/client';
+import { sendLeadDeletedEmail } from '@/lib/email/sendLeadDeletedEmail';
 
 const PIPELINE_WRITEBACK: Record<string, string> = {
   // Early CRM stages (new_lead, contact_attempted, contacted, follow_up_needed) are omitted —
@@ -168,7 +169,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     // 1. Fetch lead to check workflow status
     const { data: lead, error: fetchError } = await supabase
       .from('pipeline_leads')
-      .select('pipeline_status, cpc_ticket_id, centerpoint_job_id')
+      .select('pipeline_status, cpc_ticket_id, centerpoint_job_id, owner_email, assigned_rep_id')
       .eq('id', params.id)
       .single();
 
@@ -285,6 +286,23 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 
     console.log(`[API] Removal successful for: ${params.id}`);
+
+    // 7. Send notification email
+    if (force) {
+      try {
+        await sendLeadDeletedEmail({
+          jobName: lead.cpc_ticket_id,
+          ticketId: lead.cpc_ticket_id,
+          deletedBy: authPayload.name || "Rep",
+          deletedByEmail: authPayload.email,
+          ownerEmail: lead.owner_email || undefined,
+          pipelineStatus: lead.pipeline_status
+        });
+      } catch (emailErr) {
+        console.error("[API] Failed to send lead deleted email:", emailErr);
+      }
+    }
+
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error(`[API] removal process exception:`, error);
