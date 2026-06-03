@@ -441,6 +441,51 @@ export async function POST(request: NextRequest) {
       console.error("[SYNC] Error processing regressions:", err);
     }
 
+    // ── Orphaned Session Cleanup ──────────────────────────────────────────────
+    // Sessions where the pipeline lead was already deleted (pipeline_lead_id = NULL)
+    // but the session is still active. These get matched via cpc_ticket_id.
+    try {
+      const activeSessionStatuses = ["draft", "phase_a_active", "phase_a_complete", "rep_review_pending",
+        "summary_locked", "deferred", "authorization_pending", "inspection_in_progress",
+        "inspection_completed", "signed", "closed"];
+
+      // Fetch active sessions that have NO linked pipeline lead (already deleted)
+      const { data: orphanedSessions } = await supabase
+        .from("inspection_sessions")
+        .select("session_id, cpc_ticket_id")
+        .is("pipeline_lead_id", null)
+        .in("session_status", activeSessionStatuses)
+        .not("cpc_ticket_id", "is", null);
+
+      if (orphanedSessions && orphanedSessions.length > 0) {
+        const orphanTicketIds = orphanedSessions.map((s: any) => s.cpc_ticket_id);
+
+        // Check if those CP jobs have regressed (back to new_service or opened)
+        const { data: regressedJobs } = await supabase
+          .from("centerpoint_jobs")
+          .select("name")
+          .in("name", orphanTicketIds)
+          .in("status", ["new_service", "opened"]);
+
+        if (regressedJobs && regressedJobs.length > 0) {
+          const regressedNames = new Set(regressedJobs.map((j: any) => j.name));
+          const sessionIdsToArchive = orphanedSessions
+            .filter((s: any) => regressedNames.has(s.cpc_ticket_id))
+            .map((s: any) => s.session_id);
+
+          if (sessionIdsToArchive.length > 0) {
+            console.log(`[SYNC] Archiving ${sessionIdsToArchive.length} orphaned sessions for regressed CP jobs.`);
+            const { error: archiveErr } = await supabase
+              .from("inspection_sessions")
+              .update({ session_status: "archived" })
+              .in("session_id", sessionIdsToArchive);
+            if (archiveErr) console.error("[SYNC] Orphan archive error:", archiveErr.message);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("[SYNC] Error cleaning up orphaned sessions:", err);
+    }
 
     // ── Reconciliation: remove records deleted in CenterPoint ────────────────
     // Only runs when CP returned at least one record — guards against deleting
