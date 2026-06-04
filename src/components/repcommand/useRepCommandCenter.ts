@@ -276,6 +276,10 @@ export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart
       const lead = (e as CustomEvent<any>).detail;
       if (!lead?.id) { showImportError("This pipeline lead has missing data and cannot be imported."); return; }
       const address = lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name;
+      const homeownerName: string = lead.centerpoint_jobs?.raw?._owner || "";
+      const homeownerEmail = resolveEmail(lead) || "";
+      const homeownerPhone = resolvePhone(lead) || "";
+      const appointmentId: string | undefined = lead.appointmentId ?? undefined;
       const existingLocal = findDraftByImportId("pipelineLeadId", lead.id);
       if (existingLocal) {
         onLoadDraft(existingLocal);
@@ -286,8 +290,6 @@ export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart
         onLoadDraft(cloudSession.session_id);
         return;
       }
-      const homeownerName: string = lead.centerpoint_jobs?.raw?._owner || "";
-      const appointmentId: string | undefined = lead.appointmentId ?? undefined;
       if (isValidAddress(address)) {
         const newSession = createSession(currentRep.id, currentRep.name, currentRep.email);
         newSession.centerpointId = lead.cpc_ticket_id;
@@ -295,11 +297,13 @@ export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart
         newSession.appointmentId = appointmentId;
         newSession.property.address = address;
         newSession.property.homeownerPrimaryName = homeownerName;
+        newSession.property.homeownerPrimaryEmail = homeownerEmail;
+        newSession.property.homeownerPrimaryMobile = homeownerPhone;
         newSession.sessionStatus = "phase_a_active";
         setPendingImport({ session: newSession, address, homeownerName, source: "pipeline", leadId: lead.id, appointmentId });
         return;
       }
-      setPendingPrefill(normalizeImportData({ source: "pipeline", address, ownerName: homeownerName, email: lead.centerpoint_jobs?.raw?._email, phone: lead.centerpoint_jobs?.raw?._phone, claimNumber: lead.cpc_ticket_id, pipelineLeadId: lead.id, centerpointId: lead.cpc_ticket_id, appointmentId }));
+      setPendingPrefill(normalizeImportData({ source: "pipeline", address, leadId: lead.id, homeownerName, email: homeownerEmail, phone: homeownerPhone, centerpointId: lead.cpc_ticket_id, appointmentId }));
     };
 
     const handleChangeView = (e: Event) => setView((e as CustomEvent<any>).detail);
