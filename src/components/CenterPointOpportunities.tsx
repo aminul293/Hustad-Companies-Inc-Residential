@@ -274,9 +274,16 @@ export function CenterPointOpportunities() {
         ) : (
           <>
             {opps.map(opp => {
-              const status     = STATUSES[opp.status] ?? STATUSES["lead_opened"];
-              const isDead     = opp.status === "lead_dead";
               const stageKey   = resolveStageKey(opp.status, opp.display_status, opp.workflow_stage_name ?? null);
+              
+              let statusKey = opp.status;
+              if (stageKey === "quoted" || stageKey === "presentation") statusKey = "lead_quoted";
+              else if (stageKey === "pending") statusKey = "lead_pending";
+              else if (stageKey === "accepted") statusKey = "lead_sold";
+              else if (stageKey === "qualify" || stageKey === "inspection") statusKey = "lead_opened";
+              
+              const status     = STATUSES[statusKey] ?? STATUSES["lead_opened"];
+              const isDead     = opp.status === "lead_dead";
               const currentIdx = stageIndex(stageKey);
               const isExpanded = expandedId === opp.id;
               const address    = extractAddress(opp.description);
@@ -307,7 +314,7 @@ export function CenterPointOpportunities() {
                         <div className="flex items-center gap-3 flex-wrap">
                           {/* Stage badge */}
                           <span className={cn("px-2.5 py-0.5 rounded-lg text-[9px] font-mono uppercase tracking-widest border", status.color)}>
-                            {opp.workflow_stage_name ?? status.label}
+                            {opp.workflow_stage_name || opp.display_status || status.label}
                           </span>
                           {/* Opportunity type tag */}
                           {opp.opportunity_type && (
