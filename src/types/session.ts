@@ -410,12 +410,6 @@ export function getNextScreen(
 
     // Phase B branching from findings summary
     case "B12_findings_summary": {
-      if (
-        outcomeType === "claim_review_candidate" ||
-        outcomeType === "full_restoration_candidate"
-      ) {
-        return selectedPath === null ? "B14_path_decision" : "B13_recommended_path";
-      }
       return "B13_recommended_path";
     }
 
