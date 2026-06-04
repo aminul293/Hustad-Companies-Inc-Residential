@@ -169,7 +169,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const createCPOpportunity = async (stage: "Quote Repairs" | "Accepted") => {
+  const createCPOpportunity = async (stage: "Pending" | "Accepted") => {
     if (!session.centerpointId) {
       console.warn("No centerpointId in session to create opportunity.");
       return;
@@ -188,12 +188,14 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
         opportunityType = "Roof Replacement";
       }
 
+      const finalStage = (stage === "Pending" && opportunityType === "Service") ? "Quote Repairs" : stage;
+
       await fetch("/api/centerpoint/opportunities", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           centerpointId: session.centerpointId,
-          targetStage: stage,
+          targetStage: finalStage,
           domain,
           type,
           opportunityType,
@@ -240,7 +242,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
     if (!allAcknowledged) e.ack = "Please check all acknowledgements to proceed.";
     if (Object.keys(e).length) { setErrors(e); return; }
 
-    await createCPOpportunity("Quote Repairs");
+    await createCPOpportunity("Pending");
 
     const updated: SessionState = {
       ...session,
