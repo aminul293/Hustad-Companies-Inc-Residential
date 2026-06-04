@@ -99,6 +99,24 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
         onUpdate(finalSession);
       }
 
+      // Create CP Opportunity if it was skipped (e.g. for direct repair)
+      if (finalSession.centerpointId && (outcome === "repair_only" || session.pathData.selectedPath === "direct_repair")) {
+        try {
+          await fetch("/api/centerpoint/opportunities", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              centerpointId: finalSession.centerpointId,
+              targetStage: "Pending",
+              domain: "Sales",
+              opportunityType: "Service",
+            }),
+          });
+        } catch (e) {
+          console.error("Failed to create CP opportunity on finish", e);
+        }
+      }
+
       // Mark synced before saving
       finalSession = { ...finalSession, syncStatus: "synced" };
       saveSession(finalSession);
