@@ -89,6 +89,14 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
   };
 
   const handleFinish = async () => {
+    // Attempt auto-email if not already sent
+    if (deliverySent !== "email") {
+      const emailSuccess = await handleDelivery("email");
+      if (!emailSuccess) {
+        return; // Block closing if email sending failed (e.g., missing email)
+      }
+    }
+
     setIsSyncing(true);
     try {
       // Ensure session has a closed status — no_damage/monitor_only skip B18 so submitSession is never called
@@ -206,7 +214,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
     await downloadSummaryPDF(session);
     setExported(true);
   };
-  const handleDelivery = async (method: "email" | "text") => {
+  const handleDelivery = async (method: "email" | "text"): Promise<boolean> => {
     setIsSending(true);
     setError(null);
 
@@ -334,6 +342,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
           };
           onUpdate(addAuditEvent(nextSession, "summary_delivery_success", { method: "email", recipient: primaryEmail }));
           await syncSession(nextSession);
+          return true;
         } else {
           throw new Error(result.error || "Email delivery failed");
         }
@@ -399,6 +408,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
           };
           onUpdate(addAuditEvent(nextSession, "summary_delivery_success", { method: "text", recipient: phone }));
           await syncSession(nextSession);
+          return true;
         } else {
           throw new Error(result.error || "SMS delivery failed");
         }
@@ -406,6 +416,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
     } catch (err: any) {
       /* non-fatal */
       setError(err.message);
+      return false;
     } finally {
       setIsSending(false);
     }
