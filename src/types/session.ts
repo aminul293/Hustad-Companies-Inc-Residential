@@ -493,8 +493,10 @@ export function shouldShowScreen(
       );
     case "B17_agreement_summary":
     case "B18_signature_deferral":
+      if (outcomeType === "repair_only" || selectedPath === "direct_repair") {
+        return false;
+      }
       return (
-        outcomeType === "repair_only" ||
         outcomeType === "claim_review_candidate" ||
         outcomeType === "full_restoration_candidate"
       );
