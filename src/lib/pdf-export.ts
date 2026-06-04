@@ -1056,11 +1056,18 @@ function renderSignature(d: jsPDF, s: SessionState, acc: C3) {
     infoRow(d, "Property",     s.property.address || "On file",    col2 + 6, y + 8, hw - 10);
     y += 38;
 
-    if (sig.signatureImage) {
+    if (isSigned) {
       microLabel(d, "Authorized Owner Signature", M, y, T.textFaint);
       y += 8;
       baseCard(d, M, y, 90, 36, T.surface, T.border);
-      try { d.addImage(sig.signatureImage, "PNG", M + 2, y + 2, 86, 32); } catch (_) {}
+      if (sig.signatureImage && sig.signatureImage.startsWith("data:")) {
+        try { d.addImage(sig.signatureImage, "PNG", M + 2, y + 2, 86, 32); } catch (_) {}
+      } else {
+        st(d, T.text); d.setFont("times", "italic"); d.setFontSize(24);
+        const sigName = sig.signerName || "Authorized";
+        const nameLines = d.splitTextToSize(sigName, 80) as string[];
+        d.text(nameLines[0], M + 45, y + 22, { align: "center" });
+      }
       y += 44;
     }
 
