@@ -1896,6 +1896,7 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
       } as any
     });
   };
+  const [activeChips,     setActiveChips]      = useState<Record<string, string>>({});
   const [chosenPath,      setChosenPath_]      = useState<SelectedPath>(initialPath);
   const [showCompanion,   setShowCompanion]    = useState(false);
   const [companionAns,    setCompanionAns]     = useState({ q1: "", q2: "", q3: "" });
@@ -1929,6 +1930,16 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
   };
 
   const handleSaveCompanion = () => {
+    const combinedNotes = [companionAns.q1, companionAns.q2, companionAns.q3].filter(Boolean).join("\n\n");
+    if (combinedNotes) {
+      onUpdate({
+        ...session,
+        findings: {
+          ...session.findings,
+          aiFollowUpNote: `Rep Companion Notes:\n${combinedNotes}`
+        } as any
+      });
+    }
     setCompanionSaved(true);
     setTimeout(() => setCompanionSaved(false), 2500);
   };
@@ -2526,22 +2537,28 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
                           { label: "Needs more proof", act: "needs_proof" },
                           { label: "Objection", act: "objection" },
                           { label: "Moving forward", act: "moving_forward" }
-                        ].map((chip) => (
-                          <button
-                            key={chip.act}
-                            onClick={() => handleChipClick(qObj, chip.act as any)}
-                            className="px-2 py-1 rounded-md transition-colors"
-                            style={{ 
-                              background: "rgba(255,255,255,0.05)", 
-                              border: "1px solid rgba(255,255,255,0.1)",
-                              fontFamily: "'Inter'", 
-                              fontSize: "10px", 
-                              color: DS.text.secondary 
-                            }}
-                          >
-                            {chip.label}
-                          </button>
-                        ))}
+                        ].map((chip) => {
+                          const isActive = activeChips[key] === chip.act;
+                          return (
+                            <button
+                              key={chip.act}
+                              onClick={() => {
+                                setActiveChips(prev => ({ ...prev, [key]: chip.act }));
+                                handleChipClick(qObj, chip.act as any);
+                              }}
+                              className="px-2 py-1 rounded-md transition-colors"
+                              style={{ 
+                                background: isActive ? "rgba(29,85,196,0.12)" : "rgba(255,255,255,0.05)", 
+                                border: isActive ? "1.5px solid #1D55C4" : "1px solid rgba(255,255,255,0.1)",
+                                fontFamily: "'Inter'", 
+                                fontSize: "10px", 
+                                color: isActive ? "#E8EDF8" : DS.text.secondary 
+                              }}
+                            >
+                              {chip.label}
+                            </button>
+                          );
+                        })}
                       </div>
 
                       <textarea
