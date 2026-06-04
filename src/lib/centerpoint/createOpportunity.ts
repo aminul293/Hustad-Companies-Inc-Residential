@@ -122,11 +122,31 @@ export async function createOpportunity(input: OpportunityInput, apiKey: string)
       break;
     }
 
-    // Find if the target transition is directly available
-    let nextTx = transitions.find((tx: any) => tx.attributes?.name === input.targetStage);
+    // 1. Try matching by transition name (case insensitive)
+    let nextTx = transitions.find((tx: any) => 
+      tx.attributes?.name?.toLowerCase() === input.targetStage.toLowerCase()
+    );
+
+    // 2. Try matching by destination stage name
+    if (!nextTx && data.included) {
+      const allStages = data.included.filter((x: any) => x.type === "workflow_stages");
+      nextTx = transitions.find((tx: any) => {
+        const stageId = tx.relationships?.workflowStage?.data?.id;
+        if (stageId) {
+          const targetStageObj = allStages.find((s: any) => s.id === stageId);
+          return targetStageObj?.attributes?.name?.toLowerCase() === input.targetStage.toLowerCase();
+        }
+        return false;
+      });
+    }
+
     if (!nextTx) {
-      // Otherwise, take the first available transition to move forward sequentially
-      nextTx = transitions[0];
+      if (transitions.length === 0) break;
+      // Take the first safe transition to move forward sequentially. Avoid terminal stages unless explicitly requested.
+      nextTx = transitions.find((tx: any) => {
+         const name = tx.attributes?.name?.toLowerCase() || "";
+         return !name.includes("sold") && !name.includes("accept") && !name.includes("decline") && !name.includes("lost");
+      }) || transitions[0];
     }
 
     if (!nextTx) {
