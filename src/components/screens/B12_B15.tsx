@@ -736,52 +736,53 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
           urgent_repair → roof_forensic (forensic shingle detail + analytics)
           carrier_review / no_action → home_aerial (luxury dusk aerial)
       ════════════════════════════════════════════════════════════════════════ */}
-      const fadeRgb = DS.isDark ? "5,8,22" : theme === "high-contrast" ? "255,255,255" : "247,245,241";
-      
-      return (
-        <div 
-          className="absolute top-0 right-0 w-[62%] pointer-events-none overflow-hidden"
-          style={{ zIndex: 2, height: "72vh" }}
-        >
-          {/* Base image — cinematic dark grading */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={pathKey === "urgent_repair" ? "/images/roof_forensic.png" : "/images/home_aerial.png"}
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-0 w-full h-full object-cover transition-all duration-700"
-            style={{
-              objectPosition: pathKey === "urgent_repair" ? "center 40%" : "center 30%",
-              filter: DS.isDark 
-                ? "brightness(0.42) contrast(1.12) saturate(0.78) hue-rotate(-8deg)"
-                : "brightness(0.95) contrast(1.05) saturate(1.1)",
-            }}
-          />
-  
-          {/* Overlay A — left fade: full opacity to transparent, keeps left text readable */}
-          <div className="absolute inset-0" style={{
-            background: `linear-gradient(90deg, rgba(${fadeRgb},1) 0%, rgba(${fadeRgb},0.92) 30%, rgba(${fadeRgb},0.62) 58%, rgba(${fadeRgb},0.18) 100%)`,
-          }} />
-  
-          {/* Overlay B — top vignette + heavy bottom fade into page */}
-          <div className="absolute inset-0" style={{
-            background: `linear-gradient(180deg, rgba(${fadeRgb},0.55) 0%, transparent 22%, transparent 55%, rgba(${fadeRgb},0.92) 82%, rgba(${fadeRgb},1) 100%)`,
-          }} />
-  
-          {/* Overlay C — blue atmospheric glow: ties image into design system */}
-          <div className="absolute inset-0" style={{
-            background: DS.isDark ? "radial-gradient(circle at center right, rgba(61,90,254,0.18), transparent 40%)" : "radial-gradient(circle at center right, rgba(61,90,254,0.06), transparent 40%)",
-          }} />
-  
-          {/* Overlay D — path-specific atmospheric tint */}
-          <div className="absolute inset-0" style={{
-            background: pathKey === "urgent_repair"
-              ? DS.isDark ? "linear-gradient(180deg, rgba(255,60,80,0.06) 0%, transparent 50%)" : "linear-gradient(180deg, rgba(255,60,80,0.03) 0%, transparent 50%)"
-              : DS.isDark ? "linear-gradient(180deg, rgba(10,18,48,0.28) 0%, transparent 45%)" : "linear-gradient(180deg, rgba(10,18,48,0.05) 0%, transparent 45%)",
-          }} />
-  
-        </div>
-      );
+      {(() => {
+        const fadeRgb = DS.isDark ? "5,8,22" : theme === "high-contrast" ? "255,255,255" : "247,245,241";
+        return (
+          <div 
+            className="absolute top-0 right-0 w-[62%] pointer-events-none overflow-hidden"
+            style={{ zIndex: 2, height: "72vh" }}
+          >
+            {/* Base image — cinematic dark grading */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={pathKey === "urgent_repair" ? "/images/roof_forensic.png" : "/images/home_aerial.png"}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover transition-all duration-700"
+              style={{
+                objectPosition: pathKey === "urgent_repair" ? "center 40%" : "center 30%",
+                filter: DS.isDark 
+                  ? "brightness(0.42) contrast(1.12) saturate(0.78) hue-rotate(-8deg)"
+                  : "brightness(0.95) contrast(1.05) saturate(1.1)",
+              }}
+            />
+    
+            {/* Overlay A — left fade: full opacity to transparent, keeps left text readable */}
+            <div className="absolute inset-0" style={{
+              background: `linear-gradient(90deg, rgba(${fadeRgb},1) 0%, rgba(${fadeRgb},0.92) 30%, rgba(${fadeRgb},0.62) 58%, rgba(${fadeRgb},0.18) 100%)`,
+            }} />
+    
+            {/* Overlay B — top vignette + heavy bottom fade into page */}
+            <div className="absolute inset-0" style={{
+              background: `linear-gradient(180deg, rgba(${fadeRgb},0.55) 0%, transparent 22%, transparent 55%, rgba(${fadeRgb},0.92) 82%, rgba(${fadeRgb},1) 100%)`,
+            }} />
+    
+            {/* Overlay C — blue atmospheric glow: ties image into design system */}
+            <div className="absolute inset-0" style={{
+              background: DS.isDark ? "radial-gradient(circle at center right, rgba(61,90,254,0.18), transparent 40%)" : "radial-gradient(circle at center right, rgba(61,90,254,0.06), transparent 40%)",
+            }} />
+    
+            {/* Overlay D — path-specific atmospheric tint */}
+            <div className="absolute inset-0" style={{
+              background: pathKey === "urgent_repair"
+                ? DS.isDark ? "linear-gradient(180deg, rgba(255,60,80,0.06) 0%, transparent 50%)" : "linear-gradient(180deg, rgba(255,60,80,0.03) 0%, transparent 50%)"
+                : DS.isDark ? "linear-gradient(180deg, rgba(10,18,48,0.28) 0%, transparent 45%)" : "linear-gradient(180deg, rgba(10,18,48,0.05) 0%, transparent 45%)",
+            }} />
+    
+          </div>
+        );
+      })()}
 
       {/* ── Logo ────────────────────────────────────────────────────────────── */}
       <div className="absolute top-9 left-10 z-30 flex flex-col items-start pointer-events-none">
