@@ -142,11 +142,27 @@ export async function createOpportunity(input: OpportunityInput, apiKey: string)
 
     if (!nextTx) {
       if (transitions.length === 0) break;
-      // Take the first safe transition to move forward sequentially. Avoid terminal stages unless explicitly requested.
-      nextTx = transitions.find((tx: any) => {
+      
+      const safeTx = transitions.filter((tx: any) => {
          const name = tx.attributes?.name?.toLowerCase() || "";
          return !name.includes("sold") && !name.includes("accept") && !name.includes("decline") && !name.includes("lost");
-      }) || transitions[0];
+      });
+
+      if (safeTx.length === 0) break;
+
+      // Smart Branching Heuristic: Follow the correct path (Repair vs Replacement) if we hit a fork
+      const targetLower = input.targetStage.toLowerCase();
+      const isReplacement = targetLower.includes("replacement");
+      const isRepair = targetLower.includes("repair");
+
+      let branchTx = safeTx.find((tx: any) => {
+         const name = tx.attributes?.name?.toLowerCase() || "";
+         if (isReplacement && name.includes("replacement")) return true;
+         if (isRepair && name.includes("repair")) return true;
+         return false;
+      });
+
+      nextTx = branchTx || safeTx[0];
     }
 
     if (!nextTx) {
