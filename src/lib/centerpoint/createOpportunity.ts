@@ -5,7 +5,7 @@ export interface OpportunityInput {
   name: string;
   billedCompanyId: number;
   description: string;
-  targetStage: "Pending" | "Accepted";
+  targetStage: "Pending" | "Accepted" | "Quote Repairs";
   domain?: string;
   type?: string;
   opportunityType?: string;

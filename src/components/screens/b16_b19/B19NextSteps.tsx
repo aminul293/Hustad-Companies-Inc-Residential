@@ -115,7 +115,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               centerpointId: finalSession.centerpointId,
-              targetStage: "Pending",
+              targetStage: "Quote Repairs",
               domain: "Sales",
               opportunityType: "Service",
             }),

@@ -80,9 +80,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  if (targetStage !== "Pending" && targetStage !== "Accepted") {
+  if (targetStage !== "Pending" && targetStage !== "Accepted" && targetStage !== "Quote Repairs") {
     return NextResponse.json(
-      { success: false, stage: "validation", message: "Invalid targetStage. Must be 'Pending' or 'Accepted'" },
+      { success: false, stage: "validation", message: "Invalid targetStage. Must be 'Pending', 'Accepted', or 'Quote Repairs'" },
       { status: 400 }
     );
   }
