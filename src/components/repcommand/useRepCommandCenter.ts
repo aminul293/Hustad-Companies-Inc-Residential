@@ -304,7 +304,7 @@ export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart
         setPendingImport({ session: newSession, address, homeownerName, source: "pipeline", leadId: lead.id, appointmentId });
         return;
       }
-      setPendingPrefill(normalizeImportData({ source: "pipeline", address, leadId: lead.id, homeownerName, email: homeownerEmail, phone: homeownerPhone, centerpointId: lead.cpc_ticket_id, appointmentId }));
+      setPendingPrefill(normalizeImportData({ source: "pipeline", address, pipelineLeadId: lead.id, ownerName: homeownerName, email: homeownerEmail, phone: homeownerPhone, centerpointId: lead.cpc_ticket_id, appointmentId }));
     };
 
     const handleChangeView = (e: Event) => setView((e as CustomEvent<any>).detail);
