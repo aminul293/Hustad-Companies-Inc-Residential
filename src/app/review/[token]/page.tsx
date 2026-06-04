@@ -151,12 +151,19 @@ export default function RemoteReviewPage() {
         const homeownerEmail = updatedSession.property.homeownerPrimaryEmail;
         const to = homeownerEmail ? `${homeownerEmail},${repEmail}` : repEmail;
         const cc = "dustin@hustadcompanies.com";
-        const subject = `Hustad Forensic Dossier: ${updatedSession.property.address}`;
+        const subject = `Re: Hustad Forensic Dossier: ${updatedSession.property.address}`;
         const html = `
-          <div style="font-family:sans-serif;color:#111827;">
-            <h2 style="color:#16a34a;margin-bottom:8px;">Document Signed</h2>
-            <p><strong>${signerName}</strong> has remotely signed the authorization dossier for <strong>${updatedSession.property.address}</strong>.</p>
-            <p>The finalized, signed PDF is attached for your records.</p>
+          <div style="font-family:sans-serif;color:#111827;max-width:600px;margin:0 auto;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+            <div style="background-color:#0f172a;padding:24px;text-align:center;">
+              <h1 style="color:#ffffff;margin:0;font-size:24px;letter-spacing:2px;">HUSTAD RESIDENTIAL</h1>
+            </div>
+            <div style="padding:32px;">
+              <h2 style="font-size:20px;color:#16a34a;margin-top:0;">Agreement Signed & Executed</h2>
+              <p style="margin-bottom:16px;">Hello,</p>
+              <p style="margin-bottom:16px;"><strong>${signerName}</strong> has remotely signed and authorized the dossier for <strong>${updatedSession.property.address}</strong>.</p>
+              <p style="margin-bottom:24px;">The finalized, legally executed PDF is attached to this email for your records.</p>
+              <p style="color:#64748b;font-size:14px;margin-bottom:0;">Thank you,<br><strong>Hustad Residential</strong></p>
+            </div>
           </div>
         `;
 
@@ -169,7 +176,7 @@ export default function RemoteReviewPage() {
             subject,
             html,
             pdfBase64,
-            fileName: `Hustad_Dossier_${updatedSession.property.address?.replace(/\\W+/g, "_") || "Signed"}.pdf`,
+            fileName: `Hustad_Dossier_${updatedSession.property.address?.replace(/\W+/g, "_") || "Signed"}.pdf`,
             sessionId: updatedSession.sessionId
           })
         });
