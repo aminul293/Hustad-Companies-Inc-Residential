@@ -110,14 +110,18 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
       // Create CP Opportunity if it was skipped (e.g. for direct repair)
       if (finalSession.centerpointId && (outcome === "repair_only" || session.pathData.selectedPath === "direct_repair")) {
         try {
+          const isReplacement = session.pathData.selectedPath === "direct_repair" && outcome !== "repair_only";
+          const targetStage = isReplacement ? "Quote Replacement" : "Quote Repairs";
+          const oppType = isReplacement ? "Roof Replacement" : "Service";
+
           await fetch("/api/centerpoint/opportunities", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               centerpointId: finalSession.centerpointId,
-              targetStage: "Quote Repairs",
+              targetStage: targetStage,
               domain: "Sales",
-              opportunityType: "Service",
+              opportunityType: oppType,
             }),
           });
         } catch (e) {
