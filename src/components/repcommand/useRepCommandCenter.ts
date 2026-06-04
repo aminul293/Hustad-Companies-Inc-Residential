@@ -14,6 +14,7 @@ import {
 import type { RepIdentity } from "@/config/reps";
 import type { AuthenticatedRep } from "@/lib/rep-identity";
 import { buildRepCaptureEmail } from "@/lib/rep-capture-email";
+import { resolveEmail, resolvePhone } from "@/components/pipeline/pipelineTypes";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
