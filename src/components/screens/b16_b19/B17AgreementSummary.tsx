@@ -188,14 +188,12 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
         opportunityType = "Roof Replacement";
       }
 
-      const finalStage = (stage === "Pending" && opportunityType === "Service") ? "Quote Repairs" : stage;
-
       await fetch("/api/centerpoint/opportunities", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           centerpointId: session.centerpointId,
-          targetStage: finalStage,
+          targetStage: stage,
           domain,
           type,
           opportunityType,
