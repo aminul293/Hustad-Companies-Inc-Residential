@@ -313,7 +313,7 @@ const DS = {
 
 
 function getDynamicDS(theme: string) {
-  const isDark = theme === "dark" || theme === "high-contrast";
+  const isDark = theme === "dark";
   if (isDark) {
     return {
       isDark: true,
@@ -406,7 +406,7 @@ function getDynamicDS(theme: string) {
 }
 
 function getBadgeTokens(theme: string) {
-  const isDark = theme === "dark" || theme === "high-contrast";
+  const isDark = theme === "dark";
   if (isDark) {
     return BADGE;
   }
@@ -2755,7 +2755,7 @@ export function B14PathDecision({ onNext }: Pick<Props, "onNext">) {
 
 export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props) {
   const { theme } = useTheme();
-  const isDark = theme === "dark" || theme === "high-contrast";
+  const isDark = theme === "dark";
   const [authorized, setAuthorized] = useState<boolean | null>(session.findings.urgentProtectionAuthorized);
 
   const handleContinue = () => {

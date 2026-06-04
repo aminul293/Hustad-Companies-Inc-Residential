@@ -25,7 +25,7 @@ interface Props {
 
 export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
   const { theme } = useTheme();
-  const isDark = theme === "dark" || theme === "high-contrast";
+  const isDark = theme === "dark";
   const [manufacturer, setManufacturer] = useState(session.pathData.manufacturerSelected);
   const [impactUpgrade, setImpactUpgrade] = useState(session.pathData.impactUpgradeSelected);
   const [warranty, setWarranty] = useState(session.pathData.warrantyOptionSelected);

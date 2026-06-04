@@ -32,7 +32,7 @@ interface NextStepsProps {
 
 export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsProps) {
   const { theme } = useTheme();
-  const isDark = theme === "dark" || theme === "high-contrast";
+  const isDark = theme === "dark";
   const outcome = session.findings.outcomeType || "no_damage";
   const isSigned = !!session.signatureData.signedAt;
   const isDeferred = session.sessionStatus === "deferred";

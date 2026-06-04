@@ -71,7 +71,7 @@ const CARD_LG: React.CSSProperties = {
 };
 
 function getDynamicLM(theme: string) {
-  const isDark = theme === "dark" || theme === "high-contrast";
+  const isDark = theme === "dark";
   if (!isDark) {
     return {
       isDark:       false,

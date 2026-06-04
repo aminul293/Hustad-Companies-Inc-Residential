@@ -26,7 +26,7 @@ interface Props {
 
 export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Props) {
   const { theme } = useTheme();
-  const isDark = theme === "dark" || theme === "high-contrast";
+  const isDark = theme === "dark";
   const [mode, setMode] = useState<"sign" | "defer" | null>(
     session.sessionStatus === "authorization_pending" ? "sign" :
     session.sessionStatus === "deferred" ? "defer" : null
