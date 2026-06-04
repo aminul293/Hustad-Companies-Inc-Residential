@@ -49,23 +49,31 @@ async function getGraphToken(): Promise<string | null> {
 
 const DUSTIN_EMAIL = 'dustin@hustadcompanies.com';
 
-async function notifyRep(to: string, subject: string, html: string, cc?: string) {
+async function notifyRep(to: string, subject: string, html: string, cc?: string, attachments?: any[]) {
   const token = await getGraphToken();
   if (!token) return;
   try {
+    const toRecipients = to.split(',').map(e => ({ emailAddress: { address: e.trim() } }));
     const ccRecipients = cc
       ? cc.split(',').map(e => ({ emailAddress: { address: e.trim() } }))
       : [];
+      
+    const message: any = {
+      subject,
+      body: { contentType: 'HTML', content: html },
+      toRecipients,
+      ...(ccRecipients.length ? { ccRecipients } : {}),
+    };
+    
+    if (attachments && attachments.length > 0) {
+      message.attachments = attachments;
+    }
+
     await fetch(`https://graph.microsoft.com/v1.0/users/${SENDER_EMAIL}/sendMail`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        message: {
-          subject,
-          body: { contentType: 'HTML', content: html },
-          toRecipients: [{ emailAddress: { address: to } }],
-          ...(ccRecipients.length ? { ccRecipients } : {}),
-        },
+        message,
         saveToSentItems: 'true',
       }),
     });
@@ -285,6 +293,36 @@ export async function POST(request: Request) {
             console.error('[REVIEW_ACTION] Failed to advance opportunity to Accepted:', e);
           }
         }
+        
+        // Dispatch executed email to Homeowner & Rep
+        if (payload?.pdfBase64) {
+          const homeownerEmail = session.property.homeownerPrimaryEmail;
+          const toEmails = homeownerEmail ? `${homeownerEmail},${repEmail}` : repEmail;
+          const attachments = [{
+            '@odata.type': '#microsoft.graph.fileAttachment',
+            name: `Hustad_Dossier_${address?.replace(/\\W+/g, "_") || "Signed"}.pdf`,
+            contentType: 'application/pdf',
+            contentBytes: payload.pdfBase64,
+          }];
+          
+          const html = `
+            <div style="font-family:sans-serif;color:#111827;max-width:600px;margin:0 auto;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+              <div style="background-color:#0f172a;padding:24px;text-align:center;">
+                <h1 style="color:#ffffff;margin:0;font-size:24px;letter-spacing:2px;">HUSTAD RESIDENTIAL</h1>
+              </div>
+              <div style="padding:32px;">
+                <h2 style="font-size:20px;color:#16a34a;margin-top:0;">Agreement Signed & Executed</h2>
+                <p style="margin-bottom:16px;">Hello,</p>
+                <p style="margin-bottom:16px;"><strong>${payload?.signerName}</strong> has remotely signed and authorized the dossier for <strong>${address}</strong>.</p>
+                <p style="margin-bottom:24px;">The finalized, legally executed PDF is attached to this email for your records.</p>
+                <p style="color:#64748b;font-size:14px;margin-bottom:0;">Thank you,<br><strong>Hustad Residential</strong></p>
+              </div>
+            </div>
+          `;
+          
+          notifyRep(toEmails, threadSubject, html, cc, attachments);
+        }
+        
         break;
       }
 

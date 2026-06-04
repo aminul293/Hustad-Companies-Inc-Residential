@@ -127,10 +127,20 @@ export default function RemoteReviewPage() {
         ]
       };
 
+      // Generate PDF on the client first
+      let pdfBase64 = '';
+      try {
+        const { getSummaryPDFBase64 } = await import("@/lib/pdf-export");
+        pdfBase64 = await getSummaryPDFBase64(updatedSession);
+      } catch (pdfErr) {
+        console.error("PDF generation failed:", pdfErr);
+      }
+
       const res = await postReviewAction(token, 'sign', {
         signerName,
         signatureImage,
-        selectedPath
+        selectedPath,
+        pdfBase64
       });
 
       if (!res.ok) {
@@ -140,52 +150,6 @@ export default function RemoteReviewPage() {
            errStr = errJson.error || errStr;
         } catch(e) {}
         throw new Error(errStr);
-      }
-
-      // Generate PDF and send via /api/send-email so the signed copy goes out
-      try {
-        const { getSummaryPDFBase64 } = await import("@/lib/pdf-export");
-        const pdfBase64 = await getSummaryPDFBase64(updatedSession);
-        
-        const repEmail = updatedSession.repEmail || "info@hustadcompanies.com";
-        const homeownerEmail = updatedSession.property.homeownerPrimaryEmail;
-        const to = homeownerEmail ? `${homeownerEmail},${repEmail}` : repEmail;
-        const cc = "dustin@hustadcompanies.com";
-        const subject = `Re: Hustad Forensic Dossier: ${updatedSession.property.address}`;
-        const html = `
-          <div style="font-family:sans-serif;color:#111827;max-width:600px;margin:0 auto;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
-            <div style="background-color:#0f172a;padding:24px;text-align:center;">
-              <h1 style="color:#ffffff;margin:0;font-size:24px;letter-spacing:2px;">HUSTAD RESIDENTIAL</h1>
-            </div>
-            <div style="padding:32px;">
-              <h2 style="font-size:20px;color:#16a34a;margin-top:0;">Agreement Signed & Executed</h2>
-              <p style="margin-bottom:16px;">Hello,</p>
-              <p style="margin-bottom:16px;"><strong>${signerName}</strong> has remotely signed and authorized the dossier for <strong>${updatedSession.property.address}</strong>.</p>
-              <p style="margin-bottom:24px;">The finalized, legally executed PDF is attached to this email for your records.</p>
-              <p style="color:#64748b;font-size:14px;margin-bottom:0;">Thank you,<br><strong>Hustad Residential</strong></p>
-            </div>
-          </div>
-        `;
-
-        const emailRes = await fetch("/api/send-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            to,
-            cc,
-            subject,
-            html,
-            pdfBase64,
-            fileName: `Hustad_Dossier_${updatedSession.property.address?.replace(/\W+/g, "_") || "Signed"}.pdf`,
-            sessionId: updatedSession.sessionId
-          })
-        });
-
-        if (!emailRes.ok) {
-          console.warn("Failed to send signed PDF email:", await emailRes.text());
-        }
-      } catch (pdfErr) {
-        console.error("PDF generation/email failed:", pdfErr);
       }
 
       // Note: we still update local state so the UI reflects the signed status immediately
