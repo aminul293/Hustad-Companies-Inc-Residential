@@ -49,7 +49,7 @@ async function getGraphToken(): Promise<string | null> {
 
 const DUSTIN_EMAIL = 'dustin@hustadcompanies.com';
 
-async function notifyRep(to: string, subject: string, html: string, cc?: string, attachments?: any[]) {
+async function notifyRep(to: string, subject: string, html: string, cc?: string, attachments?: any[], fromEmail?: string) {
   const token = await getGraphToken();
   if (!token) return;
   try {
@@ -69,7 +69,9 @@ async function notifyRep(to: string, subject: string, html: string, cc?: string,
       message.attachments = attachments;
     }
 
-    await fetch(`https://graph.microsoft.com/v1.0/users/${SENDER_EMAIL}/sendMail`, {
+    const sender = fromEmail && fromEmail.trim() ? fromEmail.trim() : SENDER_EMAIL;
+
+    await fetch(`https://graph.microsoft.com/v1.0/users/${sender}/sendMail`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -297,7 +299,19 @@ export async function POST(request: Request) {
         // Dispatch executed email to Homeowner & Rep
         if (payload?.pdfBase64) {
           const homeownerEmail = session.property.homeownerPrimaryEmail;
-          const toEmails = homeownerEmail ? `${homeownerEmail},${repEmail}` : repEmail;
+          
+          // Send TO the homeowner. If no homeowner email, fallback to rep.
+          const toEmails = homeownerEmail || repEmail || SENDER_EMAIL;
+          
+          // Construct CC list
+          let signCc = cc ? `${cc},` : '';
+          signCc += 'ecaturia@hustadcompanies.com, Marshall@hustadcompanies.com';
+          
+          // CC the rep so they explicitly receive a copy in their inbox if it was sent to the homeowner
+          if (homeownerEmail && repEmail) {
+            signCc += `, ${repEmail}`;
+          }
+
           const attachments = [{
             '@odata.type': '#microsoft.graph.fileAttachment',
             name: `Hustad_Dossier_${address?.replace(/\\W+/g, "_") || "Signed"}.pdf`,
@@ -320,7 +334,8 @@ export async function POST(request: Request) {
             </div>
           `;
           
-          notifyRep(toEmails, threadSubject, html, cc, attachments);
+          // Send from repEmail (it falls back to SENDER_EMAIL inside notifyRep if not provided)
+          notifyRep(toEmails, threadSubject, html, signCc, attachments, repEmail);
         }
         
         break;
