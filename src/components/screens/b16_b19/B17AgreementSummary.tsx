@@ -169,7 +169,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const createCPOpportunity = async (stage: "Pending" | "Accepted") => {
+  const createCPOpportunity = async (stage: "Quote Repairs" | "Accepted") => {
     if (!session.centerpointId) {
       console.warn("No centerpointId in session to create opportunity.");
       return;
@@ -240,7 +240,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
     if (!allAcknowledged) e.ack = "Please check all acknowledgements to proceed.";
     if (Object.keys(e).length) { setErrors(e); return; }
 
-    await createCPOpportunity("Pending");
+    await createCPOpportunity("Quote Repairs");
 
     const updated: SessionState = {
       ...session,

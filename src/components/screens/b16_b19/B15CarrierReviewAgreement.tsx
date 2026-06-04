@@ -1023,7 +1023,7 @@ function SendForReviewModal({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             centerpointId: session.centerpointId,
-            targetStage: "Pending",
+            targetStage: "Quote Repairs",
             domain,
             type,
             opportunityType,
