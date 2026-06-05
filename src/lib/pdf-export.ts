@@ -338,6 +338,35 @@ function infoRow(d: jsPDF, lbl: string, val: string, x: number, y: number, w: nu
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// LOGO — loads /logo.svg, recolors to white, returns PNG data URL
+// ─────────────────────────────────────────────────────────────────────────────
+async function loadLogoDataUrl(): Promise<string | null> {
+  try {
+    const resp = await fetch("/logo.svg");
+    if (!resp.ok) return null;
+    const svgText = await resp.text();
+    const whiteSvg = svgText.replace(/fill:\s*#231f20/g, "fill: #ffffff");
+    const blob = new Blob([whiteSvg], { type: "image/svg+xml" });
+    const url  = URL.createObjectURL(blob);
+    return await new Promise<string>((resolve, reject) => {
+      const img    = new Image();
+      img.onload   = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width  = 1468;
+        canvas.height = 330;
+        canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        resolve(canvas.toDataURL("image/png"));
+      };
+      img.onerror = reject;
+      img.src     = url;
+    });
+  } catch {
+    return null;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // STATUS BADGE — derived from session state + path
 // ─────────────────────────────────────────────────────────────────────────────
 function deriveStatusBadge(s: SessionState, pt: PathType): { label: string; color: C3; bg: C3; bdr: C3 } {
@@ -371,11 +400,18 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
   sf(d, T.headerBg); d.rect(0, 0, PW, COVER_HDR, "F");
   sf(d, acc); d.rect(0, 0, PW, 2, "F");
 
-  // Brand left
-  st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(17);
-  d.text("HUSTAD", M, 17);
-  st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
-  d.text("Madison Residential", M + 31, 17);
+  // Brand left — logo image, fallback to text
+  const logoDataUrl = await loadLogoDataUrl();
+  if (logoDataUrl) {
+    const logoW = 42;
+    const logoH = logoW * (164.9 / 733.6); // ~9.4mm
+    d.addImage(logoDataUrl, "PNG", M, (COVER_HDR - logoH) / 2 + 1, logoW, logoH);
+  } else {
+    st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(17);
+    d.text("HUSTAD", M, 17);
+    st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
+    d.text("Madison Residential", M + 31, 17);
+  }
 
   // Center: path-specific report type label
   const reportType = pt === "carrier_review" ? "Storm Review Report"
@@ -435,7 +471,13 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
   const hlLines = d.splitTextToSize(cfg.headline, CW) as string[];
   st(d, T.text); d.setFont("times", "bold"); d.setFontSize(14);
   d.text(hlLines.slice(0, 2), M, y);
-  y += Math.min(hlLines.length, 2) * 6.5 + 6;
+  y += Math.min(hlLines.length, 2) * 6.5 + 5;
+
+  // ── Hero subhead ──────────────────────────────────────────────────────────
+  const subLines = d.splitTextToSize(cfg.subhead, CW) as string[];
+  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
+  d.text(subLines.slice(0, 4), M, y);
+  y += Math.min(subLines.length, 4) * 4.8 + 8;
 
   // ── Photo strip — top 3 strongest photos ─────────────────────────────────
   const topPhotos = photos.slice(0, 3);
