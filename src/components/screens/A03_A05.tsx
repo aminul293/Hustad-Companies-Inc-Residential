@@ -197,8 +197,8 @@ export function A03WhatWeInspect({ onNext, onBack }: Props) {
         </motion.div>
       </div>
 
-      <div className="absolute top-8 left-8 z-30 flex flex-col items-start pointer-events-none">
-        <div className="flex flex-col items-start gap-1">
+      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center pointer-events-none">
+        <div className="flex flex-col items-center gap-1">
           <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
         </div>
         <div className="mt-2 h-px w-12 bg-gradient-to-r from-[var(--tx3)]/20 to-transparent" />
@@ -406,8 +406,8 @@ export function A04HowFindingsSorted({ onNext, onBack }: Props) {
         </motion.div>
       </div>
 
-      <div className="absolute top-8 left-8 z-30 flex flex-col items-start pointer-events-none">
-        <div className="flex flex-col items-start gap-1">
+      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center pointer-events-none">
+        <div className="flex flex-col items-center gap-1">
           <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
         </div>
       </div>
@@ -580,8 +580,8 @@ export function A05InsuranceClarity({ onNext, onBack }: Props) {
         </motion.div>
       </div>
 
-      <div className="absolute top-8 left-8 z-30 flex flex-col items-start pointer-events-none">
-        <div className="flex flex-col items-start gap-1">
+      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center pointer-events-none">
+        <div className="flex flex-col items-center gap-1">
           <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
         </div>
       </div>

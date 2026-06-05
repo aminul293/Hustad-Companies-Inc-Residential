@@ -98,7 +98,7 @@ export function A06WarrantyImpact({ session, onUpdate, onNext, onBack }: Props) 
       </div>
 
       {/* Persistent Branding Anchor */}
-      <div className="absolute top-8 left-8 z-30 flex flex-col items-start pointer-events-none text-[var(--tx1)]">
+      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center pointer-events-none text-[var(--tx1)]">
         <div className="flex items-baseline gap-2.5">
           <span className="font-display font-bold text-2xl tracking-[0.1em]">
             HUSTAD
@@ -288,8 +288,8 @@ export function A07WhyHustad({ session, onUpdate, onNext, onBack }: Props) {
         </motion.div>
       </div>
 
-      <div className="absolute top-8 left-8 z-30 flex flex-col items-start pointer-events-none text-[var(--tx1)]">
-        <div className="flex flex-col items-start gap-1">
+      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center pointer-events-none text-[var(--tx1)]">
+        <div className="flex flex-col items-center gap-1">
           <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
         </div>
       </div>
@@ -445,8 +445,8 @@ export function A08WhatYouReceive({ session, onUpdate, onNext, onBack }: Props) 
         </motion.div>
       </div>
 
-      <div className="absolute top-8 left-8 z-30 flex flex-col items-start pointer-events-none text-[var(--tx1)]">
-        <div className="flex flex-col items-start gap-1">
+      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center pointer-events-none text-[var(--tx1)]">
+        <div className="flex flex-col items-center gap-1">
           <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
         </div>
       </div>

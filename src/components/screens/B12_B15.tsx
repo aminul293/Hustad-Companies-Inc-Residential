@@ -786,7 +786,7 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
 
       {/* ── Logo ────────────────────────────────────────────────────────────── */}
       <div className="absolute top-9 left-10 z-30 flex flex-col items-start pointer-events-none">
-        <div className="flex flex-col items-start gap-1">
+        <div className="flex flex-col items-center gap-1">
           <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
         </div>
       </div>
@@ -2778,8 +2778,8 @@ export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(244,63,94,0.04),transparent_70%)]" />
         </div>
       )}
-      <div className="absolute top-8 left-8 z-30 flex flex-col items-start pointer-events-none">
-        <div className="flex flex-col items-start gap-1">
+      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center pointer-events-none">
+        <div className="flex flex-col items-center gap-1">
           <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
         </div>
       </div>

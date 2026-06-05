@@ -168,8 +168,8 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_70%,rgba(99,102,241,0.03),transparent_50%)]" />
       </div>
 
-      <div className="absolute top-8 left-8 z-30 flex flex-col items-start pointer-events-none">
-        <div className="flex flex-col items-start gap-1">
+      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center pointer-events-none">
+        <div className="flex flex-col items-center gap-1">
           <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
         </div>
       </div>
@@ -1054,7 +1054,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
 
       {/* Institutional Header */}
       <div className="relative z-40 flex items-center justify-between px-12 pt-10 pb-6 border-b border-[var(--border-color)] bg-[var(--bg-base)]/80 backdrop-blur-2xl">
-        <div className="flex flex-col items-start gap-1">
+        <div className="flex flex-col items-center gap-1">
           <div className="flex items-center gap-3">
             <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
             <div className="h-4 w-[1px] bg-[var(--border-color)] mx-1" />

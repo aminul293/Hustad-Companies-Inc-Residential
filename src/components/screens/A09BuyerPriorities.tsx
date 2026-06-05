@@ -143,7 +143,7 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
       </div>
 
       {/* Persistent Branding Anchor */}
-      <div className="absolute top-8 left-8 z-30 flex flex-col items-start pointer-events-none text-[var(--tx1)]">
+      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center pointer-events-none text-[var(--tx1)]">
         <div className="flex items-baseline gap-2.5">
           <span className="font-display font-bold text-2xl tracking-[0.1em]">
             HUSTAD
