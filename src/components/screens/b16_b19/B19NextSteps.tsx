@@ -107,12 +107,22 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
         onUpdate(finalSession);
       }
 
-      // Create CP Opportunity if it was skipped (e.g. for direct repair)
-      if (finalSession.centerpointId && (outcome === "repair_only" || session.pathData.selectedPath === "direct_repair")) {
+      // Map to CP stages
+      if (finalSession.centerpointId && outcome !== "no_damage" && outcome !== "monitor_only") {
         try {
-          const isReplacement = session.pathData.selectedPath === "direct_repair" && outcome !== "repair_only";
-          const targetStage = isReplacement ? "Quote Replacement" : "Quote Repairs";
-          const oppType = isReplacement ? "Roof Replacement" : "Service";
+          let targetStage = "Pending";
+          let oppType = "Roof Replacement";
+
+          if (outcome === "repair_only") {
+            targetStage = "Quote Repairs";
+            oppType = "Service";
+          } else if (outcome === "full_restoration_candidate") {
+            targetStage = "Quote Replacement";
+            oppType = "Roof Replacement";
+          } else if (outcome === "claim_review_candidate") {
+            targetStage = isSigned ? "Accepted" : "Pending";
+            oppType = "Roof Replacement";
+          }
 
           await fetch("/api/centerpoint/opportunities", {
             method: "POST",
@@ -122,6 +132,11 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
               targetStage: targetStage,
               domain: "Sales",
               opportunityType: oppType,
+              ...(isDeferred && !isSigned && finalSession.signatureData.deferralReason ? {
+                 reasonCode: finalSession.signatureData.deferralReason,
+                 followUpDate: finalSession.signatureData.deferralFollowUpDate,
+                 followUpTime: finalSession.signatureData.deferralFollowUpTime
+              } : {})
             }),
           });
         } catch (e) {
@@ -225,8 +240,28 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
     try {
       if (method === "email") {
         // 1. Generate Forensic PDF in background
-        const { getSummaryPDFBase64 } = await import("@/lib/pdf-export");
-        const pdfBase64 = await getSummaryPDFBase64(session);
+        const { getSummaryPDFBase64, getAgreementPDFBase64 } = await import("@/lib/pdf-export");
+        const dossierBase64 = await getSummaryPDFBase64(session);
+        
+        let agreementBase64 = null;
+        if (outcome !== "no_damage" && outcome !== "monitor_only") {
+          agreementBase64 = await getAgreementPDFBase64(session);
+        }
+
+        const attachments = [];
+        attachments.push({
+           name: `Hustad_Dossier_${session.sessionId.slice(-6).toUpperCase()}.pdf`,
+           contentBytes: dossierBase64,
+           contentType: 'application/pdf'
+        });
+
+        if (agreementBase64) {
+           attachments.push({
+              name: `Hustad_Agreement_${session.sessionId.slice(-6).toUpperCase()}.pdf`,
+              contentBytes: agreementBase64,
+              contentType: 'application/pdf'
+           });
+        }
 
         // 2. Prepare recipients (Sanitize empty strings)
         const currentEmail = (session.signatureData.signerEmail || session.signatureData.summarySendRecipient || session.property.homeownerPrimaryEmail || "").trim();
@@ -250,14 +285,16 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
         }
 
         let emailMessage = "";
-        if (isDeferred) {
-          emailMessage = `<p>Your property inspection at <strong>${session.property.address}</strong> is complete. Attached is the full report, photo documentation, executable unsigned agreement, and a one-page summary for your review.</p>`;
+        if (outcome === "claim_review_candidate") {
+          emailMessage = `<p>Attached is the forensic dossier for your property at <strong>${session.property.address}</strong>. The findings support a formal claim review. Please review the attached photos and documentation. If you agree with the recommendation, click below to authorize Hustad to coordinate the review process with your carrier.</p>`;
         } else if (outcome === "repair_only") {
-          emailMessage = `<p>Your property inspection at <strong>${session.property.address}</strong> is complete. Attached is your repair option summary.</p><p>We have created a repair estimate task, and our team will follow up with you shortly.</p>`;
+          emailMessage = `<p>Attached is the inspection dossier for your property at <strong>${session.property.address}</strong>. We documented an urgent repair item that requires attention. Our service estimating team will review this file and follow up shortly with a targeted repair quote.</p>`;
+        } else if (outcome === "full_restoration_candidate") {
+          emailMessage = `<p>Attached is the property dossier for your property at <strong>${session.property.address}</strong>. Our estimating team is reviewing the system measurements and requirements to build your replacement proposal. We will contact you once the proposal is ready.</p>`;
         } else if (outcome === "no_damage" || outcome === "monitor_only") {
           emailMessage = `<p>Your property inspection at <strong>${session.property.address}</strong> is complete. Attached is your documentation summary and future recheck options.</p><p>Please keep this for your records, and feel free to leave us a review or refer us to a neighbor.</p>`;
         } else {
-          emailMessage = `<p>Your property inspection at <strong>${session.property.address}</strong> is complete. Attached is the full inspection report, photo evidence, executed agreement, and claim coordination checklist.</p>`;
+          emailMessage = `<p>Your property inspection at <strong>${session.property.address}</strong> is complete. Attached is the full inspection report, photo evidence, and agreement.</p>`;
         }
 
         const reviewUrl = session.reviewToken 
@@ -287,8 +324,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
           to: primaryEmail,
           cc: ccList.join(","),
           subject: `Hustad Forensic Dossier: ${session.property.address}`,
-          pdfBase64,
-          fileName: `Hustad_Dossier_${session.sessionId.slice(-6).toUpperCase()}.pdf`,
+          attachments,
           sessionId: session.sessionId,
           html: `
             <div style="font-family: sans-serif; color: #1e293b; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">

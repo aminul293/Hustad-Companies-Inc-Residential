@@ -277,6 +277,7 @@ export interface SignatureData {
   signatureImage: string | null;
   summarySendRecipient: string;
   deferralReason: string;
+  deferralNote?: string;
   deferralFollowUpDate?: string;
   deferralFollowUpTime?: string;
   signedAt: string | null;

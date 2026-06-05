@@ -35,6 +35,7 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
   const [signerEmail, setSignerEmail] = useState(session.signatureData.signerEmail || session.property.homeownerPrimaryEmail);
   const [deferEmail, setDeferEmail] = useState(session.signatureData.summarySendRecipient || session.buyerData.decisionMakerEmail);
   const [deferReason, setDeferReason] = useState(session.signatureData.deferralReason || "");
+  const [deferNote, setDeferNote] = useState(session.signatureData.deferralNote || "");
   const [deferFollowUpDate, setDeferFollowUpDate] = useState(session.signatureData.deferralFollowUpDate || "");
   const [deferFollowUpTime, setDeferFollowUpTime] = useState(session.signatureData.deferralFollowUpTime || "");
   const [signed, setSigned] = useState(false);
@@ -81,6 +82,7 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
           ...updated.signatureData, 
           summarySendRecipient: deferEmail,
           deferralReason: deferReason,
+          deferralNote: deferNote,
           deferralFollowUpDate: deferFollowUpDate,
           deferralFollowUpTime: deferFollowUpTime
         },
@@ -239,6 +241,21 @@ export function B18SignatureDeferral({ session, onUpdate, onNext, onBack }: Prop
                     <option value="other" className={isDark ? "bg-[#060606] text-[#E8EDF8]" : "bg-white text-[#1B2B4B]"}>Other</option>
                   </select>
                   {errors.deferReason && <p className="text-rose-500 text-xs pl-2">{errors.deferReason}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <p className={cn("text-[10px] font-mono uppercase tracking-widest pl-2", isDark ? "text-[#AABDCF]" : "text-zinc-500")}>Objection Note (Optional)</p>
+                  <textarea 
+                    value={deferNote} 
+                    onChange={(e) => setDeferNote(e.target.value)}
+                    placeholder="Add notes about the delay or objection..."
+                    rows={2}
+                    className={cn("w-full border rounded-2xl py-4 px-6 outline-none transition-all resize-none", 
+                      isDark 
+                        ? "border-white/[0.1] bg-white/[0.04] text-[#E8EDF8] placeholder:text-[#7090B0] focus:border-indigo-500/50"
+                        : "border-zinc-200 bg-white text-[#1B2B4B] placeholder:text-zinc-400 focus:border-indigo-400"
+                    )}
+                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

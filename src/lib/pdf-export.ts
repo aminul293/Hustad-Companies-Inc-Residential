@@ -85,61 +85,17 @@ const PATH_CFG: Record<PathType, {
   },
 };
 
+const HOW_IT_WORKS = [
+  { num: "01", headline: "Document damage",              body: "Hustad has completed the exterior inspection and organized all findings, photos, and documentation into a structured report prepared for carrier review." },
+  { num: "02", headline: "Coordinate carrier review",    body: "If you authorize, Hustad will coordinate the carrier inspection process and present the documented findings clearly to your insurer. Hustad does not negotiate your claim." },
+  { num: "03", headline: "Confirm scope and coverage",   body: "Your insurance carrier reviews the documented evidence and makes the coverage determination under your policy. Hustad cannot predict or guarantee any coverage outcome." },
+  { num: "04", headline: "Move forward only if you agree", body: "No repair work begins until your carrier issues a written determination, you confirm the scope, and you authorize production in writing. You stay in control at every step." },
+];
 
 const PLAIN_ENGLISH = [
   { title: "What this agreement does",        body: "This agreement authorizes Hustad to prepare storm documentation, coordinate with your insurance carrier, and serve as your selected contractor for covered exterior restoration work — if the claim is approved and the final scope is confirmed with you." },
   { title: "What this agreement does not do", body: "This does not guarantee claim approval, coverage amount, payment timing, or final carrier scope. Your insurance carrier makes all coverage decisions under your policy." },
   { title: "Your financial responsibility",   body: "Your deductible, any depreciation holds, and non-covered items remain your financial responsibility regardless of the claim outcome. No work begins until you approve the final scope in writing." },
-];
-
-// ─── Homeowner next steps — per path × status ────────────────────────────────
-interface NextStepItem { t: string; body: string; }
-const NEXT_STEPS_CFG: Record<string, NextStepItem[]> = {
-  carrier_review_signed: [
-    { t: "Confirm your claim is active",       body: "Let us know if your claim has been filed, or if you need guidance on filing with your carrier. We can walk you through the process." },
-    { t: "Carrier inspection coordinated",     body: "Hustad will schedule the adjuster visit and be present to ensure documented findings are accurately represented to your carrier." },
-    { t: "Review your coverage decision",      body: "Share any Explanation of Benefits or adjuster correspondence with your Hustad rep within 5 business days of receipt." },
-    { t: "Production scheduled",               body: "Once coverage is confirmed in writing, we will schedule production and provide 48-hour advance notice before work begins." },
-  ],
-  carrier_review_pending: [
-    { t: "Review this report",                 body: "Take time to review the inspection findings and photo documentation included in this package." },
-    { t: "Review the agreement",               body: "Read the Insurance Contingency Agreement included in this package. Contact your rep with any questions before signing." },
-    { t: "Sign to authorize carrier review",   body: "Signing authorizes Hustad to organize your documentation and coordinate a carrier inspection. No repair work begins until coverage is confirmed." },
-    { t: "File or confirm your claim",         body: "We can guide you on filing if needed. Let your Hustad rep know the current status of your claim." },
-  ],
-  urgent_repair_signed: [
-    { t: "Scheduling confirmation",            body: "Expect a call from our scheduling team within 2 business days to confirm your production window." },
-    { t: "Pre-production measurement",         body: "A Hustad field team member will confirm final measurements before materials are ordered." },
-    { t: "48-hour advance notice",             body: "You will receive notification at least 48 hours before your scheduled production start date." },
-    { t: "Completion and final invoice",       body: "Final invoicing will be provided upon project completion and a brief walkthrough with your rep." },
-  ],
-  urgent_repair_pending: [
-    { t: "Repair quote in progress",           body: "Our service team is preparing a focused repair quote based on the documented findings. Expect follow-up within 2–3 business days." },
-    { t: "Review your repair quote",           body: "When the quote is ready, review the scope and pricing with your Hustad rep. Contact us with any questions before authorizing." },
-    { t: "Authorize the repair",               body: "Once you approve the quote, Hustad will confirm scheduling and provide 48-hour notice before work begins." },
-    { t: "Completion and final invoice",       body: "Final invoicing provided upon project completion and a brief walkthrough with your rep." },
-  ],
-  full_restoration: [
-    { t: "Proposal delivered to you",          body: "Your Hustad estimating team will send your complete, itemized proposal to this email address within 2–3 business days." },
-    { t: "Review at your own pace",            body: "Take time to review the scope, material options, and pricing. There is no pressure and no deadline to decide." },
-    { t: "Ask questions anytime",              body: "Your Hustad representative is available to walk through any part of the proposal before you make a decision." },
-    { t: "Authorize to proceed",               body: "Once you are ready to move forward, sign the proposal and we will schedule your production date." },
-  ],
-  no_action: [
-    { t: "Save this report",                   body: "Keep this report as your dated property baseline for comparison after any future storm event." },
-    { t: "Review monitor items",               body: "Note any monitor items documented today. These are baseline conditions — not immediate action items." },
-    { t: "Contact us after any storm",         body: "If a significant storm occurs, contact Hustad for a follow-up inspection and direct comparison to today's baseline." },
-    { t: "Refer us if you know someone",       body: "If a neighbor or friend has storm concerns, Hustad is happy to provide a complimentary inspection." },
-  ],
-};
-
-// ─── Estimating checklist items (full_restoration) ───────────────────────────
-const ESTIMATING_CHECKLIST_ITEMS: { num: string; title: string; body: string }[] = [
-  { num: "01", title: "Complete scope of work",   body: "Full replacement specification including decking inspection, underlayment, shingles, flashings, ridge, ventilation, and all accessories." },
-  { num: "02", title: "Material options",          body: "Two or more shingle product selections with pricing, manufacturer warranty terms, and aesthetic details for owner review." },
-  { num: "03", title: "Itemized pricing",          body: "Full line-item pricing covering all labor, materials, removal, disposal, and applicable installation warranty." },
-  { num: "04", title: "Production timeline",       body: "Projected production window based on current scheduling availability and material lead times." },
-  { num: "05", title: "Warranty documentation",   body: "Manufacturer warranty certificate path and Hustad written workmanship warranty terms included with the proposal." },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -357,23 +313,9 @@ function infoRow(d: jsPDF, lbl: string, val: string, x: number, y: number, w: nu
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// STATUS BADGE CONFIG — drives cover badge and agreement status page
-// ─────────────────────────────────────────────────────────────────────────────
-function statusBadgeConfig(pt: PathType, isSigned: boolean): { label: string; color: C3; bg: C3; bdr: C3 } {
-  if (pt === "carrier_review") {
-    return isSigned
-      ? { label: "Agreement Executed",   color: T.green,  bg: T.greenBg,  bdr: T.greenBdr  }
-      : { label: "Agreement for Review", color: T.amber,  bg: T.amberBg,  bdr: T.amberBdr  };
-  }
-  if (pt === "urgent_repair")   return { label: "Repair Quote Pending",  color: T.red,   bg: T.redBg,   bdr: T.redBdr   };
-  if (pt === "full_restoration") return { label: "Proposal in Progress", color: T.blue,  bg: T.blueBg,  bdr: T.blueBdr  };
-  return                                { label: "Inspection Complete",  color: T.green, bg: T.greenBg, bdr: T.greenBdr };
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // PAGE 1 — COVER
 // ─────────────────────────────────────────────────────────────────────────────
-function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, isSigned = false) {
+function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3) {
   const accBg  = getAccentBg(pt);
   const accBdr = getAccentBdr(pt);
   const rid    = s.sessionId.slice(-8).toUpperCase();
@@ -399,17 +341,6 @@ function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, isSigned 
   st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(7);
   d.text(`Report ${rid}`, PW - M, 22, { align: "right" });
   d.text(fmtDate(s.createdAt), PW - M, 30, { align: "right" });
-
-  // Status badge — light-on-dark pill text in header
-  const sbLabel = statusBadgeConfig(pt, isSigned).label;
-  const sbHdrColor: C3 =
-    (pt === "carrier_review" && isSigned)  ? [134, 239, 172] as C3 :
-    (pt === "carrier_review" && !isSigned) ? [252, 211,  77] as C3 :
-    pt === "urgent_repair"                 ? [252, 165, 165] as C3 :
-    pt === "full_restoration"              ? [147, 197, 253] as C3 :
-                                             [134, 239, 172] as C3;
-  st(d, sbHdrColor); d.setFont("helvetica", "bold"); d.setFontSize(6);
-  d.text(`● ${sbLabel}`, PW - M, 40, { align: "right" });
 
   // "Homeowner Inspection Report" label
   st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(7);
@@ -935,565 +866,74 @@ async function renderEvidenceGallery(d: jsPDF, photos: PdfPhoto[], pt: PathType,
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DAMAGE SUMMARY — Path 1 (carrier_review) page 2
-// Plain-English summary, finding stats, categories, weather events
+// HOW THE PROCESS WORKS — horizontal step strips (replaces 2×2 grid)
 // ─────────────────────────────────────────────────────────────────────────────
-function renderDamageSummary(d: jsPDF, s: SessionState, pt: PathType, acc: C3) {
-  const accBg  = getAccentBg(pt);
-  const accBdr = getAccentBdr(pt);
-  const rid    = s.sessionId.slice(-8).toUpperCase();
-  pageHeader(d, rid, acc, "Damage summary");
+function renderHowItWorks(d: jsPDF, acc: C3, rid: string) {
+  pageHeader(d, rid, acc, "Process overview");
   let y = 16;
 
+  // Section heading
   st(d, T.text); d.setFont("times", "bold"); d.setFontSize(18);
-  d.text("Inspection Findings — Damage Summary", M, y + 11);
-  sf(d, acc); d.rect(M, y + 14, 28, 1.5, "F");
-  y += 22;
-
-  // Plain-English summary block
-  const summaryText = s.findings.summaryBody ||
-    `Hustad completed an exterior inspection and documented storm-impact indicators at ${s.property.address || "this property"}. The findings are organized below by category and severity. Coverage decisions remain with your insurance carrier.`;
-  const sumLines = d.splitTextToSize(summaryText, CW - 16) as string[];
-  const sumH = (s.findings.summaryHeadline ? 22 : 12) + Math.min(sumLines.length, 5) * 5.5 + 8;
-
-  baseCard(d, M, y, CW, sumH, accBg, accBdr);
-  sf(d, acc); d.rect(M, y, 4, sumH, "F");
-  if (s.findings.summaryHeadline) {
-    st(d, T.text); d.setFont("times", "bold"); d.setFontSize(12);
-    d.text(s.findings.summaryHeadline, M + 10, y + 11);
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8.5);
-    d.text(sumLines.slice(0, 5), M + 10, y + 20);
-  } else {
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8.5);
-    d.text(sumLines.slice(0, 5), M + 10, y + 12);
-  }
-  y += sumH + 8;
-
-  // Finding stat cards
-  const sh = 36;
-  type StatDef = { value: number; lbl: string; acc: C3; bg: C3; bdr: C3 };
-  const stats: StatDef[] = [];
-  if (s.findings.urgentItemsCount  > 0) stats.push({ value: s.findings.urgentItemsCount,       lbl: "Urgent items",     acc: T.red,     bg: T.redBg,   bdr: T.redBdr   });
-  if (s.findings.stormRelatedItemsCount > 0) stats.push({ value: s.findings.stormRelatedItemsCount, lbl: "Storm indicators", acc: T.blue,    bg: T.blueBg,  bdr: T.blueBdr  });
-  if (s.findings.monitorItemsCount > 0) stats.push({ value: s.findings.monitorItemsCount,       lbl: "Monitor items",    acc: T.amber,   bg: T.amberBg, bdr: T.amberBdr });
-  if (stats.length > 0) {
-    const vis = stats.slice(0, 3);
-    const sw  = (CW - (vis.length - 1) * 5) / vis.length;
-    vis.forEach((st2, i) => statCard(d, st2.value, st2.lbl, M + i * (sw + 5), y, sw, sh, st2.acc, st2.bg, st2.bdr));
-    y += sh + 10;
-  }
-
-  // Finding category chips
-  const cats = s.findings.findingCategories ?? [];
-  if (cats.length > 0) {
-    microLabel(d, "Finding Categories", M, y, T.textFaint);
-    y += 8;
-    let cx = M;
-    for (const cat of cats) {
-      const tw = (d.getStringUnitWidth(cat) * 7.5) / (d.internal.scaleFactor ?? 2.83);
-      const cw = tw + 12;
-      if (cx + cw > M + CW) { cx = M; y += 11; }
-      baseCard(d, cx, y - 5.5, cw, 9, T.surface2, T.border);
-      st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
-      d.text(cat, cx + 6, y);
-      cx += cw + 4;
-    }
-    y += 14;
-  }
-
-  // Weather events (carrier_review)
-  if (pt === "carrier_review" && (s.findings.stormSummary || (s.findings.weatherEvents ?? []).length > 0)) {
-    const stLines = s.findings.stormSummary ? d.splitTextToSize(s.findings.stormSummary, CW - 16) as string[] : [];
-    const events  = s.findings.weatherEvents ?? [];
-    const tblH    = events.length > 0 ? 14 + events.length * 7.5 : 0;
-    const wH      = 14 + Math.min(stLines.length, 3) * 5 + tblH + 8;
-
-    if (y + wH < PH - 14) {
-      baseCard(d, M, y, CW, wH, T.surface, T.border);
-      sf(d, acc); d.rect(M, y, CW, 2, "F");
-      microLabel(d, "Weather Event Documentation", M + 6, y + 9, acc);
-      sf(d, T.border); d.rect(M + 6, y + 11.5, CW - 12, 0.2, "F");
-      if (s.findings.stormSummary) {
-        st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8.5);
-        d.text(stLines.slice(0, 3), M + 6, y + 17);
-      }
-      if (events.length > 0) {
-        autoTable(d, {
-          startY: y + 17 + Math.min(stLines.length, 3) * 5 + 4,
-          margin: { left: M + 5 }, tableWidth: CW - 10,
-          head: [["Date / time", "Reference", "Property relevance"]],
-          body: events.map(e => [e.time, e.reference, e.relevance]),
-          theme: "plain",
-          headStyles:         { fillColor: [250, 249, 246], textColor: [80, 76, 70], fontSize: 6.5, fontStyle: "bold" },
-          styles:             { fillColor: [255, 255, 255], textColor: [26, 25, 23], fontSize: 7.5, cellPadding: 2.5, lineColor: [228, 225, 218], lineWidth: 0.15 },
-          alternateRowStyles: { fillColor: [250, 249, 246] },
-        });
-      }
-    }
-  }
-
-  pageFooter(d);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// REPAIR FINDING SUMMARY — Path 2 (urgent_repair) page 2
-// ─────────────────────────────────────────────────────────────────────────────
-function renderRepairFindingSummary(d: jsPDF, s: SessionState, pt: PathType, acc: C3) {
-  const accBg  = getAccentBg(pt);
-  const accBdr = getAccentBdr(pt);
-  const rid    = s.sessionId.slice(-8).toUpperCase();
-  pageHeader(d, rid, acc, "Repair findings");
-  let y = 16;
-
-  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(18);
-  d.text("Repair Finding Summary", M, y + 11);
+  d.text("How the Process Works", M, y + 11);
   sf(d, acc); d.rect(M, y + 14, 22, 1.5, "F");
   y += 22;
 
-  // Summary
-  const summaryText = s.findings.summaryBody ||
-    `Hustad documented a repair condition at ${s.property.address || "this property"} that should be handled as a focused service item. This finding does not support a full replacement or carrier review recommendation at this time.`;
-  const sumLines = d.splitTextToSize(summaryText, CW - 16) as string[];
-  const sumH = 12 + Math.min(sumLines.length, 5) * 5.5 + 8;
-  baseCard(d, M, y, CW, sumH, accBg, accBdr);
-  sf(d, acc); d.rect(M, y, 4, sumH, "F");
-  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8.5);
-  d.text(sumLines.slice(0, 5), M + 10, y + 11);
-  y += sumH + 8;
-
-  // Stat cards
-  const sh = 36;
-  type StatDef = { value: number; lbl: string; acc: C3; bg: C3; bdr: C3 };
-  const stats: StatDef[] = [];
-  if (s.findings.urgentItemsCount  > 0) stats.push({ value: s.findings.urgentItemsCount,  lbl: "Repair items",  acc: T.red,     bg: T.redBg,   bdr: T.redBdr   });
-  if (s.findings.monitorItemsCount > 0) stats.push({ value: s.findings.monitorItemsCount, lbl: "Monitor items", acc: T.amber,   bg: T.amberBg, bdr: T.amberBdr });
-  const photoCount = (s.photoAssets?.filter(p => p.selectedForSummary).length ?? 0) + (s.photos?.filter(p => p.selectedForSummary).length ?? 0);
-  if (photoCount > 0) stats.push({ value: photoCount, lbl: "Photos taken", acc: T.textMid, bg: T.surface, bdr: T.border });
-  if (stats.length > 0) {
-    const vis = stats.slice(0, 3);
-    const sw  = (CW - (vis.length - 1) * 5) / vis.length;
-    vis.forEach((st2, i) => statCard(d, st2.value, st2.lbl, M + i * (sw + 5), y, sw, sh, st2.acc, st2.bg, st2.bdr));
-    y += sh + 10;
-  }
-
-  // Urgency notice
-  if (s.findings.urgentItemsCount > 0 && y + 22 < PH - 14) {
-    baseCard(d, M, y, CW, 22, T.redBg, T.redBdr);
-    sf(d, T.red); d.rect(M, y, 4, 22, "F");
-    st(d, T.red); d.setFont("helvetica", "bold"); d.setFontSize(8);
-    d.text("Urgency Notice", M + 10, y + 9);
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
-    d.text("Hustad documented an urgent condition that should be addressed promptly to prevent further property damage. See photo documentation for location and severity detail.", M + 10, y + 16, { maxWidth: CW - 16 });
-    y += 30;
-  }
-
-  // What this is not saying
-  if (y + 26 < PH - 14) {
-    const notText  = "This report is not recommending a full replacement or insurance claim path based on today's documented repair finding. If additional damage is discovered later, Hustad can reassess the appropriate path.";
-    const notLines = d.splitTextToSize(notText, CW - 16) as string[];
-    const notH     = 14 + notLines.length * 4.5 + 8;
-    baseCard(d, M, y, CW, notH, T.surface, T.border);
-    sf(d, acc); d.rect(M, y, 4, notH, "F");
-    microLabel(d, "What This Report Is Not Saying", M + 10, y + 9, T.textFaint);
-    sf(d, T.border); d.rect(M + 10, y + 11.5, CW - 16, 0.2, "F");
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
-    d.text(notLines, M + 10, y + 17);
-  }
-
-  pageFooter(d);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// PROJECT SUMMARY — Path 3 (full_restoration) page 2
-// ─────────────────────────────────────────────────────────────────────────────
-function renderProjectSummary(d: jsPDF, s: SessionState, pt: PathType, acc: C3) {
-  const rid = s.sessionId.slice(-8).toUpperCase();
-  pageHeader(d, rid, acc, "Project summary");
-  let y = 16;
-
-  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(18);
-  d.text("Project Request Summary", M, y + 11);
-  sf(d, acc); d.rect(M, y + 14, 24, 1.5, "F");
-  y += 22;
-
-  // Proposal-in-progress banner
-  baseCard(d, M, y, CW, 28, T.blueBg, T.blueBdr);
-  sf(d, T.blue); d.rect(M, y, 4, 28, "F");
-  st(d, T.blue); d.setFont("helvetica", "bold"); d.setFontSize(9);
-  d.text("Your Proposal Is Being Prepared", M + 10, y + 10);
-  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
-  const propBannerLines = d.splitTextToSize(
-    "Hustad estimating is reviewing the documented findings and preparing a complete, itemized replacement proposal for owner review. No decisions or signatures are required until you have reviewed the proposal in full.",
-    CW - 16
-  ) as string[];
-  d.text(propBannerLines.slice(0, 2), M + 10, y + 19);
-  y += 36;
-
-  // Project detail table
-  const rows: [string, string][] = [
-    ["Property",        s.property.address || "—"],
-    ["Inspection date", fmtDate(s.createdAt)],
-    ["Inspector",       s.repName || "—"],
-    ["Project type",    "Full Roof Replacement"],
-  ];
-  if (s.pathData.manufacturerSelected)  rows.push(["Manufacturer",  s.pathData.manufacturerSelected]);
-  if (s.pathData.warrantyOptionSelected) rows.push(["Warranty path", s.pathData.warrantyOptionSelected]);
-  if (s.findings.roofingArea)           rows.push(["Roof area",     `${s.findings.roofingArea} SF`]);
-
-  const propH = 14 + rows.length * 10 + 4;
-  baseCard(d, M, y, CW, propH, T.surface, T.border);
-  sf(d, acc); d.rect(M, y, CW, 2, "F");
-  microLabel(d, "Project Request Details", M + 6, y + 9, T.textFaint);
-  sf(d, T.border); d.rect(M + 6, y + 11.5, CW - 12, 0.2, "F");
-  let rY = y + 18;
-  rows.forEach(([lbl, val], idx) => {
-    if (idx % 2 === 1) { sf(d, T.surface2); d.rect(M + 1, rY - 5, CW - 2, 9.5, "F"); }
-    st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(7);
-    d.text(lbl, M + 6, rY);
-    st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(8);
-    d.text(val, M + CW - 5, rY, { align: "right" });
-    sf(d, T.border); d.rect(M + 6, rY + 2.5, CW - 12, 0.15, "F");
-    rY += 10;
-  });
-  y += propH + 8;
-
-  // Inspection notes
-  if (s.findings.summaryBody && y + 30 < PH - 14) {
-    const sbLines = d.splitTextToSize(s.findings.summaryBody, CW - 16) as string[];
-    const sbH     = 14 + Math.min(sbLines.length, 4) * 5.5 + 8;
-    baseCard(d, M, y, CW, sbH, T.surface2, T.border);
-    sf(d, acc); d.rect(M, y, 4, sbH, "F");
-    microLabel(d, "Inspection Notes", M + 10, y + 9, T.textFaint);
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8.5);
-    d.text(sbLines.slice(0, 4), M + 10, y + 17);
-  }
-
-  pageFooter(d);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// TOP EVIDENCE PHOTOS — top 3–6 selected photos, compact single page
-// ─────────────────────────────────────────────────────────────────────────────
-async function renderTopPhotos(d: jsPDF, photos: PdfPhoto[], pt: PathType, acc: C3, rid: string) {
-  if (photos.length === 0) return;
-  const topPhotos = photos.slice(0, 6);
-
-  d.addPage();
-  pageHeader(d, rid, acc, "Evidence photos");
-  let y = 16;
-
-  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(16);
-  d.text(PATH_CFG[pt].proofLabel, M, y + 9);
-  sf(d, acc); d.rect(M, y + 12, 22, 1.5, "F");
-  y += 20;
-
-  const colGap = 6;
-  const rowGap = 5;
-  const imgW   = (CW - colGap) / 2;
-  const imgH   = 46;
-  const metaH  = 17;
-  const cardH  = imgH + metaH;
-
-  for (let i = 0; i < topPhotos.length; i++) {
-    const photo = topPhotos[i];
-    const col   = i % 2;
-    const row   = Math.floor(i / 2);
-    const cx    = M + col * (imgW + colGap);
-    const cy    = y + row * (cardH + rowGap);
-
-    const pc    = classifyPdfPhoto(photo.label ?? "", photo.category ?? "", photo.description ?? "");
-    const badge = photoBadge(pc, pt);
-
-    baseCard(d, cx, cy, imgW, cardH, T.surface, badge.bdr);
-
-    try {
-      let compressed = await compressImage(photo.dataUrl, 800);
-      if (compressed.startsWith("http")) {
-        const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-          const tempImg = new Image(); tempImg.crossOrigin = "anonymous";
-          tempImg.onload = () => resolve(tempImg); tempImg.onerror = reject;
-          tempImg.src = compressed;
-        });
-        d.addImage(img, "JPEG", cx, cy, imgW, imgH, undefined, "FAST");
-      } else {
-        d.addImage(compressed, "JPEG", cx, cy, imgW, imgH, undefined, "FAST");
-      }
-      sf(d, T.surface); d.rect(cx, cy + imgH - 10, imgW, 10, "F");
-    } catch (_) {
-      sf(d, T.surface2); d.rect(cx, cy, imgW, imgH, "F");
-      st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
-      d.text("Photo unavailable", cx + imgW / 2, cy + imgH / 2, { align: "center" });
-    }
-
-    badgePill(d, badge.label, cx + 4, cy + imgH - 9, badge.color, badge.bg, badge.bdr);
-
-    const capTxt = photo.label || badge.label;
-    st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
-    const capLines = d.splitTextToSize(capTxt, imgW - 8) as string[];
-    d.text(capLines.slice(0, 1), cx + 4, cy + imgH + 7);
-
-    if (photo.description) {
-      st(d, T.textFaint); d.setFont("helvetica", "italic"); d.setFontSize(6.5);
-      const descLines = d.splitTextToSize(photo.description, imgW - 8) as string[];
-      d.text(descLines.slice(0, 1), cx + 4, cy + imgH + 13);
-    }
-  }
-
-  pageFooter(d);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ESTIMATING CHECKLIST — Path 3 (full_restoration) page 4
-// ─────────────────────────────────────────────────────────────────────────────
-function renderEstimatingChecklist(d: jsPDF, s: SessionState, pt: PathType, acc: C3) {
-  const rid = s.sessionId.slice(-8).toUpperCase();
-  pageHeader(d, rid, acc, "Estimating checklist");
-  let y = 16;
-
-  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(18);
-  d.text("What Your Proposal Will Include", M, y + 11);
-  sf(d, acc); d.rect(M, y + 14, 26, 1.5, "F");
-  y += 22;
-
-  const items = [...ESTIMATING_CHECKLIST_ITEMS];
-  if (s.pathData.manufacturerSelected || s.pathData.warrantyOptionSelected) {
-    items.push({
-      num:   "06",
-      title: "Selected preferences",
-      body:  `Manufacturer: ${s.pathData.manufacturerSelected || "TBD"}. Warranty: ${s.pathData.warrantyOptionSelected || "TBD"}. Final selection confirmed in the proposal.`,
-    });
-  }
-
-  const stepH   = 36;
-  const stepGap = 5;
-  const numR    = 8;
-  const numCX   = M + numR + 2;
-  const textX   = M + numR * 2 + 10;
-  const textW   = CW - numR * 2 - 14;
-
-  items.forEach((item, i) => {
-    const sy = y + i * (stepH + stepGap);
-    baseCard(d, M, sy, CW, stepH, i % 2 === 0 ? T.surface : T.surface2, T.border);
-    sf(d, acc); d.rect(M, sy, CW, 2, "F");
-    sf(d, acc); d.circle(numCX, sy + stepH / 2, numR, "F");
-    st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(6.5);
-    d.text(item.num, numCX, sy + stepH / 2 + 2.5, { align: "center" });
-    st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(9.5);
-    d.text(item.title, textX, sy + 13);
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
-    const bLines = d.splitTextToSize(item.body, textW) as string[];
-    d.text(bLines.slice(0, 2), textX, sy + 21);
-  });
-
-  pageFooter(d);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// YOUR NEXT STEPS — homeowner-facing, path × status specific
-// Replaces the contractor-oriented "How It Works" page
-// ─────────────────────────────────────────────────────────────────────────────
-function renderNextSteps(d: jsPDF, s: SessionState, pt: PathType, acc: C3, isSigned: boolean) {
-  const rid = s.sessionId.slice(-8).toUpperCase();
-  pageHeader(d, rid, acc, "Next steps");
-  let y = 16;
-
-  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(18);
-  d.text("Your Next Steps", M, y + 11);
-  sf(d, acc); d.rect(M, y + 14, 20, 1.5, "F");
-  y += 24;
-
-  // Contextual banner
-  let bannerText = "";
-  if (pt === "carrier_review") {
-    bannerText = isSigned
-      ? "Thank you for authorizing Hustad to coordinate your insurance carrier review. Here is what happens from here."
-      : "Review this report and the attached agreement at your convenience. There is no obligation to sign today.";
-  } else if (pt === "urgent_repair") {
-    bannerText = isSigned
-      ? "Thank you for authorizing the documented repairs. Our scheduling team will follow up within 2 business days."
-      : "Review the repair findings and quote when prepared. No work begins until you authorize in writing.";
-  } else if (pt === "full_restoration") {
-    bannerText = "No action is required from you right now. Your estimating proposal is being prepared and will be delivered within 2–3 business days.";
-  } else {
-    bannerText = "Your property has been documented. Here is how to use this inspection report going forward.";
-  }
+  // Info banner
+  const infoText = "Reading this page doesn't commit you to anything. Review the four steps, then decide.";
   baseCard(d, M, y, CW, 18, T.blueBg, T.blueBdr);
   sf(d, T.blue); d.rect(M, y, 4, 18, "F");
   st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8.5);
-  d.text(bannerText, M + 10, y + 11, { maxWidth: CW - 16 });
+  d.text(infoText, M + 10, y + 11);
   y += 26;
 
-  // Steps
-  const key =
-    pt === "carrier_review"  ? (isSigned ? "carrier_review_signed"  : "carrier_review_pending") :
-    pt === "urgent_repair"   ? (isSigned ? "urgent_repair_signed"   : "urgent_repair_pending")  :
-    pt === "full_restoration" ? "full_restoration" : "no_action";
-  const steps = NEXT_STEPS_CFG[key] ?? NEXT_STEPS_CFG.no_action;
+  // Step strips
+  const stepH    = 42;
+  const stepGap  = 6;
+  const numR     = 10;  // number circle radius
+  const numCX    = M + numR + 2;
+  const textX    = M + numR * 2 + 10;
+  const textW    = CW - numR * 2 - 14;
 
-  const stepH   = 42;
-  const stepGap = 6;
-  const numR    = 9;
-  const numCX   = M + numR + 2;
-  const textX   = M + numR * 2 + 10;
-  const textW   = CW - numR * 2 - 14;
-
-  steps.forEach((step, i) => {
+  HOW_IT_WORKS.forEach((step, i) => {
     const sy = y + i * (stepH + stepGap);
+
     baseCard(d, M, sy, CW, stepH, i % 2 === 0 ? T.surface : T.surface2, T.border);
     sf(d, acc); d.rect(M, sy, CW, 2, "F");
+
+    // Number circle
     sf(d, acc); d.circle(numCX, sy + stepH / 2, numR, "F");
+    // Large ghost number in background
+    st(d, T.surface3); d.setFont("times", "bold"); d.setFontSize(36);
+    d.text(step.num, numCX + numR + 2, sy + stepH / 2 + 6, { align: "left" });
+    // White number in circle
     st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(10);
-    d.text(String(i + 1), numCX, sy + stepH / 2 + 3.5, { align: "center" });
+    d.text(step.num.replace(/^0/, ""), numCX, sy + stepH / 2 + 3.5, { align: "center" });
+
+    // Headline
     st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(10.5);
-    d.text(step.t, textX, sy + 14);
+    d.text(step.headline, textX, sy + 14);
+
+    // Body
     st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
     const bLines = d.splitTextToSize(step.body, textW) as string[];
     d.text(bLines.slice(0, 3), textX, sy + 23);
   });
 
-  y += steps.length * (stepH + stepGap) + 6;
+  y += HOW_IT_WORKS.length * (stepH + stepGap) + 6;
 
-  // Rep contact strip
-  if (y + 26 < PH - 14 && s.repName) {
-    baseCard(d, M, y, CW, 26, T.surface, T.border);
-    sf(d, acc); d.rect(M, y, CW, 2, "F");
-    microLabel(d, "Questions? Contact Your Hustad Representative", M + 6, y + 10, T.textFaint);
-    st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(10);
-    d.text(s.repName, M + 6, y + 20);
-    if (s.repEmail) {
-      st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8.5);
-      const nameW = (d.getStringUnitWidth(s.repName) * 10) / (d.internal.scaleFactor ?? 2.83);
-      d.text(s.repEmail, M + 6 + nameW + 8, y + 20);
-    }
-  }
+  // Important notice
+  const noticeLines = d.splitTextToSize(
+    "This agreement does not guarantee claim approval, coverage, deductible waiver, a free roof, or construction start. Your insurance provider makes all coverage decisions under your policy.",
+    CW - 16
+  ) as string[];
+  const noticeH = 12 + noticeLines.length * 5 + 8;
 
-  pageFooter(d);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// AGREEMENT STATUS — Path 1 (carrier_review) — executed or pending
-// ─────────────────────────────────────────────────────────────────────────────
-function renderAgreementStatus(d: jsPDF, s: SessionState, pt: PathType, acc: C3, isSigned: boolean) {
-  const rid = s.sessionId.slice(-8).toUpperCase();
-  pageHeader(d, rid, acc, "Agreement status");
-  let y = 16;
-
-  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(18);
-  d.text("Insurance Contingency Agreement", M, y + 11);
-  sf(d, acc); d.rect(M, y + 14, 28, 1.5, "F");
-  y += 24;
-
-  if (isSigned) {
-    // Executed banner
-    baseCard(d, M, y, CW, 22, T.greenBg, T.greenBdr);
-    sf(d, T.green); d.rect(M, y, 4, 22, "F");
-    st(d, T.green); d.setFont("helvetica", "bold"); d.setFontSize(9);
-    d.text("Agreement Executed — Authorized copy attached to this report package.", M + 10, y + 9);
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
-    d.text(`Signed by: ${s.signatureData.signerName || "Authorized signatory"}  ·  ${fmtDT(s.signatureData.signedAt)}`, M + 10, y + 17);
-    y += 30;
-
-    // Signature preview
-    if (s.signatureData.signatureImage?.startsWith("data:")) {
-      microLabel(d, "Authorized Owner Signature", M, y, T.textFaint);
-      y += 8;
-      baseCard(d, M, y, 90, 32, T.surface, T.border);
-      try { d.addImage(s.signatureData.signatureImage, "PNG", M + 2, y + 2, 86, 28); } catch (_) {}
-      y += 40;
-    }
-
-    y += 4;
-    if (y + 22 < PH - 14) {
-      baseCard(d, M, y, CW, 22, T.surface, T.border);
-      sf(d, acc); d.rect(M, y, CW, 2, "F");
-      microLabel(d, "Key Terms", M + 6, y + 10, acc);
-      st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
-      d.text("No production work begins until carrier coverage is confirmed in writing and you authorize production. The executed agreement is attached to this package for your records.", M + 6, y + 17, { maxWidth: CW - 12 });
-    }
-
-  } else {
-    // Pending banner
-    baseCard(d, M, y, CW, 22, T.amberBg, T.amberBdr);
-    sf(d, T.amber); d.rect(M, y, 4, 22, "F");
-    st(d, T.amber); d.setFont("helvetica", "bold"); d.setFontSize(9);
-    d.text("Signature Pending — Executable agreement included in this package.", M + 10, y + 9);
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
-    d.text("The agreement is not executed until signed. No work begins without your written authorization.", M + 10, y + 17);
-    y += 30;
-
-    // Before you sign notice
-    const noticeLines = d.splitTextToSize(
-      "This agreement authorizes Hustad to organize your documentation and coordinate a carrier inspection — nothing more. No repair or restoration work begins until your insurance carrier issues a written coverage determination and you authorize production in writing. Your deductible and any non-covered items remain your financial responsibility.",
-      CW - 16
-    ) as string[];
-    const noticeH = 14 + Math.min(noticeLines.length, 4) * 5 + 8;
-    baseCard(d, M, y, CW, noticeH, T.amberBg, T.amberBdr);
-    sf(d, T.amber); d.rect(M, y, 4, noticeH, "F");
-    st(d, T.amber); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
-    d.text("Before You Sign", M + 10, y + 9);
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
-    d.text(noticeLines.slice(0, 4), M + 10, y + 17);
-    y += noticeH + 16;
-
-    // Signature lines
-    sd(d, T.borderMid); d.setLineWidth(0.4);
-    d.line(M, y, M + 86, y);
-    d.line(PW - M - 86, y, PW - M, y);
-    st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(7);
-    d.text("Owner signature / date", M, y + 5.5);
-    d.text("Hustad Companies authorized signatory / date", PW - M - 86, y + 5.5);
-    y += 22;
-  }
-
-  // Universal coverage notice
-  if (y + 22 < PH - 14) {
-    baseCard(d, M, y, CW, 22, T.amberBg, T.amberBdr);
-    sf(d, T.amber); d.rect(M, y, 4, 22, "F");
-    st(d, T.amber); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
-    d.text("Coverage notice:", M + 10, y + 8);
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
-    const gl = d.splitTextToSize("Coverage decisions, payment timing, depreciation release, and claim outcomes remain subject to your insurance carrier and policy terms. Hustad Companies, Inc. is not a licensed public adjuster.", CW - 16) as string[];
-    d.text(gl.slice(0, 2), M + 10, y + 15);
-  }
-
-  pageFooter(d);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// DISCLAIMER — universal claim + warranty disclaimer, always last page
-// ─────────────────────────────────────────────────────────────────────────────
-function renderDisclaimer(d: jsPDF, acc: C3, rid: string) {
-  pageHeader(d, rid, acc, "Disclaimers");
-  let y = 18;
-
-  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(16);
-  d.text("Disclaimers & Limitations", M, y + 8);
-  sf(d, acc); d.rect(M, y + 11, 24, 1.5, "F");
-  y += 24;
-
-  baseCard(d, M, y, CW, 30, T.surface, T.border);
-  sf(d, acc); d.rect(M, y, CW, 2, "F");
-  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(8.5);
-  d.text("Insurance Claim Limitations", M + 8, y + 10);
+  baseCard(d, M, y, CW, noticeH, T.amberBg, T.amberBdr);
+  sf(d, T.amber); d.rect(M, y, 4, noticeH, "F");
+  st(d, T.amber); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
+  d.text("Important to know:", M + 10, y + 9);
   st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
-  const cl = d.splitTextToSize("Coverage decisions, payment timing, depreciation release, and claim outcomes remain subject to the insurance carrier and policy terms. This report documents observed conditions — it does not guarantee any specific coverage outcome.", CW - 16) as string[];
-  d.text(cl, M + 8, y + 18);
-  y += 38;
-
-  baseCard(d, M, y, CW, 30, T.surface, T.border);
-  sf(d, acc); d.rect(M, y, CW, 2, "F");
-  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(8.5);
-  d.text("Warranty Limitations", M + 8, y + 10);
-  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
-  const wl = d.splitTextToSize("Final warranty coverage is controlled by the issued manufacturer warranty, Hustad written workmanship terms, signed proposal, and any written change orders.", CW - 16) as string[];
-  d.text(wl, M + 8, y + 18);
-  y += 38;
-
-  if (y + 22 < PH - 14) {
-    baseCard(d, M, y, CW, 22, T.surface2, T.border);
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
-    d.text("This report is confidential and prepared solely for the property owner identified above. It reflects conditions observed at the time of inspection and does not constitute a guarantee of insurance coverage or claim outcome. Hustad Companies, Inc. · Madison, Wisconsin · Licensed Exterior Restoration Contractor.", M + 8, y + 7, { maxWidth: CW - 16 });
-  }
+  d.text(noticeLines, M + 10, y + 16);
 
   pageFooter(d);
 }
@@ -1706,57 +1146,17 @@ async function collectPhotos(s: SessionState): Promise<PdfPhoto[]> {
 // MAIN GENERATOR
 // ─────────────────────────────────────────────────────────────────────────────
 async function generateReport(session: SessionState): Promise<jsPDF> {
-  const doc      = new jsPDF({ compress: true });
-  const photos   = await collectPhotos(session);
-  const pt       = derivePathType(session);
-  const acc      = getAccent(pt);
-  const rid      = session.sessionId.slice(-8).toUpperCase();
-  const isSigned = !!session.signatureData.signedAt;
+  const doc    = new jsPDF({ compress: true });
+  const photos = await collectPhotos(session);
+  const pt     = derivePathType(session);
+  const acc    = getAccent(pt);
+  const rid    = session.sessionId.slice(-8).toUpperCase();
 
-  if (pt === "carrier_review") {
-    // Path 1 — Hail / Carrier Review
-    // Cover → Damage Summary → Top Photos → Recommendation → Next Steps → Agreement Status → Full Gallery → Disclaimer
-    renderCover(doc, session, pt, acc, isSigned);
-    doc.addPage(); renderDamageSummary(doc, session, pt, acc);
-    await renderTopPhotos(doc, photos, pt, acc, rid);          // adds page internally
-    doc.addPage(); renderRecommendation(doc, session, pt, acc);
-    doc.addPage(); renderNextSteps(doc, session, pt, acc, isSigned);
-    doc.addPage(); renderAgreementStatus(doc, session, pt, acc, isSigned);
-    await renderEvidenceGallery(doc, photos, pt, acc, rid);    // adds pages internally
-    doc.addPage(); renderDisclaimer(doc, acc, rid);
-
-  } else if (pt === "urgent_repair") {
-    // Path 2 — Repair Only
-    // Cover → Repair Summary → Top Photos → Recommendation → Next Steps → Full Gallery → Disclaimer
-    renderCover(doc, session, pt, acc, isSigned);
-    doc.addPage(); renderRepairFindingSummary(doc, session, pt, acc);
-    await renderTopPhotos(doc, photos, pt, acc, rid);
-    doc.addPage(); renderRecommendation(doc, session, pt, acc);
-    doc.addPage(); renderNextSteps(doc, session, pt, acc, isSigned);
-    await renderEvidenceGallery(doc, photos, pt, acc, rid);
-    doc.addPage(); renderDisclaimer(doc, acc, rid);
-
-  } else if (pt === "full_restoration") {
-    // Path 3 — Full Restoration / Direct Buy
-    // Cover → Project Summary → Top Photos → Estimating Checklist → Next Steps → Full Gallery → Disclaimer
-    renderCover(doc, session, pt, acc, isSigned);
-    doc.addPage(); renderProjectSummary(doc, session, pt, acc);
-    await renderTopPhotos(doc, photos, pt, acc, rid);
-    doc.addPage(); renderEstimatingChecklist(doc, session, pt, acc);
-    doc.addPage(); renderNextSteps(doc, session, pt, acc, isSigned);
-    await renderEvidenceGallery(doc, photos, pt, acc, rid);
-    doc.addPage(); renderDisclaimer(doc, acc, rid);
-
-  } else {
-    // No action / monitor only
-    // Cover → Findings Overview → Recommendation → Next Steps → Full Gallery → Disclaimer
-    renderCover(doc, session, pt, acc, isSigned);
-    doc.addPage(); renderFindingsOverview(doc, session, pt, acc);
-    doc.addPage(); renderRecommendation(doc, session, pt, acc);
-    doc.addPage(); renderNextSteps(doc, session, pt, acc, isSigned);
-    await renderEvidenceGallery(doc, photos, pt, acc, rid);
-    doc.addPage(); renderDisclaimer(doc, acc, rid);
-  }
+  renderCover(doc, session, pt, acc);
+  doc.addPage(); renderFindingsOverview(doc, session, pt, acc);
+  doc.addPage(); renderRecommendation(doc, session, pt, acc);
+  await renderEvidenceGallery(doc, photos, pt, acc, rid);
+  doc.addPage(); renderHowItWorks(doc, acc, rid);
 
   // Page X of Y — second pass
   const total = doc.getNumberOfPages();

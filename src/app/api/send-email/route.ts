@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
       html,
       pdfBase64,
       fileName,
+      attachments, // Array of { name: string, contentBytes: string, contentType?: string }
       sessionId
     } = payload;
 
@@ -107,19 +108,28 @@ export async function POST(request: NextRequest) {
         ccRecipients: cc
           ? cc.split(',').map((email: string) => ({ emailAddress: { address: email.trim() } }))
           : [],
-        ...(pdfBase64 ? {
-          attachments: [
-            {
-              '@odata.type': '#microsoft.graph.fileAttachment',
-              name: fileName || 'Hustad_Forensic_Dossier.pdf',
-              contentType: 'application/pdf',
-              contentBytes: pdfBase64,
-            },
-          ],
-        } : {}),
+        attachments: [
+          ...(pdfBase64 ? [{
+            '@odata.type': '#microsoft.graph.fileAttachment',
+            name: fileName || 'Hustad_Forensic_Dossier.pdf',
+            contentType: 'application/pdf',
+            contentBytes: pdfBase64,
+          }] : []),
+          ...(attachments ? attachments.map((att: any) => ({
+            '@odata.type': '#microsoft.graph.fileAttachment',
+            name: att.name,
+            contentType: att.contentType || 'application/pdf',
+            contentBytes: att.contentBytes,
+          })) : [])
+        ]
       },
       saveToSentItems: 'true',
     };
+
+    // Remove empty attachments array
+    if (mailPayload.message.attachments.length === 0) {
+      delete mailPayload.message.attachments;
+    }
 
     const response = await fetch(`https://graph.microsoft.com/v1.0/users/${senderEmail}/sendMail`, {
       method: 'POST',
