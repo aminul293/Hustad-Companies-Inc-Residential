@@ -454,6 +454,24 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
   st(d, T.textFaint); d.text(pathBadgeTxt, M + 5, y + 5);
   y += 11;
 
+  // ── Finding category pills (Storm Evidence / Claim Review / etc.) ─────────
+  const cats = (s.findings.findingCategories ?? []).slice(0, 6);
+  if (cats.length > 0) {
+    let cx = M;
+    d.setFont("helvetica", "normal"); d.setFontSize(6);
+    for (const cat of cats) {
+      const lbl = cat.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      st(d, T.textFaint);
+      const cW = d.getTextWidth(lbl) + 9;
+      if (cx + cW > PW - M) break;
+      sf(d, T.surface2); d.roundedRect(cx, y, cW, 6.5, 1.5, 1.5, "F");
+      sd(d, T.border); d.setLineWidth(0.2); d.roundedRect(cx, y, cW, 6.5, 1.5, 1.5, "S");
+      st(d, T.textFaint); d.text(lbl, cx + 4.5, y + 4.6);
+      cx += cW + 3;
+    }
+    y += 10;
+  }
+
   // ── Hero headline — font set BEFORE splitTextToSize for accurate metrics ──
   st(d, T.text); d.setFont("times", "bold"); d.setFontSize(16);
   const hlLines = d.splitTextToSize(cfg.headline, CW) as string[];
