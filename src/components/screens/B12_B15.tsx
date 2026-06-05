@@ -784,13 +784,6 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
         );
       })()}
 
-      {/* ── Logo ────────────────────────────────────────────────────────────── */}
-      <div className="absolute top-9 left-10 z-30 flex flex-col items-start pointer-events-none">
-        <div className="flex flex-col items-center gap-1">
-          <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
-        </div>
-      </div>
-
       {/* ── Progress bar ─────────────────────────────────────────────────────── */}
       <div className="relative z-20 flex-shrink-0 pt-6">
         <ProgressBar currentScreen="B12_findings_summary" phase="B" />

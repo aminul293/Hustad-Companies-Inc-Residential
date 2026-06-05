@@ -197,13 +197,6 @@ export function A03WhatWeInspect({ onNext, onBack }: Props) {
         </motion.div>
       </div>
 
-      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center pointer-events-none">
-        <div className="flex flex-col items-center gap-1">
-          <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
-        </div>
-        <div className="mt-2 h-px w-12 bg-gradient-to-r from-[var(--tx3)]/20 to-transparent" />
-      </div>
-
       <div className="relative z-20 flex-shrink-0 pt-6">
         <ProgressBar currentScreen="A03_what_we_inspect" phase="A" />
       </div>
