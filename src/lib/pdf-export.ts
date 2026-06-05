@@ -443,13 +443,18 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
   st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(6.5);
   d.text(btnLabel.toUpperCase(), PW - M - btnW / 2, (COVER_HDR) / 2 + 1, { align: "center" });
 
-  // ── Badge row ─────────────────────────────────────────────────────────────
+  // ── Path badge (mono-caps style matching web app) ────────────────────────
   let y = COVER_HDR + 9;
-  const pathPillW = badgePill(d, cfg.badgeLabel, M, y, acc, T.surface2, acc);
-  badgePill(d, status.label, M + pathPillW + 4, y, status.color, status.bg, status.bdr);
-  y += 12;
+  // Outline pill: CARRIER REVIEW CANDIDATE / REPAIR ONLY / etc.
+  const pathBadgeTxt = cfg.badgeLabel.toUpperCase();
+  st(d, T.textFaint); d.setFont("helvetica", "bold"); d.setFontSize(5.5);
+  const pbW = d.getTextWidth(pathBadgeTxt) + 10;
+  sf(d, T.surface2); d.roundedRect(M, y, pbW, 7, 1.5, 1.5, "F");
+  sd(d, T.border); d.setLineWidth(0.2); d.roundedRect(M, y, pbW, 7, 1.5, 1.5, "S");
+  st(d, T.textFaint); d.text(pathBadgeTxt, M + 5, y + 5);
+  y += 11;
 
-  // ── Hero headline — set font BEFORE splitTextToSize for accurate metrics ──
+  // ── Hero headline — font set BEFORE splitTextToSize for accurate metrics ──
   st(d, T.text); d.setFont("times", "bold"); d.setFontSize(16);
   const hlLines = d.splitTextToSize(cfg.headline, CW) as string[];
   d.text(hlLines.slice(0, 3), M, y);
@@ -457,69 +462,87 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
 
   // ── Hero subhead ──────────────────────────────────────────────────────────
   st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
-  const subLines = d.splitTextToSize(cfg.subhead, CW) as string[];
+  const subLines = d.splitTextToSize(cfg.subhead, CW * 0.72) as string[];
   d.text(subLines.slice(0, 3), M, y);
-  y += Math.min(subLines.length, 3) * 4.8 + 10;
+  y += Math.min(subLines.length, 3) * 4.8 + 5;
+
+  // ── "Summary locked" note (matches web app "SUMMARY LOCKED AND AUDITED") ─
+  st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(5.5);
+  d.text("SUMMARY LOCKED AND AUDITED  ·  FINDINGS ARE IMMUTABLE", M, y);
+  y += 7;
+
+  // ── Thin divider ─────────────────────────────────────────────────────────
+  sf(d, T.border); d.rect(M, y, CW, 0.3, "F");
+  y += 8;
 
   // ── Two-column cards: Property & Inspection | Finding Summary ─────────────
   const hw     = CW / 2 - 3;
   const col2   = M + hw + 6;
-  const cardH  = 60;
+  const cardH  = 66;
 
-  // Left: Property & Inspection
+  // Left: Property & Inspection Details — horizontal label / value rows
   baseCard(d, M, y, hw, cardH, T.surface, T.border);
-  sf(d, acc); d.rect(M, y, hw, 2, "F");
-  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(8);
-  d.text("Property & Inspection", M + 5, y + 10);
+  st(d, T.textMid); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
+  d.text("Property & Inspection Details", M + 6, y + 9);
+  sf(d, T.border); d.rect(M + 6, y + 11, hw - 12, 0.2, "F");
 
   const propRows: [string, string][] = [
     ["Property",        addrLine || "—"],
-    ["Inspection date", fmtDate(s.createdAt)],
+    ["Inspection Date", fmtDate(s.createdAt)],
     ["Inspector",       s.repName || "—"],
-    ["Photo count",     `${photoCount} photos`],
+    ["Photo Count",     `${photoCount} photos`],
   ];
-  let ry = y + 18;
+  let ry = y + 17;
   for (const [lbl, val] of propRows) {
-    st(d, T.textFaint); d.setFont("helvetica", "bold"); d.setFontSize(6);
-    d.text(lbl, M + 5, ry);
-    st(d, T.text); d.setFont("helvetica", "normal"); d.setFontSize(7);
-    const vl = d.splitTextToSize(val, hw - 12) as string[];
-    d.text(vl[0], M + 5, ry + 5.5);
+    // Label left — mono-caps faint
+    st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(5.5);
+    d.text(lbl, M + 6, ry);
+    // Value right-aligned inside card
+    st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(7);
+    d.text(val, M + hw - 6, ry, { align: "right", maxWidth: hw / 2 });
     ry += 10;
   }
 
-  // Right: Finding Summary — metric bubbles + stated priorities
+  // Right: Finding Summary — metric bubbles + "Your Stated Priorities" pills
   baseCard(d, col2, y, hw, cardH, T.surface, T.border);
-  sf(d, acc); d.rect(col2, y, hw, 2, "F");
-  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(8);
-  d.text("Finding Summary", col2 + 5, y + 10);
+  st(d, T.textMid); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
+  d.text("Finding Summary", col2 + 6, y + 9);
+  sf(d, T.border); d.rect(col2 + 6, y + 11, hw - 12, 0.2, "F");
 
   const metrics: { label: string; val: number; color: C3 }[] = [
-    { label: "URGENT",  val: urgentCount,  color: T.red   },
-    { label: "STORM",   val: stormCount,   color: T.amber },
-    { label: "MONITOR", val: monitorCount, color: T.textFaint },
+    { label: "STORM",   val: stormCount,   color: acc        },
+    { label: "MONITOR", val: monitorCount, color: T.amber    },
+    { label: "PHOTOS",  val: photoCount,   color: T.textFaint },
   ];
-  const bw  = (hw - 10) / 3;
-  let   bx  = col2 + 5;
-  const by  = y + 14;
+  const bw  = (hw - 12) / 3;
+  let   bx  = col2 + 6;
+  const by  = y + 15;
   for (const m of metrics) {
-    sf(d, T.surface2); d.roundedRect(bx, by, bw - 2, 24, 2, 2, "F");
-    sd(d, m.color); d.setLineWidth(0.4); d.roundedRect(bx, by, bw - 2, 24, 2, 2, "S");
-    st(d, m.color); d.setFont("helvetica", "bold"); d.setFontSize(14);
-    d.text(String(m.val), bx + (bw - 2) / 2, by + 14, { align: "center" });
-    st(d, T.textFaint); d.setFont("helvetica", "bold"); d.setFontSize(5.5);
-    d.text(m.label, bx + (bw - 2) / 2, by + 21, { align: "center" });
+    sf(d, T.surface2); d.roundedRect(bx, by, bw - 2, 22, 2, 2, "F");
+    sd(d, m.color); d.setLineWidth(0.4); d.roundedRect(bx, by, bw - 2, 22, 2, 2, "S");
+    st(d, m.color); d.setFont("helvetica", "bold"); d.setFontSize(13);
+    d.text(String(m.val), bx + (bw - 2) / 2, by + 13, { align: "center" });
+    st(d, T.textFaint); d.setFont("helvetica", "bold"); d.setFontSize(5);
+    d.text(m.label, bx + (bw - 2) / 2, by + 19, { align: "center" });
     bx += bw;
   }
 
-  // Stated priorities from Phase A
+  // Stated priorities — "Your Stated Priorities" + pill tags
   const priorities = s.buyerData.buyerPriorities ?? [];
   if (priorities.length > 0) {
-    const fmtPriority = (p: string) => p.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
-    st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6);
-    d.text("Stated priorities:", col2 + 5, y + 43);
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(6);
-    d.text(priorities.slice(0, 3).map(fmtPriority).join("  ·  "), col2 + 5, y + 50, { maxWidth: hw - 10 });
+    const fmtP = (p: string) => p.replace(/_/g, " ").toLowerCase();
+    st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(5.5);
+    d.text("Your Stated Priorities", col2 + 6, y + 43);
+    let px2 = col2 + 6;
+    for (const p of priorities.slice(0, 3)) {
+      const label = fmtP(p);
+      st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6);
+      const pW = d.getTextWidth(label) + 8;
+      sf(d, T.surface2); d.roundedRect(px2, y + 46, pW, 7, 1.5, 1.5, "F");
+      sd(d, T.border); d.setLineWidth(0.2); d.roundedRect(px2, y + 46, pW, 7, 1.5, 1.5, "S");
+      st(d, T.textMid); d.text(label, px2 + 4, y + 51.5);
+      px2 += pW + 3;
+    }
   }
 
   y += cardH + 8;
