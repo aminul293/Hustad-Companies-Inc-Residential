@@ -110,7 +110,7 @@ export function A06WarrantyImpact({ session, onUpdate, onNext, onBack }: Props) 
         <div className="mt-2 h-px w-12 bg-gradient-to-r from-[var(--border-color)] to-transparent" />
       </div>
 
-      <div className="relative z-20 flex-shrink-0 pt-4">
+      <div className="relative z-20 flex-shrink-0 pt-24">
         <ProgressBar currentScreen="A06_warranty_impact" phase="A" />
       </div>
 
@@ -289,13 +289,13 @@ export function A07WhyHustad({ session, onUpdate, onNext, onBack }: Props) {
       </div>
 
       <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none text-[var(--tx1)]">
-        <div className="flex items-baseline gap-2.5">
+        <div className="flex flex-col items-start gap-1">
           <img src="/logo.svg" alt="Hustad Logo" className="h-6 w-auto dark:invert opacity-90 transition-all duration-300" />
           <span className="text-[10px] font-mono text-[var(--tx3)] uppercase tracking-[0.3em]">Madison Residential</span>
         </div>
       </div>
 
-      <div className="relative z-20 flex-shrink-0 pt-4">
+      <div className="relative z-20 flex-shrink-0 pt-24">
         <ProgressBar currentScreen="A07_why_hustad" phase="A" />
       </div>
 
@@ -447,13 +447,13 @@ export function A08WhatYouReceive({ session, onUpdate, onNext, onBack }: Props) 
       </div>
 
       <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none text-[var(--tx1)]">
-        <div className="flex items-baseline gap-2.5">
+        <div className="flex flex-col items-start gap-1">
           <img src="/logo.svg" alt="Hustad Logo" className="h-6 w-auto dark:invert opacity-90 transition-all duration-300" />
           <span className="text-[10px] font-mono text-[var(--tx3)] uppercase tracking-[0.3em]">Madison Residential</span>
         </div>
       </div>
 
-      <div className="relative z-20 flex-shrink-0 pt-4">
+      <div className="relative z-20 flex-shrink-0 pt-24">
         <ProgressBar currentScreen="A08_what_you_receive" phase="A" />
       </div>
 

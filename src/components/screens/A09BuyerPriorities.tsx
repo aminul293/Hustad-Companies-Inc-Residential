@@ -155,7 +155,7 @@ export function A09BuyerPriorities({ session, onUpdate, onNext, onBack }: Props)
         <div className="mt-2 h-px w-12 bg-gradient-to-r from-[var(--border-color)] to-transparent" />
       </div>
 
-      <div className="relative z-20 flex-shrink-0 pt-4">
+      <div className="relative z-20 flex-shrink-0 pt-24">
         <ProgressBar currentScreen="A09_buyer_priorities" phase="A" />
       </div>
 
