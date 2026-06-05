@@ -61,8 +61,7 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
   const brandingAnchor = (
     <div className="absolute top-8 left-8 z-20 flex flex-col items-start pointer-events-none">
       <div className="flex flex-col items-start gap-1">
-        <img src="/logo.svg" alt="Hustad Logo" className="h-6 w-auto dark:invert opacity-90 transition-all duration-300" />
-        <span className="text-[10px] font-mono text-[var(--tx3)] uppercase tracking-[0.3em] pt-0.5">Madison Residential</span>
+        <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
       </div>
       <div className="mt-2 h-px w-12 bg-gradient-to-r from-[var(--tx3)]/20 to-transparent" />
     </div>

@@ -64,10 +64,9 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
       </div>
 
       {/* Branding */}
-      <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
+      <div className="absolute top-8 left-8 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex flex-col items-start gap-1">
-          <img src="/logo.svg" alt="Hustad Logo" className="h-6 w-auto dark:invert opacity-90 transition-all duration-300" />
-          <span className="text-[10px] font-mono text-[var(--tx3)] uppercase tracking-[0.3em]">Technical Core</span>
+          <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
         </div>
       </div>
 

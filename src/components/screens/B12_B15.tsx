@@ -787,8 +787,7 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
       {/* ── Logo ────────────────────────────────────────────────────────────── */}
       <div className="absolute top-9 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex flex-col items-start gap-1">
-          <img src="/logo.svg" alt="Hustad Logo" className="h-6 w-auto dark:invert opacity-90 transition-all duration-300" />
-          <span className="font-mono text-[10px] uppercase tracking-[0.28em]" style={{ color: DS.text.faint }}>Madison Residential</span>
+          <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
         </div>
       </div>
 
@@ -2019,7 +2018,7 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
 
           {/* Brand wordmark */}
           <div className="flex items-baseline gap-2.5 pointer-events-auto">
-            <img src="/logo.svg" alt="Hustad Logo" className="h-6 w-auto dark:invert opacity-90 transition-all duration-300" />
+            <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
             <span style={{ fontFamily: "'Inter', system-ui", fontSize: "9px", letterSpacing: "3px", textTransform: "uppercase", color: DS.text.muted }}>Madison Residential</span>
           </div>
 
@@ -2779,10 +2778,9 @@ export function B15UrgentProtection({ session, onUpdate, onNext, onBack }: Props
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(244,63,94,0.04),transparent_70%)]" />
         </div>
       )}
-      <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
+      <div className="absolute top-8 left-8 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex flex-col items-start gap-1">
-          <img src="/logo.svg" alt="Hustad Logo" className="h-6 w-auto dark:invert opacity-90 transition-all duration-300" />
-          <span className={cn("text-[10px] font-mono uppercase tracking-[0.3em]", isDark ? "text-[#AABDCF]" : "text-[rgba(27,43,75,0.62)]")}>Madison Residential</span>
+          <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
         </div>
       </div>
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 text-center pb-32">
