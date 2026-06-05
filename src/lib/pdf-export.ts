@@ -30,7 +30,7 @@ const PATH_CFG: Record<PathType, {
   proofLabel: string; showWeather: boolean;
 }> = {
   carrier_review: {
-    badgeLabel: "Claim recommended",
+    badgeLabel: "Hail review / claim recommended",
     headline:   "Storm findings documented. Carrier review is the recommended next step.",
     subhead:    "During our inspection, we conducted a comprehensive review of your property's exterior. We have documented conditions that are consistent with storm-related impact. While these findings do not guarantee insurance coverage, they provide strong evidence to justify a formal review by your insurance carrier.",
     whatMeans:  "The documented storm findings are strong enough to justify a formal review by your insurance carrier before you pay directly for repairs.",
@@ -56,7 +56,7 @@ const PATH_CFG: Record<PathType, {
     showWeather: false,
   },
   full_restoration: {
-    badgeLabel: "Full restoration / direct buy",
+    badgeLabel: "Full restoration / proposal requested",
     headline:   "Replacement proposal requested. Hustad estimating is preparing your proposal.",
     subhead:    "This report confirms the replacement request, captures the property notes collected during the appointment, and explains what Hustad estimating will prepare for owner review.",
     whatMeans:  "A written replacement proposal is the right next step. This report is not a final price or contract. It confirms that Hustad estimating is preparing the proposal package.",
@@ -164,7 +164,6 @@ const M   = 18;          // page margin
 const PW  = 210;
 const PH  = 297;
 const CW  = PW - M * 2; // 174 — content width
-const HDR = 52;          // cover dark header band height
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SESSION HELPERS
@@ -339,16 +338,35 @@ function infoRow(d: jsPDF, lbl: string, val: string, x: number, y: number, w: nu
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// STATUS BADGE — derived from session state + path
+// ─────────────────────────────────────────────────────────────────────────────
+function deriveStatusBadge(s: SessionState, pt: PathType): { label: string; color: C3; bg: C3; bdr: C3 } {
+  const isSigned   = !!s.signatureData.signedAt;
+  const isDeferred = s.sessionStatus === "deferred";
+  if (pt === "carrier_review") {
+    if (isSigned)   return { label: "Agreement Executed",  color: T.green, bg: T.greenBg, bdr: T.greenBdr };
+    if (isDeferred) return { label: "Sent for Review",     color: T.amber, bg: T.amberBg, bdr: T.amberBdr };
+    return           { label: "Pending Authorization",     color: T.amber, bg: T.amberBg, bdr: T.amberBdr };
+  }
+  if (pt === "urgent_repair")    return { label: "Service Quote Pending", color: T.blue,  bg: T.blueBg,  bdr: T.blueBdr  };
+  if (pt === "full_restoration") return { label: "Proposal in Progress",  color: T.blue,  bg: T.blueBg,  bdr: T.blueBdr  };
+  return { label: "Inspection Complete", color: T.green, bg: T.greenBg, bdr: T.greenBdr };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // PAGE 1 — COVER
 // ─────────────────────────────────────────────────────────────────────────────
-function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3) {
-  const rid = s.sessionId.slice(-8).toUpperCase();
-  const cfg = PATH_CFG[pt];
+async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, photos: PdfPhoto[]) {
+  const rid    = s.sessionId.slice(-8).toUpperCase();
+  const cfg    = PATH_CFG[pt];
+  const status = deriveStatusBadge(s, pt);
+  const isSigned   = !!s.signatureData.signedAt;
+  const isDeferred = s.sessionStatus === "deferred";
 
   // ── Full page background ──────────────────────────────────────────────────
   sf(d, T.pageBg); d.rect(0, 0, PW, PH, "F");
 
-  // ── Header band — compact (42mm) ──────────────────────────────────────────
+  // ── Header band (42mm) — brand + report type label + report ID ────────────
   const COVER_HDR = 42;
   sf(d, T.headerBg); d.rect(0, 0, PW, COVER_HDR, "F");
   sf(d, acc); d.rect(0, 0, PW, 2, "F");
@@ -359,137 +377,178 @@ function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3) {
   st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
   d.text("Madison Residential", M + 31, 17);
 
-  // Center: report type + address | rep
-  const reportTypeLabel = pt === "carrier_review" ? "Storm Review"
-    : pt === "urgent_repair"    ? "Repair Report"
-    : pt === "full_restoration" ? "Replacement Report"
-    : "Inspection Report";
-  const centerSub = [s.property.address, s.repName].filter(Boolean).join("  |  ");
+  // Center: path-specific report type label
+  const reportType = pt === "carrier_review" ? "Storm Review Report"
+    : pt === "urgent_repair"    ? "Repair Findings Report"
+    : pt === "full_restoration" ? "Replacement Project Summary"
+    : "Homeowner Inspection Report";
   st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(8);
-  d.text(reportTypeLabel, PW / 2, 14, { align: "center" });
-  if (centerSub) {
-    st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(6.5);
-    d.text(centerSub, PW / 2, 21, { align: "center", maxWidth: 80 });
+  d.text(reportType, PW / 2, 15, { align: "center" });
+  if (s.repName) {
+    st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(6.3);
+    d.text(`Rep: ${s.repName}`, PW / 2, 23, { align: "center" });
   }
 
-  // Right: path-type action badge
-  const actionLabel = pt === "carrier_review" ? "AGREEMENT"
-    : pt === "urgent_repair"    ? "SERVICE"
-    : pt === "full_restoration" ? "IN PROGRESS"
-    : "COMPLETE";
-  const actionBg = pt === "urgent_repair" ? T.redBdr
-    : pt === "full_restoration" ? T.greenBdr
-    : pt === "no_action"        ? T.greenBdr
-    : T.blueBdr;
-  const badgeW = 36;
-  sf(d, actionBg); d.roundedRect(PW - M - badgeW, 10, badgeW, 9, 1.5, 1.5, "F");
-  st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(7);
-  d.text(actionLabel, PW - M - badgeW / 2, 16, { align: "center" });
+  // Report ID pill — right
+  sf(d, T.surface2); d.roundedRect(PW - M - 44, 10, 44, 9, 1.5, 1.5, "F");
+  sd(d, T.border); d.setLineWidth(0.15); d.roundedRect(PW - M - 44, 10, 44, 9, 1.5, 1.5, "S");
+  st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(5.5);
+  d.text("REPORT", PW - M - 37, 15.8);
+  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(6.5);
+  d.text(rid, PW - M - 2, 16, { align: "right" });
 
-  // Report ID below badge
-  st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(5.5);
-  d.text(`#${rid}`, PW - M, 26, { align: "right" });
-
-  // Hairline + doc type label
+  // Hairline + labels
   sf(d, T.border); d.rect(0, 28, PW, 0.2, "F");
   st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6);
-  d.text("HOMEOWNER INSPECTION REPORT", M, 37);
-  // Outcome badge right-aligned in label row
+  d.text(fmtDate(s.createdAt), M, 37);
   st(d, acc); d.setFont("helvetica", "bold"); d.setFontSize(6);
   d.text(cfg.badgeLabel.toUpperCase(), PW - M, 37, { align: "right" });
 
   // ── Content area ──────────────────────────────────────────────────────────
-  let y = COVER_HDR + 14;
+  let y = COVER_HDR + 12;
 
   // ── Homeowner name — primary hero ─────────────────────────────────────────
   const hwName = s.property.homeownerPrimaryName || "Homeowner";
   st(d, T.textFaint); d.setFont("helvetica", "bold"); d.setFontSize(6.5);
   d.text("PREPARED FOR", M, y);
-  y += 8;
-
-  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(26);
-  const nameLines = d.splitTextToSize(hwName, CW * 0.75) as string[];
+  y += 7;
+  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(24);
+  const nameLines = d.splitTextToSize(hwName, CW * 0.72) as string[];
   d.text(nameLines.slice(0, 1), M, y);
-  y += 12;
-
-  // Address + city — smaller, muted, under name
+  y += 10;
   const addrStr = [s.property.address, s.property.cityStateZip].filter(Boolean).join("  ·  ");
   if (addrStr) {
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(9.5);
+    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(9);
     d.text(addrStr, M, y);
-    y += 7;
+    y += 6;
+  }
+  y += 6;
+
+  // ── Path badge + Status badge (inline row) ────────────────────────────────
+  const pathPillW = badgePill(d, cfg.badgeLabel, M, y, acc, T.surface2, acc);
+  badgePill(d, status.label, M + pathPillW + 5, y, status.color, status.bg, status.bdr);
+  y += 13;
+
+  // ── Accent rule + hero headline ───────────────────────────────────────────
+  sf(d, acc); d.rect(M, y, 28, 1.5, "F");
+  y += 8;
+  const hlLines = d.splitTextToSize(cfg.headline, CW) as string[];
+  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(14);
+  d.text(hlLines.slice(0, 2), M, y);
+  y += Math.min(hlLines.length, 2) * 6.5 + 6;
+
+  // ── Photo strip — top 3 strongest photos ─────────────────────────────────
+  const topPhotos = photos.slice(0, 3);
+  if (topPhotos.length > 0) {
+    const photoGap = 4;
+    const photoW   = (CW - photoGap * (topPhotos.length - 1)) / topPhotos.length;
+    const photoH   = 38;
+
+    for (let i = 0; i < topPhotos.length; i++) {
+      const photo = topPhotos[i];
+      const px    = M + i * (photoW + photoGap);
+      try {
+        let compressed = await compressImage(photo.dataUrl, 600);
+        if (compressed.startsWith("http")) {
+          const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+            const tempImg = new Image();
+            tempImg.crossOrigin = "anonymous";
+            tempImg.onload = () => resolve(tempImg);
+            tempImg.onerror = reject;
+            tempImg.src = compressed;
+          });
+          d.addImage(img, "JPEG", px, y, photoW, photoH, undefined, "FAST");
+        } else {
+          d.addImage(compressed, "JPEG", px, y, photoW, photoH, undefined, "FAST");
+        }
+      } catch (_) {
+        sf(d, T.surface2); d.rect(px, y, photoW, photoH, "F");
+        st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6.5);
+        d.text("Photo unavailable", px + photoW / 2, y + photoH / 2, { align: "center" });
+      }
+      // Badge over photo bottom
+      const pc    = classifyPdfPhoto(photo.label ?? "", photo.category ?? "", photo.description ?? "");
+      const badge = photoBadge(pc, pt);
+      badgePill(d, badge.label, px + 2, y + photoH - 10, badge.color, badge.bg, badge.bdr);
+      // Caption below photo
+      if (photo.label) {
+        st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(6);
+        const capLines = d.splitTextToSize(photo.label, photoW) as string[];
+        d.text(capLines[0], px, y + photoH + 6);
+      }
+    }
+    if (photos.length > 3) {
+      st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6);
+      d.text(`+ ${photos.length - 3} more photos in full report`, PW - M, y + photoH + 6, { align: "right" });
+    }
+    y += photoH + 14;
   }
 
-  y += 10;
-
-  // Accent rule
-  sf(d, acc); d.rect(M, y, 28, 1.5, "F");
-  y += 9;
-
-  // Outcome eyebrow
-  st(d, acc); d.setFont("helvetica", "bold"); d.setFontSize(7);
-  d.text(cfg.badgeLabel.toUpperCase(), M, y);
-  y += 11;
-
-  // ── Outcome card — clean redesign ─────────────────────────────────────────
-  // surface2 bg, accent-colored border, no heavy fill, no badge pill inside
-  const hlLines  = d.splitTextToSize(cfg.headline, CW - 20) as string[];
-  const subLines = d.splitTextToSize(cfg.subhead,   CW - 20) as string[];
-  const hlH      = Math.min(hlLines.length, 2) * 7.5;
-  const subH     = Math.min(subLines.length, 3) * 5;
-  const cardH    = 12 + hlH + 7 + subH + 12;
-
-  sf(d, T.surface2); d.roundedRect(M, y, CW, cardH, 3, 3, "F");
-  sd(d, acc); d.setLineWidth(0.45); d.roundedRect(M, y, CW, cardH, 3, 3, "S");
-  // Thin left accent bar
-  sf(d, acc); d.roundedRect(M, y + 3, 3, cardH - 6, 1, 1, "F");
-
-  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(14);
-  d.text(hlLines.slice(0, 2), M + 12, y + 14);
-
-  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8.5);
-  d.text(subLines.slice(0, 3), M + 12, y + 14 + hlH + 7);
-
-  y += cardH + 8;
-
-  // ── Stat cards ────────────────────────────────────────────────────────────
+  // ── Status cards row: Findings | Agreement/Service/Proposal | Documents ───
   const urgentCount  = s.findings.urgentItemsCount;
   const stormCount   = s.findings.stormRelatedItemsCount;
   const monitorCount = s.findings.monitorItemsCount;
   const photoCount   = (s.photoAssets?.filter(p => p.selectedForSummary).length ?? 0)
                      + (s.photos?.filter(p => p.selectedForSummary).length ?? 0);
 
-  type StatDef = { value: number | string; lbl: string; acc: C3; bg: C3; bdr: C3 };
-  const stats: StatDef[] = [];
-  if (urgentCount  > 0) stats.push({ value: urgentCount,  lbl: "Urgent items",    acc: T.red,     bg: T.redBg,   bdr: T.redBdr   });
-  if (stormCount   > 0) stats.push({ value: stormCount,   lbl: "Storm findings",  acc: T.blue,    bg: T.blueBg,  bdr: T.blueBdr  });
-  if (monitorCount > 0) stats.push({ value: monitorCount, lbl: "Monitor items",   acc: T.amber,   bg: T.amberBg, bdr: T.amberBdr });
-  if (photoCount   > 0) stats.push({ value: photoCount,   lbl: "Evidence photos", acc: T.textMid, bg: T.surface, bdr: T.border   });
+  const sw3    = (CW - 10) / 3;
+  const cardH3 = 28;
 
-  const sh = 34;
-  if (stats.length > 0) {
-    const vis = stats.slice(0, 4);
-    const sw  = (CW - (vis.length - 1) * 5) / vis.length;
-    vis.forEach((s2, i) => coverStatCard(d, s2.value, s2.lbl, M + i * (sw + 5), y, sw, sh, s2.acc, s2.bg, s2.bdr));
-  } else {
-    baseCard(d, M, y, CW, sh, T.surface, T.border);
-    sf(d, acc); d.rect(M, y, 3, sh, "F");
-    st(d, acc); d.setFont("helvetica", "bold"); d.setFontSize(9);
-    d.text("No urgent findings — inspection complete", M + CW / 2, y + sh / 2 + 3, { align: "center" });
-  }
-  y += sh + 8;
+  // Card 1 — Findings
+  const findingParts: string[] = [];
+  if (urgentCount  > 0) findingParts.push(`${urgentCount} urgent`);
+  if (stormCount   > 0) findingParts.push(`${stormCount} storm`);
+  if (monitorCount > 0) findingParts.push(`${monitorCount} monitor`);
+  const findingText  = findingParts.length > 0 ? findingParts.join("  ·  ") : "No urgent findings";
+  const findingColor: C3 = urgentCount > 0 ? T.red : stormCount > 0 ? T.blue : T.green;
 
-  // ── Meta strip — Inspection date | Representative | Outcome ───────────────
-  const metaH = 26;
+  baseCard(d, M, y, sw3, cardH3, T.surface, T.border);
+  sf(d, findingColor); d.rect(M, y, sw3, 2, "F");
+  microLabel(d, "Findings", M + 5, y + 9, T.textFaint);
+  st(d, findingParts.length > 0 ? T.text : T.green); d.setFont("helvetica", "bold"); d.setFontSize(7);
+  d.text(findingText, M + 5, y + 20, { maxWidth: sw3 - 8 });
+
+  // Card 2 — Agreement / Service / Proposal status
+  const agreeX     = M + sw3 + 5;
+  const agreeLabel = pt === "carrier_review" ? "Agreement" : pt === "urgent_repair" ? "Service Status" : "Proposal Status";
+  const agreeValue = pt === "carrier_review"
+    ? (isSigned ? "Executed ✓" : isDeferred ? "Sent for Review" : "Pending Signature")
+    : pt === "urgent_repair" ? "Quote Pending" : pt === "full_restoration" ? "In Progress" : "Complete";
+  const agreeColor: C3 = (pt === "carrier_review" && isSigned) ? T.green : T.amber;
+
+  baseCard(d, agreeX, y, sw3, cardH3, T.surface, T.border);
+  sf(d, agreeColor); d.rect(agreeX, y, sw3, 2, "F");
+  microLabel(d, agreeLabel, agreeX + 5, y + 9, T.textFaint);
+  st(d, agreeColor); d.setFont("helvetica", "bold"); d.setFontSize(7);
+  d.text(agreeValue, agreeX + 5, y + 20);
+
+  // Card 3 — Documents included
+  const docsX     = M + (sw3 + 5) * 2;
+  const docParts  = ["Report PDF", `${photoCount} photos`];
+  if (pt === "carrier_review") docParts.push(isSigned ? "Executed agreement" : "Agreement for review");
+  else if (pt === "urgent_repair")    docParts.push("Service checklist");
+  else if (pt === "full_restoration") docParts.push("Proposal checklist");
+
+  baseCard(d, docsX, y, sw3, cardH3, T.surface, T.border);
+  sf(d, acc); d.rect(docsX, y, sw3, 2, "F");
+  microLabel(d, "Documents", docsX + 5, y + 9, T.textFaint);
+  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(6.5);
+  const docLines = d.splitTextToSize(docParts.join("  ·  "), sw3 - 10) as string[];
+  d.text(docLines.slice(0, 2), docsX + 5, y + 19);
+
+  y += cardH3 + 6;
+
+  // ── Meta strip — Inspection date | Representative | Photo count ───────────
+  const metaH = 24;
   baseCard(d, M, y, CW, metaH, T.surface, T.border);
   const iw = (CW - 12) / 3;
   sf(d, T.border);
-  d.rect(M + iw + 6, y + 5, 0.2, metaH - 10, "F");
-  d.rect(M + (iw + 6) * 2, y + 5, 0.2, metaH - 10, "F");
+  d.rect(M + iw + 6, y + 4, 0.2, metaH - 8, "F");
+  d.rect(M + (iw + 6) * 2, y + 4, 0.2, metaH - 8, "F");
 
-  infoRow(d, "Inspection date", fmtDate(s.createdAt), M + 6,                y + 5, iw);
-  infoRow(d, "Representative",  s.repName || "—",     M + iw + 12,          y + 5, iw);
-  infoRow(d, "Outcome",         cfg.badgeLabel,        M + (iw + 6) * 2 + 6, y + 5, iw);
+  infoRow(d, "Inspection date", fmtDate(s.createdAt),            M + 6,                y + 4, iw);
+  infoRow(d, "Representative",  s.repName || "—",                M + iw + 12,          y + 4, iw);
+  infoRow(d, "Photos documented", `${photoCount} photos`,        M + (iw + 6) * 2 + 6, y + 4, iw);
 
   pageFooter(d);
 }
@@ -1383,7 +1442,7 @@ async function generateReport(session: SessionState): Promise<jsPDF> {
   const acc    = getAccent(pt);
   const rid    = session.sessionId.slice(-8).toUpperCase();
 
-  renderCover(doc, session, pt, acc);
+  await renderCover(doc, session, pt, acc, photos);
   doc.addPage(); renderFindingsOverview(doc, session, pt, acc);
   doc.addPage(); renderRecommendation(doc, session, pt, acc);
   await renderEvidenceGallery(doc, photos, pt, acc, rid);
