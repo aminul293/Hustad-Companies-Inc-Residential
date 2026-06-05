@@ -110,7 +110,7 @@ export function A06WarrantyImpact({ session, onUpdate, onNext, onBack }: Props) 
         <div className="mt-2 h-px w-12 bg-gradient-to-r from-[var(--border-color)] to-transparent" />
       </div>
 
-      <div className="relative z-20 flex-shrink-0 pt-24">
+      <div className="relative z-20 flex-shrink-0 pt-6">
         <ProgressBar currentScreen="A06_warranty_impact" phase="A" />
       </div>
 
@@ -290,7 +290,7 @@ export function A07WhyHustad({ session, onUpdate, onNext, onBack }: Props) {
 
       
 
-      <div className="relative z-20 flex-shrink-0 pt-24">
+      <div className="relative z-20 flex-shrink-0 pt-6">
         <ProgressBar currentScreen="A07_why_hustad" phase="A" />
       </div>
 
@@ -443,7 +443,7 @@ export function A08WhatYouReceive({ session, onUpdate, onNext, onBack }: Props) 
 
       
 
-      <div className="relative z-20 flex-shrink-0 pt-24">
+      <div className="relative z-20 flex-shrink-0 pt-6">
         <ProgressBar currentScreen="A08_what_you_receive" phase="A" />
       </div>
 

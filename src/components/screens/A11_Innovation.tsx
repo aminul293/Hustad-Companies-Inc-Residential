@@ -66,7 +66,7 @@ export function A11Innovation({ session, onUpdate, onNext, onBack }: Props) {
       {/* Branding */}
       
 
-      <div className="relative z-20 flex-shrink-0 pt-24">
+      <div className="relative z-20 flex-shrink-0 pt-6">
         <ProgressBar currentScreen="A11_innovation" phase="A" />
       </div>
 

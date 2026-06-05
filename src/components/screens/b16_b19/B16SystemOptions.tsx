@@ -59,7 +59,7 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
 
       
 
-      <div className="relative z-20 flex-shrink-0 pt-24">
+      <div className="relative z-20 flex-shrink-0 pt-6">
         <ProgressBar currentScreen="B16_system_options" phase="B" />
       </div>
 
