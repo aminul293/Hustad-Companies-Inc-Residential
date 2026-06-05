@@ -13,11 +13,13 @@ export function HustadHeader({ mode = "homeowner", subtitle, showThemeToggle = t
     <div className="flex-shrink-0 px-8 pt-7 pb-4">
       <div className="flex items-start justify-between">
         <div>
-          <div className="flex items-baseline gap-2">
-            <span className="font-display font-bold text-hustad-navy dark:text-hustad-tx1 text-xl tracking-tight transition-colors duration-300">
-              HUSTAD
-            </span>
-            <span className="text-xs font-mono text-hustad-blue/60 dark:text-hustad-tx4 uppercase tracking-widest transition-colors duration-300">
+          <div className="flex items-center gap-3">
+            <img 
+              src="/logo.svg" 
+              alt="Hustad Logo" 
+              className="h-6 w-auto dark:invert opacity-90 transition-all duration-300"
+            />
+            <span className="text-xs font-mono text-hustad-blue/60 dark:text-hustad-tx4 uppercase tracking-widest transition-colors duration-300 pt-1">
               Madison Residential
             </span>
           </div>
