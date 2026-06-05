@@ -449,15 +449,15 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
   badgePill(d, status.label, M + pathPillW + 4, y, status.color, status.bg, status.bdr);
   y += 12;
 
-  // ── Hero headline ─────────────────────────────────────────────────────────
+  // ── Hero headline — set font BEFORE splitTextToSize for accurate metrics ──
+  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(16);
   const hlLines = d.splitTextToSize(cfg.headline, CW) as string[];
-  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(20);
   d.text(hlLines.slice(0, 3), M, y);
-  y += Math.min(hlLines.length, 3) * 8.5 + 4;
+  y += Math.min(hlLines.length, 3) * 7 + 4;
 
   // ── Hero subhead ──────────────────────────────────────────────────────────
-  const subLines = d.splitTextToSize(cfg.subhead, CW) as string[];
   st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
+  const subLines = d.splitTextToSize(cfg.subhead, CW) as string[];
   d.text(subLines.slice(0, 3), M, y);
   y += Math.min(subLines.length, 3) * 4.8 + 10;
 
@@ -581,6 +581,14 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
       st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6);
       d.text(`+ ${photos.length - 3} more photos in full report`, PW - M, y + photoH + 5.5, { align: "right" });
     }
+  } else {
+    // No photos — show a note so the bottom isn't blank
+    const noteH = 18;
+    baseCard(d, M, y, CW, noteH, T.surface, T.border);
+    sf(d, T.border); d.rect(M, y, CW, noteH, "F");
+    sf(d, T.surface2); d.roundedRect(M, y, CW, noteH, 2, 2, "F");
+    st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(7);
+    d.text("Photo documentation is included in the evidence section of this report.", PW / 2, y + noteH / 2 + 2.5, { align: "center" });
   }
 
   pageFooter(d);
