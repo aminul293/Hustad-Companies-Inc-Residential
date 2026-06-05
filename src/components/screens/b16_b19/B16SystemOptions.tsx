@@ -59,7 +59,7 @@ export function B16SystemOptions({ session, onUpdate, onNext, onBack }: Props) {
 
       <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
-          <span className={cn("font-display font-bold text-2xl tracking-[0.1em]", isDark ? "text-[#E8EDF8]" : "text-[#1B2B4B]")}>HUSTAD</span>
+          <img src="/logo.svg" alt="Hustad Logo" className="h-6 w-auto dark:invert opacity-90 transition-all duration-300" />
           <span className={cn("text-[10px] font-mono uppercase tracking-[0.3em]", isDark ? "text-[#AABDCF]" : "text-[rgba(27,43,75,0.62)]")}>Madison Residential</span>
         </div>
       </div>

@@ -455,7 +455,7 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
       {/* Header — in flex flow so content never overlaps it */}
       <div className="relative z-30 flex-shrink-0 flex items-center justify-between px-10 pt-10 pb-6">
         <div className="flex items-baseline gap-2.5 pointer-events-none">
-          <span className="font-display font-bold text-[var(--tx1)] text-2xl tracking-[0.1em] transition-colors duration-300">HUSTAD</span>
+          <img src="/logo.svg" alt="Hustad Logo" className="h-6 w-auto dark:invert opacity-90 transition-all duration-300" />
           <span className="text-[10px] font-mono text-[var(--tx3)] uppercase tracking-[0.3em] transition-colors duration-300">Madison Residential</span>
         </div>
         <div className="flex items-center gap-4">

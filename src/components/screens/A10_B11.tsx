@@ -170,7 +170,7 @@ export function A10InspectionHold({ session, onRepReturn, onBack }: HoldProps) {
 
       <div className="absolute top-10 left-10 z-30 flex flex-col items-start pointer-events-none">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display font-bold text-[var(--tx1)] text-2xl tracking-[0.1em]">HUSTAD</span>
+          <img src="/logo.svg" alt="Hustad Logo" className="h-6 w-auto dark:invert opacity-90 transition-all duration-300" />
           <span className="text-[10px] font-mono text-[var(--tx3)] uppercase tracking-[0.3em]">Madison Residential</span>
         </div>
       </div>
@@ -1057,7 +1057,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
       <div className="relative z-40 flex items-center justify-between px-12 pt-10 pb-6 border-b border-[var(--border-color)] bg-[var(--bg-base)]/80 backdrop-blur-2xl">
         <div className="flex flex-col items-start gap-1">
           <div className="flex items-center gap-3">
-            <span className="font-display font-bold text-[var(--tx1)] text-2xl tracking-[0.15em]">HUSTAD</span>
+            <img src="/logo.svg" alt="Hustad Logo" className="h-6 w-auto dark:invert opacity-90 transition-all duration-300" />
             <div className="h-4 w-[1px] bg-[var(--border-color)] mx-1" />
             <span className="text-[10px] font-mono text-[var(--tx2)] uppercase tracking-[0.4em] font-medium pt-1">Inspection Analysis Builder</span>
           </div>
