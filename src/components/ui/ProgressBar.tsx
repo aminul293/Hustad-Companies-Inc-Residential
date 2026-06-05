@@ -19,8 +19,13 @@ export function ProgressBar({ currentScreen, phase }: ProgressBarProps) {
     const maxIdx = session?.phaseACompleted ? PHASE_A_SCREENS.length : idx;
 
     return (
-      <div className="px-8 py-6 flex justify-center">
-        <div className="relative group max-w-2xl w-full">
+      <div className="px-8 py-6 flex flex-row items-center justify-between gap-8 max-w-[1600px] mx-auto w-full">
+        {/* Branding Logo */}
+        <div className="shrink-0 flex items-center">
+          <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
+        </div>
+
+        <div className="relative group w-full max-w-3xl">
           {/* Main Glass Pill Container */}
           <div className="relative bg-white/[0.03] backdrop-blur-2xl rounded-full border border-white/[0.08] px-6 py-4 shadow-[0_8px_32px_rgba(0,0,0,0.3)] flex items-center justify-between gap-6 transition-all duration-500 hover:border-white/20">
             
@@ -92,8 +97,13 @@ export function ProgressBar({ currentScreen, phase }: ProgressBarProps) {
   }
 
   return (
-    <div className="px-8 py-6 flex justify-center">
-      <div className="relative group max-w-2xl w-full">
+    <div className="px-8 py-6 flex flex-row items-center justify-between gap-8 max-w-[1600px] mx-auto w-full">
+      {/* Branding Logo */}
+      <div className="shrink-0 flex items-center">
+        <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
+      </div>
+
+      <div className="relative group w-full max-w-3xl">
         {/* Main Glass Pill Container */}
         <div className="relative bg-white/[0.03] backdrop-blur-2xl rounded-full border border-white/[0.08] px-6 py-4 shadow-[0_8px_32px_rgba(0,0,0,0.3)] flex items-center justify-between gap-6 transition-all duration-500 hover:border-white/20">
           

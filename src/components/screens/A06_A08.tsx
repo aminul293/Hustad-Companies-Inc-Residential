@@ -288,11 +288,7 @@ export function A07WhyHustad({ session, onUpdate, onNext, onBack }: Props) {
         </motion.div>
       </div>
 
-      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center pointer-events-none text-[var(--tx1)]">
-        <div className="flex flex-col items-center gap-1">
-          <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
-        </div>
-      </div>
+      
 
       <div className="relative z-20 flex-shrink-0 pt-24">
         <ProgressBar currentScreen="A07_why_hustad" phase="A" />
@@ -445,11 +441,7 @@ export function A08WhatYouReceive({ session, onUpdate, onNext, onBack }: Props) 
         </motion.div>
       </div>
 
-      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center pointer-events-none text-[var(--tx1)]">
-        <div className="flex flex-col items-center gap-1">
-          <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
-        </div>
-      </div>
+      
 
       <div className="relative z-20 flex-shrink-0 pt-24">
         <ProgressBar currentScreen="A08_what_you_receive" phase="A" />

@@ -406,11 +406,7 @@ export function A04HowFindingsSorted({ onNext, onBack }: Props) {
         </motion.div>
       </div>
 
-      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center pointer-events-none">
-        <div className="flex flex-col items-center gap-1">
-          <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
-        </div>
-      </div>
+      
 
       <div className="relative z-20 flex-shrink-0 pt-24">
         <ProgressBar currentScreen="A04_how_findings_sorted" phase="A" />
@@ -580,11 +576,7 @@ export function A05InsuranceClarity({ onNext, onBack }: Props) {
         </motion.div>
       </div>
 
-      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center pointer-events-none">
-        <div className="flex flex-col items-center gap-1">
-          <img src="/logo.svg" alt="Hustad Logo" className="h-10 w-auto dark:invert opacity-90 transition-all duration-300" />
-        </div>
-      </div>
+      
 
       <div className="relative z-20 flex-shrink-0 pt-24">
         <ProgressBar currentScreen="A05_insurance_clarity" phase="A" />
