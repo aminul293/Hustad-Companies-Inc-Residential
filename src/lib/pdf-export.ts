@@ -32,35 +32,35 @@ const PATH_CFG: Record<PathType, {
   carrier_review: {
     badgeLabel: "Carrier review candidate",
     headline:   "Storm findings documented. Carrier review is the recommended next step.",
-    subhead:    "Hustad completed an exterior inspection and documented storm-impact indicators. This report organizes the findings, photos, and next steps. Coverage decisions remain with your insurance carrier.",
+    subhead:    "During our inspection, we conducted a comprehensive review of your property's exterior. We have documented conditions that are consistent with storm-related impact. While these findings do not guarantee insurance coverage, they provide strong evidence to justify a formal review by your insurance carrier.",
     whatMeans:  "The documented storm findings are strong enough to justify a formal review by your insurance carrier before you pay directly for repairs.",
-    nextStep:   "Carrier review is the cleaner path. Review the photos, confirm the findings, and decide if you want us to help coordinate a carrier review.",
+    nextStep:   "Review the attached findings and photographic evidence. Contact your insurance carrier to file a claim. Sign the Insurance Contingency Agreement to authorize Hustad to coordinate directly with your insurance adjuster.",
     credibilityLines: [
       "This report does not guarantee claim approval, payment, depreciation release, supplement approval, or final carrier scope.",
       "It documents what Hustad found and the recommended next step."
     ],
-    proofLabel:  "Strongest proof photos — storm evidence",
+    proofLabel:  "Documented Damage Photos",
     showWeather: true,
   },
   urgent_repair: {
     badgeLabel: "Urgent protection required",
-    headline:   "Targeted repair documented. Direct repair is the recommended next step.",
-    subhead:    "Hustad documented a repair condition that should be handled as a focused service item. This report organizes the findings and creates a service opportunity for repair estimating.",
-    whatMeans:  "The documented condition supports a repair path. The current finding does not support a full replacement or carrier review recommendation from this report alone.",
-    nextStep:   "Hustad service team will prepare a focused repair quote or scheduling path based on the documented finding. No repair begins until the owner approves the repair quote or work order.",
+    headline:   "Urgent condition documented. Immediate protection or repair is recommended.",
+    subhead:    "During our inspection, we documented one or more conditions on your property's exterior that create a near-term risk of water entry or additional property damage. Immediate protective repair or stabilization is highly recommended.",
+    whatMeans:  "To prevent further deterioration or interior damage, we advise authorizing a targeted repair immediately. The scope is limited specifically to addressing the urgent findings documented.",
+    nextStep:   "Review the repair documentation and photos. Sign the targeted repair agreement to authorize Hustad to perform the protective work. Once the immediate risk is stabilized, we can discuss longer-term property goals.",
     credibilityLines: [
       "This report is not recommending a full replacement or insurance claim path based on today's documented repair finding.",
       "If additional damage is discovered later, Hustad can reassess."
     ],
-    proofLabel:  "Urgent findings — critical documentation",
+    proofLabel:  "Critical Documentation",
     showWeather: false,
   },
   full_restoration: {
     badgeLabel: "Replacement Proposal Requested",
-    headline:   "Replacement proposal requested. Hustad estimating is preparing your proposal.",
-    subhead:    "This report confirms the replacement request, captures the property notes collected during the appointment, and explains what Hustad estimating will prepare for owner review.",
-    whatMeans:  "Hustad will review measurements, material assumptions, access, warranty path, required system components, exclusions, and any owner-selected options before sending the proposal.",
-    nextStep:   "A written replacement proposal is the right next step. This report is not a final price or contract. It confirms that Hustad estimating is preparing the proposal package.",
+    headline:   "Standard Proposal Requested. Proposal In Progress.",
+    subhead:    "Our estimating department is currently reviewing the measurements, material selections, and specific requirements for your property. We are hard at work crafting a comprehensive and customized proposal for your full restoration project.",
+    whatMeans:  "Hustad will finalize the material costs and labor requirements to ensure an accurate and competitive proposal tailored to your needs.",
+    nextStep:   "You will receive the formal proposal for your review soon. We will follow up to review the proposal with you, answer any questions regarding materials or warranties, and finalize the contract for production.",
     credibilityLines: [
       "This report is not a final contract price, final material selection, warranty promise, or production schedule.",
       "The proposal will control the final scope and pricing after estimating review."
@@ -72,7 +72,7 @@ const PATH_CFG: Record<PathType, {
     badgeLabel: "No action required today",
     headline:   "Inspection complete. No action is recommended at this time.",
     subhead:    "We completed a thorough exterior inspection and didn't document meaningful storm-related conditions that support repair, emergency action, or carrier review at this time. All findings have been organized and documented for your property records.",
-    whatMeans:  "Today's inspection didn't reveal conditions that support a repair, protection, or carrier review recommendation. Any monitor-only or maintenance items have been documented as a baseline for future comparison. This is an honest finding — and it has real value as a dated property record.",
+    whatMeans:  "Today's inspection didn't reveal conditions that support a repair, protection, or carrier review recommendation. Any monitor-only or maintenance items have been documented as a baseline for future comparison.",
     nextStep:   "Review any monitor items or maintenance notes together. Save this report as your property baseline. Consider a future recheck reminder, and know that if conditions change after a future storm event, you have a documented starting point.",
     credibilityLines: [
       "This doesn't mean your roof is perfect indefinitely.",
@@ -102,47 +102,47 @@ const PLAIN_ENGLISH = [
 // DESIGN TOKENS
 // ─────────────────────────────────────────────────────────────────────────────
 const T = {
-  // Page surfaces
-  pageBg:    [248, 247, 243] as C3,
-  surface:   [255, 255, 255] as C3,
-  surface2:  [250, 249, 246] as C3,
-  surface3:  [243, 242, 238] as C3,
+  // Page surfaces (Dark Theme)
+  pageBg:    [18, 22, 30] as C3,       
+  surface:   [28, 35, 47] as C3,       
+  surface2:  [38, 47, 63] as C3,       
+  surface3:  [50, 60, 78] as C3,       
 
   // Cover header — deep navy band
-  headerBg:  [13,  21,  37]  as C3,
-  headerMid: [40,  58,  88]  as C3,
-  headerDim: [100, 120, 155] as C3,
+  headerBg:  [10, 14, 20]  as C3,      
+  headerMid: [40, 58, 88]  as C3,    
+  headerDim: [150, 160, 175] as C3,    
 
   // Borders
-  border:    [228, 225, 218] as C3,
-  borderMid: [208, 204, 195] as C3,
+  border:    [55, 65, 85] as C3,       
+  borderMid: [75, 85, 105] as C3,      
 
   // Typography
-  text:      [26,  25,  23]  as C3,
-  textMid:   [80,  76,  70]  as C3,
-  textFaint: [118, 114, 107] as C3,
+  text:      [245, 245, 250]  as C3,   
+  textMid:   [195, 205, 215]  as C3,   
+  textFaint: [140, 150, 165] as C3,    
 
   // Blue — carrier review / informational
-  blue:      [37,  99,  235] as C3,
-  blueMid:   [96,  165, 250] as C3,
-  blueBg:    [239, 246, 255] as C3,
-  blueBdr:   [191, 219, 254] as C3,
+  blue:      [96, 165, 250] as C3,     
+  blueMid:   [59, 130, 246] as C3,     
+  blueBg:    [30, 58, 138] as C3,      
+  blueBdr:   [37, 99, 235] as C3,      
 
   // Amber — caution / rescheduled
-  amber:     [180, 83,   9]  as C3,
-  amberMid:  [217, 119,  6]  as C3,
-  amberBg:   [255, 251, 235] as C3,
-  amberBdr:  [252, 211,  77] as C3,
+  amber:     [251, 191, 36]  as C3,    
+  amberMid:  [245, 158, 11]  as C3,
+  amberBg:   [120, 53, 15] as C3,      
+  amberBdr:  [180, 83, 9] as C3,       
 
   // Green — no action / complete
-  green:     [22,  163,  74] as C3,
-  greenBg:   [240, 253, 244] as C3,
-  greenBdr:  [167, 243, 208] as C3,
+  green:     [52, 211, 153] as C3,     
+  greenBg:   [6, 78, 59] as C3,        
+  greenBdr:  [5, 150, 105] as C3,      
 
   // Red — urgent
-  red:       [220, 38,   38] as C3,
-  redBg:     [254, 242, 242] as C3,
-  redBdr:    [252, 165, 165] as C3,
+  red:       [248, 113, 113] as C3,    
+  redBg:     [127, 29, 29] as C3,      
+  redBdr:    [220, 38, 38] as C3,      
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
