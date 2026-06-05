@@ -238,6 +238,20 @@ function statCard(d: jsPDF, value: string | number, label: string, x: number, y:
   d.text(label, x + w / 2, y + h - 5.5, { align: "center" });
 }
 
+function coverStatCard(d: jsPDF, value: string | number, label: string, x: number, y: number, w: number, h: number, accent: C3, bg: C3, bdr: C3) {
+  baseCard(d, x, y, w, h, bg, bdr);
+  sf(d, accent); d.rect(x, y, w, 2.2, "F");
+  sf(d, T.surface2); d.circle(x + w - 7, y + 8, 2.2, "F");
+  sf(d, accent); d.circle(x + w - 7, y + 8, 1.1, "F");
+
+  st(d, accent); d.setFont("times", "bold"); d.setFontSize(25);
+  d.text(String(value), x + 6, y + 20);
+
+  st(d, T.textMid); d.setFont("helvetica", "bold"); d.setFontSize(6.6);
+  const labelLines = d.splitTextToSize(label.toUpperCase(), w - 12) as string[];
+  d.text(labelLines.slice(0, 2), x + 6, y + h - 8.5);
+}
+
 function badgePill(d: jsPDF, label: string, x: number, y: number, color: C3, bg: C3, bdr: C3, minW?: number): number {
   const tw = (d.getStringUnitWidth(label) * 7) / (d.internal.scaleFactor ?? 2.83);
   const w  = Math.max(tw + 14, minW ?? 0);
@@ -316,88 +330,96 @@ function infoRow(d: jsPDF, lbl: string, val: string, x: number, y: number, w: nu
 // PAGE 1 — COVER
 // ─────────────────────────────────────────────────────────────────────────────
 function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3) {
-  const accBg  = getAccentBg(pt);
-  const accBdr = getAccentBdr(pt);
-  const rid    = s.sessionId.slice(-8).toUpperCase();
-  const cfg    = PATH_CFG[pt];
+  const rid = s.sessionId.slice(-8).toUpperCase();
+  const cfg = PATH_CFG[pt];
 
   // ── Full page background ──────────────────────────────────────────────────
   sf(d, T.pageBg); d.rect(0, 0, PW, PH, "F");
 
-  // ── Dark navy header band ─────────────────────────────────────────────────
-  sf(d, T.headerBg); d.rect(0, 0, PW, HDR, "F");
-  // Accent stripe at very top
-  sf(d, acc); d.rect(0, 0, PW, 2.5, "F");
-  // Subtle horizontal mid-rule inside header
-  sf(d, T.headerMid); d.rect(M, 33, CW, 0.25, "F");
+  // ── Header band — compact (42mm) ──────────────────────────────────────────
+  const COVER_HDR = 42;
+  sf(d, T.headerBg); d.rect(0, 0, PW, COVER_HDR, "F");
+  sf(d, acc); d.rect(0, 0, PW, 2, "F");
 
-  // Hustad wordmark — white
-  st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(19);
-  d.text("HUSTAD", M, 22);
-  st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(8.5);
-  d.text("Madison Residential", M + 34, 22);
+  // Brand left
+  st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(17);
+  d.text("HUSTAD", M, 17);
+  st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
+  d.text("Madison Residential", M + 31, 17);
 
-  // Report meta — right side of header
-  st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(7);
-  d.text(`Report ${rid}`, PW - M, 22, { align: "right" });
-  d.text(fmtDate(s.createdAt), PW - M, 30, { align: "right" });
+  // Report ID pill — right
+  sf(d, T.surface2); d.roundedRect(PW - M - 44, 10, 44, 9, 1.5, 1.5, "F");
+  sd(d, T.border); d.setLineWidth(0.15); d.roundedRect(PW - M - 44, 10, 44, 9, 1.5, 1.5, "S");
+  st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(5.5);
+  d.text("REPORT", PW - M - 37, 15.8);
+  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(6.5);
+  d.text(rid, PW - M - 2, 16, { align: "right" });
 
-  // "Homeowner Inspection Report" label
-  st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(7);
-  d.text("HOMEOWNER INSPECTION REPORT", M, 44);
-  // Accent dot before label
-  sf(d, acc); d.circle(M - 4.5, 43, 1.8, "F");
+  // Date below pill
+  st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(6.3);
+  d.text(fmtDate(s.createdAt), PW - M, 26, { align: "right" });
 
-  // Property address inside header (bottom of band) if short
-  if (s.property.address) {
-    st(d, [200, 212, 230] as C3); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
-    const shortAddr = [s.property.address, s.property.cityStateZip].filter(Boolean).join("  ·  ");
-    d.text(shortAddr, PW / 2, 44, { align: "center" });
+  // Hairline + doc type label
+  sf(d, T.border); d.rect(0, 28, PW, 0.2, "F");
+  st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6);
+  d.text("HOMEOWNER INSPECTION REPORT", M, 37);
+  // Outcome badge right-aligned in label row
+  st(d, acc); d.setFont("helvetica", "bold"); d.setFontSize(6);
+  d.text(cfg.badgeLabel.toUpperCase(), PW - M, 37, { align: "right" });
+
+  // ── Content area ──────────────────────────────────────────────────────────
+  let y = COVER_HDR + 14;
+
+  // ── Homeowner name — primary hero ─────────────────────────────────────────
+  const hwName = s.property.homeownerPrimaryName || "Homeowner";
+  st(d, T.textFaint); d.setFont("helvetica", "bold"); d.setFontSize(6.5);
+  d.text("PREPARED FOR", M, y);
+  y += 8;
+
+  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(26);
+  const nameLines = d.splitTextToSize(hwName, CW * 0.75) as string[];
+  d.text(nameLines.slice(0, 1), M, y);
+  y += 12;
+
+  // Address + city — smaller, muted, under name
+  const addrStr = [s.property.address, s.property.cityStateZip].filter(Boolean).join("  ·  ");
+  if (addrStr) {
+    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(9.5);
+    d.text(addrStr, M, y);
+    y += 7;
   }
 
-  // ── Content area (below header band) ─────────────────────────────────────
-  let y = HDR + 12;
+  y += 10;
 
-  // Outcome type eyebrow
-  st(d, acc); d.setFont("helvetica", "bold"); d.setFontSize(7);
-  d.text(cfg.badgeLabel.toUpperCase(), M, y);
+  // Accent rule
+  sf(d, acc); d.rect(M, y, 28, 1.5, "F");
   y += 9;
 
-  // Property address — large serif headline
-  const addr = s.property.address || "Property Address";
-  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(26);
-  const addrLines = d.splitTextToSize(addr, CW * 0.78) as string[];
-  d.text(addrLines.slice(0, 2), M, y);
-  y += Math.min(addrLines.length, 2) * 9.5;
+  // Outcome eyebrow
+  st(d, acc); d.setFont("helvetica", "bold"); d.setFontSize(7);
+  d.text(cfg.badgeLabel.toUpperCase(), M, y);
+  y += 11;
 
-  if (s.property.cityStateZip) {
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(11);
-    d.text(s.property.cityStateZip, M, y + 2);
-    y += 10;
-  }
-  y += 8;
-
-  // Thin accent rule under address block
-  sf(d, acc); d.rect(M, y, 32, 1.5, "F");
-  y += 8;
-
-  // ── Outcome recommendation card ───────────────────────────────────────────
+  // ── Outcome card — clean redesign ─────────────────────────────────────────
+  // surface2 bg, accent-colored border, no heavy fill, no badge pill inside
   const hlLines  = d.splitTextToSize(cfg.headline, CW - 20) as string[];
   const subLines = d.splitTextToSize(cfg.subhead,   CW - 20) as string[];
-  const hlH      = Math.min(hlLines.length,  2) * 6.5;
-  const subH     = Math.min(subLines.length, 4) * 4.5; // Increased from 2 to 4
-  const cardH    = 12 + 8 + hlH + 5 + subH + 10;
+  const hlH      = Math.min(hlLines.length, 2) * 7.5;
+  const subH     = Math.min(subLines.length, 3) * 5;
+  const cardH    = 12 + hlH + 7 + subH + 12;
 
-  accentCard(d, M, y, CW, cardH, acc, accBg, accBdr);
-  badgePill(d, cfg.badgeLabel, M + 10, y + 9, acc, T.surface, accBdr);
+  sf(d, T.surface2); d.roundedRect(M, y, CW, cardH, 3, 3, "F");
+  sd(d, acc); d.setLineWidth(0.45); d.roundedRect(M, y, CW, cardH, 3, 3, "S");
+  // Thin left accent bar
+  sf(d, acc); d.roundedRect(M, y + 3, 3, cardH - 6, 1, 1, "F");
 
-  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(13.5);
-  d.text(hlLines.slice(0, 2), M + 10, y + 22);
+  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(14);
+  d.text(hlLines.slice(0, 2), M + 12, y + 14);
 
-  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
-  d.text(subLines.slice(0, 4), M + 10, y + 22 + hlH + 5); // Increased from 2 to 4
+  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8.5);
+  d.text(subLines.slice(0, 3), M + 12, y + 14 + hlH + 7);
 
-  y += cardH + 10;
+  y += cardH + 8;
 
   // ── Stat cards ────────────────────────────────────────────────────────────
   const urgentCount  = s.findings.urgentItemsCount;
@@ -413,40 +435,30 @@ function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3) {
   if (monitorCount > 0) stats.push({ value: monitorCount, lbl: "Monitor items",   acc: T.amber,   bg: T.amberBg, bdr: T.amberBdr });
   if (photoCount   > 0) stats.push({ value: photoCount,   lbl: "Evidence photos", acc: T.textMid, bg: T.surface, bdr: T.border   });
 
-  const sh = 36;
+  const sh = 34;
   if (stats.length > 0) {
     const vis = stats.slice(0, 4);
     const sw  = (CW - (vis.length - 1) * 5) / vis.length;
-    vis.forEach((s2, i) => statCard(d, s2.value, s2.lbl, M + i * (sw + 5), y, sw, sh, s2.acc, s2.bg, s2.bdr));
+    vis.forEach((s2, i) => coverStatCard(d, s2.value, s2.lbl, M + i * (sw + 5), y, sw, sh, s2.acc, s2.bg, s2.bdr));
   } else {
-    baseCard(d, M, y, CW, sh, T.greenBg, T.greenBdr);
-    sf(d, T.green); d.rect(M, y, CW, 2, "F");
-    st(d, T.green); d.setFont("helvetica", "bold"); d.setFontSize(9.5);
+    baseCard(d, M, y, CW, sh, T.surface, T.border);
+    sf(d, acc); d.rect(M, y, 3, sh, "F");
+    st(d, acc); d.setFont("helvetica", "bold"); d.setFontSize(9);
     d.text("No urgent findings — inspection complete", M + CW / 2, y + sh / 2 + 3, { align: "center" });
   }
-  y += sh + 10;
+  y += sh + 8;
 
-  // ── Inspector metadata strip ──────────────────────────────────────────────
-  const metaH = 28;
+  // ── Meta strip — Inspection date | Representative | Outcome ───────────────
+  const metaH = 26;
   baseCard(d, M, y, CW, metaH, T.surface, T.border);
   const iw = (CW - 12) / 3;
-  // Vertical dividers
   sf(d, T.border);
-  d.rect(M + iw + 6, y + 6, 0.2, metaH - 12, "F");
-  d.rect(M + (iw + 6) * 2, y + 6, 0.2, metaH - 12, "F");
+  d.rect(M + iw + 6, y + 5, 0.2, metaH - 10, "F");
+  d.rect(M + (iw + 6) * 2, y + 5, 0.2, metaH - 10, "F");
 
-  infoRow(d, "Prepared for",    s.property.homeownerPrimaryName || "Homeowner", M + 6,                y + 6, iw);
-  infoRow(d, "Inspection date", fmtDate(s.createdAt),                           M + iw + 12,          y + 6, iw);
-  infoRow(d, "Representative",  s.repName || "—",                               M + (iw + 6) * 2 + 6, y + 6, iw);
-  y += metaH + 10;
-
-  // ── Contents strip ────────────────────────────────────────────────────────
-  sf(d, T.surface2); d.roundedRect(M, y, CW, 18, 2, 2, "F");
-  sd(d, T.border); d.setLineWidth(0.15); d.roundedRect(M, y, CW, 18, 2, 2, "S");
-  st(d, T.textFaint); d.setFont("helvetica", "bold"); d.setFontSize(6);
-  d.text("THIS REPORT INCLUDES", M + 8, y + 7);
-  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
-  d.text("Inspection findings  ·  Evidence photographs  ·  Our recommendation  ·  Process guide  ·  Agreement guidance", M + 8, y + 14);
+  infoRow(d, "Inspection date", fmtDate(s.createdAt), M + 6,                y + 5, iw);
+  infoRow(d, "Representative",  s.repName || "—",     M + iw + 12,          y + 5, iw);
+  infoRow(d, "Outcome",         cfg.badgeLabel,        M + (iw + 6) * 2 + 6, y + 5, iw);
 
   pageFooter(d);
 }
