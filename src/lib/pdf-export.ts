@@ -43,16 +43,16 @@ const PATH_CFG: Record<PathType, {
     showWeather: true,
   },
   urgent_repair: {
-    badgeLabel: "Repair only",
+    badgeLabel: "Repair Report",
     headline:   "Targeted repair documented. Direct repair is the recommended next step.",
     subhead:    "Hustad documented a repair condition that should be handled as a focused service item. This report organizes the findings and creates a service opportunity for repair estimating.",
-    whatMeans:  "Current findings support a targeted repair path. The current finding does not support a full replacement or carrier review recommendation from this report alone.",
-    nextStep:   "Hustad service team will prepare a focused repair quote or scheduling path based on the documented finding. No repair begins until the owner approves the repair quote or work order.",
+    whatMeans:  "The documented condition supports a repair path. The current finding does not support a full replacement or carrier review recommendation from this report alone.",
+    nextStep:   "Hustad service team will prepare a focused repair quote or schedule review based on the documented finding. No insurance claim recommendation is being made from this report.",
     credibilityLines: [
       "This report is not recommending a full replacement or insurance claim path based on today's documented repair finding.",
-      "If additional damage is discovered later, Hustad can reassess."
+      "The goal is to correct the issue without over-scoping the project. If broader damage is later found, Hustad can reassess."
     ],
-    proofLabel:  "Repair Evidence Photos",
+    proofLabel:  "Repair evidence photos",
     showWeather: false,
   },
   full_restoration: {
@@ -1374,34 +1374,231 @@ async function collectPhotos(s: SessionState): Promise<PdfPhoto[]> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// CUSTOM REPAIR REPORT (Single tall page layout)
+// ─────────────────────────────────────────────────────────────────────────────
+async function renderUrgentRepairReportLayout(d: jsPDF, session: SessionState, photos: PdfPhoto[], pt: PathType, acc: C3, rid: string) {
+  const cfg = PATH_CFG[pt];
+  let y = 0;
+
+  // Custom Header
+  sf(d, T.headerBg); d.rect(0, 0, PW, HDR, "F");
+  st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(16);
+  d.text("HUSTAD", M, 24);
+  st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
+  d.text("MADISON RESIDENTIAL", M + 34, 24);
+
+  const rightColX = PW / 2 + 10;
+  st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(9);
+  d.text("Repair Report", rightColX, 22);
+  st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
+  const repStr = `${session.property.address?.split(',')[0] ?? ""} | ${session.customer?.firstName ?? ""} ${session.customer?.lastName ?? ""}`;
+  d.text(repStr, rightColX, 30);
+
+  // SERVICE Badge in header
+  sd(d, T.border); d.setLineWidth(0.3); d.roundedRect(PW - M - 26, 17, 26, 10, 5, 5, "S");
+  st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
+  d.text("SERVICE", PW - M - 13, 23.5, { align: "center" });
+
+  sf(d, T.borderMid); d.rect(M, HDR - 4, CW, 0.2, "F");
+  
+  y = HDR + 14;
+
+  // Pill tags
+  const drawPill = (text: string, x: number, py: number, color: C3, bg: C3) => {
+    d.setFont("helvetica", "bold"); d.setFontSize(7.5);
+    const w = d.getTextWidth(text) + 12;
+    sf(d, bg); d.roundedRect(x, py, w, 10, 5, 5, "F");
+    sd(d, color); d.setLineWidth(0.3); d.roundedRect(x, py, w, 10, 5, 5, "S");
+    st(d, [255, 255, 255] as C3);
+    d.text(text, x + w / 2, py + 6.5, { align: "center" });
+    return w;
+  };
+
+  let px = M;
+  px += drawPill("Repair only", px, y, T.redBdr, T.redBg) + 4;
+  drawPill("Service quote requested", px, y, T.redBdr, T.redBg);
+  
+  y += 24;
+
+  // Headline
+  st(d, [255, 255, 255] as C3); d.setFont("times", "bold"); d.setFontSize(22);
+  const hlLines = d.splitTextToSize(cfg.headline, CW) as string[];
+  d.text(hlLines, M, y);
+  y += hlLines.length * 9 + 4;
+
+  // Subhead
+  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(9);
+  const subLines = d.splitTextToSize(cfg.subhead, CW) as string[];
+  d.text(subLines, M, y);
+  y += subLines.length * 5 + 14;
+
+  // Split cards (Repair Summary / Why repair only)
+  const hw = CW / 2 - 3;
+  const col2 = M + hw + 6;
+  const cardH = 46;
+
+  // Repair Summary
+  baseCard(d, M, y, hw, cardH, T.surface, T.border);
+  st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(10.5);
+  d.text("Repair Summary", M + 8, y + 10);
+  
+  const urg = session.findings.urgentItemsCount > 0 ? "Urgent" : "Prompt";
+  const statStr = "Service quote needed";
+  
+  const drawRow = (lbl: string, val: string, ry: number) => {
+    st(d, T.blue); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
+    d.text(lbl, M + 8, ry);
+    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
+    d.text(val, M + 36, ry);
+  };
+  drawRow("Urgency", urg, y + 20);
+  drawRow("Location", "[Roof area / elevation]", y + 26);
+  drawRow("Finding", "[Repair finding]", y + 32);
+  drawRow("Status", statStr, y + 38);
+
+  // Why repair only
+  baseCard(d, col2, y, hw, cardH, T.surface, T.border);
+  st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(10.5);
+  d.text("Why repair only", col2 + 8, y + 10);
+  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
+  const whyLines = d.splitTextToSize(cfg.whatMeans, hw - 16) as string[];
+  d.text(whyLines, col2 + 8, y + 19);
+
+  y += cardH + 16;
+
+  // Repair evidence photos
+  st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(10.5);
+  d.text("Repair evidence photos", M, y);
+  y += 6;
+
+  const pw = (CW - 10) / 3;
+  const ph = pw * 0.75;
+  [0, 1, 2].forEach(i => {
+    const rx = M + i * (pw + 5);
+    baseCard(d, rx, y, pw, ph + 16, T.surface, T.border);
+    sf(d, T.surface2); d.rect(rx + 4, y + 4, pw - 8, ph - 8, "F");
+    const photo = photos.find(p => p.severity === "urgent") || photos[i];
+    if (photo) {
+      try { d.addImage(photo.dataUrl, "JPEG", rx + 4, y + 4, pw - 8, ph - 8); } catch (_) {}
+    } else {
+      st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(16);
+      d.text("🖼", rx + pw/2, y + ph/2, {align:"center"});
+    }
+    st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(7);
+    const lbl = i === 0 ? "Repair finding" : i === 1 ? "Close-up detail" : "Context photo";
+    d.text(lbl, rx + 4, y + ph + 10);
+  });
+
+  y += ph + 16 + 16;
+
+  // Accent Cards
+  const recH = 44;
+  // Recommended repair path
+  accentCard(d, M, y, hw, recH, T.red, T.surface, T.border);
+  st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(10.5);
+  d.text("Recommended repair path", M + 10, y + 10);
+  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
+  const recLines = d.splitTextToSize(cfg.nextStep, hw - 20) as string[];
+  d.text(recLines, M + 10, y + 18);
+
+  // What this report is not saying
+  accentCard(d, col2, y, hw, recH, T.amber, T.surface, T.border);
+  st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(10.5);
+  d.text("What this report is not saying", col2 + 10, y + 10);
+  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
+  const notSaying = cfg.credibilityLines.join(" ");
+  const nsLines = d.splitTextToSize(notSaying, hw - 20) as string[];
+  d.text(nsLines, col2 + 10, y + 18);
+
+  y += recH + 16;
+
+  // Next Steps
+  st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(10.5);
+  d.text("Next steps", M, y);
+  y += 6;
+
+  baseCard(d, M, y, CW, 56, T.surface, T.border);
+  const ncw = (CW - 16) / 3;
+  [
+    {n: "1", h: "Service opportunity created", b: "Hustad routes the documented repair to the service team."},
+    {n: "2", h: "Repair quote prepared", b: "Pricing and schedule are confirmed before authorization."},
+    {n: "3", h: "Owner reviews and approves", b: "No repair begins until you approve the repair quote or work order."}
+  ].forEach((ns, i) => {
+    const nx = M + 4 + i * (ncw + 4);
+    baseCard(d, nx, y + 4, ncw, 48, T.surface2, T.border);
+    st(d, T.red); d.setFont("helvetica", "bold"); d.setFontSize(9);
+    d.text(ns.n, nx + 6, y + 14);
+    st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
+    const hl = d.splitTextToSize(ns.h, ncw - 18) as string[];
+    d.text(hl, nx + 16, y + 14);
+    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(6.5);
+    const bl = d.splitTextToSize(ns.b, ncw - 12) as string[];
+    d.text(bl, nx + 6, y + 14 + hl.length * 4 + 4);
+  });
+
+  y += 56 + 16;
+
+  // CTA
+  const ctaH = 28;
+  sf(d, T.redBg); d.roundedRect(M, y, CW, ctaH, 4, 4, "F");
+  sd(d, T.red); d.setLineWidth(0.3); d.roundedRect(M, y, CW, ctaH, 4, 4, "S");
+  st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(11);
+  d.text("Primary CTA: Review repair quote when prepared", M + 10, y + 12);
+  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7);
+  d.text("Attachments: repair report PDF, repair photos, service next-step checklist", M + 10, y + 20);
+
+  y += ctaH + 16;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // MAIN GENERATOR
 // ─────────────────────────────────────────────────────────────────────────────
 async function generateReport(session: SessionState): Promise<jsPDF> {
-  const doc    = new jsPDF({ compress: true });
-  const photos = await collectPhotos(session);
   const pt     = derivePathType(session);
+  const isTallPage = pt === "urgent_repair";
+  
+  // urgent_repair is 450mm tall, creating a beautiful continuous layout like the mockup
+  const doc    = new jsPDF({ compress: true, format: isTallPage ? [215.9, 450] : "letter" });
+  
+  // Fill the page background completely (for dark mode support)
+  sf(doc, T.pageBg); doc.rect(0, 0, 215.9, isTallPage ? 450 : 279.4, "F");
+
+  const photos = await collectPhotos(session);
   const acc    = getAccent(pt);
   const rid    = session.sessionId.slice(-8).toUpperCase();
 
-  renderCover(doc, session, pt, acc);
-  doc.addPage(); renderFindingsOverview(doc, session, pt, acc);
-  doc.addPage(); renderRecommendation(doc, session, pt, acc);
-  await renderEvidenceGallery(doc, photos, pt, acc, rid);
+  if (pt === "urgent_repair") {
+    await renderUrgentRepairReportLayout(doc, session, photos, pt, acc, rid);
+  } else {
+    renderCover(doc, session, pt, acc);
+    
+    doc.addPage();
+    sf(doc, T.pageBg); doc.rect(0, 0, 215.9, 279.4, "F");
+    renderFindingsOverview(doc, session, pt, acc);
+    
+    doc.addPage();
+    sf(doc, T.pageBg); doc.rect(0, 0, 215.9, 279.4, "F");
+    renderRecommendation(doc, session, pt, acc);
+    
+    await renderEvidenceGallery(doc, photos, pt, acc, rid);
 
-  if (pt === "carrier_review") {
-    doc.addPage(); renderHowItWorks(doc, acc, rid);
-  } else if (pt === "urgent_repair") {
-    doc.addPage(); renderRepairNextSteps(doc, session, acc, rid);
-  } else if (pt === "full_restoration") {
-    doc.addPage(); renderFullRestorationSummary(doc, session, acc, rid);
-  }
+    if (pt === "carrier_review") {
+      doc.addPage();
+      sf(doc, T.pageBg); doc.rect(0, 0, 215.9, 279.4, "F");
+      renderHowItWorks(doc, acc, rid);
+    } else if (pt === "full_restoration") {
+      doc.addPage();
+      sf(doc, T.pageBg); doc.rect(0, 0, 215.9, 279.4, "F");
+      renderFullRestorationSummary(doc, session, acc, rid);
+    }
 
-  // Page X of Y — second pass
-  const total = doc.getNumberOfPages();
-  for (let i = 1; i <= total; i++) {
-    doc.setPage(i);
-    st(doc, T.textFaint); doc.setFont("helvetica", "normal"); doc.setFontSize(5.8);
-    doc.text(`Page ${i} of ${total}`, PW - M, PH - 4, { align: "right" });
+    // Page X of Y — second pass
+    const total = doc.getNumberOfPages();
+    for (let i = 1; i <= total; i++) {
+      doc.setPage(i);
+      st(doc, T.textFaint); doc.setFont("helvetica", "normal"); doc.setFontSize(5.8);
+      doc.text(`Page ${i} of ${total}`, PW - M, PH - 4, { align: "right" });
+    }
   }
 
   return doc;
