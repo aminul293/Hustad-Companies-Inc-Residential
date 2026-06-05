@@ -491,10 +491,10 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
   y += Math.min(hlLines.length, 3) * 7 + 4;
 
   // ── Hero subhead ──────────────────────────────────────────────────────────
-  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
-  const subLines = d.splitTextToSize(cfg.subhead, CW * 0.72) as string[];
-  d.text(subLines.slice(0, 3), M, y);
-  y += Math.min(subLines.length, 3) * 4.8 + 5;
+  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7);
+  const subLines = d.splitTextToSize(cfg.subhead, CW) as string[];
+  d.text(subLines.slice(0, 5), M, y);
+  y += Math.min(subLines.length, 5) * 4.4 + 5;
 
   // ── "Summary locked" note (matches web app "SUMMARY LOCKED AND AUDITED") ─
   st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(5.5);
@@ -604,7 +604,6 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
     const photoGap = 4;
     const photoW   = (CW - photoGap * (topPhotos.length - 1)) / topPhotos.length;
     const photoH   = 36;
-
     for (let i = 0; i < topPhotos.length; i++) {
       const photo = topPhotos[i];
       const px    = M + i * (photoW + photoGap);
@@ -640,14 +639,42 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
       st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6);
       d.text(`+ ${photos.length - 3} more photos in full report`, PW - M, y + photoH + 5.5, { align: "right" });
     }
+    y += photoH + 14;
   } else {
-    // No photos — show a note so the bottom isn't blank
-    const noteH = 18;
-    baseCard(d, M, y, CW, noteH, T.surface, T.border);
-    sf(d, T.border); d.rect(M, y, CW, noteH, "F");
-    sf(d, T.surface2); d.roundedRect(M, y, CW, noteH, 2, 2, "F");
-    st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(7);
-    d.text("Photo documentation is included in the evidence section of this report.", PW / 2, y + noteH / 2 + 2.5, { align: "center" });
+    const noteH = 20;
+    baseCard(d, M, y, CW, noteH, T.surface2, T.borderMid);
+    sf(d, acc); d.rect(M, y, 3, noteH, "F");
+    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7);
+    d.text("Photo documentation is included in the evidence section of this report.", M + 9, y + noteH / 2 + 2.5);
+    y += noteH + 10;
+  }
+
+  // ── Report Contents 2×2 grid ──────────────────────────────────────────────
+  st(d, T.textFaint); d.setFont("helvetica", "bold"); d.setFontSize(5.5);
+  d.text("WHAT'S IN THIS REPORT", M, y);
+  y += 6;
+  const secItems = [
+    { num: "01", title: "Inspection Findings",  desc: "Complete breakdown of every documented roof condition, severity rating, and category." },
+    { num: "02", title: "Evidence Gallery",     desc: "Annotated photographs with storm, urgency, and maintenance classifications." },
+    { num: "03", title: "Recommendation",       desc: "Your specific path forward, next steps, and what to expect from each party." },
+    { num: "04", title: "Agreement Summary",    desc: "Project authorization terms, warranty options, and protection tier details." },
+  ];
+  const secW = CW / 2 - 3;
+  const secH = 30;
+  for (let i = 0; i < secItems.length; i++) {
+    const sec = secItems[i];
+    const sx  = i % 2 === 0 ? M : M + secW + 6;
+    const sy  = y + Math.floor(i / 2) * (secH + 4);
+    baseCard(d, sx, sy, secW, secH, T.surface2, T.borderMid);
+    sf(d, acc); d.circle(sx + 9, sy + 9, 5, "F");
+    sf(d, T.gloss); d.roundedRect(sx + 5, sy + 5, 8, 1.8, 0.8, 0.8, "F");
+    st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(6);
+    d.text(sec.num, sx + 9, sy + 11, { align: "center" });
+    st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
+    d.text(sec.title, sx + 18, sy + 10);
+    st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6);
+    const descLines = d.splitTextToSize(sec.desc, secW - 22) as string[];
+    d.text(descLines.slice(0, 3), sx + 18, sy + 17);
   }
 
   pageFooter(d);
