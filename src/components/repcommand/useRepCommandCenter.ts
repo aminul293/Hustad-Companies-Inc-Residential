@@ -164,7 +164,7 @@ export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart
 
     const loadScheduledLeads = async () => {
       try {
-        const data = await fetchLeads();
+        const data = await fetchLeads(currentRep.id);
         setScheduledLeads(data.filter((l: any) => ["scheduled","appointment_confirmed"].includes(l.pipeline_status)));
       } catch { /* non-fatal */ }
     };

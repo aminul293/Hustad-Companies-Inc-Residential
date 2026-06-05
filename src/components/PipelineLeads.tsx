@@ -69,7 +69,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
           <div className="w-16 h-16 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
             <Activity className="w-7 h-7 text-[#2D4060]" />
           </div>
-          <p className="text-[#567090] font-light text-lg">No p.leads in pipeline</p>
+          <p className="text-[#567090] font-light text-lg">No leads in pipeline</p>
           <p className="text-[#2D4060] text-sm mt-2">Import tickets from CP Inbox to get started</p>
         </div>
       ) : (

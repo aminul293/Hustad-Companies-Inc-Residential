@@ -130,6 +130,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   // Autosave locally + sync to server (debounced)
   useEffect(() => {
     if (!session) return;
+    if (isDemo) return;
     if (authStatus !== "authenticated" && !authRep) return;
 
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
@@ -153,7 +154,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       clearTimeout(timer);
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     };
-  }, [session, authStatus]);
+  }, [session, authStatus, isDemo]);
 
   // ── Device sleep/wake handler ──────────────────────────────────────────
   useEffect(() => {
@@ -171,6 +172,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
     const handleOnline = () => {
       setIsOnline(true);
+      if (isDemo) return;
       if (authStatus !== "authenticated" && !authRep) return;
       // Process offline sync queue when we come back online
       processSyncQueue().then((count) => {

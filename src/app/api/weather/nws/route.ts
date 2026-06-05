@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 /**
  * NWS LSR (Local Storm Report) Parser
  * Extracts structured data from raw NWS text products.
@@ -59,6 +61,9 @@ function parseLSRText(text: string) {
 }
 
 export async function GET(req: NextRequest) {
+  // #region agent log
+  fetch('http://127.0.0.1:7331/ingest/ef9d6ee3-7cee-4b0f-9d60-ae5de7a559bd',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'87fc44'},body:JSON.stringify({sessionId:'87fc44',location:'api/weather/nws/route.ts:GET-entry',message:'nws route invoked',data:{hasUrl:!!req.url},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
+  // #endregion
   try {
     const { searchParams } = new URL(req.url);
     const lat = searchParams.get("lat");
@@ -113,6 +118,9 @@ export async function GET(req: NextRequest) {
     });
 
   } catch (error: any) {
+    // #region agent log
+    fetch('http://127.0.0.1:7331/ingest/ef9d6ee3-7cee-4b0f-9d60-ae5de7a559bd',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'87fc44'},body:JSON.stringify({sessionId:'87fc44',location:'api/weather/nws/route.ts:GET-catch',message:'nws route error',data:{errName:error?.name,errMsg:error?.message,errDigest:error?.digest},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
+    // #endregion
     console.error("NWS Fetch Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

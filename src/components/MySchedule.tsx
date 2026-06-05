@@ -112,7 +112,7 @@ export function MySchedule({ currentRep }: Props) {
     setLoading(true);
     try {
       if (filter === "followups") {
-        const res = { json: async () => await fetchLeads() };
+        const res = { json: async () => await fetchLeads(currentRep.id) };
         const data = await res.json();
         if (Array.isArray(data)) {
           const now = new Date().toISOString();
@@ -122,7 +122,7 @@ export function MySchedule({ currentRep }: Props) {
           ));
         }
       } else if (filter === "unscheduled") {
-        const res = { json: async () => await fetchLeads() };
+        const res = { json: async () => await fetchLeads(currentRep.id) };
         const data = await res.json();
         if (Array.isArray(data)) {
           setUnscheduled(data.filter((l: any) =>

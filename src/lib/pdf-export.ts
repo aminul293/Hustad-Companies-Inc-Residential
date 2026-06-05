@@ -30,7 +30,7 @@ const PATH_CFG: Record<PathType, {
   proofLabel: string; showWeather: boolean;
 }> = {
   carrier_review: {
-    badgeLabel: "Carrier review candidate",
+    badgeLabel: "Claim recommended",
     headline:   "Storm findings documented. Carrier review is the recommended next step.",
     subhead:    "During our inspection, we conducted a comprehensive review of your property's exterior. We have documented conditions that are consistent with storm-related impact. While these findings do not guarantee insurance coverage, they provide strong evidence to justify a formal review by your insurance carrier.",
     whatMeans:  "The documented storm findings are strong enough to justify a formal review by your insurance carrier before you pay directly for repairs.",
@@ -43,29 +43,29 @@ const PATH_CFG: Record<PathType, {
     showWeather: true,
   },
   urgent_repair: {
-    badgeLabel: "Urgent protection required",
-    headline:   "Urgent condition documented. Immediate protection or repair is recommended.",
-    subhead:    "During our inspection, we documented one or more conditions on your property's exterior that create a near-term risk of water entry or additional property damage. Immediate protective repair or stabilization is highly recommended.",
-    whatMeans:  "To prevent further deterioration or interior damage, we advise authorizing a targeted repair immediately. The scope is limited specifically to addressing the urgent findings documented.",
-    nextStep:   "Review the repair documentation and photos. Sign the targeted repair agreement to authorize Hustad to perform the protective work. Once the immediate risk is stabilized, we can discuss longer-term property goals.",
+    badgeLabel: "Repair only",
+    headline:   "Targeted repair documented. Direct repair is the recommended next step.",
+    subhead:    "Hustad documented a repair condition that should be handled as a focused service item. This report organizes the findings and creates a service opportunity for repair estimating.",
+    whatMeans:  "Current findings support a targeted repair path. The current finding does not support a full replacement or carrier review recommendation from this report alone.",
+    nextStep:   "Hustad service team will prepare a focused repair quote or scheduling path based on the documented finding. No repair begins until the owner approves the repair quote or work order.",
     credibilityLines: [
       "This report is not recommending a full replacement or insurance claim path based on today's documented repair finding.",
       "If additional damage is discovered later, Hustad can reassess."
     ],
-    proofLabel:  "Critical Documentation",
+    proofLabel:  "Repair Evidence Photos",
     showWeather: false,
   },
   full_restoration: {
-    badgeLabel: "Replacement Proposal Requested",
-    headline:   "Standard Proposal Requested. Proposal In Progress.",
-    subhead:    "Our estimating department is currently reviewing the measurements, material selections, and specific requirements for your property. We are hard at work crafting a comprehensive and customized proposal for your full restoration project.",
-    whatMeans:  "Hustad will finalize the material costs and labor requirements to ensure an accurate and competitive proposal tailored to your needs.",
-    nextStep:   "You will receive the formal proposal for your review soon. We will follow up to review the proposal with you, answer any questions regarding materials or warranties, and finalize the contract for production.",
+    badgeLabel: "Full restoration / direct buy",
+    headline:   "Replacement proposal requested. Hustad estimating is preparing your proposal.",
+    subhead:    "This report confirms the replacement request, captures the property notes collected during the appointment, and explains what Hustad estimating will prepare for owner review.",
+    whatMeans:  "A written replacement proposal is the right next step. This report is not a final price or contract. It confirms that Hustad estimating is preparing the proposal package.",
+    nextStep:   "Hustad will review measurements, material assumptions, access, warranty path, required system components, exclusions, and any owner-selected options before sending the proposal.",
     credibilityLines: [
       "This report is not a final contract price, final material selection, warranty promise, or production schedule.",
       "The proposal will control the final scope and pricing after estimating review."
     ],
-    proofLabel:  "Inspection documentation — property record",
+    proofLabel:  "Project context photos / reference images",
     showWeather: false,
   },
   no_action: {
@@ -90,6 +90,18 @@ const HOW_IT_WORKS = [
   { num: "02", headline: "Coordinate carrier review",    body: "If you authorize, Hustad will coordinate the carrier inspection process and present the documented findings clearly to your insurer. Hustad does not negotiate your claim." },
   { num: "03", headline: "Confirm scope and coverage",   body: "Your insurance carrier reviews the documented evidence and makes the coverage determination under your policy. Hustad cannot predict or guarantee any coverage outcome." },
   { num: "04", headline: "Move forward only if you agree", body: "No repair work begins until your carrier issues a written determination, you confirm the scope, and you authorize production in writing. You stay in control at every step." },
+];
+
+const REPAIR_NEXT_STEPS = [
+  { num: 1, headline: "Service opportunity created", body: "Hustad routes the documented repair to the service team." },
+  { num: 2, headline: "Repair quote prepared",       body: "Pricing and schedule are confirmed before authorization." },
+  { num: 3, headline: "Owner reviews and approves",  body: "No repair begins until you approve the repair quote or work order." },
+];
+
+const FULL_RESTORATION_NEXT_STEPS = [
+  { num: 1, headline: "Estimating review", body: "Measurements, scope assumptions, and material basis are checked." },
+  { num: 2, headline: "Proposal prepared", body: "Hustad creates the standard replacement proposal for owner review." },
+  { num: 3, headline: "Owner decision",    body: "Owner reviews, asks questions, selects options, or authorizes the project." },
 ];
 
 const PLAIN_ENGLISH = [
@@ -347,17 +359,36 @@ function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3) {
   st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
   d.text("Madison Residential", M + 31, 17);
 
-  // Report ID pill — right
-  sf(d, T.surface2); d.roundedRect(PW - M - 44, 10, 44, 9, 1.5, 1.5, "F");
-  sd(d, T.border); d.setLineWidth(0.15); d.roundedRect(PW - M - 44, 10, 44, 9, 1.5, 1.5, "S");
-  st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(5.5);
-  d.text("REPORT", PW - M - 37, 15.8);
-  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(6.5);
-  d.text(rid, PW - M - 2, 16, { align: "right" });
+  // Center: report type + address | rep
+  const reportTypeLabel = pt === "carrier_review" ? "Storm Review"
+    : pt === "urgent_repair"    ? "Repair Report"
+    : pt === "full_restoration" ? "Replacement Report"
+    : "Inspection Report";
+  const centerSub = [s.property.address, s.repName].filter(Boolean).join("  |  ");
+  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(8);
+  d.text(reportTypeLabel, PW / 2, 14, { align: "center" });
+  if (centerSub) {
+    st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(6.5);
+    d.text(centerSub, PW / 2, 21, { align: "center", maxWidth: 80 });
+  }
 
-  // Date below pill
-  st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(6.3);
-  d.text(fmtDate(s.createdAt), PW - M, 26, { align: "right" });
+  // Right: path-type action badge
+  const actionLabel = pt === "carrier_review" ? "AGREEMENT"
+    : pt === "urgent_repair"    ? "SERVICE"
+    : pt === "full_restoration" ? "IN PROGRESS"
+    : "COMPLETE";
+  const actionBg = pt === "urgent_repair" ? T.redBdr
+    : pt === "full_restoration" ? T.greenBdr
+    : pt === "no_action"        ? T.greenBdr
+    : T.blueBdr;
+  const badgeW = 36;
+  sf(d, actionBg); d.roundedRect(PW - M - badgeW, 10, badgeW, 9, 1.5, 1.5, "F");
+  st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(7);
+  d.text(actionLabel, PW - M - badgeW / 2, 16, { align: "center" });
+
+  // Report ID below badge
+  st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(5.5);
+  d.text(`#${rid}`, PW - M, 26, { align: "right" });
 
   // Hairline + doc type label
   sf(d, T.border); d.rect(0, 28, PW, 0.2, "F");
@@ -951,6 +982,194 @@ function renderHowItWorks(d: jsPDF, acc: C3, rid: string) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// REPAIR NEXT STEPS — numbered 3-step service roadmap (Path 2)
+// ─────────────────────────────────────────────────────────────────────────────
+function renderRepairNextSteps(d: jsPDF, s: SessionState, acc: C3, rid: string) {
+  pageHeader(d, rid, acc, "Next steps");
+  let y = 16;
+
+  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(18);
+  d.text("Next Steps", M, y + 11);
+  sf(d, acc); d.rect(M, y + 14, 16, 1.5, "F");
+  y += 24;
+
+  const stepH   = 38;
+  const stepGap = 6;
+  const numCX   = M + 14;
+  const textX   = M + 30;
+  const textW   = CW - 34;
+
+  REPAIR_NEXT_STEPS.forEach((step, i) => {
+    const sy = y + i * (stepH + stepGap);
+    baseCard(d, M, sy, CW, stepH, i % 2 === 0 ? T.surface : T.surface2, T.border);
+    sf(d, acc); d.rect(M, sy, CW, 2, "F");
+
+    sf(d, acc); d.circle(numCX, sy + stepH / 2, 8, "F");
+    st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(10);
+    d.text(String(step.num), numCX, sy + stepH / 2 + 3.5, { align: "center" });
+
+    st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(10.5);
+    d.text(step.headline, textX, sy + 14);
+    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8.5);
+    const bLines = d.splitTextToSize(step.body, textW) as string[];
+    d.text(bLines.slice(0, 2), textX, sy + 23);
+  });
+
+  y += REPAIR_NEXT_STEPS.length * (stepH + stepGap) + 10;
+
+  // Agreement / quote status module
+  const isSold   = !!(s.signatureData?.signedAt);
+  const statusBg = isSold ? T.greenBg   : T.surface2;
+  const statusBdr = isSold ? T.greenBdr : T.border;
+  const statusH  = 28;
+  baseCard(d, M, y, CW, statusH, statusBg, statusBdr);
+  sf(d, isSold ? T.green : T.textFaint); d.rect(M, y, 4, statusH, "F");
+  microLabel(d, "Quote / authorization status", M + 10, y + 9, isSold ? T.green : T.textFaint);
+  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8.5);
+  const statusMsg = isSold
+    ? "Repair has been authorized. Hustad service team will confirm scope and schedule."
+    : "Repair quote pending. No work begins until you review and approve the quote or work order.";
+  const statusLines = d.splitTextToSize(statusMsg, CW - 16) as string[];
+  d.text(statusLines.slice(0, 2), M + 10, y + 16);
+  y += statusH + 10;
+
+  // Primary CTA banner
+  if (y + 22 < PH - 14) {
+    const ctaH = 22;
+    sf(d, acc); d.roundedRect(M, y, CW, ctaH, 3, 3, "F");
+    st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(11);
+    d.text("Review Repair Quote When Prepared", PW / 2, y + 12, { align: "center" });
+    st(d, [255, 255, 255] as C3); d.setFont("helvetica", "normal"); d.setFontSize(6.5);
+    d.text("Attachments: repair report PDF, repair photos, service next-step checklist", PW / 2, y + 18, { align: "center" });
+  }
+
+  pageFooter(d);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FULL RESTORATION SUMMARY — project request + 3-step next steps (Path 3)
+// ─────────────────────────────────────────────────────────────────────────────
+function renderFullRestorationSummary(d: jsPDF, s: SessionState, acc: C3, rid: string) {
+  pageHeader(d, rid, acc, "Project summary");
+  let y = 16;
+
+  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(18);
+  d.text("Project Request Summary", M, y + 11);
+  sf(d, acc); d.rect(M, y + 14, 26, 1.5, "F");
+  y += 24;
+
+  const hw   = CW / 2 - 3;
+  const col2 = M + hw + 6;
+  const cardH = 60;
+
+  // Left: Project Request card
+  baseCard(d, M, y, hw, cardH, T.surface, T.border);
+  sf(d, acc); d.rect(M, y, hw, 2, "F");
+  microLabel(d, "Project Request", M + 6, y + 9, T.textFaint);
+  sf(d, T.border); d.rect(M + 6, y + 11.5, hw - 12, 0.2, "F");
+
+  const projectRows: [string, string][] = [
+    ["Project type",       s.pathData.manufacturerSelected ? `Roof replacement — ${s.pathData.manufacturerSelected}` : "Roof replacement / exterior scope"],
+    ["Request source",     "Inspection / direct buy"],
+    ["Proposal status",    "Estimating in progress"],
+    ["Expected next step", "Proposal sent for review"],
+  ];
+  let rY = y + 18;
+  projectRows.forEach(([lbl, val], idx) => {
+    if (idx % 2 === 1) { sf(d, T.surface2); d.rect(M + 1, rY - 4.5, hw - 2, 9, "F"); }
+    st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6.5);
+    d.text(lbl, M + 6, rY);
+    st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
+    const vLines = d.splitTextToSize(val, hw - 40) as string[];
+    d.text(vLines[0], M + hw - 5, rY, { align: "right" });
+    rY += 10;
+  });
+
+  // Right: What estimating will prepare card
+  baseCard(d, col2, y, hw, cardH, T.surface, T.border);
+  sf(d, acc); d.rect(col2, y, hw, 2, "F");
+  microLabel(d, "What estimating will prepare", col2 + 6, y + 9, T.textFaint);
+  sf(d, T.border); d.rect(col2 + 6, y + 11.5, hw - 12, 0.2, "F");
+  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
+  const prepLines = d.splitTextToSize(
+    "Hustad will review measurements, material assumptions, access, warranty path, required system components, exclusions, and any owner-selected options before sending the proposal.",
+    hw - 12
+  ) as string[];
+  d.text(prepLines.slice(0, 5), col2 + 6, y + 18);
+  y += cardH + 10;
+
+  // Current recommendation + Owner review package — side by side accent cards
+  const recH = 50;
+  accentCard(d, M,    y, hw, recH, acc,     T.surface2, T.border);
+  accentCard(d, col2, y, hw, recH, T.blue,  T.surface2, T.border);
+
+  microLabel(d, "Current recommendation", M + 8, y + 9, acc);
+  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
+  const recLines = d.splitTextToSize(
+    "A written replacement proposal is the right next step. This report is not a final price or contract. It confirms that Hustad estimating is preparing the proposal package.",
+    hw - 16
+  ) as string[];
+  d.text(recLines.slice(0, 4), M + 8, y + 17);
+
+  microLabel(d, "Owner review package", col2 + 8, y + 9, T.blue);
+  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
+  const ownerLines = d.splitTextToSize(
+    "The proposal will include selected scope, material basis, warranty path, exclusions, assumptions, optional upgrades, and approval instructions.",
+    hw - 16
+  ) as string[];
+  d.text(ownerLines.slice(0, 4), col2 + 8, y + 17);
+  y += recH + 10;
+
+  // Numbered next steps — horizontal 3-column card
+  const stepsCardH = 46;
+  baseCard(d, M, y, CW, stepsCardH, T.surface, T.border);
+  sf(d, acc); d.rect(M, y, CW, 2, "F");
+  microLabel(d, "Next steps", M + 6, y + 9, T.textFaint);
+  sf(d, T.border); d.rect(M + 6, y + 11.5, CW - 12, 0.2, "F");
+
+  const colW3  = (CW - 18) / 3;
+  FULL_RESTORATION_NEXT_STEPS.forEach((step, i) => {
+    const sx = M + 6 + i * (colW3 + 3);
+    // Divider between columns
+    if (i > 0) { sf(d, T.border); d.rect(sx - 1.5, y + 15, 0.2, stepsCardH - 20, "F"); }
+    // Number circle
+    sf(d, acc); d.circle(sx + 8, y + 22, 6, "F");
+    st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(8);
+    d.text(String(step.num), sx + 8, y + 24.5, { align: "center" });
+    // Headline
+    st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(8);
+    d.text(step.headline, sx + 18, y + 22);
+    // Body
+    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7);
+    const bLines = d.splitTextToSize(step.body, colW3 - 22) as string[];
+    d.text(bLines.slice(0, 2), sx + 18, y + 29);
+  });
+  y += stepsCardH + 10;
+
+  // Compliance guardrail notice (Part 7 requirement)
+  if (y + 18 < PH - 14) {
+    baseCard(d, M, y, CW, 18, T.amberBg, T.amberBdr);
+    sf(d, T.amber); d.rect(M, y, 4, 18, "F");
+    st(d, T.amber); d.setFont("helvetica", "bold"); d.setFontSize(7);
+    d.text("Important:", M + 10, y + 7);
+    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
+    d.text("This report is a request summary, not a final price or contract. Hustad estimating will send the proposal for review soon.", M + 10, y + 14, { maxWidth: CW - 16 });
+    y += 26;
+  }
+
+  // Primary CTA banner
+  if (y + 22 < PH - 14) {
+    sf(d, T.green); d.roundedRect(M, y, CW, 22, 3, 3, "F");
+    st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(11);
+    d.text("Watch for Hustad Proposal Package", PW / 2, y + 12, { align: "center" });
+    st(d, [255, 255, 255] as C3); d.setFont("helvetica", "normal"); d.setFontSize(6.5);
+    d.text("Attachments: request summary, context photos, proposal-prep checklist", PW / 2, y + 18, { align: "center" });
+  }
+
+  pageFooter(d);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // AGREEMENT REVIEW (plain-English + full legal text)
 // ─────────────────────────────────────────────────────────────────────────────
 function renderAgreementReview(d: jsPDF, s: SessionState, acc: C3) {
@@ -1168,7 +1387,14 @@ async function generateReport(session: SessionState): Promise<jsPDF> {
   doc.addPage(); renderFindingsOverview(doc, session, pt, acc);
   doc.addPage(); renderRecommendation(doc, session, pt, acc);
   await renderEvidenceGallery(doc, photos, pt, acc, rid);
-  doc.addPage(); renderHowItWorks(doc, acc, rid);
+
+  if (pt === "carrier_review") {
+    doc.addPage(); renderHowItWorks(doc, acc, rid);
+  } else if (pt === "urgent_repair") {
+    doc.addPage(); renderRepairNextSteps(doc, session, acc, rid);
+  } else if (pt === "full_restoration") {
+    doc.addPage(); renderFullRestorationSummary(doc, session, acc, rid);
+  }
 
   // Page X of Y — second pass
   const total = doc.getNumberOfPages();

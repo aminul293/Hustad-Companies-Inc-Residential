@@ -2,8 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase-server";
 import { requireAuth } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/export?session_id=xxx — Export full session data as JSON
 export async function GET(req: NextRequest) {
+  // #region agent log
+  fetch('http://127.0.0.1:7331/ingest/ef9d6ee3-7cee-4b0f-9d60-ae5de7a559bd',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'87fc44'},body:JSON.stringify({sessionId:'87fc44',location:'api/export/route.ts:GET-entry',message:'export route invoked',data:{hasUrl:!!req.url,hasAuthHeader:!!req.headers.get('authorization')},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
+  // #endregion
   try {
     const payload = await requireAuth(req);
     const db = getServiceClient();
@@ -49,6 +54,9 @@ export async function GET(req: NextRequest) {
     });
   } catch (err) {
     if (err instanceof Response) return err;
+    // #region agent log
+    fetch('http://127.0.0.1:7331/ingest/ef9d6ee3-7cee-4b0f-9d60-ae5de7a559bd',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'87fc44'},body:JSON.stringify({sessionId:'87fc44',location:'api/export/route.ts:GET-catch',message:'export route error',data:{errName:(err as Error)?.name,errMsg:(err as Error)?.message,errDigest:(err as {digest?:string})?.digest},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
+    // #endregion
     console.error("Export error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
