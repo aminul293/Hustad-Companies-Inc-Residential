@@ -386,118 +386,178 @@ function deriveStatusBadge(s: SessionState, pt: PathType): { label: string; colo
 // PAGE 1 — COVER
 // ─────────────────────────────────────────────────────────────────────────────
 async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, photos: PdfPhoto[]) {
-  const rid    = s.sessionId.slice(-8).toUpperCase();
-  const cfg    = PATH_CFG[pt];
-  const status = deriveStatusBadge(s, pt);
+  const rid        = s.sessionId.slice(-8).toUpperCase();
+  const cfg        = PATH_CFG[pt];
+  const status     = deriveStatusBadge(s, pt);
   const isSigned   = !!s.signatureData.signedAt;
   const isDeferred = s.sessionStatus === "deferred";
+
+  const urgentCount  = s.findings.urgentItemsCount;
+  const stormCount   = s.findings.stormRelatedItemsCount;
+  const monitorCount = s.findings.monitorItemsCount;
+  const photoCount   = (s.photoAssets?.filter(p => p.selectedForSummary).length ?? 0)
+                     + (s.photos?.filter(p => p.selectedForSummary).length ?? 0);
+
+  const hwName   = s.property.homeownerPrimaryName || "—";
+  const addrLine = [s.property.address, s.property.cityStateZip].filter(Boolean).join(", ");
 
   // ── Full page background ──────────────────────────────────────────────────
   sf(d, T.pageBg); d.rect(0, 0, PW, PH, "F");
 
-  // ── Header band (42mm) — brand + report type label + report ID ────────────
-  const COVER_HDR = 42;
+  // ── Header band (32mm) ────────────────────────────────────────────────────
+  const COVER_HDR = 32;
   sf(d, T.headerBg); d.rect(0, 0, PW, COVER_HDR, "F");
   sf(d, acc); d.rect(0, 0, PW, 2, "F");
 
-  // Brand left — logo image, fallback to text
+  // Brand left — logo image or fallback text
   const logoDataUrl = await loadLogoDataUrl();
   if (logoDataUrl) {
-    const logoW = 42;
-    const logoH = logoW * (164.9 / 733.6); // ~9.4mm
+    const logoW = 40;
+    const logoH = logoW * (164.9 / 733.6);
     d.addImage(logoDataUrl, "PNG", M, (COVER_HDR - logoH) / 2 + 1, logoW, logoH);
   } else {
-    st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(17);
-    d.text("HUSTAD", M, 17);
-    st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(7.5);
-    d.text("Madison Residential", M + 31, 17);
+    st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(15);
+    d.text("HUSTAD", M, 16);
+    st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(6.5);
+    d.text("MADISON RESIDENTIAL", M, 23);
   }
 
-  // Center: path-specific report type label
-  const reportType = pt === "carrier_review" ? "Storm Review Report"
-    : pt === "urgent_repair"    ? "Repair Findings Report"
-    : pt === "full_restoration" ? "Replacement Project Summary"
-    : "Homeowner Inspection Report";
-  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(8);
-  d.text(reportType, PW / 2, 15, { align: "center" });
-  if (s.repName) {
-    st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(6.3);
-    d.text(`Rep: ${s.repName}`, PW / 2, 23, { align: "center" });
+  // Center — report type bold + address + homeowner below
+  const reportType = pt === "carrier_review" ? "Storm Review"
+    : pt === "urgent_repair"    ? "Repair Report"
+    : pt === "full_restoration" ? "Restoration Summary"
+    : "Inspection Report";
+  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(9);
+  d.text(reportType, PW / 2, 13, { align: "center" });
+  const centerSub = [addrLine, hwName].filter(Boolean).join("  |  ");
+  if (centerSub) {
+    st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(6.5);
+    d.text(centerSub, PW / 2, 21, { align: "center" });
   }
 
-  // Report ID pill — right
-  sf(d, T.surface2); d.roundedRect(PW - M - 44, 10, 44, 9, 1.5, 1.5, "F");
-  sd(d, T.border); d.setLineWidth(0.15); d.roundedRect(PW - M - 44, 10, 44, 9, 1.5, 1.5, "S");
-  st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(5.5);
-  d.text("REPORT", PW - M - 37, 15.8);
-  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(6.5);
-  d.text(rid, PW - M - 2, 16, { align: "right" });
+  // Right — status action button
+  const btnLabel  = isSigned ? "Executed" : isDeferred ? "Sent for Review" : "Agreement";
+  const btnBg: C3 = isSigned ? T.green : acc;
+  const btnW = 38; const btnH = 14;
+  sf(d, btnBg); d.roundedRect(PW - M - btnW, (COVER_HDR - btnH) / 2, btnW, btnH, 2, 2, "F");
+  st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(6.5);
+  d.text(btnLabel.toUpperCase(), PW - M - btnW / 2, (COVER_HDR) / 2 + 1, { align: "center" });
 
-  // Hairline + labels
-  sf(d, T.border); d.rect(0, 28, PW, 0.2, "F");
-  st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6);
-  d.text(fmtDate(s.createdAt), M, 37);
-  st(d, acc); d.setFont("helvetica", "bold"); d.setFontSize(6);
-  d.text(cfg.badgeLabel.toUpperCase(), PW - M, 37, { align: "right" });
-
-  // ── Content area ──────────────────────────────────────────────────────────
-  let y = COVER_HDR + 12;
-
-  // ── Homeowner name — primary hero ─────────────────────────────────────────
-  const hwName = s.property.homeownerPrimaryName || "Homeowner";
-  st(d, T.textFaint); d.setFont("helvetica", "bold"); d.setFontSize(6.5);
-  d.text("PREPARED FOR", M, y);
-  y += 7;
-  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(24);
-  const nameLines = d.splitTextToSize(hwName, CW * 0.72) as string[];
-  d.text(nameLines.slice(0, 1), M, y);
-  y += 10;
-  const addrStr = [s.property.address, s.property.cityStateZip].filter(Boolean).join("  ·  ");
-  if (addrStr) {
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(9);
-    d.text(addrStr, M, y);
-    y += 6;
-  }
-  y += 6;
-
-  // ── Path badge + Status badge (inline row) ────────────────────────────────
+  // ── Badge row ─────────────────────────────────────────────────────────────
+  let y = COVER_HDR + 9;
   const pathPillW = badgePill(d, cfg.badgeLabel, M, y, acc, T.surface2, acc);
-  badgePill(d, status.label, M + pathPillW + 5, y, status.color, status.bg, status.bdr);
-  y += 13;
+  badgePill(d, status.label, M + pathPillW + 4, y, status.color, status.bg, status.bdr);
+  y += 12;
 
-  // ── Accent rule + hero headline ───────────────────────────────────────────
-  sf(d, acc); d.rect(M, y, 28, 1.5, "F");
-  y += 8;
+  // ── Hero headline ─────────────────────────────────────────────────────────
   const hlLines = d.splitTextToSize(cfg.headline, CW) as string[];
-  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(14);
-  d.text(hlLines.slice(0, 2), M, y);
-  y += Math.min(hlLines.length, 2) * 6.5 + 5;
+  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(20);
+  d.text(hlLines.slice(0, 3), M, y);
+  y += Math.min(hlLines.length, 3) * 8.5 + 4;
 
   // ── Hero subhead ──────────────────────────────────────────────────────────
   const subLines = d.splitTextToSize(cfg.subhead, CW) as string[];
   st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
-  d.text(subLines.slice(0, 4), M, y);
-  y += Math.min(subLines.length, 4) * 4.8 + 8;
+  d.text(subLines.slice(0, 3), M, y);
+  y += Math.min(subLines.length, 3) * 4.8 + 10;
 
-  // ── Photo strip — top 3 strongest photos ─────────────────────────────────
+  // ── Two-column cards: Property & Inspection | Finding Summary ─────────────
+  const hw     = CW / 2 - 3;
+  const col2   = M + hw + 6;
+  const cardH  = 60;
+
+  // Left: Property & Inspection
+  baseCard(d, M, y, hw, cardH, T.surface, T.border);
+  sf(d, acc); d.rect(M, y, hw, 2, "F");
+  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(8);
+  d.text("Property & Inspection", M + 5, y + 10);
+
+  const propRows: [string, string][] = [
+    ["Property",        addrLine || "—"],
+    ["Inspection date", fmtDate(s.createdAt)],
+    ["Inspector",       s.repName || "—"],
+    ["Photo count",     `${photoCount} photos`],
+  ];
+  let ry = y + 18;
+  for (const [lbl, val] of propRows) {
+    st(d, T.textFaint); d.setFont("helvetica", "bold"); d.setFontSize(6);
+    d.text(lbl, M + 5, ry);
+    st(d, T.text); d.setFont("helvetica", "normal"); d.setFontSize(7);
+    const vl = d.splitTextToSize(val, hw - 12) as string[];
+    d.text(vl[0], M + 5, ry + 5.5);
+    ry += 10;
+  }
+
+  // Right: Finding Summary — metric bubbles + stated priorities
+  baseCard(d, col2, y, hw, cardH, T.surface, T.border);
+  sf(d, acc); d.rect(col2, y, hw, 2, "F");
+  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(8);
+  d.text("Finding Summary", col2 + 5, y + 10);
+
+  const metrics: { label: string; val: number; color: C3 }[] = [
+    { label: "URGENT",  val: urgentCount,  color: T.red   },
+    { label: "STORM",   val: stormCount,   color: T.amber },
+    { label: "MONITOR", val: monitorCount, color: T.textFaint },
+  ];
+  const bw  = (hw - 10) / 3;
+  let   bx  = col2 + 5;
+  const by  = y + 14;
+  for (const m of metrics) {
+    sf(d, T.surface2); d.roundedRect(bx, by, bw - 2, 24, 2, 2, "F");
+    sd(d, m.color); d.setLineWidth(0.4); d.roundedRect(bx, by, bw - 2, 24, 2, 2, "S");
+    st(d, m.color); d.setFont("helvetica", "bold"); d.setFontSize(14);
+    d.text(String(m.val), bx + (bw - 2) / 2, by + 14, { align: "center" });
+    st(d, T.textFaint); d.setFont("helvetica", "bold"); d.setFontSize(5.5);
+    d.text(m.label, bx + (bw - 2) / 2, by + 21, { align: "center" });
+    bx += bw;
+  }
+
+  // Stated priorities from Phase A
+  const priorities = s.buyerData.buyerPriorities ?? [];
+  if (priorities.length > 0) {
+    const fmtPriority = (p: string) => p.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+    st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6);
+    d.text("Stated priorities:", col2 + 5, y + 43);
+    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(6);
+    d.text(priorities.slice(0, 3).map(fmtPriority).join("  ·  "), col2 + 5, y + 50, { maxWidth: hw - 10 });
+  }
+
+  y += cardH + 8;
+
+  // ── Weather event support (carrier_review + date of loss present) ─────────
+  if (pt === "carrier_review" && s.property.workingDateOfLoss) {
+    const wText  = `Public storm data supports a hail event near this property on or around ${fmtDate(s.property.workingDateOfLoss)}. Weather data supports timing review; the carrier determines coverage.`;
+    const wLines = d.splitTextToSize(wText, CW - 18) as string[];
+    const wH     = 10 + wLines.length * 4.5 + 8;
+    baseCard(d, M, y, CW, wH, T.surface, T.border);
+    sd(d, acc); d.setLineWidth(0.5); d.roundedRect(M, y, CW, wH, 2, 2, "S");
+    sf(d, acc); d.rect(M, y, 3, wH, "F");
+    st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
+    d.text("Weather event support", M + 8, y + 9);
+    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(6.5);
+    d.text(wLines, M + 8, y + 15.5);
+    y += wH + 8;
+  }
+
+  // ── Top-3 photo strip (when photos are present) ───────────────────────────
   const topPhotos = photos.slice(0, 3);
   if (topPhotos.length > 0) {
     const photoGap = 4;
     const photoW   = (CW - photoGap * (topPhotos.length - 1)) / topPhotos.length;
-    const photoH   = 38;
+    const photoH   = 36;
 
     for (let i = 0; i < topPhotos.length; i++) {
       const photo = topPhotos[i];
       const px    = M + i * (photoW + photoGap);
       try {
-        let compressed = await compressImage(photo.dataUrl, 600);
+        const compressed = await compressImage(photo.dataUrl, 600);
         if (compressed.startsWith("http")) {
           const img = await new Promise<HTMLImageElement>((resolve, reject) => {
             const tempImg = new Image();
             tempImg.crossOrigin = "anonymous";
-            tempImg.onload = () => resolve(tempImg);
+            tempImg.onload  = () => resolve(tempImg);
             tempImg.onerror = reject;
-            tempImg.src = compressed;
+            tempImg.src     = compressed;
           });
           d.addImage(img, "JPEG", px, y, photoW, photoH, undefined, "FAST");
         } else {
@@ -508,89 +568,20 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
         st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6.5);
         d.text("Photo unavailable", px + photoW / 2, y + photoH / 2, { align: "center" });
       }
-      // Badge over photo bottom
       const pc    = classifyPdfPhoto(photo.label ?? "", photo.category ?? "", photo.description ?? "");
       const badge = photoBadge(pc, pt);
-      badgePill(d, badge.label, px + 2, y + photoH - 10, badge.color, badge.bg, badge.bdr);
-      // Caption below photo
+      badgePill(d, badge.label, px + 2, y + photoH - 9, badge.color, badge.bg, badge.bdr);
       if (photo.label) {
         st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(6);
         const capLines = d.splitTextToSize(photo.label, photoW) as string[];
-        d.text(capLines[0], px, y + photoH + 6);
+        d.text(capLines[0], px, y + photoH + 5.5);
       }
     }
     if (photos.length > 3) {
       st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6);
-      d.text(`+ ${photos.length - 3} more photos in full report`, PW - M, y + photoH + 6, { align: "right" });
+      d.text(`+ ${photos.length - 3} more photos in full report`, PW - M, y + photoH + 5.5, { align: "right" });
     }
-    y += photoH + 14;
   }
-
-  // ── Status cards row: Findings | Agreement/Service/Proposal | Documents ───
-  const urgentCount  = s.findings.urgentItemsCount;
-  const stormCount   = s.findings.stormRelatedItemsCount;
-  const monitorCount = s.findings.monitorItemsCount;
-  const photoCount   = (s.photoAssets?.filter(p => p.selectedForSummary).length ?? 0)
-                     + (s.photos?.filter(p => p.selectedForSummary).length ?? 0);
-
-  const sw3    = (CW - 10) / 3;
-  const cardH3 = 28;
-
-  // Card 1 — Findings
-  const findingParts: string[] = [];
-  if (urgentCount  > 0) findingParts.push(`${urgentCount} urgent`);
-  if (stormCount   > 0) findingParts.push(`${stormCount} storm`);
-  if (monitorCount > 0) findingParts.push(`${monitorCount} monitor`);
-  const findingText  = findingParts.length > 0 ? findingParts.join("  ·  ") : "No urgent findings";
-  const findingColor: C3 = urgentCount > 0 ? T.red : stormCount > 0 ? T.blue : T.green;
-
-  baseCard(d, M, y, sw3, cardH3, T.surface, T.border);
-  sf(d, findingColor); d.rect(M, y, sw3, 2, "F");
-  microLabel(d, "Findings", M + 5, y + 9, T.textFaint);
-  st(d, findingParts.length > 0 ? T.text : T.green); d.setFont("helvetica", "bold"); d.setFontSize(7);
-  d.text(findingText, M + 5, y + 20, { maxWidth: sw3 - 8 });
-
-  // Card 2 — Agreement / Service / Proposal status
-  const agreeX     = M + sw3 + 5;
-  const agreeLabel = pt === "carrier_review" ? "Agreement" : pt === "urgent_repair" ? "Service Status" : "Proposal Status";
-  const agreeValue = pt === "carrier_review"
-    ? (isSigned ? "Executed ✓" : isDeferred ? "Sent for Review" : "Pending Signature")
-    : pt === "urgent_repair" ? "Quote Pending" : pt === "full_restoration" ? "In Progress" : "Complete";
-  const agreeColor: C3 = (pt === "carrier_review" && isSigned) ? T.green : T.amber;
-
-  baseCard(d, agreeX, y, sw3, cardH3, T.surface, T.border);
-  sf(d, agreeColor); d.rect(agreeX, y, sw3, 2, "F");
-  microLabel(d, agreeLabel, agreeX + 5, y + 9, T.textFaint);
-  st(d, agreeColor); d.setFont("helvetica", "bold"); d.setFontSize(7);
-  d.text(agreeValue, agreeX + 5, y + 20);
-
-  // Card 3 — Documents included
-  const docsX     = M + (sw3 + 5) * 2;
-  const docParts  = ["Report PDF", `${photoCount} photos`];
-  if (pt === "carrier_review") docParts.push(isSigned ? "Executed agreement" : "Agreement for review");
-  else if (pt === "urgent_repair")    docParts.push("Service checklist");
-  else if (pt === "full_restoration") docParts.push("Proposal checklist");
-
-  baseCard(d, docsX, y, sw3, cardH3, T.surface, T.border);
-  sf(d, acc); d.rect(docsX, y, sw3, 2, "F");
-  microLabel(d, "Documents", docsX + 5, y + 9, T.textFaint);
-  st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(6.5);
-  const docLines = d.splitTextToSize(docParts.join("  ·  "), sw3 - 10) as string[];
-  d.text(docLines.slice(0, 2), docsX + 5, y + 19);
-
-  y += cardH3 + 6;
-
-  // ── Meta strip — Inspection date | Representative | Photo count ───────────
-  const metaH = 24;
-  baseCard(d, M, y, CW, metaH, T.surface, T.border);
-  const iw = (CW - 12) / 3;
-  sf(d, T.border);
-  d.rect(M + iw + 6, y + 4, 0.2, metaH - 8, "F");
-  d.rect(M + (iw + 6) * 2, y + 4, 0.2, metaH - 8, "F");
-
-  infoRow(d, "Inspection date", fmtDate(s.createdAt),            M + 6,                y + 4, iw);
-  infoRow(d, "Representative",  s.repName || "—",                M + iw + 12,          y + 4, iw);
-  infoRow(d, "Photos documented", `${photoCount} photos`,        M + (iw + 6) * 2 + 6, y + 4, iw);
 
   pageFooter(d);
 }
