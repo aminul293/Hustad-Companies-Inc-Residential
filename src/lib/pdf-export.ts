@@ -385,7 +385,7 @@ function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3) {
   const hlLines  = d.splitTextToSize(cfg.headline, CW - 20) as string[];
   const subLines = d.splitTextToSize(cfg.subhead,   CW - 20) as string[];
   const hlH      = Math.min(hlLines.length,  2) * 6.5;
-  const subH     = Math.min(subLines.length, 2) * 4.5;
+  const subH     = Math.min(subLines.length, 4) * 4.5; // Increased from 2 to 4
   const cardH    = 12 + 8 + hlH + 5 + subH + 10;
 
   accentCard(d, M, y, CW, cardH, acc, accBg, accBdr);
@@ -395,7 +395,7 @@ function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3) {
   d.text(hlLines.slice(0, 2), M + 10, y + 22);
 
   st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8);
-  d.text(subLines.slice(0, 2), M + 10, y + 22 + hlH + 5);
+  d.text(subLines.slice(0, 4), M + 10, y + 22 + hlH + 5); // Increased from 2 to 4
 
   y += cardH + 10;
 
@@ -616,7 +616,7 @@ function renderRecommendation(d: jsPDF, s: SessionState, pt: PathType, acc: C3) 
   // ── Hero recommendation banner ────────────────────────────────────────────
   const heroHL  = d.splitTextToSize(cfg.headline, CW - 22) as string[];
   const heroSub = d.splitTextToSize(cfg.subhead,   CW - 22) as string[];
-  const heroH   = 14 + 8 + Math.min(heroHL.length, 2) * 7 + 6 + Math.min(heroSub.length, 3) * 5 + 10;
+  const heroH   = 14 + 8 + Math.min(heroHL.length, 2) * 7 + 6 + Math.min(heroSub.length, 5) * 5 + 10;
 
   sf(d, accBg); d.roundedRect(M, y, CW, heroH, 3, 3, "F");
   sd(d, accBdr); d.setLineWidth(0.25); d.roundedRect(M, y, CW, heroH, 3, 3, "S");
@@ -629,7 +629,7 @@ function renderRecommendation(d: jsPDF, s: SessionState, pt: PathType, acc: C3) 
   d.text(heroHL.slice(0, 2), M + 12, hl1Y);
 
   st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(8.5);
-  d.text(heroSub.slice(0, 3), M + 12, hl1Y + Math.min(heroHL.length, 2) * 7 + 5);
+  d.text(heroSub.slice(0, 5), M + 12, hl1Y + Math.min(heroHL.length, 2) * 7 + 5);
 
   y += heroH + 8;
 
