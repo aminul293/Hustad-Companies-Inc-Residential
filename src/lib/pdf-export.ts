@@ -458,30 +458,33 @@ async function renderPhotos(d: jsPDF, photos: PdfPhoto[]) {
   const w = (CW - gap * 2) / 3;
   const h = 28;
   
-  let cx = M;
-  const displayPhotos = photos.slice(0, 3);
-  
-  for (let i = 0; i < 3; i++) {
-    if (i < displayPhotos.length) {
-      const p = displayPhotos[i];
-      try {
-        let fmt = p.dataUrl.includes("image/png") ? "PNG" : "JPEG";
-        d.addImage(p.dataUrl, fmt, cx, Y, w, h);
-      } catch (e) {
-        sf(d, T.gray100); d.roundedRect(cx, Y, w, h, 2, 2, "F");
+  for (let i = 0; i < photos.length; i += 3) {
+    checkPage(d, h + 15);
+    let cx = M;
+    const rowPhotos = photos.slice(i, i + 3);
+    
+    for (let j = 0; j < 3; j++) {
+      if (j < rowPhotos.length) {
+        const p = rowPhotos[j];
+        try {
+          let fmt = p.dataUrl.includes("image/png") ? "PNG" : "JPEG";
+          d.addImage(p.dataUrl, fmt, cx, Y, w, h);
+        } catch (e) {
+          sf(d, T.gray100); d.roundedRect(cx, Y, w, h, 2, 2, "F");
+          sd(d, T.gray200); d.roundedRect(cx, Y, w, h, 2, 2, "S");
+        }
+        st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(5);
+        const lines = d.splitTextToSize(p.label || `Photo ${i + j + 1}`, w - 2);
+        d.text(lines, cx + w / 2, Y + h + 4, { align: "center" });
+      } else if (i === 0) {
+        // Only draw placeholders for the first row if fewer than 3 photos exist
+        sf(d, T.gray50); d.roundedRect(cx, Y, w, h, 2, 2, "F");
         sd(d, T.gray200); d.roundedRect(cx, Y, w, h, 2, 2, "S");
       }
-      st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(5);
-      const lines = d.splitTextToSize(p.label || `Photo ${i + 1}`, w - 2);
-      d.text(lines, cx + w / 2, Y + h + 4, { align: "center" });
-    } else {
-      sf(d, T.gray50); d.roundedRect(cx, Y, w, h, 2, 2, "F");
-      sd(d, T.gray200); d.roundedRect(cx, Y, w, h, 2, 2, "S");
+      cx += w + gap;
     }
-    cx += w + gap;
+    Y += h + 10;
   }
-  
-  Y += h + 10;
   st(d, T.gray400); d.setFont("helvetica", "normal"); d.setFontSize(6);
   d.text("Full-resolution photos available in your inspection portal account.", M, Y);
   Y += 8;
