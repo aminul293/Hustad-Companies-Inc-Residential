@@ -311,6 +311,40 @@ function renderStormBanner(d: jsPDF) {
 }
 
 function renderFindings(d: jsPDF, pt: PathType, s: SessionState) {
+  if (pt === "no_action") {
+    checkPage(d, 60);
+    st(d, T.gray400); d.setFont("helvetica", "bold"); d.setFontSize(6);
+    d.text("WHAT THIS MEANS", M, Y + 10);
+    st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(9);
+    const mText = "Today's inspection did not reveal conditions that support a repair, protection, or carrier review recommendation. Any monitor-only or maintenance items have been documented as a baseline for future comparison. This is an honest finding, and it has real value as a dated property record.";
+    const mLines = d.splitTextToSize(mText, CW);
+    d.text(mLines, M, Y + 16);
+    Y += 16 + mLines.length * 4.5 + 8;
+    
+    st(d, T.gray400); d.setFont("helvetica", "bold"); d.setFontSize(6);
+    d.text("WHAT WE ARE NOT SAYING", M, Y);
+    Y += 6;
+    
+    const notSaying = [
+      "We are not saying your roof is perfect forever.",
+      "We are not saying every condition needs action today.",
+      "We are not asking you to make a repair or claim decision without a clear reason.",
+      "We are saying the best next step today is documentation and monitoring."
+    ];
+    for (let i = 0; i < notSaying.length; i++) {
+      st(d, i === 3 ? T.emerald500 : T.red600);
+      d.text(i === 3 ? "✓" : "x", M, Y + 3);
+      st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(9);
+      const lines = d.splitTextToSize(notSaying[i], CW - 10) as string[];
+      const h = lines.length * 4.5 + 1.5;
+      d.text(lines, M + 5, Y + 3);
+      Y += h;
+    }
+    Y += 5;
+    sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
+    return;
+  }
+
   let items: string[] = [];
   if (s.findings?.summaryBody) {
     items = s.findings.summaryBody.split('\n').filter(l => l.trim().length > 0);
