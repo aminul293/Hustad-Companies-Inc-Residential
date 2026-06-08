@@ -22,10 +22,13 @@ Classification guide:
 - claim_review_candidate: Clear storm-related damage with impact marks on metal, bruising, or granule loss consistent with a hail or wind event.
 - full_restoration_candidate: Widespread damage across multiple slopes or surfaces (roof + siding/gutters/windows).
 
-Count guide:
-- urgentCount: only count items that need same-day or emergency attention (active leaks, missing sections, structural exposure).
-- stormCount: count distinct storm-related damage items visible (hail hits, wind displacement, gutter dents, etc.).
-- monitorCount: count items showing wear or minor issues that should be re-inspected in 6-12 months.
+Count guide (counts depend on classification):
+- urgentCount:
+    • For repair_only: count ALL distinct items that need repair service (gutter holes, cracked downspouts, fascia damage, broken flashing, etc.) — even if not emergency. This field is displayed as "Repair Items" on the repair path.
+    • For claim_review_candidate / full_restoration_candidate: count items needing same-day or emergency attention (active leaks, missing sections, structural exposure).
+    • For no_damage / monitor_only: always 0.
+- stormCount: count distinct storm-related damage items visible (hail hits, wind displacement, gutter dents from impact, etc.). 0 when classification is repair_only due to non-storm wear/aging.
+- monitorCount: count items showing wear or minor issues that should be re-inspected in 6–12 months but do not need repair or claim action yet.
 
 Be conservative — only escalate to claim_review or full_restoration when clear evidence exists. If photo quality is too low to assess, set confidence below 50 and explain in reasoning.
 
