@@ -416,6 +416,12 @@ function renderSteps(d: jsPDF, pt: PathType) {
       { t: "Proposal prepared", d: "Hustad creates the standard replacement proposal for owner review." },
       { t: "Owner decision", d: "Owner reviews, asks questions, selects options, or authorizes the project." }
     ];
+  } else if (pt === "no_action") {
+    steps = [
+      { t: "Summary Archived", d: "Your no-damage summary will be emailed and archived." },
+      { t: "Retain Documentation", d: "Keep this documentation — it establishes a pre-loss baseline for future events." },
+      { t: "Future Inspections", d: "Hustad recommends a re-inspection after any significant hail or wind event." }
+    ];
   }
 
   let cx = M;
