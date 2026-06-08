@@ -233,7 +233,61 @@ function renderPropRow(d: jsPDF, s: SessionState) {
   Y += 20;
 }
 
-function renderIntro(d: jsPDF, pt: PathType) {
+function drawBadge(d: jsPDF, text: string, x: number, y: number, color: C3, bgColor: C3) {
+  d.setFont("helvetica", "normal"); d.setFontSize(7);
+  const w = d.getTextWidth(text) + 6;
+  sf(d, bgColor); sd(d, color); d.setLineWidth(0.3);
+  d.roundedRect(x, y, w, 6, 2, 2, "FD");
+  st(d, color);
+  d.text(text, x + 3, y + 4.2);
+  return w + 3;
+}
+
+function renderIntro(d: jsPDF, pt: PathType, s: SessionState) {
+  if (pt === "no_action") {
+    // Top badges
+    let bx = M;
+    bx += drawBadge(d, "NO ACTION REQUIRED TODAY", bx, Y, T.emerald500, T.slate900);
+    Y += 10;
+    
+    // Priorities / Tags
+    bx = M;
+    bx += drawBadge(d, "Monitor", bx, Y, T.amber600, T.slate900);
+    bx += drawBadge(d, "Roof Longevity", bx, Y, T.emerald500, T.slate900);
+    bx += drawBadge(d, "Maintenance", bx, Y, T.amber600, T.slate900);
+    bx += drawBadge(d, "Documentation", bx, Y, T.blue400, T.slate900);
+    Y += 12;
+
+    st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(22);
+    const headline = "Inspection complete.\nNo action is recommended today.";
+    const lines = d.splitTextToSize(headline, CW) as string[];
+    d.text(lines, M, Y);
+    Y += lines.length * 8 + 6;
+    
+    st(d, T.gray400); d.setFont("times", "normal"); d.setFontSize(10);
+    const body = "Hustad completed a thorough exterior inspection and did not document meaningful storm-related conditions that support repair, emergency action, or carrier review at this time. All findings have been organized and documented for your property records.";
+    const blines = d.splitTextToSize(body, CW) as string[];
+    d.text(blines, M, Y);
+    Y += blines.length * 5 + 6;
+
+    if (s.buyerData?.buyerPriorities && s.buyerData.buyerPriorities.length > 0) {
+      Y += 4;
+      st(d, T.gray400); d.setFont("helvetica", "bold"); d.setFontSize(8);
+      d.text("Your Stated Priorities", M, Y);
+      Y += 6;
+      let px = M;
+      for (const p of s.buyerData.buyerPriorities) {
+        const text = p.replace(/_/g, " ").toLowerCase();
+        px += drawBadge(d, text, px, Y, T.blue400, T.slate900);
+      }
+      Y += 10;
+    }
+
+    sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
+    Y += 10;
+    return;
+  }
+
   let text = "";
   if (pt === "carrier_review") text = "Thank you for authorizing Hustad Companies to coordinate your insurance claim. Below is your complete inspection report. No production work begins until your carrier issues a written coverage determination.";
   else if (pt === "urgent_repair") text = "Thank you for authorizing Hustad Companies to complete the documented repairs at your property. Our scheduling team will contact you within 2 business days to confirm your production date.";
@@ -576,7 +630,7 @@ export async function generateReportPDF(s: SessionState, photosArg: any, logo: a
   
   await renderHeader(d, cfg);
   renderPropRow(d, s);
-  renderIntro(d, pt);
+  renderIntro(d, pt, s);
   renderStats(d, pt, photos.length, s);
   if (pt === "carrier_review" || pt === "full_restoration") {
     renderStormBanner(d);
