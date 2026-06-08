@@ -705,8 +705,12 @@ function renderAgreement(d: jsPDF, s: SessionState) {
 }
 
 function renderFooter(d: jsPDF) {
-  checkPage(d, 40);
-  const footerHeight = Math.max(45, PH - Y);
+  checkPage(d, 45);
+  
+  // Anchor footer to the bottom of the page
+  const footerHeight = 45;
+  Y = PH - footerHeight;
+  
   sf(d, T.slate900); d.rect(0, Y, PW, footerHeight, "F");
   
   st(d, T.gray500); d.setFont("helvetica", "normal"); d.setFontSize(8);
