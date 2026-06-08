@@ -426,7 +426,7 @@ function renderStormBanner(d: jsPDF) {
   
   st(d, T.blue800); d.setFont("helvetica", "bold"); d.setFontSize(7);
   d.text("WEATHER EVENT SUPPORT - ", M + 6, Y + 11);
-  st(d, T.blue700); d.setFont("helvetica", "normal"); d.setFontSize(7);
+  st(d, T.blue800); d.setFont("helvetica", "normal"); d.setFontSize(7);
   d.text("NWS Milwaukee and Sullivan products support a severe Dane County hail event on April 14, 2026.", M + 63, Y + 11);
   Y += 20;
 }
