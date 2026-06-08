@@ -683,7 +683,9 @@ export async function generateReportPDF(s: SessionState, photosArg: any, logo: a
   renderFindings(d, pt, s);
   await renderPhotos(d, photos);
   renderSteps(d, pt);
-  renderAgreement(d, s);
+  if (pt !== "no_action") {
+    renderAgreement(d, s);
+  }
   renderFooter(d);
   
   return d;
