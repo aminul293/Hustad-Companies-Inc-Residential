@@ -513,12 +513,6 @@ function renderSteps(d: jsPDF, pt: PathType) {
       d.text(b, M + 8, Y);
       Y += 7;
     });
-    
-    Y += 6;
-    st(d, T.emerald500); d.setLineWidth(0.5); d.circle(M + 3, Y - 1, 2.5, "S");
-    sf(d, T.emerald500); d.circle(M + 3, Y - 1, 1.2, "F");
-    st(d, T.emerald500); d.setFont("helvetica", "normal"); d.setFontSize(9);
-    d.text("This path is selected", M + 10, Y);
     Y += 12;
 
     sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
