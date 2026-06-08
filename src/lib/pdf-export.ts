@@ -706,7 +706,8 @@ function renderAgreement(d: jsPDF, s: SessionState) {
 
 function renderFooter(d: jsPDF) {
   checkPage(d, 40);
-  sf(d, T.slate900); d.rect(0, Y, PW, 45, "F");
+  const footerHeight = Math.max(45, PH - Y);
+  sf(d, T.slate900); d.rect(0, Y, PW, footerHeight, "F");
   
   st(d, T.gray500); d.setFont("helvetica", "normal"); d.setFontSize(6);
   d.text("Hustad Companies, Inc. - Madison, Wisconsin", PW / 2, Y + 12, { align: "center" });
