@@ -189,7 +189,7 @@ function drawBadgeRight(d: jsPDF, text: string, rightX: number, y: number, color
 }
 
 async function renderHeader(d: jsPDF, cfg: any, pt: PathType, s: SessionState) {
-  const headerHeight = pt === "no_action" ? 65 : 50;
+  const headerHeight = 50;
   checkPage(d, headerHeight);
   sf(d, T.slate900); d.rect(0, Y, PW, headerHeight, "F");
   
@@ -217,30 +217,28 @@ async function renderHeader(d: jsPDF, cfg: any, pt: PathType, s: SessionState) {
   if (pt === "no_action") {
     // Top badge right aligned
     let bx = PW - M;
-    bx -= drawBadgeRight(d, "NO ACTION REQUIRED TODAY", bx, Y + 22, T.emerald500, T.slate900);
+    bx -= drawBadgeRight(d, "NO ACTION REQUIRED TODAY", bx, Y + 21, T.emerald500, T.slate900);
     
     // Priorities / Tags right aligned
     bx = PW - M;
-    bx -= drawBadgeRight(d, "Documentation", bx, Y + 30, T.blue400, T.slate900);
-    bx -= drawBadgeRight(d, "Maintenance", bx, Y + 30, T.amber600, T.slate900);
-    bx -= drawBadgeRight(d, "Roof Longevity", bx, Y + 30, T.emerald500, T.slate900);
-    bx -= drawBadgeRight(d, "Monitor", bx, Y + 30, T.amber600, T.slate900);
+    bx -= drawBadgeRight(d, "Documentation", bx, Y + 28, T.blue400, T.slate900);
+    bx -= drawBadgeRight(d, "Maintenance", bx, Y + 28, T.amber600, T.slate900);
+    bx -= drawBadgeRight(d, "Roof Longevity", bx, Y + 28, T.emerald500, T.slate900);
+    bx -= drawBadgeRight(d, "Monitor", bx, Y + 28, T.amber600, T.slate900);
 
     if (s.buyerData?.buyerPriorities && s.buyerData.buyerPriorities.length > 0) {
       bx = PW - M;
       for (let i = s.buyerData.buyerPriorities.length - 1; i >= 0; i--) {
         const text = s.buyerData.buyerPriorities[i].replace(/_/g, " ").toLowerCase();
-        bx -= drawBadgeRight(d, text, bx, Y + 38, T.blue400, T.slate900);
+        bx -= drawBadgeRight(d, text, bx, Y + 35, T.blue400, T.slate900);
       }
     }
   }
 
   // Tag & Title
-  const tagY = pt === "no_action" ? Y + 40 : Y + 32;
-  const titleY = pt === "no_action" ? Y + 49 : Y + 41;
-  st(d, T.amber400); d.setFontSize(6); d.text(cfg.tag.toUpperCase(), M, tagY);
+  st(d, T.amber400); d.setFontSize(6); d.text(cfg.tag.toUpperCase(), M, Y + 32);
   st(d, T.white); d.setFont("times", "bold"); d.setFontSize(18);
-  d.text(cfg.title, M, titleY);
+  d.text(cfg.title, M, Y + 41);
   
   Y += headerHeight;
 }
