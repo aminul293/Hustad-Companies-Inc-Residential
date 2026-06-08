@@ -114,48 +114,48 @@ const PLAIN_ENGLISH = [
 // DESIGN TOKENS
 // ─────────────────────────────────────────────────────────────────────────────
 const T = {
-  // Page surfaces (Dark Theme)
-  pageBg:    [18, 22, 30] as C3,       
-  surface:   [28, 35, 47] as C3,       
-  surface2:  [38, 47, 63] as C3,       
-  surface3:  [50, 60, 78] as C3,       
+  // Page surfaces (Light Theme)
+  pageBg:    [245, 245, 247] as C3,       
+  surface:   [255, 255, 255] as C3,       
+  surface2:  [250, 250, 250] as C3,       
+  surface3:  [240, 240, 240] as C3,       
 
-  // Cover header — deep navy band
-  headerBg:  [10, 14, 20]  as C3,      
-  headerMid: [40, 58, 88]  as C3,    
-  headerDim: [150, 160, 175] as C3,    
+  // Cover header — deep navy band (kept dark for contrast)
+  headerBg:  [15, 23, 42]  as C3,      
+  headerMid: [51, 65, 85]  as C3,    
+  headerDim: [148, 163, 184] as C3,    
 
   // Borders
-  border:    [55, 65, 85] as C3,
-  borderMid: [75, 85, 105] as C3,
-  gloss:     [95, 115, 148] as C3,     // gloss sheen highlight strip on cards
+  border:    [229, 229, 234] as C3,
+  borderMid: [209, 209, 214] as C3,
+  gloss:     [255, 255, 255] as C3,     
 
   // Typography
-  text:      [245, 245, 250]  as C3,   
-  textMid:   [195, 205, 215]  as C3,   
-  textFaint: [140, 150, 165] as C3,    
+  text:      [28, 28, 30]  as C3,   
+  textMid:   [58, 58, 60]  as C3,   
+  textFaint: [142, 142, 147] as C3,    
 
   // Blue — carrier review / informational
-  blue:      [96, 165, 250] as C3,     
+  blue:      [37, 99, 235] as C3,     
   blueMid:   [59, 130, 246] as C3,     
-  blueBg:    [30, 58, 138] as C3,      
-  blueBdr:   [37, 99, 235] as C3,      
+  blueBg:    [239, 246, 255] as C3,      
+  blueBdr:   [191, 219, 254] as C3,      
 
   // Amber — caution / rescheduled
-  amber:     [251, 191, 36]  as C3,    
+  amber:     [217, 119, 6]  as C3,    
   amberMid:  [245, 158, 11]  as C3,
-  amberBg:   [120, 53, 15] as C3,      
-  amberBdr:  [180, 83, 9] as C3,       
+  amberBg:   [254, 252, 232] as C3,      
+  amberBdr:  [254, 240, 138] as C3,       
 
   // Green — no action / complete
-  green:     [52, 211, 153] as C3,     
-  greenBg:   [6, 78, 59] as C3,        
-  greenBdr:  [5, 150, 105] as C3,      
+  green:     [16, 185, 129] as C3,     
+  greenBg:   [236, 253, 245] as C3,        
+  greenBdr:  [167, 243, 208] as C3,      
 
   // Red — urgent
-  red:       [248, 113, 113] as C3,    
-  redBg:     [127, 29, 29] as C3,      
-  redBdr:    [220, 38, 38] as C3,      
+  red:       [239, 68, 68] as C3,    
+  redBg:     [254, 242, 242] as C3,      
+  redBdr:    [254, 202, 202] as C3,      
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -228,9 +228,6 @@ function baseCard(d: jsPDF, x: number, y: number, w: number, h: number, bg?: C3,
   sd(d, bdr ?? T.borderMid);
   d.setLineWidth(0.25);
   d.roundedRect(x, y, w, h, 3, 3, "S");
-  // Gloss sheen — top-edge highlight strip simulating specular reflection
-  sf(d, T.gloss);
-  d.roundedRect(x + 1, y + 1, w - 2, 1.8, 1, 1, "F");
 }
 
 function accentCard(d: jsPDF, x: number, y: number, w: number, h: number, accent: C3, bg: C3, bdr: C3) {
@@ -239,8 +236,6 @@ function accentCard(d: jsPDF, x: number, y: number, w: number, h: number, accent
   sd(d, bdr);
   d.setLineWidth(0.28);
   d.roundedRect(x, y, w, h, 3, 3, "S");
-  sf(d, T.gloss);
-  d.roundedRect(x + 1, y + 1, w - 2, 1.8, 1, 1, "F");
   sd(d, accent);
   d.setLineWidth(2.2);
   d.line(x + 1.4, y + 4, x + 1.4, y + h - 4);
@@ -410,12 +405,10 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
   // ── Full page background ──────────────────────────────────────────────────
   sf(d, T.pageBg); d.rect(0, 0, PW, PH, "F");
 
-  // ── Header band (32mm) ────────────────────────────────────────────────────
+  // Header band (32mm)
   const COVER_HDR = 32;
   sf(d, T.headerBg); d.rect(0, 0, PW, COVER_HDR, "F");
   sf(d, acc); d.rect(0, 0, PW, 2.5, "F");
-  // Glossy shimmer stripe across the header mid-section
-  sf(d, T.gloss); d.rect(0, 14, PW, 0.5, "F");
 
   // Brand left — logo image or fallback text
   const logoDataUrl = await loadLogoDataUrl();
@@ -427,7 +420,10 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
     st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(15);
     d.text("HUSTAD", M, 16);
     st(d, T.headerDim); d.setFont("helvetica", "normal"); d.setFontSize(6.5);
-    d.text("MADISON RESIDENTIAL", M, 23);
+    const divisionName = s.property.cityStateZip 
+      ? s.property.cityStateZip.split(",")[0].trim().toUpperCase() + " RESIDENTIAL"
+      : "EXTERIOR RESTORATION";
+    d.text(divisionName, M, 23);
   }
 
   // Center — report type bold + address + homeowner below
@@ -449,8 +445,6 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
   const btnW = 38; const btnH = 14;
   const btnX = PW - M - btnW; const btnY = (COVER_HDR - btnH) / 2;
   sf(d, btnBg); d.roundedRect(btnX, btnY, btnW, btnH, 2.5, 2.5, "F");
-  // Gloss highlight on button top edge
-  sf(d, T.gloss); d.roundedRect(btnX + 1, btnY + 1, btnW - 2, 2.2, 1, 1, "F");
   sd(d, [255, 255, 255] as C3); d.setLineWidth(0.2); d.roundedRect(btnX, btnY, btnW, btnH, 2.5, 2.5, "S");
   st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(6.5);
   d.text(btnLabel.toUpperCase(), PW - M - btnW / 2, (COVER_HDR) / 2 + 1, { align: "center" });
@@ -461,8 +455,7 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
   st(d, T.textMid); d.setFont("helvetica", "bold"); d.setFontSize(5.5);
   const pbW = d.getTextWidth(pathBadgeTxt) + 12;
   sf(d, T.surface2); d.roundedRect(M, y, pbW, 7.5, 2, 2, "F");
-  sd(d, T.gloss); d.setLineWidth(0.25); d.roundedRect(M, y, pbW, 7.5, 2, 2, "S");
-  sf(d, T.gloss); d.roundedRect(M + 0.8, y + 0.8, pbW - 1.6, 1.4, 0.8, 0.8, "F");
+  sd(d, T.borderMid); d.setLineWidth(0.2); d.roundedRect(M, y, pbW, 7.5, 2, 2, "S");
   st(d, T.textMid); d.text(pathBadgeTxt, M + 6, y + 5.4);
   y += 12;
 
@@ -477,7 +470,6 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
       if (cx + cW > PW - M) break;
       sf(d, T.surface2); d.roundedRect(cx, y, cW, 6.5, 2, 2, "F");
       sd(d, T.borderMid); d.setLineWidth(0.22); d.roundedRect(cx, y, cW, 6.5, 2, 2, "S");
-      sf(d, T.gloss); d.roundedRect(cx + 0.8, y + 0.8, cW - 1.6, 1.2, 0.7, 0.7, "F");
       st(d, T.textMid); d.text(lbl, cx + 5, y + 4.7);
       cx += cW + 3;
     }
@@ -485,7 +477,7 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
   }
 
   // ── Hero headline — font set BEFORE splitTextToSize for accurate metrics ──
-  st(d, [255, 255, 255] as C3); d.setFont("times", "bold"); d.setFontSize(16);
+  st(d, T.text); d.setFont("times", "bold"); d.setFontSize(16);
   const hlLines = d.splitTextToSize(cfg.headline, CW) as string[];
   d.text(hlLines.slice(0, 3), M, y);
   y += Math.min(hlLines.length, 3) * 7 + 4;
@@ -508,22 +500,17 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
   // ── Two-column cards: Property & Inspection | Finding Summary ─────────────
   const hw     = CW / 2 - 3;
   const col2   = M + hw + 6;
-  const cardH  = 66;
-
-  // Left: Property & Inspection Details — horizontal label / value rows
-  baseCard(d, M, y, hw, cardH, T.surface, T.borderMid);
-  sf(d, acc); d.rect(M, y, hw, 2.5, "F");
-  sf(d, T.gloss); d.rect(M + 1, y + 2.8, hw - 2, 1, "F");
-  st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
-  d.text("Property & Inspection Details", M + 6, y + 10.5);
-  sf(d, T.gloss); d.rect(M + 6, y + 12.5, hw - 12, 0.2, "F");
-
   const propRows: [string, string][] = [
     ["Property",        addrLine || "—"],
     ["Inspection Date", fmtDate(s.createdAt)],
     ["Inspector",       s.repName || "—"],
     ["Photo Count",     `${photoCount} photos`],
   ];
+  if (s.centerpointId) propRows.push(["Centerpoint ID", s.centerpointId]);
+  if (s.property.insurerNameKnown) propRows.push(["Carrier", s.property.insurerNameKnown]);
+  if (s.property.claimNumberKnown) propRows.push(["Claim #", s.property.claimNumberKnown]);
+
+  const cardH  = Math.max(66, 17 + propRows.length * 10 + 5);
   let ry = y + 17;
   for (const [lbl, val] of propRows) {
     // Label left — mono-caps faint
@@ -538,10 +525,9 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
   // Right: Finding Summary — metric bubbles + "Your Stated Priorities" pills
   baseCard(d, col2, y, hw, cardH, T.surface, T.borderMid);
   sf(d, acc); d.rect(col2, y, hw, 2.5, "F");
-  sf(d, T.gloss); d.rect(col2 + 1, y + 2.8, hw - 2, 1, "F");
-  st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
+  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
   d.text("Finding Summary", col2 + 6, y + 10.5);
-  sf(d, T.gloss); d.rect(col2 + 6, y + 12.5, hw - 12, 0.2, "F");
+  sf(d, T.border); d.rect(col2 + 6, y + 12.5, hw - 12, 0.2, "F");
 
   const metrics: { label: string; val: number; color: C3 }[] = [
     { label: "STORM",   val: stormCount,   color: acc        },
@@ -554,7 +540,6 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
   for (const m of metrics) {
     sf(d, T.surface2); d.roundedRect(bx, by, bw - 2, 22, 2.5, 2.5, "F");
     sd(d, m.color); d.setLineWidth(0.5); d.roundedRect(bx, by, bw - 2, 22, 2.5, 2.5, "S");
-    sf(d, T.gloss); d.roundedRect(bx + 1, by + 1, bw - 4, 2, 1, 1, "F");
     st(d, m.color); d.setFont("helvetica", "bold"); d.setFontSize(13);
     d.text(String(m.val), bx + (bw - 2) / 2, by + 13, { align: "center" });
     st(d, T.textMid); d.setFont("helvetica", "bold"); d.setFontSize(5);
@@ -575,7 +560,6 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
       const pW = d.getTextWidth(label) + 10;
       sf(d, T.surface2); d.roundedRect(px2, y + 46, pW, 7, 2, 2, "F");
       sd(d, T.borderMid); d.setLineWidth(0.22); d.roundedRect(px2, y + 46, pW, 7, 2, 2, "S");
-      sf(d, T.gloss); d.roundedRect(px2 + 0.8, y + 46.8, pW - 1.6, 1.2, 0.7, 0.7, "F");
       st(d, T.textMid); d.text(label, px2 + 4, y + 51.5);
       px2 += pW + 3;
     }
@@ -667,10 +651,9 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
     const sy  = y + Math.floor(i / 2) * (secH + 4);
     baseCard(d, sx, sy, secW, secH, T.surface2, T.borderMid);
     sf(d, acc); d.circle(sx + 9, sy + 9, 5, "F");
-    sf(d, T.gloss); d.roundedRect(sx + 5, sy + 5, 8, 1.8, 0.8, 0.8, "F");
     st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(6);
     d.text(sec.num, sx + 9, sy + 11, { align: "center" });
-    st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
+    st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
     d.text(sec.title, sx + 18, sy + 10);
     st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6);
     const descLines = d.splitTextToSize(sec.desc, secW - 22) as string[];

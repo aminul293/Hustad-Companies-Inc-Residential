@@ -284,28 +284,10 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
           });
         }
 
-        let emailMessage = "";
-        if (outcome === "claim_review_candidate") {
-          emailMessage = `<p>Attached is the forensic dossier for your property at <strong>${session.property.address}</strong>. The findings support a formal claim review. Please review the attached photos and documentation. If you agree with the recommendation, click below to authorize Hustad to coordinate the review process with your carrier.</p>`;
-        } else if (outcome === "repair_only") {
-          emailMessage = `<p>Attached is the inspection dossier for your property at <strong>${session.property.address}</strong>. We documented an urgent repair item that requires attention. Our service estimating team will review this file and follow up shortly with a targeted repair quote.</p>`;
-        } else if (outcome === "full_restoration_candidate") {
-          emailMessage = `<p>Attached is the property dossier for your property at <strong>${session.property.address}</strong>. Our estimating team is reviewing the system measurements and requirements to build your replacement proposal. We will contact you once the proposal is ready.</p>`;
-        } else if (outcome === "no_damage" || outcome === "monitor_only") {
-          emailMessage = `<p>Your property inspection at <strong>${session.property.address}</strong> is complete. Attached is your documentation summary and future recheck options.</p><p>Please keep this for your records, and feel free to leave us a review or refer us to a neighbor.</p>`;
-        } else {
-          emailMessage = `<p>Your property inspection at <strong>${session.property.address}</strong> is complete. Attached is the full inspection report, photo evidence, and agreement.</p>`;
-        }
-
-        const reviewUrl = session.reviewToken 
-          ? `${window.location.origin}/review/${session.reviewToken}` 
-          : null;
-
-        const reviewButtonHtml = reviewUrl ? `
-          <div style="margin: 32px 0; text-align: center;">
-            <a href="${reviewUrl}" style="background-color: #6366f1; color: #ffffff; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">REVIEW & AUTHORIZE DOSSIER</a>
-          </div>
-        ` : '';
+        const { generateEmailHTML } = await import("@/lib/email-generator");
+        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://hustad.com';
+        const reviewUrl = session.reviewToken ? `${origin}/review/${session.reviewToken}` : null;
+        const emailHtml = await generateEmailHTML(session, reviewUrl);
 
         // 5. Dispatch to API
         const ccList = [];
@@ -326,31 +308,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
           subject: `Hustad Forensic Dossier: ${session.property.address}`,
           attachments,
           sessionId: session.sessionId,
-          html: `
-            <div style="font-family: sans-serif; color: #1e293b; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
-              <div style="background-color: #0f172a; padding: 24px; text-align: center;">
-                <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 2px;">HUSTAD RESIDENTIAL</h1>
-              </div>
-              <div style="padding: 32px;">
-                <h2 style="font-size: 20px; color: #0f172a; margin-top: 0;">Forensic Dossier Ready</h2>
-                <p>Hello,</p>
-                ${emailMessage}
-                
-                <div style="background-color: #f8fafc; border-left: 4px solid #6366f1; padding: 16px; margin: 24px 0;">
-                  <p style="margin: 0; font-size: 14px; color: #64748b;"><strong>Outcome:</strong> ${outcome.toUpperCase().replace(/_/g, " ")}</p>
-                  <p style="margin: 4px 0 0 0; font-size: 14px; color: #64748b;"><strong>ID:</strong> ${session.sessionId.toUpperCase()}</p>
-                </div>
-
-                ${reviewButtonHtml}
-
-                <p>A full technical copy of the dossier is attached to this email for your records.</p>
-                
-                <p style="margin-top: 32px; font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 16px;">
-                  This is an automated delivery from the Hustad Forensic Platform. For immediate questions, please contact your representative: <strong>${session.repName}</strong>.
-                </p>
-              </div>
-            </div>
-          `
+          html: emailHtml
         });
 
         if (!response.ok) {
