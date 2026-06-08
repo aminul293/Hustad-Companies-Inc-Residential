@@ -306,14 +306,14 @@ function renderIntro(d: jsPDF, pt: PathType, s: SessionState) {
     d.text(hLines, M, Y);
     Y += hLines.length * 8 + 6;
     
-    st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(10);
-    const subhead = "The documented findings support a targeted repair scope. This path addresses what the evidence supports — nothing more. No insurance process required, faster scheduling, and full control over timing.";
+    st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(11);
+    const subhead = "The documented findings support a targeted repair scope. This path addresses what the evidence supports \u2014 nothing more. No insurance process required, faster scheduling, and full control over timing.";
     const shLines = d.splitTextToSize(subhead, CW) as string[];
     d.text(shLines, M, Y);
     Y += shLines.length * 5 + 6;
 
     if (s.findings?.summaryBody) {
-      st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(10);
+      st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(11);
       const bLines = d.splitTextToSize(s.findings.summaryBody, CW) as string[];
       d.text(bLines, M, Y);
       Y += bLines.length * 5 + 6;
