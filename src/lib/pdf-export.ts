@@ -335,12 +335,15 @@ function renderFindings(d: jsPDF, pt: PathType, s: SessionState) {
   Y += 15;
   
   for (const item of items) {
-    checkPage(d, 10);
+    st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(9);
+    const lines = d.splitTextToSize(item, CW - 10) as string[];
+    const h = lines.length * 4.5 + 1.5;
+    checkPage(d, h);
     st(d, pt === "urgent_repair" ? T.orange500 : T.amber500);
     d.text("*", M, Y + 3);
     st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(9);
-    d.text(item, M + 5, Y + 3);
-    Y += 6;
+    d.text(lines, M + 5, Y + 3);
+    Y += h;
   }
   Y += 5;
   sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
