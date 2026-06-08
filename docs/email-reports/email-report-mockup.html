@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hustad Email Report Mockups — All Paths</title>
+<style>
+  /* ── PAGE CHROME ──────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: #080B12; min-height: 100vh; }
+
+  .page-header { padding: 32px 32px 0; max-width: 760px; margin: 0 auto; }
+  .page-header h1 { color: #F1F5F9; font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .page-header p { color: #64748B; font-size: 13px; margin-top: 4px; }
+
+  /* ── TAB NAV ──────────────────────────────────── */
+  .tab-nav { display: flex; gap: 3px; padding: 24px 32px 0; max-width: 760px; margin: 0 auto; flex-wrap: wrap; }
+  .tab-btn { padding: 8px 14px; border: none; border-radius: 6px 6px 0 0; cursor: pointer; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s; }
+  .tab-btn.claim-sold    { background: #1E3A5F; color: #60A5FA; }
+  .tab-btn.claim-review  { background: #1C2E4A; color: #93C5FD; }
+  .tab-btn.repair        { background: #3B1414; color: #FCA5A5; }
+  .tab-btn.restoration   { background: #3B2A0A; color: #FCD34D; }
+  .tab-btn.nodamage      { background: #052E1C; color: #6EE7B7; }
+  .tab-btn.active.claim-sold    { background: #1D4ED8; color: #FFFFFF; }
+  .tab-btn.active.claim-review  { background: #2563EB; color: #FFFFFF; }
+  .tab-btn.active.repair        { background: #DC2626; color: #FFFFFF; }
+  .tab-btn.active.restoration   { background: #D97706; color: #FFFFFF; }
+  .tab-btn.active.nodamage      { background: #059669; color: #FFFFFF; }
+
+  /* ── EMAIL WRAP ───────────────────────────────── */
+  .email-path { display: none; padding: 0 32px 60px; max-width: 760px; margin: 0 auto; }
+  .email-path.active { display: block; }
+  .email-outer { background: #F1F5F9; padding: 32px 0 40px; border-radius: 0 8px 8px 8px; }
+  .email-frame { max-width: 680px; margin: 0 auto; background: #FFFFFF; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 24px rgba(0,0,0,0.18); }
+
+  /* ── EMAIL HEADER ─────────────────────────────── */
+  .email-accent-bar { height: 4px; width: 100%; }
+  .email-header { background: #0C0F16; padding: 28px 40px 24px; }
+  .email-header-brand { display: flex; align-items: center; justify-content: space-between; }
+  .email-logo-text { color: #FFFFFF; font-size: 18px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+  .email-logo-sub { color: #64748B; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px; }
+  .email-report-type { color: #94A3B8; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; text-align: right; }
+
+  /* ── STATUS BANNER ────────────────────────────── */
+  .status-banner { padding: 20px 40px; border-bottom: 1px solid #F1F5F9; }
+  .status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .status-headline { font-size: 22px; font-weight: 700; color: #0F172A; margin-top: 12px; letter-spacing: -0.02em; line-height: 1.3; }
+  .status-sub { font-size: 14px; color: #475569; margin-top: 6px; line-height: 1.6; }
+
+  /* ── EMAIL BODY ───────────────────────────────── */
+  .email-body { padding: 32px 40px 40px; }
+  .greeting { font-size: 15px; color: #0F172A; margin-bottom: 12px; font-weight: 500; }
+  .intro-para { font-size: 14px; color: #475569; line-height: 1.7; margin-bottom: 28px; }
+
+  /* ── SECTION ──────────────────────────────────── */
+  .section { margin-bottom: 28px; }
+  .section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #94A3B8; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #F1F5F9; }
+  .section-label.accent-blue  { color: #3B82F6; border-color: #DBEAFE; }
+  .section-label.accent-red   { color: #EF4444; border-color: #FEE2E2; }
+  .section-label.accent-amber { color: #F59E0B; border-color: #FEF3C7; }
+  .section-label.accent-green { color: #10B981; border-color: #D1FAE5; }
+
+  /* ── PROPERTY CARD ────────────────────────────── */
+  .prop-card { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 20px 24px; }
+  .prop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .prop-item label { display: block; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #94A3B8; margin-bottom: 3px; }
+  .prop-item span { font-size: 13px; font-weight: 600; color: #0F172A; }
+
+  /* ── STAT CHIPS ───────────────────────────────── */
+  .stat-row { display: flex; gap: 12px; margin-top: 0; }
+  .stat-chip { flex: 1; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 14px 16px; text-align: center; }
+  .stat-chip .num { font-size: 28px; font-weight: 800; line-height: 1; }
+  .stat-chip .lbl { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #64748B; margin-top: 4px; }
+  .stat-chip.blue  { border-top: 3px solid #3B82F6; } .stat-chip.blue .num  { color: #2563EB; }
+  .stat-chip.red   { border-top: 3px solid #EF4444; } .stat-chip.red .num   { color: #DC2626; }
+  .stat-chip.amber { border-top: 3px solid #F59E0B; } .stat-chip.amber .num { color: #D97706; }
+  .stat-chip.green { border-top: 3px solid #10B981; } .stat-chip.green .num { color: #059669; }
+  .stat-chip.gray  { border-top: 3px solid #94A3B8; } .stat-chip.gray .num  { color: #475569; }
+
+  /* ── FINDING SUMMARY ──────────────────────────── */
+  .finding-summary-card { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 20px 24px; margin-top: 16px; }
+  .finding-summary-card p { font-size: 13px; color: #334155; line-height: 1.7; }
+
+  /* ── PHOTOS ───────────────────────────────────── */
+  .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .photo-placeholder { background: #F1F5F9; border: 1px solid #E2E8F0; border-radius: 8px; aspect-ratio: 4/3; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding: 12px; position: relative; overflow: hidden; }
+  .photo-placeholder::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, #E2E8F0 0%, #CBD5E1 100%); }
+  .photo-icon { position: relative; z-index: 1; font-size: 28px; opacity: 0.3; }
+  .photo-badge { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 100px; font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 6px; }
+  .photo-caption { font-size: 11px; color: #475569; margin-top: 6px; font-weight: 500; position: relative; z-index: 1; text-align: center; }
+  .badge-blue   { background: #DBEAFE; color: #1D4ED8; }
+  .badge-red    { background: #FEE2E2; color: #DC2626; }
+  .badge-amber  { background: #FEF3C7; color: #B45309; }
+  .badge-gray   { background: #F1F5F9; color: #475569; }
+  .badge-green  { background: #D1FAE5; color: #047857; }
+
+  /* ── NEXT STEPS ───────────────────────────────── */
+  .steps-list { display: flex; flex-direction: column; gap: 10px; }
+  .step-item { display: flex; align-items: flex-start; gap: 16px; padding: 16px 20px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; }
+  .step-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; margin-top: 1px; color: #FFFFFF; }
+  .step-content h4 { font-size: 13px; font-weight: 700; color: #0F172A; margin-bottom: 3px; }
+  .step-content p { font-size: 12px; color: #64748B; line-height: 1.6; }
+
+  /* ── RECOMMENDATION BOX ───────────────────────── */
+  .rec-box { border-radius: 8px; padding: 20px 24px; }
+  .rec-box h4 { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+  .rec-box p { font-size: 13px; line-height: 1.7; }
+  .rec-box.blue  { background: #EFF6FF; border: 1px solid #BFDBFE; } .rec-box.blue h4  { color: #1D4ED8; } .rec-box.blue p  { color: #1E40AF; }
+  .rec-box.red   { background: #FFF5F5; border: 1px solid #FECACA; } .rec-box.red h4   { color: #DC2626; } .rec-box.red p   { color: #991B1B; }
+  .rec-box.amber { background: #FFFBEB; border: 1px solid #FDE68A; } .rec-box.amber h4 { color: #D97706; } .rec-box.amber p { color: #92400E; }
+  .rec-box.green { background: #ECFDF5; border: 1px solid #A7F3D0; } .rec-box.green h4 { color: #059669; } .rec-box.green p { color: #064E3B; }
+
+  /* ── AGREEMENT SECTION ────────────────────────── */
+  .agreement-header { background: #0C0F16; border-radius: 8px 8px 0 0; padding: 20px 24px; }
+  .agreement-header h3 { color: #F1F5F9; font-size: 15px; font-weight: 700; }
+  .agreement-header p { color: #64748B; font-size: 12px; margin-top: 4px; }
+  .agreement-body { border: 1px solid #1E293B; border-top: none; border-radius: 0 0 8px 8px; overflow: hidden; }
+  .agreement-clause { padding: 16px 24px; border-bottom: 1px solid #F1F5F9; }
+  .agreement-clause:last-child { border-bottom: none; }
+  .agreement-clause h4 { font-size: 11px; font-weight: 700; color: #0F172A; letter-spacing: 0.04em; margin-bottom: 6px; text-transform: uppercase; }
+  .agreement-clause p { font-size: 12px; color: #475569; line-height: 1.7; }
+  .agreement-clause:nth-child(even) { background: #F8FAFC; }
+
+  /* ── EXECUTED AGREEMENT CARD ──────────────────── */
+  .executed-card { background: #F0FDF4; border: 1px solid #A7F3D0; border-radius: 8px; padding: 20px 24px; }
+  .executed-card .exec-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .exec-check { width: 32px; height: 32px; background: #059669; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; flex-shrink: 0; }
+  .exec-title { font-size: 14px; font-weight: 700; color: #064E3B; }
+  .exec-sub { font-size: 12px; color: #047857; margin-top: 1px; }
+  .exec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .exec-field label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #6EE7B7; display: block; margin-bottom: 2px; }
+  .exec-field span { font-size: 13px; font-weight: 600; color: #064E3B; }
+
+  /* ── PENDING AGREEMENT CARD ───────────────────── */
+  .pending-card { background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 20px 24px; }
+  .pending-card h4 { font-size: 14px; font-weight: 700; color: #92400E; margin-bottom: 8px; }
+  .pending-card p { font-size: 13px; color: #78350F; line-height: 1.7; margin-bottom: 16px; }
+  .cta-btn { display: inline-block; padding: 12px 28px; border-radius: 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none; }
+  .cta-btn.blue  { background: #2563EB; color: #FFFFFF; }
+  .cta-btn.amber { background: #D97706; color: #FFFFFF; }
+  .cta-note { font-size: 11px; color: #92400E; margin-top: 10px; line-height: 1.5; }
+
+  /* ── WISCONSIN NOTICE ─────────────────────────── */
+  .wi-notice { background: #FFFBEB; border: 1px solid #FDE68A; border-left: 4px solid #F59E0B; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .wi-notice h4 { font-size: 11px; font-weight: 800; color: #92400E; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+  .wi-notice ul { list-style: none; }
+  .wi-notice ul li { font-size: 12px; color: #78350F; line-height: 1.6; padding: 3px 0 3px 14px; position: relative; }
+  .wi-notice ul li::before { content: '•'; position: absolute; left: 0; color: #F59E0B; font-weight: 700; }
+
+  /* ── REPAIR SCOPE ─────────────────────────────── */
+  .scope-list { display: flex; flex-direction: column; gap: 8px; }
+  .scope-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; background: #F8FAFC; border: 1px solid #E2E8F0; border-left: 3px solid #EF4444; border-radius: 0 6px 6px 0; }
+  .scope-item .scope-cat { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; }
+  .scope-item .scope-desc { font-size: 13px; color: #0F172A; font-weight: 600; }
+  .scope-item .scope-note { font-size: 11px; color: #64748B; margin-top: 2px; }
+
+  /* ── TIMELINE ─────────────────────────────────── */
+  .timeline { display: flex; flex-direction: column; gap: 0; }
+  .timeline-item { display: flex; gap: 16px; }
+  .timeline-left { display: flex; flex-direction: column; align-items: center; width: 28px; flex-shrink: 0; }
+  .timeline-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .timeline-line { width: 2px; flex: 1; background: #E2E8F0; margin: 4px 0; min-height: 20px; }
+  .timeline-item:last-child .timeline-line { display: none; }
+  .timeline-content { padding-bottom: 20px; }
+  .timeline-content h4 { font-size: 13px; font-weight: 700; color: #0F172A; }
+  .timeline-content p { font-size: 12px; color: #64748B; line-height: 1.6; margin-top: 3px; }
+
+  /* ── MONITOR ITEMS ────────────────────────────── */
+  .monitor-list { display: flex; flex-direction: column; gap: 8px; }
+  .monitor-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 6px; }
+  .monitor-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .monitor-item h4 { font-size: 13px; font-weight: 600; color: #0F172A; }
+  .monitor-item p { font-size: 12px; color: #64748B; margin-top: 2px; line-height: 1.5; }
+
+  /* ── DIVIDER ──────────────────────────────────── */
+  .email-divider { height: 1px; background: #F1F5F9; margin: 28px 0; }
+
+  /* ── FOOTER ───────────────────────────────────── */
+  .email-footer { background: #F8FAFC; border-top: 1px solid #E2E8F0; padding: 24px 40px; }
+  .footer-brand { font-size: 13px; font-weight: 700; color: #0F172A; margin-bottom: 4px; }
+  .footer-contact { font-size: 12px; color: #64748B; line-height: 1.7; }
+  .footer-legal { font-size: 11px; color: #94A3B8; margin-top: 12px; line-height: 1.6; border-top: 1px solid #E2E8F0; padding-top: 12px; }
+
+  /* ── ESTIMATING BOX ───────────────────────────── */
+  .estimating-box { background: linear-gradient(135deg, #0C0F16 0%, #1E293B 100%); border-radius: 8px; padding: 28px 32px; text-align: center; }
+  .estimating-box .est-icon { font-size: 36px; margin-bottom: 12px; }
+  .estimating-box h3 { color: #F1F5F9; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .estimating-box p { color: #94A3B8; font-size: 13px; line-height: 1.7; max-width: 440px; margin: 0 auto; }
+
+  /* ── TERMS LIST ───────────────────────────────── */
+  .terms-list { display: flex; flex-direction: column; gap: 8px; }
+  .terms-item { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: #475569; line-height: 1.6; }
+  .terms-item::before { content: '✓'; color: #10B981; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── PREPARING LIST ───────────────────────────── */
+  .prep-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .prep-item { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 12px 14px; font-size: 12px; color: #334155; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+  .prep-item::before { content: '→'; color: #F59E0B; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Hustad Email Report Mockups</h1>
+  <p>Developer reference — all 4 inspection outcome paths · Click a tab to preview each variant</p>
+</div>
+
+<nav class="tab-nav">
+  <button class="tab-btn claim-sold active"   onclick="show('claim-sold',   this)">1A · Claim Review — Sold</button>
+  <button class="tab-btn claim-review"         onclick="show('claim-review', this)">1B · Claim Review — Sent for Review</button>
+  <button class="tab-btn repair"               onclick="show('repair',       this)">2 · Repair Only</button>
+  <button class="tab-btn restoration"          onclick="show('restoration',  this)">3 · Full Restoration</button>
+  <button class="tab-btn nodamage"             onclick="show('nodamage',     this)">4 · No Damage / Monitor</button>
+</nav>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!-- PATH 1A — CLAIM REVIEW · SOLD / AGREEMENT EXECUTED                    -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<div id="claim-sold" class="email-path active">
+  <div class="email-outer">
+    <div class="email-frame">
+
+      <div class="email-accent-bar" style="background:#2563EB;"></div>
+
+      <!-- HEADER -->
+      <div class="email-header">
+        <div class="email-header-brand">
+          <div>
+            <div class="email-logo-text">Hustad</div>
+            <div class="email-logo-sub">Madison Residential</div>
+          </div>
+          <div class="email-report-type">Storm Review<br>Inspection Report</div>
+        </div>
+      </div>
+
+      <!-- STATUS BANNER -->
+      <div class="status-banner">
+        <span class="status-pill" style="background:#D1FAE5; color:#065F46;">
+          <span class="status-dot" style="background:#059669;"></span>
+          Agreement Executed
+        </span>
+        <div class="status-headline">Your storm findings are documented and your agreement is on file.</div>
+        <div class="status-sub">This report contains your full inspection summary, damage evidence, and a copy of your executed Insurance Contingency Agreement. Keep this for your records.</div>
+      </div>
+
+      <!-- BODY -->
+      <div class="email-body">
+
+        <p class="greeting">Dear [Homeowner Name],</p>
+        <p class="intro-para">Thank you for completing your inspection with Hustad Companies today. Your property has been thoroughly documented and your Insurance Contingency Agreement is now executed. Attached to this email you will find your full forensic report PDF. Below is a summary of today's findings and next steps.</p>
+
+        <!-- PROPERTY SUMMARY -->
+        <div class="section">
+          <div class="section-label accent-blue">Property &amp; Inspection Details</div>
+          <div class="prop-card">
+            <div class="prop-grid">
+              <div class="prop-item"><label>Property Address</label><span>[123 Oak Street, Madison, WI 53703]</span></div>
+              <div class="prop-item"><label>Inspection Date</label><span>[June 8, 2026]</span></div>
+              <div class="prop-item"><label>Inspector</label><span>[Rep Name]</span></div>
+              <div class="prop-item"><label>Report ID</label><span>[ABC123]</span></div>
+              <div class="prop-item"><label>Working Storm Date</label><span>[May 12, 2026]</span></div>
+              <div class="prop-item"><label>Insurance Carrier</label><span>[Carrier Name, if known]</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DAMAGE SUMMARY -->
+        <div class="section">
+          <div class="section-label accent-blue">Storm Findings Summary</div>
+          <div class="stat-row">
+            <div class="stat-chip blue"><div class="num">4</div><div class="lbl">Storm Items</div></div>
+            <div class="stat-chip red"><div class="num">1</div><div class="lbl">Urgent Items</div></div>
+            <div class="stat-chip amber"><div class="num">2</div><div class="lbl">Monitor Items</div></div>
+            <div class="stat-chip gray"><div class="num">11</div><div class="lbl">Photos Taken</div></div>
+          </div>
+          <div class="finding-summary-card">
+            <p>[AI-generated storm summary paragraph — e.g., "During today's inspection, Hustad documented multiple hail impact points consistent with a storm event on or around May 12, 2026. Findings include bruised shingle field, granule displacement, and damaged ridge cap consistent with hail in the 1.25–1.5" range. One area of open flashing was flagged as an urgent protection concern. Findings support a formal carrier review."]</p>
+          </div>
+        </div>
+
+        <!-- DAMAGE EVIDENCE PHOTOS -->
+        <div class="section">
+          <div class="section-label accent-blue">Damage Evidence Photos</div>
+          <div class="photo-grid">
+            <div class="photo-placeholder">
+              <div class="photo-icon">📷</div>
+              <span class="photo-badge badge-blue">Storm Evidence</span>
+              <div class="photo-caption">Hail impact — field shingles</div>
+            </div>
+            <div class="photo-placeholder">
+              <div class="photo-icon">📷</div>
+              <span class="photo-badge badge-red">Urgent Protection</span>
+              <div class="photo-caption">Open flashing — north valley</div>
+            </div>
+            <div class="photo-placeholder">
+              <div class="photo-icon">📷</div>
+              <span class="photo-badge badge-blue">Storm Evidence</span>
+              <div class="photo-caption">Granule displacement — east slope</div>
+            </div>
+            <div class="photo-placeholder">
+              <div class="photo-icon">📷</div>
+              <span class="photo-badge badge-gray">Overview</span>
+              <div class="photo-caption">Ridge cap — full run</div>
+            </div>
+          </div>
+          <p style="font-size:11px; color:#94A3B8; margin-top:10px; text-align:right;">Full evidence gallery included in attached PDF report.</p>
+        </div>
+
+        <!-- NEXT STEPS -->
+        <div class="section">
+          <div class="section-label accent-blue">What Happens Next</div>
+          <div class="steps-list">
+            <div class="step-item">
+              <div class="step-num" style="background:#2563EB;">1</div>
+              <div class="step-content">
+                <h4>File or confirm your insurance claim</h4>
+                <p>Contact your insurance carrier to file a claim or confirm one is already active for the documented storm event. You will need your policy number and the working storm date noted above.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num" style="background:#2563EB;">2</div>
+              <div class="step-content">
+                <h4>Coordinate the carrier adjuster inspection</h4>
+                <p>Your Hustad representative will coordinate with your insurance carrier to schedule an adjuster inspection. We will present the documented findings on your behalf.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num" style="background:#2563EB;">3</div>
+              <div class="step-content">
+                <h4>Your carrier makes the coverage determination</h4>
+                <p>Your insurance provider will review the documented evidence and issue a written coverage decision. Hustad will share the outcome with you promptly. Hustad cannot predict or guarantee any coverage result.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num" style="background:#2563EB;">4</div>
+              <div class="step-content">
+                <h4>You authorize production — nothing starts without your approval</h4>
+                <p>No repair work begins until your carrier issues a written determination, you confirm the scope, and you authorize production in writing. You stay in control at every step.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EXECUTED AGREEMENT -->
+        <div class="section">
+          <div class="section-label accent-blue">Your Executed Agreement</div>
+          <div class="executed-card">
+            <div class="exec-header">
+              <div class="exec-check">✓</div>
+              <div>
+                <div class="exec-title">Insurance Contingency Agreement — Executed</div>
+                <div class="exec-sub">Agreement is on file with Hustad Companies, Inc.</div>
+              </div>
+            </div>
+            <div class="exec-grid">
+              <div class="exec-field"><label>Signed By</label><span>[Signer Name]</span></div>
+              <div class="exec-field"><label>Date &amp; Time Signed</label><span>[June 8, 2026 · 3:42 PM]</span></div>
+              <div class="exec-field"><label>Property</label><span>[123 Oak Street, Madison, WI]</span></div>
+              <div class="exec-field"><label>Hustad Representative</label><span>[Rep Name]</span></div>
+            </div>
+            <p style="font-size:12px; color:#047857; margin-top:14px; line-height:1.6;">You have 3 business days from the date signed to cancel this agreement without penalty. To cancel, contact Hustad in writing via email or mail. See Section 7 of the agreement below for full cancellation rights.</p>
+          </div>
+        </div>
+
+        <div class="email-divider"></div>
+
+        <!-- CONTINGENCY AGREEMENT — FULL TEXT -->
+        <div class="section">
+          <div class="section-label">Insurance Contingency Agreement — Full Text</div>
+          <div class="agreement-header">
+            <h3>Insurance Contingency Agreement</h3>
+            <p>Hustad Companies, Inc. · Madison, Wisconsin · Executed copy for your records</p>
+          </div>
+          <div class="agreement-body">
+            <div class="agreement-clause">
+              <h4>1. Parties and Property</h4>
+              <p>This Insurance Contingency Agreement ("Agreement") is entered into between the property owner(s) identified at the time of signing ("Homeowner") and Hustad Companies, Inc., a Wisconsin corporation ("Contractor"). This Agreement applies to the property address documented in the associated inspection session. Both parties agree that the inspection findings recorded by the Contractor's representative on the date of this Agreement constitute the factual basis for the scope of work described herein.</p>
+            </div>
+            <div class="agreement-clause">
+              <h4>2. Scope of Work</h4>
+              <p>Contractor agrees to perform the exterior restoration or repair services identified in the inspection findings summary presented during this session. The scope is limited to the items documented, photographed, and classified during today's inspection. No work beyond the documented scope will be performed without a written change order signed by the Homeowner. The Contractor's recommendation is based solely on findings observed at the property and does not include speculative or preventive items not documented today.</p>
+            </div>
+            <div class="agreement-clause">
+              <h4>3. Insurance Contingency</h4>
+              <p>This Agreement is contingent upon the Homeowner's insurance carrier approving coverage for the documented scope of work. If the carrier denies coverage in full, the Homeowner may cancel this Agreement within 3 business days of receiving written notice of denial at no penalty. If the carrier approves partial coverage, the parties will review the approved scope and agree in writing before work begins. The Contractor will not begin production work until insurance coverage determination has been received and confirmed in writing. Hustad Companies is not a licensed public adjuster and will not negotiate claim terms with the Homeowner's carrier on the Homeowner's behalf.</p>
+            </div>
+            <div class="agreement-clause">
+              <h4>4. Compensation and Payment</h4>
+              <p>Compensation for work performed under this Agreement shall be the amount approved by the Homeowner's insurance carrier for the documented scope, including applicable overhead and profit, as established by the carrier's written settlement. The Homeowner's deductible, any depreciation withheld pending completion, and any non-covered items agreed to separately remain the financial responsibility of the Homeowner. The Contractor will not waive, absorb, or rebate any portion of the insurance deductible as prohibited under Wisconsin Statute § 100.65. Final invoicing will be provided upon project completion.</p>
+            </div>
+            <div class="agreement-clause">
+              <h4>5. Scheduling and Production</h4>
+              <p>Following insurance approval and written authorization from the Homeowner, the Contractor will schedule the work within a reasonable timeframe subject to production capacity, material availability, and weather conditions. The Homeowner agrees to provide reasonable access to the property for pre-production measurements, material delivery, and the work itself. The Contractor will notify the Homeowner at least 48 hours in advance of the production start date.</p>
+            </div>
+            <div class="agreement-clause">
+              <h4>6. Homeowner Obligations</h4>
+              <p>The Homeowner agrees to: (a) promptly file or confirm an active insurance claim for the documented storm event if not already filed; (b) notify the Contractor within 5 business days of any written communication received from the insurance carrier regarding this claim; (c) provide the Contractor access to any carrier-issued Explanation of Benefits, adjuster reports, or coverage decisions within 5 business days of receipt; and (d) not authorize any other contractor to perform work on the documented scope while this Agreement is active without written notice to Hustad Companies.</p>
+            </div>
+            <div class="agreement-clause">
+              <h4>7. Wisconsin Cancellation Rights</h4>
+              <p>You have the right to cancel this Agreement without penalty within 3 business days of the date signed. To cancel, you must provide written notice to Hustad Companies, Inc. by mail, email, or hand delivery. This right of cancellation is in addition to any right of cancellation provided under Wisconsin law if your insurance carrier denies coverage. Notice of cancellation should be directed to: Hustad Companies, Inc., Madison, Wisconsin. This disclosure is provided in compliance with Wisconsin Statute § 100.65 and regulations promulgated by the Wisconsin Department of Agriculture, Trade and Consumer Protection (DATCP).</p>
+            </div>
+            <div class="agreement-clause">
+              <h4>8. Representations and Warranties</h4>
+              <p>The Contractor represents that it is licensed to perform roofing and exterior restoration work in the State of Wisconsin, carries appropriate general liability and workers' compensation insurance, and will perform all work in a workmanlike manner consistent with applicable building codes. The Homeowner represents that they are the legal owner or authorized agent of the property and have the authority to enter into this Agreement. The Contractor's workmanship warranty terms are separate from and in addition to any manufacturer warranty associated with installed materials, and will be provided in writing upon project completion.</p>
+            </div>
+            <div class="agreement-clause">
+              <h4>9. Dispute Resolution</h4>
+              <p>In the event of a dispute arising from this Agreement, the parties agree to first attempt resolution through direct negotiation. If negotiation is unsuccessful within 30 days, disputes shall be submitted to binding arbitration in Dane County, Wisconsin under the rules of the American Arbitration Association. This Agreement shall be governed by and construed in accordance with the laws of the State of Wisconsin.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- WISCONSIN NOTICE -->
+        <div class="section">
+          <div class="wi-notice">
+            <h4>Wisconsin Notice — Insurance Claim Work</h4>
+            <ul>
+              <li>Under Wisconsin law, a contractor may not pay, waive, or rebate all or part of an insurance deductible.</li>
+              <li>You have the right to cancel this agreement within 3 business days of signing.</li>
+              <li>Hustad Companies is not a licensed public adjuster and cannot negotiate your claim with your insurer.</li>
+              <li>Coverage decisions are made solely by your insurance carrier. Hustad makes no guarantee of claim approval.</li>
+              <li>This notice is required by the Wisconsin Department of Agriculture, Trade and Consumer Protection (DATCP).</li>
+            </ul>
+          </div>
+        </div>
+
+      </div><!-- /email-body -->
+
+      <!-- FOOTER -->
+      <div class="email-footer">
+        <div class="footer-brand">Hustad Companies, Inc.</div>
+        <div class="footer-contact">Madison Residential · info@hustadcompanies.com · (608) 000-0000</div>
+        <div class="footer-legal">This report is confidential and intended solely for the property owner named above. Hustad Companies is not a licensed public adjuster and does not guarantee insurance claim outcomes, coverage determinations, or payment amounts. All coverage decisions rest solely with the Homeowner's insurance carrier. Report ID: [ABC123] · Generated [June 8, 2026]</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!-- PATH 1B — CLAIM REVIEW · SENT FOR REVIEW / NOT YET SOLD               -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<div id="claim-review" class="email-path">
+  <div class="email-outer">
+    <div class="email-frame">
+
+      <div class="email-accent-bar" style="background:#F59E0B;"></div>
+
+      <!-- HEADER -->
+      <div class="email-header">
+        <div class="email-header-brand">
+          <div>
+            <div class="email-logo-text">Hustad</div>
+            <div class="email-logo-sub">Madison Residential</div>
+          </div>
+          <div class="email-report-type">Storm Review<br>Action Required</div>
+        </div>
+      </div>
+
+      <!-- STATUS BANNER -->
+      <div class="status-banner">
+        <span class="status-pill" style="background:#FEF3C7; color:#92400E;">
+          <span class="status-dot" style="background:#F59E0B;"></span>
+          Sent for Review — Authorization Pending
+        </span>
+        <div class="status-headline">Your storm inspection is complete. Review your findings and authorize your agreement.</div>
+        <div class="status-sub">We've documented storm-related damage at your property. Your inspection package is ready for your review. Please read the findings below, then authorize your Insurance Contingency Agreement using the link provided — no need to be home.</div>
+      </div>
+
+      <!-- BODY -->
+      <div class="email-body">
+
+        <p class="greeting">Dear [Homeowner Name],</p>
+        <p class="intro-para">Today's inspection at your property revealed findings that support a formal insurance carrier review. We've packaged everything your carrier will need: damage photos, weather event data, and our documented findings. Your full forensic report is attached to this email. To move forward, please review and authorize the Insurance Contingency Agreement below.</p>
+
+        <!-- PROPERTY SUMMARY -->
+        <div class="section">
+          <div class="section-label accent-blue">Property &amp; Inspection Details</div>
+          <div class="prop-card">
+            <div class="prop-grid">
+              <div class="prop-item"><label>Property Address</label><span>[123 Oak Street, Madison, WI 53703]</span></div>
+              <div class="prop-item"><label>Inspection Date</label><span>[June 8, 2026]</span></div>
+              <div class="prop-item"><label>Inspector</label><span>[Rep Name]</span></div>
+              <div class="prop-item"><label>Report ID</label><span>[ABC123]</span></div>
+              <div class="prop-item"><label>Working Storm Date</label><span>[May 12, 2026]</span></div>
+              <div class="prop-item"><label>Insurance Carrier</label><span>[Carrier Name, if known]</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DAMAGE SUMMARY -->
+        <div class="section">
+          <div class="section-label accent-blue">Storm Findings Summary</div>
+          <div class="stat-row">
+            <div class="stat-chip blue"><div class="num">4</div><div class="lbl">Storm Items</div></div>
+            <div class="stat-chip red"><div class="num">1</div><div class="lbl">Urgent Items</div></div>
+            <div class="stat-chip amber"><div class="num">2</div><div class="lbl">Monitor Items</div></div>
+            <div class="stat-chip gray"><div class="num">11</div><div class="lbl">Photos Taken</div></div>
+          </div>
+          <div class="finding-summary-card">
+            <p>[AI-generated storm summary — e.g., "Hustad documented multiple hail impact indicators consistent with the May 12 storm event. Findings include bruised shingle field across the south and west slopes, granule displacement, and damaged ridge cap. One area of exposed flashing at the north valley was flagged as a near-term water intrusion risk. These findings are strong enough to justify a formal review by your insurance carrier."]</p>
+          </div>
+        </div>
+
+        <!-- DAMAGE EVIDENCE PHOTOS -->
+        <div class="section">
+          <div class="section-label accent-blue">Damage Evidence Photos</div>
+          <div class="photo-grid">
+            <div class="photo-placeholder">
+              <div class="photo-icon">📷</div>
+              <span class="photo-badge badge-blue">Storm Evidence</span>
+              <div class="photo-caption">Hail impact — field shingles</div>
+            </div>
+            <div class="photo-placeholder">
+              <div class="photo-icon">📷</div>
+              <span class="photo-badge badge-red">Urgent Protection</span>
+              <div class="photo-caption">Open flashing — north valley</div>
+            </div>
+            <div class="photo-placeholder">
+              <div class="photo-icon">📷</div>
+              <span class="photo-badge badge-blue">Storm Evidence</span>
+              <div class="photo-caption">Ridge cap damage — hail dents</div>
+            </div>
+            <div class="photo-placeholder">
+              <div class="photo-icon">📷</div>
+              <span class="photo-badge badge-amber">Monitor</span>
+              <div class="photo-caption">Granule wear — south slope</div>
+            </div>
+          </div>
+          <p style="font-size:11px; color:#94A3B8; margin-top:10px; text-align:right;">Full annotated gallery in attached PDF report.</p>
+        </div>
+
+        <!-- OUR RECOMMENDATION -->
+        <div class="section">
+          <div class="section-label accent-blue">Our Recommendation</div>
+          <div class="rec-box blue">
+            <h4>Carrier review is the recommended next step.</h4>
+            <p>The documented storm findings are strong enough to justify a formal review by your insurance carrier before you pay for repairs out of pocket. Authorizing Hustad to coordinate with your carrier does not guarantee coverage — but it gives you the best chance of a fair review based on documented evidence.</p>
+          </div>
+        </div>
+
+        <!-- NEXT STEPS -->
+        <div class="section">
+          <div class="section-label accent-blue">What Happens Next</div>
+          <div class="steps-list">
+            <div class="step-item">
+              <div class="step-num" style="background:#D97706;">1</div>
+              <div class="step-content">
+                <h4>Review and authorize your agreement — from home</h4>
+                <p>Use the link below to review the full Insurance Contingency Agreement and sign electronically. This takes about 2 minutes and does not require you to be present.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num" style="background:#D97706;">2</div>
+              <div class="step-content">
+                <h4>File or confirm your insurance claim</h4>
+                <p>Contact your carrier to file a claim for the storm event documented above, or let your Hustad rep know if you already have an active claim number.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num" style="background:#D97706;">3</div>
+              <div class="step-content">
+                <h4>Hustad coordinates the adjuster inspection</h4>
+                <p>Once authorized, Hustad will present your documented findings to your carrier's adjuster and support the review process. You stay informed at every step.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num" style="background:#D97706;">4</div>
+              <div class="step-content">
+                <h4>You decide — no work starts without your approval</h4>
+                <p>After your carrier issues a written coverage decision, you review and approve the final scope before any production work begins. You are in control at every step.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AUTHORIZE YOUR AGREEMENT CTA -->
+        <div class="section">
+          <div class="section-label" style="color:#D97706; border-color:#FDE68A;">Action Required — Review &amp; Authorize Your Agreement</div>
+          <div class="pending-card">
+            <h4>Your agreement is ready to sign.</h4>
+            <p>The Insurance Contingency Agreement below outlines how Hustad will work with your carrier on your behalf. Review each section, then click the button below to sign electronically. Your signature authorizes Hustad to coordinate — it does not commit you to any out-of-pocket expense beyond your deductible.</p>
+            <a href="[REVIEW_LINK]" class="cta-btn amber">Review &amp; Authorize Agreement →</a>
+            <div class="cta-note">You have 3 business days from today to cancel without penalty. Questions? Call [Rep Name] at [Phone]. Once signed, Hustad will send you a confirmed copy immediately.</div>
+          </div>
+        </div>
+
+        <div class="email-divider"></div>
+
+        <!-- CONTINGENCY AGREEMENT — FULL TEXT -->
+        <div class="section">
+          <div class="section-label">Insurance Contingency Agreement — Review Copy (Unsigned)</div>
+          <div class="agreement-header">
+            <h3>Insurance Contingency Agreement</h3>
+            <p>Hustad Companies, Inc. · Madison, Wisconsin · Review copy — authorization required to execute</p>
+          </div>
+          <div class="agreement-body">
+            <div class="agreement-clause"><h4>1. Parties and Property</h4><p>This Insurance Contingency Agreement ("Agreement") is entered into between the property owner(s) identified at the time of signing ("Homeowner") and Hustad Companies, Inc., a Wisconsin corporation ("Contractor"). This Agreement applies to the property address documented in the associated inspection session. Both parties agree that the inspection findings recorded by the Contractor's representative on the date of this Agreement constitute the factual basis for the scope of work described herein.</p></div>
+            <div class="agreement-clause"><h4>2. Scope of Work</h4><p>Contractor agrees to perform the exterior restoration or repair services identified in the inspection findings summary presented during this session. The scope is limited to the items documented, photographed, and classified during today's inspection. No work beyond the documented scope will be performed without a written change order signed by the Homeowner.</p></div>
+            <div class="agreement-clause"><h4>3. Insurance Contingency</h4><p>This Agreement is contingent upon the Homeowner's insurance carrier approving coverage for the documented scope of work. If the carrier denies coverage in full, the Homeowner may cancel this Agreement within 3 business days of receiving written notice of denial at no penalty. Hustad Companies is not a licensed public adjuster and will not negotiate claim terms with the Homeowner's carrier on the Homeowner's behalf.</p></div>
+            <div class="agreement-clause"><h4>4. Compensation and Payment</h4><p>Compensation shall be the amount approved by the insurance carrier for the documented scope, including applicable overhead and profit. The Homeowner's deductible and any non-covered items remain their financial responsibility. The Contractor will not waive, absorb, or rebate any portion of the deductible as prohibited under Wisconsin Statute § 100.65.</p></div>
+            <div class="agreement-clause"><h4>5. Scheduling and Production</h4><p>Following insurance approval and written authorization from the Homeowner, the Contractor will schedule the work within a reasonable timeframe. The Homeowner agrees to provide reasonable access to the property. The Contractor will notify the Homeowner at least 48 hours in advance of the production start date.</p></div>
+            <div class="agreement-clause"><h4>6. Homeowner Obligations</h4><p>The Homeowner agrees to: (a) promptly file or confirm an active insurance claim; (b) notify the Contractor within 5 business days of any written communication from the insurance carrier; (c) provide access to adjuster reports or coverage decisions; and (d) not authorize any other contractor to perform work on the documented scope while this Agreement is active without written notice to Hustad Companies.</p></div>
+            <div class="agreement-clause"><h4>7. Wisconsin Cancellation Rights</h4><p>You have the right to cancel this Agreement without penalty within 3 business days of the date signed. To cancel, you must provide written notice to Hustad Companies, Inc. by mail, email, or hand delivery. This disclosure is provided in compliance with Wisconsin Statute § 100.65 and DATCP regulations.</p></div>
+            <div class="agreement-clause"><h4>8. Representations and Warranties</h4><p>The Contractor is licensed to perform roofing and exterior work in Wisconsin, carries appropriate insurance, and will perform all work in a workmanlike manner. The Homeowner represents that they are the legal owner or authorized agent of the property with authority to enter into this Agreement.</p></div>
+            <div class="agreement-clause"><h4>9. Dispute Resolution</h4><p>Disputes shall first be addressed through direct negotiation. If unresolved within 30 days, disputes shall be submitted to binding arbitration in Dane County, Wisconsin under American Arbitration Association rules. This Agreement is governed by Wisconsin law.</p></div>
+          </div>
+        </div>
+
+        <!-- WISCONSIN NOTICE -->
+        <div class="section">
+          <div class="wi-notice">
+            <h4>Wisconsin Notice — Insurance Claim Work</h4>
+            <ul>
+              <li>Under Wisconsin law, a contractor may not pay, waive, or rebate all or part of an insurance deductible.</li>
+              <li>You have the right to cancel this agreement within 3 business days of signing.</li>
+              <li>Hustad Companies is not a licensed public adjuster and cannot negotiate your claim with your insurer.</li>
+              <li>Coverage decisions are made solely by your insurance carrier. Hustad makes no guarantee of claim approval.</li>
+              <li>This notice is required by the Wisconsin Department of Agriculture, Trade and Consumer Protection (DATCP).</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FOOTER -->
+      <div class="email-footer">
+        <div class="footer-brand">Hustad Companies, Inc.</div>
+        <div class="footer-contact">Madison Residential · info@hustadcompanies.com · (608) 000-0000</div>
+        <div class="footer-legal">This report is confidential and intended solely for the property owner named above. Hustad Companies is not a licensed public adjuster and does not guarantee insurance outcomes. All coverage decisions rest solely with the Homeowner's insurance carrier. Report ID: [ABC123] · Generated [June 8, 2026]</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!-- PATH 2 — REPAIR ONLY                                                   -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<div id="repair" class="email-path">
+  <div class="email-outer">
+    <div class="email-frame">
+
+      <div class="email-accent-bar" style="background:#DC2626;"></div>
+
+      <!-- HEADER -->
+      <div class="email-header">
+        <div class="email-header-brand">
+          <div>
+            <div class="email-logo-text">Hustad</div>
+            <div class="email-logo-sub">Madison Residential</div>
+          </div>
+          <div class="email-report-type">Repair Report<br>Service Opportunity</div>
+        </div>
+      </div>
+
+      <!-- STATUS BANNER -->
+      <div class="status-banner">
+        <span class="status-pill" style="background:#FEE2E2; color:#991B1B;">
+          <span class="status-dot" style="background:#DC2626;"></span>
+          Service Quote Being Prepared
+        </span>
+        <div class="status-headline">A targeted repair has been documented at your property.</div>
+        <div class="status-sub">Your inspection identified a specific repair condition that can be addressed without a full replacement or insurance claim. Hustad is preparing a repair quote for your review. No work begins until you approve.</div>
+      </div>
+
+      <!-- BODY -->
+      <div class="email-body">
+
+        <p class="greeting">Dear [Homeowner Name],</p>
+        <p class="intro-para">Thank you for having Hustad out today. Our inspection identified a targeted repair condition at your property. This does not require an insurance claim or full replacement — it's a focused service item we can quote and schedule directly. Your full inspection report is attached. Below is a summary of what we found and what happens next.</p>
+
+        <!-- PROPERTY SUMMARY -->
+        <div class="section">
+          <div class="section-label accent-red">Property &amp; Inspection Details</div>
+          <div class="prop-card">
+            <div class="prop-grid">
+              <div class="prop-item"><label>Property Address</label><span>[123 Oak Street, Madison, WI 53703]</span></div>
+              <div class="prop-item"><label>Inspection Date</label><span>[June 8, 2026]</span></div>
+              <div class="prop-item"><label>Inspector</label><span>[Rep Name]</span></div>
+              <div class="prop-item"><label>Report ID</label><span>[ABC123]</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- REPAIR FINDINGS SUMMARY -->
+        <div class="section">
+          <div class="section-label accent-red">Repair Findings Summary</div>
+          <div class="stat-row">
+            <div class="stat-chip red"><div class="num">2</div><div class="lbl">Repair Items</div></div>
+            <div class="stat-chip amber"><div class="num">1</div><div class="lbl">Monitor Items</div></div>
+            <div class="stat-chip gray"><div class="num">6</div><div class="lbl">Photos Taken</div></div>
+          </div>
+          <div class="finding-summary-card">
+            <p>[Repair summary paragraph — e.g., "Today's inspection identified two targeted repair conditions: a section of lifted flashing at the chimney base and a section of failed pipe boot sealant on the south slope. These items, if left unaddressed, create a risk of water intrusion. No conditions found today support a full replacement or an insurance claim recommendation. Hustad service will prepare a repair quote covering both items."]</p>
+          </div>
+        </div>
+
+        <!-- REPAIR EVIDENCE PHOTOS -->
+        <div class="section">
+          <div class="section-label accent-red">Repair Evidence Photos</div>
+          <div class="photo-grid">
+            <div class="photo-placeholder">
+              <div class="photo-icon">📷</div>
+              <span class="photo-badge badge-red">Repair Item</span>
+              <div class="photo-caption">Lifted flashing — chimney base</div>
+            </div>
+            <div class="photo-placeholder">
+              <div class="photo-icon">📷</div>
+              <span class="photo-badge badge-red">Repair Item</span>
+              <div class="photo-caption">Failed pipe boot — south slope</div>
+            </div>
+            <div class="photo-placeholder">
+              <div class="photo-icon">📷</div>
+              <span class="photo-badge badge-amber">Monitor</span>
+              <div class="photo-caption">Sealant wear — step flashing</div>
+            </div>
+            <div class="photo-placeholder">
+              <div class="photo-icon">📷</div>
+              <span class="photo-badge badge-gray">Overview</span>
+              <div class="photo-caption">Roof overview — field condition</div>
+            </div>
+          </div>
+          <p style="font-size:11px; color:#94A3B8; margin-top:10px; text-align:right;">Full gallery in attached PDF report.</p>
+        </div>
+
+        <!-- DOCUMENTED REPAIR SCOPE -->
+        <div class="section">
+          <div class="section-label accent-red">Documented Repair Items</div>
+          <div class="scope-list">
+            <div class="scope-item">
+              <div>
+                <div class="scope-cat" style="color:#DC2626;">Repair Item 1</div>
+                <div class="scope-desc">Chimney base flashing — re-seal and re-secure lifted section</div>
+                <div class="scope-note">North elevation · Moderate priority · Risk of water intrusion if unaddressed</div>
+              </div>
+            </div>
+            <div class="scope-item">
+              <div>
+                <div class="scope-cat" style="color:#DC2626;">Repair Item 2</div>
+                <div class="scope-desc">Pipe boot replacement — south slope, 2" vent stack</div>
+                <div class="scope-note">South slope · Moderate priority · Failed sealant, open seam visible</div>
+              </div>
+            </div>
+            <div class="scope-item" style="border-left-color:#F59E0B;">
+              <div>
+                <div class="scope-cat" style="color:#D97706;">Monitor Item</div>
+                <div class="scope-desc">Step flashing sealant wear — east elevation</div>
+                <div class="scope-note">No action needed today · Document for comparison after next storm event</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NEXT STEPS -->
+        <div class="section">
+          <div class="section-label accent-red">What Happens Next</div>
+          <div class="steps-list">
+            <div class="step-item">
+              <div class="step-num" style="background:#DC2626;">1</div>
+              <div class="step-content">
+                <h4>Service opportunity created</h4>
+                <p>Hustad is routing your documented repair items to our service team. A quote covering both repair items will be prepared based on today's documented scope.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num" style="background:#DC2626;">2</div>
+              <div class="step-content">
+                <h4>You receive your repair quote for review</h4>
+                <p>Hustad will send your repair quote within 1–2 business days. The quote will itemize both repair items, pricing, and estimated scheduling. You are under no obligation to proceed.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num" style="background:#DC2626;">3</div>
+              <div class="step-content">
+                <h4>You approve — then we schedule</h4>
+                <p>No repair work begins until you review and approve the quote or work order in writing. Once approved, Hustad will confirm your scheduling within 1–2 business days.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- IMPORTANT NOTES -->
+        <div class="section">
+          <div class="section-label accent-red">Important Notes</div>
+          <div class="terms-list">
+            <div class="terms-item">Hustad will perform only the specific repair items documented in today's findings. This authorization covers only those items.</div>
+            <div class="terms-item">This is a direct repair arrangement — not an insurance claim path.</div>
+            <div class="terms-item">Scheduling will be confirmed after you authorize the repair quote. No work begins before that.</div>
+            <div class="terms-item">If additional damage is discovered during the repair, Hustad will notify you before proceeding with any work beyond the original scope.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FOOTER -->
+      <div class="email-footer">
+        <div class="footer-brand">Hustad Companies, Inc.</div>
+        <div class="footer-contact">Madison Residential · info@hustadcompanies.com · (608) 000-0000</div>
+        <div class="footer-legal">This report documents inspection findings only. It is not a binding work order or final quote. No work begins until you approve a written quote or work order. Report ID: [ABC123] · Generated [June 8, 2026]</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!-- PATH 3 — FULL RESTORATION / DIRECT BUY                                -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<div id="restoration" class="email-path">
+  <div class="email-outer">
+    <div class="email-frame">
+
+      <div class="email-accent-bar" style="background:#D97706;"></div>
+
+      <!-- HEADER -->
+      <div class="email-header">
+        <div class="email-header-brand">
+          <div>
+            <div class="email-logo-text">Hustad</div>
+            <div class="email-logo-sub">Madison Residential</div>
+          </div>
+          <div class="email-report-type">Restoration Summary<br>Proposal in Progress</div>
+        </div>
+      </div>
+
+      <!-- STATUS BANNER -->
+      <div class="status-banner">
+        <span class="status-pill" style="background:#FEF3C7; color:#92400E;">
+          <span class="status-dot" style="background:#D97706;"></span>
+          Proposal in Progress
+        </span>
+        <div class="status-headline">Your replacement has been requested. Estimating is preparing your proposal.</div>
+        <div class="status-sub">This report confirms your replacement request and the notes collected during today's appointment. Hustad estimating is currently preparing your proposal package. It will be sent for your review before any work is scheduled or authorized.</div>
+      </div>
+
+      <!-- BODY -->
+      <div class="email-body">
+
+        <p class="greeting">Dear [Homeowner Name],</p>
+        <p class="intro-para">Thank you for meeting with us today. Based on today's inspection and your request, Hustad estimating is now preparing a full replacement proposal for your property. This email confirms your project request and summarizes the notes collected during the appointment. You will receive the full proposal separately — nothing is priced or authorized until you review and approve it.</p>
+
+        <!-- PROPERTY SUMMARY -->
+        <div class="section">
+          <div class="section-label accent-amber">Property &amp; Project Details</div>
+          <div class="prop-card">
+            <div class="prop-grid">
+              <div class="prop-item"><label>Property Address</label><span>[123 Oak Street, Madison, WI 53703]</span></div>
+              <div class="prop-item"><label>Inspection Date</label><span>[June 8, 2026]</span></div>
+              <div class="prop-item"><label>Inspector</label><span>[Rep Name]</span></div>
+              <div class="prop-item"><label>Report ID</label><span>[ABC123]</span></div>
+              <div class="prop-item"><label>Project Type</label><span>Roof Replacement — [Manufacturer, if selected]</span></div>
+              <div class="prop-item"><label>Proposal Status</label><span>Estimating in progress</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PROJECT REQUEST SUMMARY -->
+        <div class="section">
+          <div class="section-label accent-amber">Project Request Summary</div>
+          <div class="stat-row">
+            <div class="stat-chip amber"><div class="num" style="font-size:16px;">REPL</div><div class="lbl">Full Replacement</div></div>
+            <div class="stat-chip gray"><div class="num">[SF]</div><div class="lbl">Roof Area</div></div>
+            <div class="stat-chip gray"><div class="num">[#]</div><div class="lbl">Context Photos</div></div>
+          </div>
+          <div class="finding-summary-card">
+            <p>[Project context summary — e.g., "Owner requested a full roof replacement based on age, wear, and overall system condition documented during today's inspection. No active insurance claim path was pursued. Estimating will prepare a standard replacement proposal covering shingles, underlayment, ice and water shield, ridge cap, pipe boots, drip edge, and any additional system components identified during the measurement process."]</p>
+          </div>
+        </div>
+
+        <!-- CONTEXT PHOTOS -->
+        <div class="section">
+          <div class="section-label accent-amber">Property Context Photos</div>
+          <div class="photo-grid">
+            <div class="photo-placeholder">
+              <div class="photo-icon">📷</div>
+              <span class="photo-badge badge-gray">Overview</span>
+              <div class="photo-caption">Roof overview — front elevation</div>
+            </div>
+            <div class="photo-placeholder">
+              <div class="photo-icon">📷</div>
+              <span class="photo-badge badge-amber">Project Context</span>
+              <div class="photo-caption">Shingle condition — field wear</div>
+            </div>
+            <div class="photo-placeholder">
+              <div class="photo-icon">📷</div>
+              <span class="photo-badge badge-gray">Overview</span>
+              <div class="photo-caption">Rear elevation — full run</div>
+            </div>
+            <div class="photo-placeholder">
+              <div class="photo-icon">📷</div>
+              <span class="photo-badge badge-amber">Project Context</span>
+              <div class="photo-caption">Existing ridge cap condition</div>
+            </div>
+          </div>
+          <p style="font-size:11px; color:#94A3B8; margin-top:10px; text-align:right;">Full context gallery in attached PDF report.</p>
+        </div>
+
+        <!-- ESTIMATING IN PROGRESS -->
+        <div class="section">
+          <div class="estimating-box">
+            <div class="est-icon">📐</div>
+            <h3>Estimating Is Preparing Your Proposal</h3>
+            <p>Hustad estimating is currently reviewing your measurements, material options, warranty path, and system requirements. Your proposal will be sent to you for review before anything is priced, scheduled, or authorized.</p>
+          </div>
+        </div>
+
+        <!-- WHAT ESTIMATING WILL PREPARE -->
+        <div class="section">
+          <div class="section-label accent-amber">What Your Proposal Will Include</div>
+          <div class="prep-list">
+            <div class="prep-item">Verified roof measurements</div>
+            <div class="prep-item">Material scope &amp; assumptions</div>
+            <div class="prep-item">Warranty path options</div>
+            <div class="prep-item">System components (boots, drip edge, etc.)</div>
+            <div class="prep-item">Exclusions clearly listed</div>
+            <div class="prep-item">Owner-selectable upgrades</div>
+            <div class="prep-item">Access &amp; staging notes</div>
+            <div class="prep-item">Approval instructions</div>
+          </div>
+        </div>
+
+        <!-- WHAT TO EXPECT NEXT -->
+        <div class="section">
+          <div class="section-label accent-amber">What to Expect &amp; When</div>
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-left">
+                <div class="timeline-dot" style="background:#D97706;"></div>
+                <div class="timeline-line"></div>
+              </div>
+              <div class="timeline-content">
+                <h4>Today — Estimating review begins</h4>
+                <p>Hustad estimating receives your project request and begins measurement verification and scope preparation.</p>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-left">
+                <div class="timeline-dot" style="background:#D97706;"></div>
+                <div class="timeline-line"></div>
+              </div>
+              <div class="timeline-content">
+                <h4>Within 2–5 business days — Proposal sent</h4>
+                <p>Your completed proposal will be emailed to you for review. It will include all pricing, scope, materials, and warranty information.</p>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-left">
+                <div class="timeline-dot" style="background:#94A3B8;"></div>
+                <div class="timeline-line"></div>
+              </div>
+              <div class="timeline-content">
+                <h4>You review and ask questions</h4>
+                <p>Review the proposal at your own pace. Your Hustad representative is available to answer any questions before you make a decision.</p>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-left">
+                <div class="timeline-dot" style="background:#059669;"></div>
+              </div>
+              <div class="timeline-content">
+                <h4>You authorize — then production is scheduled</h4>
+                <p>Once you approve the proposal in writing, Hustad will schedule your project. Nothing starts until you give the go-ahead.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- IMPORTANT NOTE -->
+        <div class="section">
+          <div class="rec-box amber">
+            <h4>This is a request confirmation — not a final price or contract.</h4>
+            <p>This report confirms that Hustad estimating has received your replacement request and is preparing your proposal. It is not a binding contract, final price, material selection, warranty commitment, or production schedule. The proposal Hustad sends will control the final scope and pricing after estimating review.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FOOTER -->
+      <div class="email-footer">
+        <div class="footer-brand">Hustad Companies, Inc.</div>
+        <div class="footer-contact">Madison Residential · info@hustadcompanies.com · (608) 000-0000</div>
+        <div class="footer-legal">This report is a project request summary only. It is not a binding contract, final proposal, or work authorization. No work begins until a written proposal is reviewed and approved by the property owner. Report ID: [ABC123] · Generated [June 8, 2026]</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!-- PATH 4 — NO DAMAGE / MONITOR ONLY                                     -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<div id="nodamage" class="email-path">
+  <div class="email-outer">
+    <div class="email-frame">
+
+      <div class="email-accent-bar" style="background:#059669;"></div>
+
+      <!-- HEADER -->
+      <div class="email-header">
+        <div class="email-header-brand">
+          <div>
+            <div class="email-logo-text">Hustad</div>
+            <div class="email-logo-sub">Madison Residential</div>
+          </div>
+          <div class="email-report-type">Inspection Report<br>No Action Required</div>
+        </div>
+      </div>
+
+      <!-- STATUS BANNER -->
+      <div class="status-banner">
+        <span class="status-pill" style="background:#D1FAE5; color:#065F46;">
+          <span class="status-dot" style="background:#059669;"></span>
+          Inspection Complete — No Action Required Today
+        </span>
+        <div class="status-headline">Your inspection is complete. No urgent repair or claim action is needed at this time.</div>
+        <div class="status-sub">Hustad completed a thorough exterior inspection and did not document storm damage, urgent conditions, or findings that support a repair or carrier review recommendation today. All findings have been archived for your property record.</div>
+      </div>
+
+      <!-- BODY -->
+      <div class="email-body">
+
+        <p class="greeting">Dear [Homeowner Name],</p>
+        <p class="intro-para">Thank you for having Hustad out to inspect your property. After a thorough review of your exterior, we did not find conditions that support a repair, protection action, or insurance carrier review at this time. Your full inspection report is attached. This is your documented property baseline — keep it on file for comparison after any future storm event.</p>
+
+        <!-- PROPERTY SUMMARY -->
+        <div class="section">
+          <div class="section-label accent-green">Property &amp; Inspection Details</div>
+          <div class="prop-card">
+            <div class="prop-grid">
+              <div class="prop-item"><label>Property Address</label><span>[123 Oak Street, Madison, WI 53703]</span></div>
+              <div class="prop-item"><label>Inspection Date</label><span>[June 8, 2026]</span></div>
+              <div class="prop-item"><label>Inspector</label><span>[Rep Name]</span></div>
+              <div class="prop-item"><label>Report ID</label><span>[ABC123]</span></div>
+              <div class="prop-item"><label>Outcome</label><span>No action required today</span></div>
+              <div class="prop-item"><label>Photo Count</label><span>[#] documentation photos</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- INSPECTION SUMMARY -->
+        <div class="section">
+          <div class="section-label accent-green">Inspection Summary</div>
+          <div class="stat-row">
+            <div class="stat-chip green"><div class="num">0</div><div class="lbl">Urgent Items</div></div>
+            <div class="stat-chip green"><div class="num">0</div><div class="lbl">Storm Items</div></div>
+            <div class="stat-chip amber"><div class="num">[#]</div><div class="lbl">Monitor Items</div></div>
+            <div class="stat-chip gray"><div class="num">[#]</div><div class="lbl">Photos Taken</div></div>
+          </div>
+          <div class="finding-summary-card">
+            <p>[Inspection summary paragraph — e.g., "Today's inspection did not reveal conditions consistent with recent storm impact, open damage, or conditions requiring immediate attention. The roof system is maintaining integrity with normal age-related wear visible on the south and west slopes. Several minor items have been flagged for monitoring — these do not require action today but are worth reviewing after any future significant weather event. This report establishes your documented property baseline."]</p>
+          </div>
+        </div>
+
+        <!-- DOCUMENTATION PHOTOS -->
+        <div class="section">
+          <div class="section-label accent-green">Documentation Photos</div>
+          <div class="photo-grid">
+            <div class="photo-placeholder">
+              <div class="photo-icon">📷</div>
+              <span class="photo-badge badge-gray">Overview</span>
+              <div class="photo-caption">Roof overview — front elevation</div>
+            </div>
+            <div class="photo-placeholder">
+              <div class="photo-icon">📷</div>
+              <span class="photo-badge badge-green">Property Record</span>
+              <div class="photo-caption">Field condition — south slope</div>
+            </div>
+            <div class="photo-placeholder">
+              <div class="photo-icon">📷</div>
+              <span class="photo-badge badge-amber">Monitor</span>
+              <div class="photo-caption">Granule wear — west slope</div>
+            </div>
+            <div class="photo-placeholder">
+              <div class="photo-icon">📷</div>
+              <span class="photo-badge badge-gray">Overview</span>
+              <div class="photo-caption">Rear elevation — ridge condition</div>
+            </div>
+          </div>
+          <p style="font-size:11px; color:#94A3B8; margin-top:10px; text-align:right;">Full documentation gallery in attached PDF report.</p>
+        </div>
+
+        <!-- MONITOR ITEMS (conditional — show if monitor items exist) -->
+        <div class="section">
+          <div class="section-label" style="color:#D97706; border-color:#FEF3C7;">Monitor Items — No Action Needed Today</div>
+          <div class="monitor-list">
+            <div class="monitor-item">
+              <div class="monitor-icon">👁</div>
+              <div>
+                <h4>Granule wear — west slope</h4>
+                <p>Normal age-related granule loss visible. No action needed today. Re-evaluate after any significant hail event of 1" or larger. Documented as pre-loss baseline.</p>
+              </div>
+            </div>
+            <div class="monitor-item">
+              <div class="monitor-icon">👁</div>
+              <div>
+                <h4>Sealant age — pipe boots</h4>
+                <p>Sealant is aging but not yet failed. Monitor for cracking or separation. Consider preventive maintenance within 12–24 months.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WHAT THIS MEANS -->
+        <div class="section">
+          <div class="rec-box green">
+            <h4>What today's inspection means for you</h4>
+            <p>No action is needed today — and that's a good outcome. Not every storm damages every roof. Hustad is not asking you to make a repair or claim decision without a clear reason. This documented inspection gives you a verified pre-loss baseline. If a future storm hits your area, you'll have dated documentation showing your roof's condition beforehand.</p>
+          </div>
+        </div>
+
+        <!-- WHAT TO DO NEXT -->
+        <div class="section">
+          <div class="section-label accent-green">What to Do Next</div>
+          <div class="steps-list">
+            <div class="step-item">
+              <div class="step-num" style="background:#059669;">1</div>
+              <div class="step-content">
+                <h4>Save this report and attached PDF</h4>
+                <p>This is your documented property baseline. Store it with your home records. Date-stamped inspection photos are valuable if a future storm claim is ever questioned by your carrier.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num" style="background:#059669;">2</div>
+              <div class="step-content">
+                <h4>Monitor the flagged items at your own pace</h4>
+                <p>Review the monitor items above over the next 12 months. None require action today — but keep an eye on them, especially after any significant weather event.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num" style="background:#059669;">3</div>
+              <div class="step-content">
+                <h4>Call Hustad after any significant future storm</h4>
+                <p>If a hail or wind event impacts your area in the future, contact Hustad for a re-inspection. Your baseline documentation from today will support any future carrier review if damage is found.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FOOTER -->
+      <div class="email-footer">
+        <div class="footer-brand">Hustad Companies, Inc.</div>
+        <div class="footer-contact">Madison Residential · info@hustadcompanies.com · (608) 000-0000</div>
+        <div class="footer-legal">This inspection report documents property conditions as observed on the inspection date. It does not constitute a warranty, guarantee, or representation that the property is free from all defects. Conditions may change after the inspection date. Report ID: [ABC123] · Generated [June 8, 2026]</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<script>
+  function show(id, btn) {
+    document.querySelectorAll('.email-path').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+  }
+</script>
+</body>
+</html>
