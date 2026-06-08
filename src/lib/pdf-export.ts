@@ -480,6 +480,56 @@ async function renderPhotos(d: jsPDF, photos: PdfPhoto[]) {
 }
 
 function renderSteps(d: jsPDF, pt: PathType) {
+  if (pt === "no_action") {
+    checkPage(d, 80);
+    st(d, T.slate900); d.setFont("times", "normal"); d.setFontSize(22);
+    d.text("Save Baseline & Monitor", M, Y + 10);
+    Y += 18;
+    
+    st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(10);
+    const mText = "Your inspection record is documented, organized, and saved as a baseline. If conditions change after a future storm event, you have a dated comparison point. No repair or claim action is needed today.";
+    const mLines = d.splitTextToSize(mText, CW);
+    d.text(mLines, M, Y);
+    Y += mLines.length * 5 + 6;
+
+    const bullets = [
+      "Inspection report delivered to your property record.",
+      "Baseline documentation stored for future storm comparison.",
+      "Monitor items flagged with re-inspection triggers.",
+      "Schedule a free recheck reminder at any time."
+    ];
+
+    bullets.forEach((b) => {
+      sf(d, T.emerald500); d.circle(M + 2, Y - 1.2, 1.5, "F");
+      st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(10);
+      d.text(b, M + 8, Y);
+      Y += 7;
+    });
+    
+    Y += 6;
+    st(d, T.emerald500); d.setLineWidth(0.5); d.circle(M + 3, Y - 1, 2.5, "S");
+    sf(d, T.emerald500); d.circle(M + 3, Y - 1, 1.2, "F");
+    st(d, T.emerald500); d.setFont("helvetica", "normal"); d.setFontSize(9);
+    d.text("This path is selected", M + 10, Y);
+    Y += 12;
+
+    sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
+    Y += 16;
+
+    checkPage(d, 40);
+    st(d, T.slate900); d.setFont("times", "normal"); d.setFontSize(22);
+    d.text("Future Recheck Reminder", M, Y);
+    Y += 10;
+    st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(10);
+    const rText = "Set a free recheck reminder for 6 or 12 months. If a storm event occurs before then, your baseline documentation provides a before-and-after comparison.";
+    const rLines = d.splitTextToSize(rText, CW);
+    d.text(rLines, M, Y);
+    Y += rLines.length * 5 + 10;
+    
+    sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
+    return;
+  }
+
   checkPage(d, 40);
   st(d, T.gray400); d.setFont("helvetica", "bold"); d.setFontSize(6);
   d.text("YOUR NEXT STEPS", M, Y + 10);
@@ -503,13 +553,6 @@ function renderSteps(d: jsPDF, pt: PathType) {
       { t: "Estimating review", d: "Measurements, scope assumptions, and material basis are checked." },
       { t: "Proposal prepared", d: "Hustad creates the standard replacement proposal for owner review." },
       { t: "Owner decision", d: "Owner reviews, asks questions, selects options, or authorizes the project." }
-    ];
-  } else if (pt === "no_action") {
-    steps = [
-      { t: "Inspection Report Delivered", d: "Inspection report delivered to your property record." },
-      { t: "Baseline Documentation Stored", d: "Baseline documentation stored for future storm comparison." },
-      { t: "Monitor Items Flagged", d: "Monitor items flagged with re-inspection triggers." },
-      { t: "Free Recheck Reminder", d: "Schedule a free recheck reminder at any time." }
     ];
   }
 
