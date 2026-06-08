@@ -616,7 +616,6 @@ function renderSteps(d: jsPDF, pt: PathType) {
   if (pt === "urgent_repair") {
     steps = [
       { t: "Scheduling Confirmation", d: "Expect a call from our scheduling team within 2 business days to confirm your production window." },
-      { t: "Pre-Production Measurement", d: "A Hustad field team member will confirm final measurements before material is ordered." },
       { t: "48-Hour Advance Notice", d: "You will receive notification at least 48 hours before your scheduled production start date." },
       { t: "Completion and Final Invoice", d: "Final invoicing will be provided upon project completion and a brief walkthrough with your rep." }
     ];
