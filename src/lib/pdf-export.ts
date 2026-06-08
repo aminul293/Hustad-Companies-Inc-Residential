@@ -197,7 +197,7 @@ async function renderHeader(d: jsPDF, cfg: any) {
 
   // Badge
   const bColors = getBadgeColors(cfg.badgeType);
-  st(d, bColors.txt); d.setFont("helvetica", "bold"); d.setFontSize(8);
+  st(d, bColors.txt); d.setFont("times", "bold"); d.setFontSize(8);
   const bW = d.getTextWidth(cfg.badgeText.toUpperCase()) + 16;
   sf(d, bColors.bg); d.roundedRect(PW - M - bW, Y + 8, bW, 11, 5.5, 5.5, "F");
   d.text(cfg.badgeText.toUpperCase(), PW - M - bW / 2, Y + 15.6, { align: "center" });
