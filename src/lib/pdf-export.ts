@@ -709,17 +709,17 @@ function renderFooter(d: jsPDF) {
   const footerHeight = Math.max(45, PH - Y);
   sf(d, T.slate900); d.rect(0, Y, PW, footerHeight, "F");
   
-  st(d, T.gray500); d.setFont("helvetica", "normal"); d.setFontSize(6);
-  d.text("Hustad Companies, Inc. - Madison, Wisconsin", PW / 2, Y + 12, { align: "center" });
-  d.text("Licensed Exterior Restoration Contractor - State of Wisconsin", PW / 2, Y + 16, { align: "center" });
-  d.text("General Liability & Workers' Compensation Insurance Verified", PW / 2, Y + 20, { align: "center" });
+  st(d, T.gray500); d.setFont("helvetica", "normal"); d.setFontSize(8);
+  d.text("Hustad Companies, Inc. - Madison, Wisconsin", PW / 2, Y + 14, { align: "center" });
+  d.text("Licensed Exterior Restoration Contractor - State of Wisconsin", PW / 2, Y + 19, { align: "center" });
+  d.text("General Liability & Workers' Compensation Insurance Verified", PW / 2, Y + 24, { align: "center" });
   
-  sd(d, T.gray800); d.line(M + 10, Y + 25, PW - M - 10, Y + 25);
+  sd(d, T.gray800); d.line(M + 10, Y + 30, PW - M - 10, Y + 30);
   
-  st(d, T.gray600); d.setFont("times", "normal"); d.setFontSize(5.5);
+  st(d, T.gray600); d.setFont("times", "normal"); d.setFontSize(7);
   const dis = "This report is confidential and prepared solely for the property owner identified above. It reflects conditions observed at the time of inspection and does not constitute a guarantee of insurance coverage or claim outcome.";
   const lines = d.splitTextToSize(dis, CW - 20);
-  d.text(lines, PW / 2, Y + 31, { align: "center" });
+  d.text(lines, PW / 2, Y + 36, { align: "center" });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
