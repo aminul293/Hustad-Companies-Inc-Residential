@@ -350,9 +350,7 @@ function renderFindings(d: jsPDF, pt: PathType, s: SessionState) {
 }
 
 async function renderPhotos(d: jsPDF, photos: PdfPhoto[]) {
-  if (!photos || photos.length === 0) return;
-
-  checkPage(d, 50);
+  checkPage(d, 100);
   st(d, T.gray400); d.setFont("helvetica", "bold"); d.setFontSize(6);
   d.text("STORM EVIDENCE - STRONGEST PROOF PHOTOS", M, Y + 10);
   Y += 15;
@@ -362,9 +360,14 @@ async function renderPhotos(d: jsPDF, photos: PdfPhoto[]) {
   const h = 28;
   
   let cx = M;
-  const displayPhotos = photos.slice(0, 3);
+  const displayPhotos = photos ? photos.slice(0, 6) : [];
   
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 6; i++) {
+    if (i === 3) {
+      Y += h + gap + 6;
+      cx = M;
+    }
+    
     if (i < displayPhotos.length) {
       const p = displayPhotos[i];
       try {
@@ -380,6 +383,15 @@ async function renderPhotos(d: jsPDF, photos: PdfPhoto[]) {
     } else {
       sf(d, T.gray50); d.roundedRect(cx, Y, w, h, 2, 2, "F");
       sd(d, T.gray200); d.roundedRect(cx, Y, w, h, 2, 2, "S");
+      
+      const cX = cx + w / 2;
+      const cY = Y + h / 2 - 2;
+      sf(d, T.gray400); d.roundedRect(cX - 3.5, cY - 2.5, 7, 5, 0.5, 0.5, "F");
+      sf(d, T.gray200); d.circle(cX, cY, 1.5, "F");
+      sf(d, T.gray400); d.rect(cX - 1.5, cY - 3.5, 3, 1, "F");
+
+      st(d, T.gray400); d.setFont("times", "normal"); d.setFontSize(7);
+      d.text(`Photo ${i + 1}`, cx + w / 2, Y + h - 5, { align: "center" });
     }
     cx += w + gap;
   }
