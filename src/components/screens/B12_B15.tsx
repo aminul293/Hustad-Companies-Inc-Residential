@@ -141,8 +141,10 @@ interface PageConfig {
   badgeLabel:     string;
   BadgeIcon:      any;
   theme:          "blue" | "red" | "green";
+  whatMeansTitle?: string;
   whatMeans:      string;
-  nextStep:       string;
+  whatMeansBullets?: string[];
+  nextStep?:       string;
   credibilityLines: string[];
   proofSectionLabel: string;
   showWeatherBlock: boolean;
@@ -181,19 +183,26 @@ const PAGE_CONFIGS: Record<PathKey, PageConfig> = {
     ctaLabel: "Review the Carrier Path",
   },
   urgent_repair: {
-    headline: "Urgent condition documented.\nImmediately protection or\nrepair is recommended.",
-    subhead: "Hustad completed an exterior inspection and documented one or more conditions that create a near-term risk of water entry or additional property damage. These findings should be addressed before waiting on a larger project or coverage decision.",
-    badgeLabel: "Urgent Protection: Action Required",
-    BadgeIcon: ShieldAlert,
+    headline: "Direct repair is the\nrecommended path forward.",
+    subhead: "The documented findings support a targeted repair scope. This path addresses what the evidence supports — nothing more. No insurance process required, faster scheduling, and full control over timing.",
+    badgeLabel: "RECOMMENDED PATH",
+    BadgeIcon: Wrench,
     theme: "red",
-    whatMeans: "One or more documented exterior conditions are not a future planning item. They are creating risk today. Immediate protective repair or stabilization is recommended to prevent additional damage. This scope is limited to what the evidence supports. Nothing more.",
-    nextStep: "Review the urgent proof photos first. Confirm the documented condition with your rep. Then authorize protective work if you're comfortable, and decide separately whether a broader inspection, repair, or carrier review is appropriate.",
+    whatMeansTitle: "Direct Repair",
+    whatMeans: "Address documented items directly with a scoped repair authorization. No carrier process required. Hustad schedules repair work based on exactly what was documented during the inspection.",
+    whatMeansBullets: [
+      "Scope limited to documented findings — nothing beyond what the evidence supports.",
+      "Faster scheduling with no carrier coordination delay.",
+      "Full cost transparency before any work begins.",
+      "You authorize exactly what gets repaired, and when."
+    ],
     credibilityLines: [
       "We are not saying every condition requires full replacement.",
       "We are not asking you to approve more than the evidence supports.",
-      "We are saying the documented condition has a clear repair or protection path.",
+      "We are not recommending a carrier path if the findings don't support it.",
+      "We are saying the documented condition has a clear, scoped repair path."
     ],
-    proofSectionLabel: "Urgent Findings: Critical Documentation",
+    proofSectionLabel: "Repair Scope Documentation",
     showWeatherBlock: false,
     repOpeningComment: "I want to show you what I found up there. One item in particular that I'd recommend you see first, because it shouldn't wait. I'll walk you through it, and then we can talk about what to do.",
     repGuidedQs: [
@@ -1166,29 +1175,55 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
                   <Shield size={100} strokeWidth={0.6} style={{ color: tk.accent }} />
                 </div>
                 <div>
-                  <p className="font-inter text-[12px] font-medium tracking-wide" style={{ color: tk.accent, opacity: 0.85 }}>Official Recommendation</p>
-                  <p className="font-editorial font-medium text-2xl mt-2" style={{ color: tk.accent, lineHeight: 1.1, letterSpacing: "-0.01em" }}>{config.badgeLabel}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-inter text-[12px] font-medium tracking-wide uppercase" style={{ color: tk.accent, opacity: 0.85, letterSpacing: "1px" }}>{config.whatMeansTitle ? "RECOMMENDED PATH" : "Official Recommendation"}</p>
+                    {config.whatMeansTitle && (
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full border" style={{ background: tk.accentSoft, borderColor: tk.accentBorder }}>
+                        <CheckCircle2 size={10} style={{ color: tk.accent }} />
+                        <span className="font-inter text-[9px] font-medium" style={{ color: tk.accent }}>Selected</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="font-editorial font-medium text-4xl mt-2" style={{ color: DS.text.primary, lineHeight: 1.1, letterSpacing: "-0.01em" }}>{config.whatMeansTitle || config.badgeLabel}</p>
                 </div>
-                <div className="space-y-6 pt-5" style={{ borderTop: `1px solid ${tk.accentBorder}` }}>
-                  <div className="flex gap-4">
-                    <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: tk.iconBg }}>
-                      <ShieldCheck size={15} strokeWidth={1.5} style={{ color: tk.accent }} />
-                    </div>
-                    <div className="space-y-1.5">
-                      <p className="font-inter text-[12px] font-medium tracking-wide" style={{ color: DS.text.muted }}>What This Means</p>
-                      <p className="font-inter text-[13px] leading-relaxed" style={{ color: DS.text.secondary }}>{config.whatMeans}</p>
+                
+                {config.whatMeansBullets ? (
+                  <div className="space-y-6 pt-5">
+                    <p className="font-inter text-[14px] leading-relaxed" style={{ color: DS.text.secondary }}>{config.whatMeans}</p>
+                    <div style={{ height: "1px", background: tk.accentBorder, opacity: 0.5 }} />
+                    <div className="space-y-4">
+                      {config.whatMeansBullets.map((bullet, i) => (
+                        <div key={i} className="flex gap-3">
+                          <div className="w-1.5 h-1.5 rounded-full mt-2 shrink-0" style={{ background: tk.accent }} />
+                          <p className="font-inter text-[14px] leading-relaxed" style={{ color: DS.text.secondary }}>{bullet}</p>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                  <div className="flex gap-4">
-                    <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: tk.iconBg }}>
-                      <ArrowRight size={15} strokeWidth={1.5} style={{ color: tk.accent }} />
+                ) : (
+                  <div className="space-y-6 pt-5" style={{ borderTop: `1px solid ${tk.accentBorder}` }}>
+                    <div className="flex gap-4">
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: tk.iconBg }}>
+                        <ShieldCheck size={15} strokeWidth={1.5} style={{ color: tk.accent }} />
+                      </div>
+                      <div className="space-y-1.5">
+                        <p className="font-inter text-[12px] font-medium tracking-wide" style={{ color: DS.text.muted }}>What This Means</p>
+                        <p className="font-inter text-[13px] leading-relaxed" style={{ color: DS.text.secondary }}>{config.whatMeans}</p>
+                      </div>
                     </div>
-                    <div className="space-y-1.5">
-                      <p className="font-inter text-[12px] font-medium tracking-wide" style={{ color: DS.text.muted }}>Recommended Next Step</p>
-                      <p className="font-inter text-[13px] leading-relaxed" style={{ color: DS.text.secondary }}>{config.nextStep}</p>
-                    </div>
+                    {config.nextStep && (
+                      <div className="flex gap-4">
+                        <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: tk.iconBg }}>
+                          <ArrowRight size={15} strokeWidth={1.5} style={{ color: tk.accent }} />
+                        </div>
+                        <div className="space-y-1.5">
+                          <p className="font-inter text-[12px] font-medium tracking-wide" style={{ color: DS.text.muted }}>Recommended Next Step</p>
+                          <p className="font-inter text-[13px] leading-relaxed" style={{ color: DS.text.secondary }}>{config.nextStep}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
+                )}
               </div>
             </div>
 
