@@ -177,9 +177,21 @@ async function loadLogoDataUrl(): Promise<string | null> {
   }
 }
 
-async function renderHeader(d: jsPDF, cfg: any) {
-  checkPage(d, 50);
-  sf(d, T.slate900); d.rect(0, Y, PW, 50, "F");
+function drawBadgeRight(d: jsPDF, text: string, rightX: number, y: number, color: C3, bgColor: C3) {
+  d.setFont("helvetica", "normal"); d.setFontSize(7);
+  const w = d.getTextWidth(text) + 6;
+  const x = rightX - w;
+  sf(d, bgColor); sd(d, color); d.setLineWidth(0.3);
+  d.roundedRect(x, y, w, 6, 2, 2, "FD");
+  st(d, color);
+  d.text(text, x + 3, y + 4.2);
+  return w + 3;
+}
+
+async function renderHeader(d: jsPDF, cfg: any, pt: PathType, s: SessionState) {
+  const headerHeight = pt === "no_action" ? 65 : 50;
+  checkPage(d, headerHeight);
+  sf(d, T.slate900); d.rect(0, Y, PW, headerHeight, "F");
   
   // Logo
   const logoDataUrl = await loadLogoDataUrl();
@@ -202,12 +214,35 @@ async function renderHeader(d: jsPDF, cfg: any) {
   sf(d, bColors.bg); d.roundedRect(PW - M - bW, Y + 8, bW, 11, 5.5, 5.5, "F");
   d.text(cfg.badgeText.toUpperCase(), PW - M - bW / 2, Y + 15.6, { align: "center" });
 
+  if (pt === "no_action") {
+    // Top badge right aligned
+    let bx = PW - M;
+    bx -= drawBadgeRight(d, "NO ACTION REQUIRED TODAY", bx, Y + 22, T.emerald500, T.slate900);
+    
+    // Priorities / Tags right aligned
+    bx = PW - M;
+    bx -= drawBadgeRight(d, "Documentation", bx, Y + 30, T.blue400, T.slate900);
+    bx -= drawBadgeRight(d, "Maintenance", bx, Y + 30, T.amber600, T.slate900);
+    bx -= drawBadgeRight(d, "Roof Longevity", bx, Y + 30, T.emerald500, T.slate900);
+    bx -= drawBadgeRight(d, "Monitor", bx, Y + 30, T.amber600, T.slate900);
+
+    if (s.buyerData?.buyerPriorities && s.buyerData.buyerPriorities.length > 0) {
+      bx = PW - M;
+      for (let i = s.buyerData.buyerPriorities.length - 1; i >= 0; i--) {
+        const text = s.buyerData.buyerPriorities[i].replace(/_/g, " ").toLowerCase();
+        bx -= drawBadgeRight(d, text, bx, Y + 38, T.blue400, T.slate900);
+      }
+    }
+  }
+
   // Tag & Title
-  st(d, T.amber400); d.setFontSize(6); d.text(cfg.tag.toUpperCase(), M, Y + 32);
+  const tagY = pt === "no_action" ? Y + 40 : Y + 32;
+  const titleY = pt === "no_action" ? Y + 49 : Y + 41;
+  st(d, T.amber400); d.setFontSize(6); d.text(cfg.tag.toUpperCase(), M, tagY);
   st(d, T.white); d.setFont("times", "bold"); d.setFontSize(18);
-  d.text(cfg.title, M, Y + 41);
+  d.text(cfg.title, M, titleY);
   
-  Y += 50;
+  Y += headerHeight;
 }
 
 function renderPropRow(d: jsPDF, s: SessionState) {
@@ -245,19 +280,6 @@ function drawBadge(d: jsPDF, text: string, x: number, y: number, color: C3, bgCo
 
 function renderIntro(d: jsPDF, pt: PathType, s: SessionState) {
   if (pt === "no_action") {
-    // Top badges
-    let bx = M;
-    bx += drawBadge(d, "NO ACTION REQUIRED TODAY", bx, Y, T.emerald700, T.emerald50);
-    Y += 10;
-    
-    // Priorities / Tags
-    bx = M;
-    bx += drawBadge(d, "Monitor", bx, Y, T.amber700, T.amber50);
-    bx += drawBadge(d, "Roof Longevity", bx, Y, T.emerald700, T.emerald50);
-    bx += drawBadge(d, "Maintenance", bx, Y, T.amber700, T.amber50);
-    bx += drawBadge(d, "Documentation", bx, Y, T.blue800, T.blue50);
-    Y += 12;
-
     st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(22);
     const headline = "Inspection complete.\nNo action is recommended today.";
     const lines = d.splitTextToSize(headline, CW) as string[];
@@ -269,19 +291,6 @@ function renderIntro(d: jsPDF, pt: PathType, s: SessionState) {
     const blines = d.splitTextToSize(body, CW) as string[];
     d.text(blines, M, Y);
     Y += blines.length * 5 + 6;
-
-    if (s.buyerData?.buyerPriorities && s.buyerData.buyerPriorities.length > 0) {
-      Y += 4;
-      st(d, T.gray400); d.setFont("helvetica", "bold"); d.setFontSize(8);
-      d.text("Your Stated Priorities", M, Y);
-      Y += 6;
-      let px = M;
-      for (const p of s.buyerData.buyerPriorities) {
-        const text = p.replace(/_/g, " ").toLowerCase();
-        px += drawBadge(d, text, px, Y, T.blue800, T.blue50);
-      }
-      Y += 10;
-    }
 
     sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
     Y += 10;
@@ -671,7 +680,7 @@ export async function generateReportPDF(s: SessionState, photosArg: any, logo: a
   const cfg = getPathConfig(pt);
   const photos = await collectPhotos(s);
   
-  await renderHeader(d, cfg);
+  await renderHeader(d, cfg, pt, s);
   renderPropRow(d, s);
   renderIntro(d, pt, s);
   renderStats(d, pt, photos.length, s);
