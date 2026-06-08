@@ -880,11 +880,16 @@ export async function generateAgreementPDF(s: SessionState) {
   Y += 8;
   
   if (isSigned) {
+    if (s.signatureData.signatureImage) {
+      d.addImage(s.signatureData.signatureImage, "PNG", M, Y, 50, 15);
+      Y += 18;
+    }
     st(d, T.gray700); d.setFont("times", "italic"); d.setFontSize(9);
     d.text(`Electronically signed by ${s.signatureData.signerName} on ${fmtDate(s.signatureData.signedAt)}`, M, Y);
     Y += 6;
     if (s.signatureData.signerEmail) {
       d.text(`Email: ${s.signatureData.signerEmail}`, M, Y);
+      Y += 6;
     }
   } else {
     st(d, T.gray500); d.setFont("helvetica", "italic"); d.setFontSize(9);
