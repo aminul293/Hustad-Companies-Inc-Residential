@@ -251,29 +251,84 @@ function renderAgreementHTML(isSigned: boolean, s: SessionState): string {
   let html = "";
   
   if (isSigned) {
+    const dateStr = fmtDate(s.signatureData?.signedAt) || "";
+    const addr = s.property.address || "On file";
+    const repName = s.repName || "Hustad Representative";
+    const signerName = s.signatureData?.signerName || "Authorized Electronically";
+
+    let sectionsHtml = AGREEMENT_SECTIONS.map((sec) => `
+      <tr>
+        <td style="padding-bottom: 24px;">
+          <p style="color: #1c1c1e; font-family: Georgia, 'Times New Roman', serif; font-size: 15px; font-weight: 700; margin: 0 0 8px 0;">${sec.heading}</p>
+          <p style="color: #4b5563; font-family: Georgia, 'Times New Roman', serif; font-size: 14px; line-height: 1.6; margin: 0;">${sec.body}</p>
+        </td>
+      </tr>
+    `).join('');
+
     html += `
-      <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #ffffff; border-bottom: 1px solid #f0f0f0;">
+      <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #f7f9fa; padding: 40px 20px;">
         <tr>
-          <td style="padding: 32px 40px;">
-            <p style="color: #8e8e93; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 20px 0;">Your Executed Agreement</p>
-            <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;">
+          <td>
+            <table width="100%" max-width="600" border="0" cellpadding="0" cellspacing="0" role="presentation" align="center" style="max-width: 600px; margin: 0 auto;">
+              <!-- Header Row -->
               <tr>
-                <td style="padding: 24px;">
-                  <p style="color: #166534; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 700; margin: 0 0 8px 0;">&#10003; Insurance Contingency Agreement &mdash; Executed</p>
-                  <p style="color: #15803d; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; line-height: 1.5; margin: 0 0 16px 0;">Agreement is on file with Hustad Companies, Inc.</p>
+                <td style="padding-bottom: 16px;">
                   <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
                     <tr>
-                      <td width="50%" valign="top">
-                        <p style="color: #166534; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; margin: 0 0 4px 0;">Signed By</p>
-                        <p style="color: #14532d; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 600; margin: 0 0 16px 0;">${s.signatureData.signerName || "On file"}</p>
-                        <p style="color: #166534; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; margin: 0 0 4px 0;">Date & Time</p>
-                        <p style="color: #14532d; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 600; margin: 0;">${fmtDate(s.signatureData.signedAt)}</p>
+                      <td align="left">
+                        <p style="color: #8e8e93; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin: 0;">Your Executed Agreement</p>
                       </td>
-                      <td width="50%" valign="top">
-                        <p style="color: #166534; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; margin: 0 0 4px 0;">Property</p>
-                        <p style="color: #14532d; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 600; margin: 0 0 16px 0;">${s.property.address || "On file"}</p>
-                        <p style="color: #166534; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; margin: 0 0 4px 0;">Hustad Rep</p>
-                        <p style="color: #14532d; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 600; margin: 0;">${s.repName || "On file"}</p>
+                      <td align="right">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #dcfce7; border-radius: 100px; border: 1px solid #bbf7d0;">
+                          <tr>
+                            <td style="padding: 6px 12px;">
+                              <p style="color: #166534; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; font-weight: 700; margin: 0;">&#10003; EXECUTED</p>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <!-- Card -->
+              <tr>
+                <td>
+                  <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+                    <!-- Dark Green Header -->
+                    <tr>
+                      <td style="background-color: #0f766e; padding: 24px 32px;">
+                        <p style="color: #ffffff; font-family: Georgia, 'Times New Roman', serif; font-size: 16px; font-weight: 700; margin: 0 0 4px 0;">INSURANCE CONTINGENCY AGREEMENT &mdash; EXECUTED COPY</p>
+                        <p style="color: #99f6e4; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; margin: 0;">Signed: ${dateStr} &middot; Property: ${addr}</p>
+                      </td>
+                    </tr>
+                    <!-- Body -->
+                    <tr>
+                      <td style="padding: 32px 32px 8px 32px;">
+                        <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
+                          ${sectionsHtml}
+                        </table>
+                      </td>
+                    </tr>
+                    <!-- Signature Footer -->
+                    <tr>
+                      <td style="background-color: #ecfdf5; padding: 32px; border-top: 1px solid #e5e7eb;">
+                        <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
+                          <tr>
+                            <td width="50%" valign="top" style="padding-right: 16px;">
+                              <p style="color: #6b7280; font-family: Georgia, 'Times New Roman', serif; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 0;">Homeowner</p>
+                              <p style="color: #374151; font-family: Georgia, 'Times New Roman', serif; font-size: 15px; font-style: italic; margin: 0 0 12px 0;">${signerName === "Authorized Electronically" ? signerName : "Authorized Electronically"}</p>
+                              <div style="border-bottom: 1px solid #9ca3af; margin-bottom: 8px;"></div>
+                              <p style="color: #9ca3af; font-family: Georgia, 'Times New Roman', serif; font-size: 13px; margin: 0;">${dateStr}</p>
+                            </td>
+                            <td width="50%" valign="top" style="padding-left: 16px;">
+                              <p style="color: #6b7280; font-family: Georgia, 'Times New Roman', serif; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 0;">Hustad Representative</p>
+                              <p style="color: #374151; font-family: Georgia, 'Times New Roman', serif; font-size: 15px; font-style: italic; margin: 0 0 12px 0;">${repName}</p>
+                              <div style="border-bottom: 1px solid #9ca3af; margin-bottom: 8px;"></div>
+                              <p style="color: #9ca3af; font-family: Georgia, 'Times New Roman', serif; font-size: 13px; margin: 0;">${dateStr} &middot; Hustad Companies, Inc.</p>
+                            </td>
+                          </tr>
+                        </table>
                       </td>
                     </tr>
                   </table>
@@ -284,13 +339,13 @@ function renderAgreementHTML(isSigned: boolean, s: SessionState): string {
         </tr>
       </table>
     `;
+    return html;
   }
   
-  const agreementHeader = isSigned 
-    ? "Contingency Agreement &mdash; Full Text" 
-    : "Contingency Agreement &mdash; Review Copy (Authorization Required)";
+  // For unsigned/review copy
+  const agreementHeader = "Contingency Agreement &mdash; Review Copy (Authorization Required)";
   
-  let sectionsHtml = AGREEMENT_SECTIONS.map((sec, i) => `
+  let sectionsHtml = AGREEMENT_SECTIONS.map((sec) => `
     <tr>
       <td style="padding-bottom: 24px;">
         <p style="color: #1c1c1e; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 700; margin: 0 0 6px 0;">${sec.heading}</p>
