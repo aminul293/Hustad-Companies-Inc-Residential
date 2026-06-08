@@ -436,44 +436,34 @@ function renderFindings(d: jsPDF, pt: PathType, s: SessionState) {
   
   if (pt === "urgent_repair") {
     checkPage(d, 60);
-    st(d, T.red600); d.setFont("times", "normal"); d.setFontSize(14);
-    d.text("Official Recommendation: Urgent Protection", M, Y + 10);
+    st(d, T.slate900); d.setFont("times", "normal"); d.setFontSize(14);
+    d.text("Direct Repair", M, Y + 10);
     Y += 16;
     
-    st(d, T.gray400); d.setFont("helvetica", "bold"); d.setFontSize(6);
-    d.text("WHAT THIS MEANS", M, Y);
     st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(10);
-    const mText = "One or more documented exterior conditions are not a future planning item. They are creating risk today. Immediate protective repair or stabilization is recommended to prevent additional damage. This scope is limited to what the evidence supports. Nothing more.";
+    const mText = "Address documented items directly with a scoped repair authorization. No carrier process required. Hustad schedules repair work based on exactly what was documented during the inspection.";
     const mLines = d.splitTextToSize(mText, CW);
-    d.text(mLines, M, Y + 6);
-    Y += 6 + mLines.length * 4.5 + 8;
+    d.text(mLines, M, Y);
+    Y += mLines.length * 4.5 + 4;
     
-    st(d, T.gray400); d.setFont("helvetica", "bold"); d.setFontSize(6);
-    d.text("RECOMMENDED NEXT STEP", M, Y);
-    st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(10);
-    const stepText = "Review the urgent proof photos first. Confirm the documented condition with your rep. Then authorize protective work if you're comfortable, and decide separately whether a broader inspection, repair, or carrier review is appropriate.";
-    const stepLines = d.splitTextToSize(stepText, CW);
-    d.text(stepLines, M, Y + 6);
-    Y += 6 + stepLines.length * 4.5 + 12;
-    
-    st(d, T.gray400); d.setFont("helvetica", "bold"); d.setFontSize(6);
-    d.text("WHAT WE ARE NOT SAYING", M, Y);
+    sd(d, T.gray200); d.setLineWidth(0.3); d.line(M, Y, PW - M, Y);
     Y += 6;
     
-    const notSaying = [
-      "We are not saying every condition requires full replacement.",
-      "We are not asking you to approve more than the evidence supports.",
-      "We are saying the documented condition has a clear repair or protection path."
+    const bullets = [
+      "Scope limited to documented findings \u2014 nothing beyond what the evidence supports.",
+      "Faster scheduling with no carrier coordination delay.",
+      "Full cost transparency before any work begins.",
+      "You authorize exactly what gets repaired, and when."
     ];
-    for (let i = 0; i < notSaying.length; i++) {
-      st(d, i === 2 ? T.emerald500 : T.red600);
-      d.text(i === 2 ? "✓" : "x", M, Y + 3);
-      st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(10);
-      const lines = d.splitTextToSize(notSaying[i], CW - 10) as string[];
-      const h = lines.length * 5 + 2;
+    
+    bullets.forEach(b => {
+      st(d, T.red600); d.setFontSize(10); d.text("\u2022", M, Y + 3);
+      st(d, T.gray600); d.setFont("helvetica", "normal");
+      const lines = d.splitTextToSize(b, CW - 5) as string[];
       d.text(lines, M + 5, Y + 3);
-      Y += h;
-    }
+      Y += lines.length * 4.5 + 2;
+    });
+    
     Y += 5;
     sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
     return;
