@@ -418,9 +418,9 @@ export function getNextScreen(
       if (outcomeType === "no_damage" || outcomeType === "monitor_only") {
         return "B19_next_steps";
       }
-      // For repair_only: check if urgent items exist
+      // For repair_only: skip urgent protection — go straight to agreement/repair auth
       if (outcomeType === "repair_only") {
-        return urgentItemsCount > 0 ? "B15_urgent_protection" : "B17_agreement_summary";
+        return "B17_agreement_summary";
       }
       // claim or restoration: if we are in B13, it means a path is selected, or we skipped B14.
       if (
