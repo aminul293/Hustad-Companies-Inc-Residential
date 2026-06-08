@@ -132,16 +132,49 @@ function getBadgeColors(type: string): { bg: C3, txt: C3 } {
 
 // --- Components ---
 
-function renderHeader(d: jsPDF, cfg: any) {
+async function loadLogoDataUrl(): Promise<string | null> {
+  try {
+    const resp = await fetch("/logo.svg");
+    if (!resp.ok) return null;
+    const svgText = await resp.text();
+    const whiteSvg = svgText.replace(/fill:\s*#231f20/g, "fill: #ffffff");
+    const blob = new Blob([whiteSvg], { type: "image/svg+xml" });
+    const url  = URL.createObjectURL(blob);
+    return await new Promise<string>((resolve, reject) => {
+      const img    = new Image();
+      img.onload   = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width  = 1468;
+        canvas.height = 330;
+        canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        resolve(canvas.toDataURL("image/png"));
+      };
+      img.onerror = reject;
+      img.src     = url;
+    });
+  } catch {
+    return null;
+  }
+}
+
+async function renderHeader(d: jsPDF, cfg: any) {
   checkPage(d, 50);
   sf(d, T.slate900); d.rect(0, Y, PW, 50, "F");
   
   // Logo
-  sf(d, T.amber400); d.roundedRect(M, Y + 10, 10, 10, 1.5, 1.5, "F");
-  st(d, T.slate900); d.setFont("helvetica", "bold"); d.setFontSize(10);
-  d.text("H", M + 5, Y + 17, { align: "center" });
-  st(d, T.white); d.setFont("helvetica", "bold"); d.setFontSize(6); d.text("HUSTAD", M + 12, Y + 14);
-  st(d, T.amber400); d.setFontSize(5); d.text("COMPANIES", M + 12, Y + 18);
+  const logoDataUrl = await loadLogoDataUrl();
+  if (logoDataUrl) {
+    const logoW = 35;
+    const logoH = logoW * (330 / 1468);
+    d.addImage(logoDataUrl, "PNG", M, Y + 12, logoW, logoH);
+  } else {
+    sf(d, T.amber400); d.roundedRect(M, Y + 10, 10, 10, 1.5, 1.5, "F");
+    st(d, T.slate900); d.setFont("helvetica", "bold"); d.setFontSize(10);
+    d.text("H", M + 5, Y + 17, { align: "center" });
+    st(d, T.white); d.setFont("helvetica", "bold"); d.setFontSize(6); d.text("HUSTAD", M + 12, Y + 14);
+    st(d, T.amber400); d.setFontSize(5); d.text("COMPANIES", M + 12, Y + 18);
+  }
 
   // Badge
   const bColors = getBadgeColors(cfg.badgeType);
@@ -427,7 +460,7 @@ export async function generateReportPDF(s: SessionState, photos: any, logo: any,
   const pt = derivePathType(s);
   const cfg = getPathConfig(pt);
   
-  renderHeader(d, cfg);
+  await renderHeader(d, cfg);
   renderPropRow(d, s);
   renderIntro(d, pt);
   renderStats(d, pt, s.photos ? s.photos.length : 0);
