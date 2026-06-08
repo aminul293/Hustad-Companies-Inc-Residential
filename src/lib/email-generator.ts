@@ -1,4 +1,5 @@
 import type { SessionState, OutcomeType } from "@/types/session";
+import { AGREEMENT_SECTIONS, WISCONSIN_CLAIM_NOTICE } from "@/components/screens/b16_b19/constants";
 
 function fmtDate(iso?: string | null): string {
   if (!iso) return "—";
@@ -246,6 +247,100 @@ function renderFooter(s: SessionState): string {
   `;
 }
 
+function renderAgreementHTML(isSigned: boolean, s: SessionState): string {
+  let html = "";
+  
+  if (isSigned) {
+    html += `
+      <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #ffffff; border-bottom: 1px solid #f0f0f0;">
+        <tr>
+          <td style="padding: 32px 40px;">
+            <p style="color: #8e8e93; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 20px 0;">Your Executed Agreement</p>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;">
+              <tr>
+                <td style="padding: 24px;">
+                  <p style="color: #166534; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 700; margin: 0 0 8px 0;">&#10003; Insurance Contingency Agreement &mdash; Executed</p>
+                  <p style="color: #15803d; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; line-height: 1.5; margin: 0 0 16px 0;">Agreement is on file with Hustad Companies, Inc.</p>
+                  <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
+                    <tr>
+                      <td width="50%" valign="top">
+                        <p style="color: #166534; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; margin: 0 0 4px 0;">Signed By</p>
+                        <p style="color: #14532d; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 600; margin: 0 0 16px 0;">${s.signatureData.signerName || "On file"}</p>
+                        <p style="color: #166534; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; margin: 0 0 4px 0;">Date & Time</p>
+                        <p style="color: #14532d; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 600; margin: 0;">${fmtDate(s.signatureData.signedAt)}</p>
+                      </td>
+                      <td width="50%" valign="top">
+                        <p style="color: #166534; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; margin: 0 0 4px 0;">Property</p>
+                        <p style="color: #14532d; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 600; margin: 0 0 16px 0;">${s.property.address || "On file"}</p>
+                        <p style="color: #166534; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; margin: 0 0 4px 0;">Hustad Rep</p>
+                        <p style="color: #14532d; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 600; margin: 0;">${s.repName || "On file"}</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    `;
+  }
+  
+  const agreementHeader = isSigned 
+    ? "Contingency Agreement &mdash; Full Text" 
+    : "Contingency Agreement &mdash; Review Copy (Authorization Required)";
+  
+  let sectionsHtml = AGREEMENT_SECTIONS.map((sec, i) => `
+    <tr>
+      <td style="padding-bottom: 24px;">
+        <p style="color: #1c1c1e; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 700; margin: 0 0 6px 0;">${sec.heading}</p>
+        <p style="color: #636366; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; line-height: 1.6; margin: 0;">${sec.body}</p>
+      </td>
+    </tr>
+  `).join('');
+
+  html += `
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #fafafa; border-bottom: 1px solid #f0f0f0;">
+      <tr>
+        <td style="padding: 32px 40px;">
+          <p style="color: #8e8e93; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 24px 0;">${agreementHeader}</p>
+          <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
+            ${sectionsHtml}
+          </table>
+        </td>
+      </tr>
+    </table>
+  `;
+
+  let wisconsinHtml = WISCONSIN_CLAIM_NOTICE.lines.map(l => `
+    <tr>
+      <td valign="top" style="padding: 0 8px 6px 0; color: #b45309;">&bull;</td>
+      <td valign="top" style="padding-bottom: 6px; color: #78350f; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; line-height: 1.5;">${l}</td>
+    </tr>
+  `).join('');
+
+  html += `
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #ffffff; border-bottom: 1px solid #f0f0f0;">
+      <tr>
+        <td style="padding: 32px 40px;">
+          <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 20px;">
+            <tr>
+              <td>
+                <p style="color: #b45309; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 700; margin: 0 0 12px 0;">${WISCONSIN_CLAIM_NOTICE.heading.toUpperCase()}</p>
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation">
+                  ${wisconsinHtml}
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  `;
+
+  return html;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN GENERATOR EXPORT
 // ─────────────────────────────────────────────────────────────────────────────
@@ -314,6 +409,7 @@ export async function generateEmailHTML(session: SessionState, reviewUrl: string
       { t: "Review Your Coverage Decision", d: "Share any Explanation of Benefits or adjuster correspondence with your Hustad rep within 5 business days of receipt." },
       { t: "Production Scheduled", d: "Once coverage is confirmed in writing, we will schedule production and provide 48-hour advance notice." },
     ]);
+    bodyHtml += renderAgreementHTML(isSigned, session);
   } else if (path === "carrier_review" && !isSigned) {
     bodyHtml += renderHeader("Your Carrier Review Report", "Inspection Complete &middot; Review Requested", "Awaiting Your Review", "pending", "#fbbf24");
     bodyHtml += renderPropRow(prop, dateStr, insp);
@@ -333,6 +429,7 @@ export async function generateEmailHTML(session: SessionState, reviewUrl: string
       { t: "Sign to Authorize", d: "Signing authorizes Hustad to organize your documentation package and coordinate a carrier inspection." },
       { t: "File or Confirm Your Claim", d: "We can guide you on filing if needed. Let your Hustad rep know the status of your claim." },
     ]);
+    bodyHtml += renderAgreementHTML(isSigned, session);
   } else if (path === "urgent_repair") {
     bodyHtml += renderHeader("Your Direct Repair Report", "Inspection Complete &middot; Repair Recommended", "Report Delivered", "executed", "#ea580c");
     bodyHtml += renderPropRow(prop, dateStr, insp);

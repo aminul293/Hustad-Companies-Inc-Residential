@@ -2,6 +2,7 @@ import jsPDF from "jspdf";
 import type { SessionState } from "@/types/session";
 import { format } from "date-fns";
 import { getPhotoBlob, blobToBase64 } from "@/lib/photoStorage";
+import { AGREEMENT_SECTIONS, WISCONSIN_CLAIM_NOTICE } from "@/components/screens/b16_b19/constants";
 
 // Types
 type C3 = [number, number, number];
@@ -92,7 +93,7 @@ function st(d: jsPDF, c: C3) { d.setTextColor(c[0], c[1], c[2]); }
 function sf(d: jsPDF, c: C3) { d.setFillColor(c[0], c[1], c[2]); }
 function sd(d: jsPDF, c: C3) { d.setDrawColor(c[0], c[1], c[2]); }
 
-function fmtDate(iso?: string) {
+function fmtDate(iso?: string | null) {
   if (!iso) return "N/A";
   try { return format(new Date(iso), "MMMM d, yyyy"); } catch { return iso; }
 }
@@ -117,7 +118,7 @@ function getPathConfig(pt: PathType) {
     case "carrier_review":
       return { title: "Your Carrier Review Report", tag: "Inspection Complete · Claim Path", badgeText: "Carrier Review", badgeType: "pending" };
     case "urgent_repair":
-      return { title: "A targeted repair has been documented at your property.", tag: "Service Quote Being Prepared", badgeText: "Action Required", badgeType: "urgent" };
+      return { title: "Your Direct Repair Report", tag: "Inspection Complete · Repair Recommended", badgeText: "Report Delivered", badgeType: "executed" };
     case "full_restoration":
       return { title: "Your Roof Replacement Proposal", tag: "Inspection Complete · Full Replacement", badgeText: "Proposal in Progress", badgeType: "proposal" };
     default:
@@ -324,9 +325,40 @@ function renderIntro(d: jsPDF, pt: PathType, s: SessionState) {
     return;
   }
 
+  if (pt === "carrier_review") {
+    Y += 12;
+    st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(22);
+    const headline = "Storm findings documented. Carrier review is the recommended next step.";
+    const hLines = d.splitTextToSize(headline, CW) as string[];
+    d.text(hLines, M, Y);
+    Y += hLines.length * 8 + 6;
+    
+    st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(11);
+    const subhead = "Hustad completed an exterior inspection and documented conditions consistent with storm-related impact. These findings do not determine insurance coverage, but they are strong enough to justify a formal carrier review before any out-of-pocket expense.";
+    const shLines = d.splitTextToSize(subhead, CW) as string[];
+    d.text(shLines, M, Y);
+    Y += shLines.length * 5 + 6;
+
+    if (s.findings?.summaryBody) {
+      st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(11);
+      const bLines = d.splitTextToSize(s.findings.summaryBody, CW) as string[];
+      d.text(bLines, M, Y);
+      Y += bLines.length * 5 + 6;
+    }
+
+    st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(10);
+    const text = "Thank you for authorizing Hustad Companies to coordinate your insurance claim. Below is your complete inspection report. No production work begins until your carrier issues a written coverage determination.";
+    const lines = d.splitTextToSize(text, CW) as string[];
+    d.text(lines, M, Y);
+    Y += lines.length * 5 + 6;
+
+    sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
+    Y += 10;
+    return;
+  }
+
   let text = "";
-  if (pt === "carrier_review") text = "Thank you for authorizing Hustad Companies to coordinate your insurance claim. Below is your complete inspection report. No production work begins until your carrier issues a written coverage determination.";
-  else if (pt === "full_restoration") text = "Hustad Companies has completed your exterior inspection and documented conditions consistent with a full roof replacement. Our estimating department is preparing your custom proposal and will send it within 2-3 business days.";
+  if (pt === "full_restoration") text = "Hustad Companies has completed your exterior inspection and documented conditions consistent with a full roof replacement. Our estimating department is preparing your custom proposal and will send it within 2-3 business days.";
   else text = "Hustad Companies has completed your exterior inspection and documented the conditions below.";
 
   st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(10);
@@ -389,13 +421,13 @@ function renderStats(d: jsPDF, pt: PathType, photosCount: number, s: SessionStat
 
 function renderStormBanner(d: jsPDF) {
   checkPage(d, 20);
-  sf(d, T.amber50); d.rect(0, Y, PW, 20, "F");
-  sd(d, T.amber100); d.setLineWidth(0.3); d.line(0, Y + 20, PW, Y + 20);
+  sf(d, T.blue50); d.rect(0, Y, PW, 20, "F");
+  sd(d, T.blue200); d.setLineWidth(0.3); d.line(0, Y + 20, PW, Y + 20);
   
-  st(d, T.amber800); d.setFont("helvetica", "bold"); d.setFontSize(7);
-  d.text("STORM EVENT CONFIRMED - ", M + 6, Y + 11);
-  st(d, T.amber700); d.setFont("helvetica", "normal"); d.setFontSize(7);
-  d.text("NWS data supports a severe hail event near this property.", M + 58, Y + 11);
+  st(d, T.blue800); d.setFont("helvetica", "bold"); d.setFontSize(7);
+  d.text("WEATHER EVENT SUPPORT - ", M + 6, Y + 11);
+  st(d, T.blue700); d.setFont("helvetica", "normal"); d.setFontSize(7);
+  d.text("NWS Milwaukee and Sullivan products support a severe Dane County hail event on April 14, 2026.", M + 63, Y + 11);
   Y += 20;
 }
 
@@ -469,16 +501,91 @@ function renderFindings(d: jsPDF, pt: PathType, s: SessionState) {
     return;
   }
 
-  let items: string[] = [];
-  if (s.findings?.summaryBody) {
-    items = s.findings.summaryBody.split('\n').filter(l => l.trim().length > 0);
+  if (pt === "carrier_review") {
+    checkPage(d, 80);
+    st(d, T.slate900); d.setFont("times", "normal"); d.setFontSize(14);
+    d.text("How the Carrier Review Agreement Works", M, Y + 10);
+    Y += 16;
+    
+    st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(10);
+    const mText = "Coordinate a formal carrier inspection based on documented storm findings. Hustad prepares the documentation package. Your carrier reviews the evidence and makes a coverage determination.";
+    const mLines = d.splitTextToSize(mText, CW);
+    d.text(mLines, M, Y);
+    Y += mLines.length * 4.5 + 4;
+    
+    sd(d, T.gray200); d.setLineWidth(0.3); d.line(M, Y, PW - M, Y);
+    Y += 6;
+    
+    const steps = [
+      {
+        title: "01 Document damage",
+        desc: "Hustad has completed the exterior inspection and organized all findings, photos, and documentation into a structured report prepared for carrier review."
+      },
+      {
+        title: "02 Coordinate carrier review",
+        desc: "If you authorize, Hustad will coordinate the carrier inspection process and present the documented findings clearly to your insurer. Hustad does not negotiate your claim."
+      },
+      {
+        title: "03 Confirm scope and coverage",
+        desc: "Your insurance carrier reviews the documented evidence and makes the coverage determination under your policy. Hustad cannot predict or guarantee any coverage outcome."
+      },
+      {
+        title: "04 Move forward only if you agree",
+        desc: "No repair work begins until your carrier issues a written determination, you confirm the scope, and you authorize production in writing. You stay in control at every step."
+      }
+    ];
+    
+    steps.forEach(s => {
+      checkPage(d, 25);
+      st(d, T.slate900); d.setFont("helvetica", "bold"); d.setFontSize(9);
+      d.text(s.title, M, Y + 3);
+      Y += 5;
+      
+      st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(9);
+      const lines = d.splitTextToSize(s.desc, CW) as string[];
+      d.text(lines, M, Y + 3);
+      Y += lines.length * 4.5 + 4;
+    });
+    
+    Y += 3;
+    sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
+    Y += 10;
   }
+
+  let items: string[] = [];
+  
+  // 1. Try to get specific finding labels from photos
+  if (s.photos && s.photos.length > 0) {
+    const findingSet = new Set<string>();
+    s.photos.forEach(p => {
+      if (p.selectedForSummary && p.label) {
+        findingSet.add(p.label);
+      }
+    });
+    // If no labels on summary photos, get labels from any photo
+    if (findingSet.size === 0) {
+      s.photos.forEach(p => {
+        if (p.label) findingSet.add(p.label);
+      });
+    }
+    items = Array.from(findingSet);
+  }
+
+  // 2. Fallback to finding categories if no photo labels exist
+  if (items.length === 0 && s.findings?.findingCategories && s.findings.findingCategories.length > 0) {
+    items = s.findings.findingCategories.map(c => `Documented condition: ${c}`);
+  }
+
+  // 3. Fallback to AI summary body split into sentences if all else fails
+  if (items.length === 0 && s.findings?.summaryBody) {
+    items = s.findings.summaryBody.split(/(?<=\.)\s+/).filter(l => l.trim().length > 0);
+  }
+
+  // 4. Final fallback
   if (items.length === 0) {
     items = [
-      "Hail impact spatter on soft metal surfaces - gutters, downspouts",
-      "Granule displacement observed across multiple roof planes",
-      "Impact dents visible on ridge cap and field shingles",
-      "Soft metal deformation consistent with hail impact"
+      "Exterior inspection completed.",
+      "Photo documentation collected for property records."
     ];
   }
 
@@ -642,68 +749,6 @@ function renderSteps(d: jsPDF, pt: PathType) {
   sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
 }
 
-function renderAgreement(d: jsPDF, s: SessionState) {
-  checkPage(d, 80);
-  sf(d, T.gray50); d.rect(0, Y, PW, 100, "F");
-  
-  st(d, T.gray400); d.setFont("helvetica", "bold"); d.setFontSize(6);
-  d.text("YOUR EXECUTED AGREEMENT", M, Y + 10);
-  
-  // Executed badge
-  sf(d, T.emerald100); d.roundedRect(PW - M - 25, Y + 6, 25, 5, 2.5, 2.5, "F");
-  st(d, T.emerald700); d.setFontSize(5);
-  d.text("EXECUTED", PW - M - 12.5, Y + 9.6, { align: "center" });
-  
-  Y += 15;
-  
-  // Card
-  sf(d, T.white); d.roundedRect(M, Y, CW, 65, 3, 3, "F");
-  sd(d, T.gray200); d.roundedRect(M, Y, CW, 65, 3, 3, "S");
-  
-  // Header
-  sf(d, T.emerald700); 
-  d.setDrawColor(T.emerald700[0], T.emerald700[1], T.emerald700[2]);
-  d.roundedRect(M, Y, CW, 12, 3, 3, "F");
-  // Fill lower part of header to make it flat on bottom
-  d.rect(M, Y + 6, CW, 6, "F");
-  
-  st(d, T.white); d.setFont("helvetica", "bold"); d.setFontSize(6);
-  d.text("INSURANCE CONTINGENCY AGREEMENT - EXECUTED COPY", M + 5, Y + 5.5);
-  st(d, T.emerald200); d.setFont("helvetica", "normal"); d.setFontSize(5);
-  d.text(`Signed: ${fmtDate(s.createdAt)} - Property: ${s.property.address}`, M + 5, Y + 9);
-  
-  // Body snippet
-  st(d, T.gray600); d.setFont("times", "normal"); d.setFontSize(7);
-  const snippet = "1. Parties and Property\nThis Insurance Contingency Agreement is entered into between the property owner and Hustad Companies. Both parties agree that the inspection findings recorded constitute the factual basis for the scope of work.\n\n2. Scope of Work\nContractor agrees to perform exterior restoration identified in the findings summary.";
-  const lines = d.splitTextToSize(snippet, CW - 10);
-  d.text(lines, M + 5, Y + 18);
-  
-  // Footer
-  const ftY = Y + 45;
-  sf(d, T.emerald50);
-  d.roundedRect(M, ftY, CW, 20, 3, 3, "F");
-  d.rect(M, ftY, CW, 5, "F");
-  sd(d, T.gray200); d.line(M, ftY, PW - M, ftY);
-  
-  st(d, T.gray500); d.setFont("helvetica", "bold"); d.setFontSize(5);
-  d.text("HOMEOWNER", M + 5, ftY + 5);
-  d.text("HUSTAD REPRESENTATIVE", M + CW / 2 + 5, ftY + 5);
-  
-  st(d, T.gray700); d.setFont("times", "italic"); d.setFontSize(7);
-  d.text("Authorized Electronically", M + 5, ftY + 11);
-  d.text(s.repName || "Eric Catania", M + CW / 2 + 5, ftY + 11);
-  
-  sd(d, T.gray400); d.setLineWidth(0.3);
-  d.line(M + 5, ftY + 13, M + CW / 2 - 5, ftY + 13);
-  d.line(M + CW / 2 + 5, ftY + 13, M + CW - 5, ftY + 13);
-  
-  st(d, T.gray400); d.setFont("helvetica", "normal"); d.setFontSize(5);
-  d.text(fmtDate(s.createdAt), M + 5, ftY + 17);
-  d.text(`${fmtDate(s.createdAt)} - Hustad Companies, Inc.`, M + CW / 2 + 5, ftY + 17);
-  
-  Y += 80;
-}
-
 function renderFooter(d: jsPDF) {
   checkPage(d, 45);
   
@@ -747,9 +792,7 @@ export async function generateReportPDF(s: SessionState, photosArg: any, logo: a
   renderFindings(d, pt, s);
   await renderPhotos(d, photos);
   renderSteps(d, pt);
-  if (pt === "carrier_review" || pt === "full_restoration") {
-    renderAgreement(d, s);
-  }
+  // Agreement removed from summary report
   renderFooter(d);
   
   return d;
@@ -760,8 +803,114 @@ export async function getSummaryPDFBase64(s: SessionState): Promise<string> {
   return d.output("datauristring").split(",")[1];
 }
 
+export async function generateAgreementPDF(s: SessionState) {
+  const d = new jsPDF({ compress: true });
+  Y = M;
+  const isSigned = !!s.signatureData.signedAt;
+  
+  // Simple Header
+  sf(d, T.emerald500); d.rect(0, 0, PW, 2, "F");
+  st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(16);
+  d.text("Insurance Contingency Agreement", M, Y + 10);
+  
+  st(d, T.gray500); d.setFont("helvetica", "normal"); d.setFontSize(8);
+  d.text(`Property: ${s.property.address}`, M, Y + 16);
+  d.text(`Owner: ${s.property.homeownerPrimaryName}`, M, Y + 21);
+  d.text(`Date: ${fmtDate(s.createdAt)}`, M, Y + 26);
+  
+  Y += 36;
+  
+  AGREEMENT_SECTIONS.forEach((sec, idx) => {
+    checkPage(d, 30);
+    st(d, T.slate900); d.setFont("helvetica", "bold"); d.setFontSize(9);
+    d.text(sec.heading, M, Y);
+    Y += 6;
+    
+    st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(8);
+    const lines = d.splitTextToSize(sec.body, CW);
+    d.text(lines, M, Y);
+    Y += lines.length * 4 + 6;
+  });
+  
+  // Wisconsin Notice
+  checkPage(d, 40);
+  sf(d, T.amber50); d.roundedRect(M, Y, CW, 35, 2, 2, "F");
+  sd(d, T.amber500); d.setLineWidth(1); d.line(M, Y, M, Y + 35);
+  
+  st(d, T.amber800); d.setFont("helvetica", "bold"); d.setFontSize(8);
+  d.text(WISCONSIN_CLAIM_NOTICE.heading.toUpperCase(), M + 6, Y + 8);
+  
+  st(d, T.amber900); d.setFont("helvetica", "normal"); d.setFontSize(7);
+  WISCONSIN_CLAIM_NOTICE.lines.forEach((line, i) => {
+    d.text(`• ${line}`, M + 6, Y + 14 + (i * 4));
+  });
+  Y += 45;
+  
+  // Required Acknowledgements
+  checkPage(d, 60);
+  st(d, T.slate900); d.setFont("helvetica", "bold"); d.setFontSize(9);
+  d.text("REQUIRED ACKNOWLEDGEMENTS", M, Y);
+  Y += 8;
+  
+  const acks = [
+    "I reviewed the documented inspection findings and they reflect actual conditions at my property.",
+    "I understand my insurance carrier determines coverage \u2014 this agreement does not guarantee claim approval.",
+    "I understand my deductible and any non-covered items remain my financial responsibility.",
+    "I understand Hustad will email me the full report and executed agreement upon signing.",
+    "I understand this agreement should be reviewed by all required property owners or policyholders."
+  ];
+  
+  acks.forEach(ack => {
+    checkPage(d, 15);
+    st(d, isSigned ? T.emerald600 : T.gray400); d.setFontSize(10);
+    d.text(isSigned ? "\u2713" : "\u25CB", M, Y + 3); // Checkmark or open circle
+    
+    st(d, T.slate900); d.setFont("helvetica", "normal"); d.setFontSize(8);
+    const lines = d.splitTextToSize(ack, CW - 10) as string[];
+    d.text(lines, M + 8, Y + 3);
+    Y += lines.length * 4.5 + 2;
+  });
+  
+  Y += 6;
+  
+  // Signature Block
+  checkPage(d, 50);
+  st(d, T.slate900); d.setFont("helvetica", "bold"); d.setFontSize(10);
+  d.text("Authorization", M, Y);
+  Y += 8;
+  
+  if (isSigned) {
+    st(d, T.gray700); d.setFont("times", "italic"); d.setFontSize(9);
+    d.text(`Electronically signed by ${s.signatureData.signerName} on ${fmtDate(s.signatureData.signedAt)}`, M, Y);
+    Y += 6;
+    if (s.signatureData.signerEmail) {
+      d.text(`Email: ${s.signatureData.signerEmail}`, M, Y);
+    }
+  } else {
+    st(d, T.gray500); d.setFont("helvetica", "italic"); d.setFontSize(9);
+    d.text("UNSIGNED - FOR REVIEW ONLY", M, Y);
+  }
+  
+  // Watermarks
+  const total = d.getNumberOfPages();
+  for (let i = 1; i <= total; i++) {
+    d.setPage(i);
+    d.setTextColor(isSigned ? 16 : 150, isSigned ? 185 : 150, isSigned ? 129 : 150); // emerald500 or gray400
+    d.setFontSize(60);
+    d.setGState(new (d as any).GState({ opacity: 0.1 }));
+    d.text(isSigned ? "EXECUTED" : "UNSIGNED - REVIEW", PW / 2, PH / 2, { align: "center", angle: 45 });
+    d.setGState(new (d as any).GState({ opacity: 1.0 }));
+    
+    // Page X of Y
+    st(d, T.gray400); d.setFont("helvetica", "normal"); d.setFontSize(6);
+    d.text(`Page ${i} of ${total}`, PW - M, PH - 10, { align: "right" });
+  }
+  
+  return d;
+}
+
 export async function getAgreementPDFBase64(s: SessionState): Promise<string> {
-  const d = await generateReportPDF(s, [], null, "", "");
+  const d = await generateAgreementPDF(s);
   return d.output("datauristring").split(",")[1];
 }
 

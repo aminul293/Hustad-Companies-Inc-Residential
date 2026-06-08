@@ -278,7 +278,7 @@ interface RepPrepProps {
 const OUTCOME_OPTIONS: { value: OutcomeType; label: string; description: string; icon: any; color: string }[] = [
   { value: "no_damage", label: "No Damage / Monitor Only", description: "Property integrity maintained or proactive baseline tracking.", icon: ShieldCheck, color: "emerald" },
   { value: "repair_only", label: "Repair Only", description: "Targeted restoration path.", icon: Wrench, color: "indigo" },
-  { value: "claim_review_candidate", label: "Claim Review", description: "Storm damage documentation.", icon: Zap, color: "amber" },
+  { value: "claim_review_candidate", label: "Claim Review", description: "Storm damage documentation.", icon: Zap, color: "blue" },
   { value: "full_restoration_candidate", label: "Full Restoration", description: "Complete home restoration.", icon: LayoutGrid, color: "rose" },
 ];
 
