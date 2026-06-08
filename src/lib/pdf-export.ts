@@ -604,15 +604,16 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
     y += wH + 8;
   }
 
-  // ── Top-3 photo strip (when photos are present) ───────────────────────────
-  const topPhotos = photos.slice(0, 3);
-  if (topPhotos.length > 0) {
-    const photoGap = 4;
-    const photoW   = (CW - photoGap * (topPhotos.length - 1)) / topPhotos.length;
-    const photoH   = 36;
-    for (let i = 0; i < topPhotos.length; i++) {
-      const photo = topPhotos[i];
-      const px    = M + i * (photoW + photoGap);
+  // ── Top-3 photo strip (always show 3 slots) ───────────────────────────────
+  const photoGap = 4;
+  const photoW   = (CW - photoGap * 2) / 3;
+  const photoH   = 36;
+
+  for (let i = 0; i < 3; i++) {
+    const photo = photos[i];
+    const px    = M + i * (photoW + photoGap);
+
+    if (photo) {
       try {
         const compressed = await compressImage(photo.dataUrl, 600);
         if (compressed.startsWith("http")) {
@@ -640,20 +641,21 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
         const capLines = d.splitTextToSize(photo.label, photoW) as string[];
         d.text(capLines[0], px, y + photoH + 5.5);
       }
+    } else {
+      // Empty placeholder
+      sf(d, T.surface2); d.roundedRect(px, y, photoW, photoH, 2, 2, "F");
+      sd(d, T.borderMid); d.setLineWidth(0.2); d.roundedRect(px, y, photoW, photoH, 2, 2, "S");
+      st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6.5);
+      d.text("No Photo Provided", px + photoW / 2, y + photoH / 2, { align: "center" });
     }
-    if (photos.length > 3) {
-      st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6);
-      d.text(`+ ${photos.length - 3} more photos in full report`, PW - M, y + photoH + 5.5, { align: "right" });
-    }
-    y += photoH + 14;
-  } else {
-    const noteH = 20;
-    baseCard(d, M, y, CW, noteH, T.surface2, T.borderMid);
-    sf(d, acc); d.rect(M, y, 3, noteH, "F");
-    st(d, T.textMid); d.setFont("helvetica", "normal"); d.setFontSize(7);
-    d.text("Photo documentation is included in the evidence section of this report.", M + 9, y + noteH / 2 + 2.5);
-    y += noteH + 10;
   }
+
+  if (photos.length > 3) {
+    st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6);
+    d.text(`+ ${photos.length - 3} more photos in full report`, PW - M, y + photoH + 5.5, { align: "right" });
+  }
+
+  y += photoH + 14;
 
   // ── Report Contents 2×2 grid ──────────────────────────────────────────────
   st(d, T.textFaint); d.setFont("helvetica", "bold"); d.setFontSize(5.5);
