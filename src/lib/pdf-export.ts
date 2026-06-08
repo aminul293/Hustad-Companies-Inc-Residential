@@ -298,9 +298,34 @@ function renderIntro(d: jsPDF, pt: PathType, s: SessionState) {
     return;
   }
 
+  if (pt === "urgent_repair") {
+    Y += 12;
+    st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(22);
+    const headline = "Direct repair is the recommended path forward.";
+    const hLines = d.splitTextToSize(headline, CW) as string[];
+    d.text(hLines, M, Y);
+    Y += hLines.length * 8 + 6;
+    
+    st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(10);
+    const subhead = "The documented findings support a targeted repair scope. This path addresses what the evidence supports — nothing more. No insurance process required, faster scheduling, and full control over timing.";
+    const shLines = d.splitTextToSize(subhead, CW) as string[];
+    d.text(shLines, M, Y);
+    Y += shLines.length * 5 + 6;
+
+    if (s.findings?.summaryBody) {
+      st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(10);
+      const bLines = d.splitTextToSize(s.findings.summaryBody, CW) as string[];
+      d.text(bLines, M, Y);
+      Y += bLines.length * 5 + 6;
+    }
+
+    sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
+    Y += 10;
+    return;
+  }
+
   let text = "";
   if (pt === "carrier_review") text = "Thank you for authorizing Hustad Companies to coordinate your insurance claim. Below is your complete inspection report. No production work begins until your carrier issues a written coverage determination.";
-  else if (pt === "urgent_repair") text = s.findings?.summaryBody || "Hustad completed an exterior inspection and documented one or more conditions that create a near-term risk of water entry or additional property damage. These findings should be addressed before waiting on a larger project or coverage decision.";
   else if (pt === "full_restoration") text = "Hustad Companies has completed your exterior inspection and documented conditions consistent with a full roof replacement. Our estimating department is preparing your custom proposal and will send it within 2-3 business days.";
   else text = "Hustad Companies has completed your exterior inspection and documented the conditions below.";
 
