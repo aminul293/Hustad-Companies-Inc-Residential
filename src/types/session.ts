@@ -480,7 +480,7 @@ export function shouldShowScreen(
     case "B14_path_decision":
       return false; // Skipped as it is a dummy component that auto-forwards to B15/B16/B17
     case "B15_urgent_protection":
-      return urgentItemsCount > 0;
+      return urgentItemsCount > 0 && outcomeType !== "repair_only";
     case "B16_system_options":
       return (
         outcomeType === "full_restoration_candidate" ||
