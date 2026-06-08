@@ -785,7 +785,7 @@ function renderReportSignature(d: jsPDF, s: SessionState) {
   const col2X = M + CW / 2 + 10;
   const lineW = CW / 2 - 15;
 
-  st(d, T.slate500); d.setFont("helvetica", "bold"); d.setFontSize(7);
+  st(d, T.gray500); d.setFont("helvetica", "bold"); d.setFontSize(7);
   d.text("HOMEOWNER", col1X, Y);
   d.text("HUSTAD REPRESENTATIVE", col2X, Y);
   Y += 12;
@@ -795,7 +795,7 @@ function renderReportSignature(d: jsPDF, s: SessionState) {
   d.text(s.repName || "Hustad Representative", col2X, Y);
   Y += 4;
 
-  sf(d, T.slate400); 
+  sf(d, T.gray400); 
   d.rect(col1X, Y, lineW, 0.5, "F");
   d.rect(col2X, Y, lineW, 0.5, "F");
   Y += 5;
@@ -926,7 +926,7 @@ export async function generateAgreementPDF(s: SessionState) {
   const col2X = M + CW / 2 + 10;
   const lineW = CW / 2 - 15;
 
-  st(d, T.slate500); d.setFont("helvetica", "bold"); d.setFontSize(7);
+  st(d, T.gray500); d.setFont("helvetica", "bold"); d.setFontSize(7);
   d.text("HOMEOWNER", col1X, Y);
   d.text("HUSTAD REPRESENTATIVE", col2X, Y);
   Y += 12;
@@ -942,7 +942,7 @@ export async function generateAgreementPDF(s: SessionState) {
   }
   Y += 4;
 
-  sf(d, T.slate400); 
+  sf(d, T.gray400); 
   d.rect(col1X, Y, lineW, 0.5, "F");
   d.rect(col2X, Y, lineW, 0.5, "F");
   Y += 5;
