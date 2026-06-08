@@ -178,18 +178,19 @@ async function loadLogoDataUrl(): Promise<string | null> {
 }
 
 function drawBadgeRight(d: jsPDF, text: string, rightX: number, y: number, color: C3, bgColor: C3) {
-  d.setFont("helvetica", "normal"); d.setFontSize(7);
-  const w = d.getTextWidth(text) + 6;
+  d.setFont("helvetica", "bold"); d.setFontSize(6.5);
+  const capText = text.replace(/\b\w/g, l => l.toUpperCase());
+  const w = d.getTextWidth(capText) + 8;
   const x = rightX - w;
-  sf(d, bgColor); sd(d, color); d.setLineWidth(0.3);
-  d.roundedRect(x, y, w, 6, 2, 2, "FD");
+  sf(d, bgColor); sd(d, color); d.setLineWidth(0.4);
+  d.roundedRect(x, y, w, 8, 4, 4, "FD");
   st(d, color);
-  d.text(text, x + 3, y + 4.2);
-  return w + 3;
+  d.text(capText, x + 4, y + 5.5);
+  return w + 4; // Add 4px horizontal gap between badges
 }
 
 async function renderHeader(d: jsPDF, cfg: any, pt: PathType, s: SessionState) {
-  const headerHeight = 50;
+  const headerHeight = pt === "no_action" ? 55 : 50;
   checkPage(d, headerHeight);
   sf(d, T.slate900); d.rect(0, Y, PW, headerHeight, "F");
   
@@ -217,20 +218,20 @@ async function renderHeader(d: jsPDF, cfg: any, pt: PathType, s: SessionState) {
   if (pt === "no_action") {
     // Top badge right aligned
     let bx = PW - M;
-    bx -= drawBadgeRight(d, "NO ACTION REQUIRED TODAY", bx, Y + 21, T.emerald500, T.slate900);
+    bx -= drawBadgeRight(d, "NO ACTION REQUIRED TODAY", bx, Y + 22, T.emerald500, T.slate900);
     
     // Priorities / Tags right aligned
     bx = PW - M;
-    bx -= drawBadgeRight(d, "Documentation", bx, Y + 28, T.blue400, T.slate900);
-    bx -= drawBadgeRight(d, "Maintenance", bx, Y + 28, T.amber600, T.slate900);
-    bx -= drawBadgeRight(d, "Roof Longevity", bx, Y + 28, T.emerald500, T.slate900);
-    bx -= drawBadgeRight(d, "Monitor", bx, Y + 28, T.amber600, T.slate900);
+    bx -= drawBadgeRight(d, "Documentation", bx, Y + 32, T.blue400, T.slate900);
+    bx -= drawBadgeRight(d, "Maintenance", bx, Y + 32, T.amber500, T.slate900);
+    bx -= drawBadgeRight(d, "Roof Longevity", bx, Y + 32, T.emerald500, T.slate900);
+    bx -= drawBadgeRight(d, "Monitor", bx, Y + 32, T.amber500, T.slate900);
 
     if (s.buyerData?.buyerPriorities && s.buyerData.buyerPriorities.length > 0) {
       bx = PW - M;
       for (let i = s.buyerData.buyerPriorities.length - 1; i >= 0; i--) {
         const text = s.buyerData.buyerPriorities[i].replace(/_/g, " ").toLowerCase();
-        bx -= drawBadgeRight(d, text, bx, Y + 35, T.blue400, T.slate900);
+        bx -= drawBadgeRight(d, text, bx, Y + 42, T.gray300, T.slate900);
       }
     }
   }
