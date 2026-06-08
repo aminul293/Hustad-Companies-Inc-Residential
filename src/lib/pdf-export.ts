@@ -511,7 +511,7 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
   if (s.property.insurerNameKnown) propRows.push(["Carrier", s.property.insurerNameKnown]);
   if (s.property.claimNumberKnown) propRows.push(["Claim #", s.property.claimNumberKnown]);
 
-  const cardH  = Math.max(66, 17 + propRows.length * 10 + 5);
+  const cardH  = Math.max(58, 15 + propRows.length * 7 + 4);
 
   // Left: Property & Inspection Details — horizontal label / value rows
   baseCard(d, M, y, hw, cardH, T.surface, T.borderMid);
@@ -528,7 +528,7 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
     // Value right-aligned inside card
     st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(7);
     d.text(val, M + hw - 6, ry, { align: "right", maxWidth: hw / 2 });
-    ry += 10;
+    ry += 7;
   }
 
   // Right: Finding Summary — metric bubbles + "Your Stated Priorities" pills
@@ -566,10 +566,10 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
     for (const p of priorities.slice(0, 3)) {
       const label = fmtP(p);
       st(d, T.textFaint); d.setFont("helvetica", "normal"); d.setFontSize(6);
-      const pW = d.getTextWidth(label) + 10;
-      sf(d, T.surface2); d.roundedRect(px2, y + 46, pW, 7, 2, 2, "F");
-      sd(d, T.borderMid); d.setLineWidth(0.22); d.roundedRect(px2, y + 46, pW, 7, 2, 2, "S");
-      st(d, T.textMid); d.text(label, px2 + 4, y + 51.5);
+      const pW = d.getTextWidth(label) + 8;
+      sf(d, T.surface2); d.roundedRect(px2, y + 46, pW, 5, 2, 2, "F");
+      sd(d, T.borderMid); d.setLineWidth(0.22); d.roundedRect(px2, y + 46, pW, 5, 2, 2, "S");
+      st(d, T.textMid); d.text(label, px2 + 4, y + 49.6);
       px2 += pW + 3;
     }
   }
