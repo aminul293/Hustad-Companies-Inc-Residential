@@ -117,7 +117,7 @@ function getPathConfig(pt: PathType) {
     case "carrier_review":
       return { title: "Your Carrier Review Report", tag: "Inspection Complete · Claim Path", badgeText: "Carrier Review", badgeType: "pending" };
     case "urgent_repair":
-      return { title: "Your Repair Authorization Report", tag: "Inspection Complete · Repair Path", badgeText: "Repair Path", badgeType: "executed" };
+      return { title: "A targeted repair has been documented at your property.", tag: "Service Quote Being Prepared", badgeText: "Action Required", badgeType: "urgent" };
     case "full_restoration":
       return { title: "Your Roof Replacement Proposal", tag: "Inspection Complete · Full Replacement", badgeText: "Proposal in Progress", badgeType: "proposal" };
     default:
@@ -128,6 +128,7 @@ function getPathConfig(pt: PathType) {
 function getBadgeColors(type: string): { bg: C3, txt: C3 } {
   if (type === "executed") return { bg: T.emerald500, txt: T.white };
   if (type === "proposal") return { bg: T.blue600, txt: T.white };
+  if (type === "urgent") return { bg: T.red600, txt: T.white };
   return { bg: T.amber400, txt: T.slate900 };
 }
 
@@ -299,7 +300,7 @@ function renderIntro(d: jsPDF, pt: PathType, s: SessionState) {
 
   let text = "";
   if (pt === "carrier_review") text = "Thank you for authorizing Hustad Companies to coordinate your insurance claim. Below is your complete inspection report. No production work begins until your carrier issues a written coverage determination.";
-  else if (pt === "urgent_repair") text = "Thank you for authorizing Hustad Companies to complete the documented repairs at your property. Our scheduling team will contact you within 2 business days to confirm your production date.";
+  else if (pt === "urgent_repair") text = s.findings?.summaryBody || "Hustad completed an exterior inspection and documented one or more conditions that create a near-term risk of water entry or additional property damage. These findings should be addressed before waiting on a larger project or coverage decision.";
   else if (pt === "full_restoration") text = "Hustad Companies has completed your exterior inspection and documented conditions consistent with a full roof replacement. Our estimating department is preparing your custom proposal and will send it within 2-3 business days.";
   else text = "Hustad Companies has completed your exterior inspection and documented the conditions below.";
 
@@ -320,8 +321,8 @@ function renderStats(d: jsPDF, pt: PathType, photosCount: number, s: SessionStat
 
   if (pt === "urgent_repair") {
     stats = [
-      { l: "Repair Items", v: urgent, vc: T.orange600, bg: T.orange50, bc: T.orange200 },
-      { l: "Monitor Items", v: monitor, vc: T.blue600, bg: T.blue50, bc: T.blue200 },
+      { l: "Repair Items", v: urgent, vc: T.red600, bg: T.red50, bc: T.red200 },
+      { l: "Monitor Items", v: monitor, vc: T.amber600, bg: T.amber50, bc: T.amber200 },
       { l: "Photos Taken", v: photosCount.toString(), vc: T.gray600, bg: T.gray100, bc: T.gray200 }
     ];
   } else if (pt === "full_restoration") {
@@ -407,18 +408,58 @@ function renderFindings(d: jsPDF, pt: PathType, s: SessionState) {
     sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
     return;
   }
+  
+  if (pt === "urgent_repair") {
+    checkPage(d, 60);
+    st(d, T.red600); d.setFont("times", "normal"); d.setFontSize(14);
+    d.text("Official Recommendation: Urgent Protection", M, Y + 10);
+    Y += 16;
+    
+    st(d, T.gray400); d.setFont("helvetica", "bold"); d.setFontSize(6);
+    d.text("WHAT THIS MEANS", M, Y);
+    st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(10);
+    const mText = "One or more documented exterior conditions are not a future planning item. They are creating risk today. Immediate protective repair or stabilization is recommended to prevent additional damage. This scope is limited to what the evidence supports. Nothing more.";
+    const mLines = d.splitTextToSize(mText, CW);
+    d.text(mLines, M, Y + 6);
+    Y += 6 + mLines.length * 4.5 + 8;
+    
+    st(d, T.gray400); d.setFont("helvetica", "bold"); d.setFontSize(6);
+    d.text("RECOMMENDED NEXT STEP", M, Y);
+    st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(10);
+    const stepText = "Review the urgent proof photos first. Confirm the documented condition with your rep. Then authorize protective work if you're comfortable, and decide separately whether a broader inspection, repair, or carrier review is appropriate.";
+    const stepLines = d.splitTextToSize(stepText, CW);
+    d.text(stepLines, M, Y + 6);
+    Y += 6 + stepLines.length * 4.5 + 12;
+    
+    st(d, T.gray400); d.setFont("helvetica", "bold"); d.setFontSize(6);
+    d.text("WHAT WE ARE NOT SAYING", M, Y);
+    Y += 6;
+    
+    const notSaying = [
+      "We are not saying every condition requires full replacement.",
+      "We are not asking you to approve more than the evidence supports.",
+      "We are saying the documented condition has a clear repair or protection path."
+    ];
+    for (let i = 0; i < notSaying.length; i++) {
+      st(d, i === 2 ? T.emerald500 : T.red600);
+      d.text(i === 2 ? "✓" : "x", M, Y + 3);
+      st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(10);
+      const lines = d.splitTextToSize(notSaying[i], CW - 10) as string[];
+      const h = lines.length * 5 + 2;
+      d.text(lines, M + 5, Y + 3);
+      Y += h;
+    }
+    Y += 5;
+    sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
+    return;
+  }
 
   let items: string[] = [];
   if (s.findings?.summaryBody) {
     items = s.findings.summaryBody.split('\n').filter(l => l.trim().length > 0);
   }
   if (items.length === 0) {
-    items = pt === "urgent_repair" ? [
-      "Cracked and deteriorated valley flashing - active leak risk",
-      "Pipe boot penetration seals failing - moisture intrusion present",
-      "Ridge cap shingles lifting and unsealed - wind vulnerability",
-      "Open drip edge along north fascia - water infiltration risk"
-    ] : [
+    items = [
       "Hail impact spatter on soft metal surfaces - gutters, downspouts",
       "Granule displacement observed across multiple roof planes",
       "Impact dents visible on ridge cap and field shingles",
@@ -436,7 +477,7 @@ function renderFindings(d: jsPDF, pt: PathType, s: SessionState) {
     const lines = d.splitTextToSize(item, CW - 10) as string[];
     const h = lines.length * 4.5 + 1.5;
     checkPage(d, h);
-    st(d, pt === "urgent_repair" ? T.orange500 : T.amber500);
+    st(d, T.amber500);
     d.text("*", M, Y + 3);
     st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(9);
     d.text(lines, M + 5, Y + 3);
