@@ -431,7 +431,7 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
     : pt === "urgent_repair"    ? "Repair Report"
     : pt === "full_restoration" ? "Restoration Summary"
     : "Inspection Report";
-  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(9);
+  st(d, [255, 255, 255] as C3); d.setFont("helvetica", "bold"); d.setFontSize(9);
   d.text(reportType, PW / 2, 13, { align: "center" });
   const centerSub = [addrLine, hwName].filter(Boolean).join("  |  ");
   if (centerSub) {
@@ -500,6 +500,7 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
   // ── Two-column cards: Property & Inspection | Finding Summary ─────────────
   const hw     = CW / 2 - 3;
   const col2   = M + hw + 6;
+
   const propRows: [string, string][] = [
     ["Property",        addrLine || "—"],
     ["Inspection Date", fmtDate(s.createdAt)],
@@ -511,6 +512,14 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
   if (s.property.claimNumberKnown) propRows.push(["Claim #", s.property.claimNumberKnown]);
 
   const cardH  = Math.max(66, 17 + propRows.length * 10 + 5);
+
+  // Left: Property & Inspection Details — horizontal label / value rows
+  baseCard(d, M, y, hw, cardH, T.surface, T.borderMid);
+  sf(d, acc); d.rect(M, y, hw, 2.5, "F");
+  st(d, T.text); d.setFont("helvetica", "bold"); d.setFontSize(7.5);
+  d.text("Property & Inspection Details", M + 6, y + 10.5);
+  sf(d, T.border); d.rect(M + 6, y + 12.5, hw - 12, 0.2, "F");
+
   let ry = y + 17;
   for (const [lbl, val] of propRows) {
     // Label left — mono-caps faint
