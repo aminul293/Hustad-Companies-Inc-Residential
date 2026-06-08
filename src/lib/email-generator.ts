@@ -333,39 +333,22 @@ export async function generateEmailHTML(session: SessionState, reviewUrl: string
       { t: "Sign to Authorize", d: "Signing authorizes Hustad to organize your documentation package and coordinate a carrier inspection." },
       { t: "File or Confirm Your Claim", d: "We can guide you on filing if needed. Let your Hustad rep know the status of your claim." },
     ]);
-  } else if (path === "urgent_repair" && isSigned) {
-    bodyHtml += renderHeader("Your Repair Authorization Report", "Inspection Complete &middot; Repair Path", "Repair Authorized", "executed", "#f97316");
+  } else if (path === "urgent_repair") {
+    bodyHtml += renderHeader("Your Direct Repair Report", "Inspection Complete &middot; Repair Recommended", "Report Delivered", "executed", "#ea580c");
     bodyHtml += renderPropRow(prop, dateStr, insp);
     bodyHtml += `
       <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #ffffff; border-bottom: 1px solid #f0f0f0;">
-        <tr><td style="padding: 32px 40px;"><p style="color: #3a3a3c; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 300; line-height: 1.7; margin: 0;">Thank you for authorizing Hustad Companies to complete the documented repairs at your property. Below is your inspection summary, authorized scope of work, and a copy of your executed Repair Authorization. Our scheduling team will contact you within 2 business days to confirm your production date.</p></td></tr>
+        <tr><td style="padding: 32px 40px;"><p style="color: #3a3a3c; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 300; line-height: 1.7; margin: 0;">Hustad Companies has completed your exterior inspection and identified conditions that require targeted repair. The documented scope is specific and actionable. Your inspection summary and repair documentation are included below.</p></td></tr>
       </table>
     `;
     bodyHtml += renderStats(repairStats);
     bodyHtml += renderFindings(finds, "Documented Conditions", "#ea580c", "&#9656;");
     bodyHtml += renderPhotos("Repair Documentation &middot; Inspection Photos");
     bodyHtml += renderSteps([
+      { t: "Review This Report", d: "Take time to review the documented findings and recommended repair scope." },
       { t: "Scheduling Confirmation", d: "Expect a call from our scheduling team within 2 business days to confirm your production window." },
       { t: "48-Hour Advance Notice", d: "You will receive notification at least 48 hours before your scheduled production start date." },
       { t: "Completion and Final Invoice", d: "Final invoicing will be provided upon project completion and a brief walkthrough with your rep." },
-    ]);
-  } else if (path === "urgent_repair" && !isSigned) {
-    bodyHtml += renderHeader("Your Repair Estimate Report", "Inspection Complete &middot; Repair Recommended", "Awaiting Authorization", "pending", "#f97316");
-    bodyHtml += renderPropRow(prop, dateStr, insp);
-    bodyHtml += `
-      <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #ffffff; border-bottom: 1px solid #f0f0f0;">
-        <tr><td style="padding: 32px 40px;"><p style="color: #3a3a3c; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 300; line-height: 1.7; margin: 0;">Hustad Companies has completed your exterior inspection and identified conditions that require targeted repair. The documented scope is specific and actionable. <strong style="color: #1c1c1e; font-weight: 600;">Review the findings and repair authorization below. No work begins until you sign and return the authorization.</strong></p></td></tr>
-      </table>
-    `;
-    bodyHtml += renderStats(repairStats);
-    bodyHtml += renderFindings(finds, "Documented Conditions", "#ea580c", "&#9656;");
-    bodyHtml += renderPhotos("Repair Documentation &middot; Inspection Photos");
-    bodyHtml += reviewButtonHtml;
-    bodyHtml += renderSteps([
-      { t: "Review This Report", d: "Take time to review the documented findings and recommended repair scope." },
-      { t: "Review the Repair Authorization", d: "Read the scope and terms in the attached PDF. Your Hustad representative is available to answer any questions." },
-      { t: "Authorize the Repair", d: "Sign and return the authorization form, or contact your Hustad rep to complete signing." },
-      { t: "Scheduling Confirmation", d: "Once authorized, our scheduling team will contact you within 2 business days." },
     ]);
   } else if (path === "full_restoration") {
     bodyHtml += renderHeader("Your Roof Replacement Proposal", "Inspection Complete &middot; Full Replacement", "Proposal in Progress", "proposal", "#60a5fa");

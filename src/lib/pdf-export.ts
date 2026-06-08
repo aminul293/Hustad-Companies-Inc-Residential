@@ -742,7 +742,7 @@ export async function generateReportPDF(s: SessionState, photosArg: any, logo: a
   renderFindings(d, pt, s);
   await renderPhotos(d, photos);
   renderSteps(d, pt);
-  if (pt !== "no_action") {
+  if (pt === "carrier_review" || pt === "full_restoration") {
     renderAgreement(d, s);
   }
   renderFooter(d);
