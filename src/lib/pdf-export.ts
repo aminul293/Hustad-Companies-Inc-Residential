@@ -278,6 +278,7 @@ function drawBadge(d: jsPDF, text: string, x: number, y: number, color: C3, bgCo
 
 function renderIntro(d: jsPDF, pt: PathType, s: SessionState) {
   if (pt === "no_action") {
+    Y += 12; // Add padding below the property row
     st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(22);
     const headline = "Inspection complete.\nNo action is recommended today.";
     const lines = d.splitTextToSize(headline, CW) as string[];
