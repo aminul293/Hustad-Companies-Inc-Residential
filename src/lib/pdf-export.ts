@@ -452,12 +452,25 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
   // ── Path badge (mono-caps style matching web app) ────────────────────────
   let y = COVER_HDR + 9;
   const pathBadgeTxt = cfg.badgeLabel.toUpperCase();
-  st(d, T.textMid); d.setFont("helvetica", "bold"); d.setFontSize(5.5);
-  const pbW = d.getTextWidth(pathBadgeTxt) + 12;
-  sf(d, T.surface2); d.roundedRect(M, y, pbW, 7.5, 2, 2, "F");
-  sd(d, T.borderMid); d.setLineWidth(0.2); d.roundedRect(M, y, pbW, 7.5, 2, 2, "S");
-  st(d, T.textMid); d.text(pathBadgeTxt, M + 6, y + 5.4);
-  y += 12;
+  
+  let badgeBg: C3  = T.surface2;
+  let badgeBdr: C3 = T.borderMid;
+  let badgeTxt: C3 = T.textMid;
+
+  if (pt === "urgent_repair") {
+    badgeBg = T.redBg; badgeBdr = T.redBdr; badgeTxt = T.red;
+  } else if (pt === "carrier_review" || pt === "full_restoration") {
+    badgeBg = T.blueBg; badgeBdr = T.blueBdr; badgeTxt = T.blue;
+  } else if (pt === "no_action") {
+    badgeBg = T.greenBg; badgeBdr = T.greenBdr; badgeTxt = T.green;
+  }
+
+  st(d, badgeTxt); d.setFont("helvetica", "bold"); d.setFontSize(5.5);
+  const pbW = d.getTextWidth(pathBadgeTxt) + 10;
+  sf(d, badgeBg); d.roundedRect(M, y, pbW, 5.5, 2, 2, "F");
+  sd(d, badgeBdr); d.setLineWidth(0.2); d.roundedRect(M, y, pbW, 5.5, 2, 2, "S");
+  st(d, badgeTxt); d.text(pathBadgeTxt, M + 5, y + 4.0);
+  y += 9.5;
 
   // ── Finding category pills (Storm Evidence / Claim Review / etc.) ─────────
   const cats = (s.findings.findingCategories ?? []).slice(0, 6);
@@ -466,14 +479,14 @@ async function renderCover(d: jsPDF, s: SessionState, pt: PathType, acc: C3, pho
     d.setFont("helvetica", "normal"); d.setFontSize(6);
     for (const cat of cats) {
       const lbl = cat.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
-      const cW = d.getTextWidth(lbl) + 10;
+      const cW = d.getTextWidth(lbl) + 8;
       if (cx + cW > PW - M) break;
-      sf(d, T.surface2); d.roundedRect(cx, y, cW, 6.5, 2, 2, "F");
-      sd(d, T.borderMid); d.setLineWidth(0.22); d.roundedRect(cx, y, cW, 6.5, 2, 2, "S");
-      st(d, T.textMid); d.text(lbl, cx + 5, y + 4.7);
+      sf(d, T.surface2); d.roundedRect(cx, y, cW, 5.5, 2, 2, "F");
+      sd(d, T.borderMid); d.setLineWidth(0.22); d.roundedRect(cx, y, cW, 5.5, 2, 2, "S");
+      st(d, T.textMid); d.text(lbl, cx + 4, y + 4.0);
       cx += cW + 3;
     }
-    y += 10;
+    y += 9.5;
   }
 
   // ── Hero headline — font set BEFORE splitTextToSize for accurate metrics ──
