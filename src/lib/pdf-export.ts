@@ -418,9 +418,10 @@ function renderSteps(d: jsPDF, pt: PathType) {
     ];
   } else if (pt === "no_action") {
     steps = [
-      { t: "Summary Archived", d: "Your no-damage summary will be emailed and archived." },
-      { t: "Retain Documentation", d: "Keep this documentation — it establishes a pre-loss baseline for future events." },
-      { t: "Future Inspections", d: "Hustad recommends a re-inspection after any significant hail or wind event." }
+      { t: "Inspection Report Delivered", d: "Inspection report delivered to your property record." },
+      { t: "Baseline Documentation Stored", d: "Baseline documentation stored for future storm comparison." },
+      { t: "Monitor Items Flagged", d: "Monitor items flagged with re-inspection triggers." },
+      { t: "Free Recheck Reminder", d: "Schedule a free recheck reminder at any time." }
     ];
   }
 
