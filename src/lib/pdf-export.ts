@@ -771,6 +771,36 @@ function renderFooter(d: jsPDF) {
   d.text(lines, PW / 2, Y + 36, { align: "center" });
 }
 
+function renderReportSignature(d: jsPDF, s: SessionState) {
+  const isSigned = !!s.signatureData.signedAt;
+  if (!isSigned) return;
+
+  checkPage(d, 60);
+  Y += 10;
+  st(d, T.slate900); d.setFont("helvetica", "bold"); d.setFontSize(10);
+  d.text("Report Review & Acknowledgement", M, Y);
+  Y += 8;
+
+  if (s.signatureData.signatureImage) {
+    d.addImage(s.signatureData.signatureImage, "PNG", M, Y, 50, 15);
+    Y += 18;
+  }
+  
+  st(d, T.gray700); d.setFont("times", "italic"); d.setFontSize(9);
+  d.text(`Electronically signed by ${s.signatureData.signerName} on ${fmtDate(s.signatureData.signedAt)}`, M, Y);
+  Y += 6;
+  if (s.signatureData.signerEmail) {
+    d.text(`Email: ${s.signatureData.signerEmail}`, M, Y);
+    Y += 6;
+  }
+  
+  st(d, T.gray500); d.setFont("helvetica", "normal"); d.setFontSize(8);
+  const text = "The homeowner acknowledges they have reviewed the inspection findings and that this report accurately reflects the documented conditions at the property.";
+  const lines = d.splitTextToSize(text, CW);
+  d.text(lines, M, Y + 2);
+  Y += lines.length * 4 + 8;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN GENERATOR
 // ─────────────────────────────────────────────────────────────────────────────
@@ -792,7 +822,7 @@ export async function generateReportPDF(s: SessionState, photosArg: any, logo: a
   renderFindings(d, pt, s);
   await renderPhotos(d, photos);
   renderSteps(d, pt);
-  // Agreement removed from summary report
+  renderReportSignature(d, s);
   renderFooter(d);
   
   return d;
