@@ -862,7 +862,7 @@ export async function generateAgreementPDF(s: SessionState) {
   
   acks.forEach(ack => {
     checkPage(d, 15);
-    st(d, isSigned ? T.emerald600 : T.gray400); d.setFontSize(10);
+    st(d, isSigned ? T.emerald500 : T.gray400); d.setFontSize(10);
     d.text(isSigned ? "\u2713" : "\u25CB", M, Y + 3); // Checkmark or open circle
     
     st(d, T.slate900); d.setFont("helvetica", "normal"); d.setFontSize(8);
