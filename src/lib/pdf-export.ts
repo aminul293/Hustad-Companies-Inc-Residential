@@ -350,7 +350,9 @@ function renderFindings(d: jsPDF, pt: PathType, s: SessionState) {
 }
 
 async function renderPhotos(d: jsPDF, photos: PdfPhoto[]) {
-  checkPage(d, 100);
+  if (!photos || photos.length === 0) return;
+
+  checkPage(d, 50);
   st(d, T.gray400); d.setFont("helvetica", "bold"); d.setFontSize(6);
   d.text("STORM EVIDENCE - STRONGEST PROOF PHOTOS", M, Y + 10);
   Y += 15;
@@ -360,14 +362,9 @@ async function renderPhotos(d: jsPDF, photos: PdfPhoto[]) {
   const h = 28;
   
   let cx = M;
-  const displayPhotos = photos ? photos.slice(0, 6) : [];
+  const displayPhotos = photos.slice(0, 3);
   
-  for (let i = 0; i < 6; i++) {
-    if (i === 3) {
-      Y += h + gap + 6;
-      cx = M;
-    }
-    
+  for (let i = 0; i < 3; i++) {
     if (i < displayPhotos.length) {
       const p = displayPhotos[i];
       try {
@@ -383,15 +380,6 @@ async function renderPhotos(d: jsPDF, photos: PdfPhoto[]) {
     } else {
       sf(d, T.gray50); d.roundedRect(cx, Y, w, h, 2, 2, "F");
       sd(d, T.gray200); d.roundedRect(cx, Y, w, h, 2, 2, "S");
-      
-      const cX = cx + w / 2;
-      const cY = Y + h / 2 - 2;
-      sf(d, T.gray400); d.roundedRect(cX - 3.5, cY - 2.5, 7, 5, 0.5, 0.5, "F");
-      sf(d, T.gray200); d.circle(cX, cY, 1.5, "F");
-      sf(d, T.gray400); d.rect(cX - 1.5, cY - 3.5, 3, 1, "F");
-
-      st(d, T.gray400); d.setFont("times", "normal"); d.setFontSize(7);
-      d.text(`Photo ${i + 1}`, cx + w / 2, Y + h - 5, { align: "center" });
     }
     cx += w + gap;
   }
@@ -403,30 +391,54 @@ async function renderPhotos(d: jsPDF, photos: PdfPhoto[]) {
   sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
 }
 
-function renderSteps(d: jsPDF) {
+function renderSteps(d: jsPDF, pt: PathType) {
   checkPage(d, 40);
   st(d, T.gray400); d.setFont("helvetica", "bold"); d.setFontSize(6);
   d.text("YOUR NEXT STEPS", M, Y + 10);
   Y += 16;
   
-  const steps = [
+  let steps = [
     { t: "Confirm Your Claim is Active", d: "Let us know if your claim has been filed or needs guidance." },
     { t: "Carrier Inspection Coordinated", d: "Hustad will schedule and be present for the adjuster visit." },
     { t: "Review Your Coverage Decision", d: "Share any Explanation of Benefits with your Hustad rep." }
   ];
-  
-  for (let i = 0; i < steps.length; i++) {
-    checkPage(d, 15);
-    sf(d, T.amber100); d.circle(M + 3.5, Y + 3.5, 3.5, "F");
-    st(d, T.amber700); d.setFont("helvetica", "bold"); d.setFontSize(6);
-    d.text((i + 1).toString(), M + 3.5, Y + 5.5, { align: "center" });
-    
-    st(d, T.gray800); d.setFont("helvetica", "bold"); d.setFontSize(8);
-    d.text(steps[i].t, M + 10, Y + 4);
-    st(d, T.gray500); d.setFont("times", "normal"); d.setFontSize(7);
-    d.text(steps[i].d, M + 10, Y + 8);
-    Y += 14;
+
+  if (pt === "urgent_repair") {
+    steps = [
+      { t: "Scheduling Confirmation", d: "Expect a call from our scheduling team within 2 business days to confirm your production window." },
+      { t: "Pre-Production Measurement", d: "A Hustad field team member will confirm final measurements before material is ordered." },
+      { t: "48-Hour Advance Notice", d: "You will receive notification at least 48 hours before your scheduled production start date." },
+      { t: "Completion and Final Invoice", d: "Final invoicing will be provided upon project completion and a brief walkthrough with your rep." }
+    ];
+  } else if (pt === "full_restoration") {
+    steps = [
+      { t: "Estimating review", d: "Measurements, scope assumptions, and material basis are checked." },
+      { t: "Proposal prepared", d: "Hustad creates the standard replacement proposal for owner review." },
+      { t: "Owner decision", d: "Owner reviews, asks questions, selects options, or authorizes the project." }
+    ];
   }
+
+  let cx = M;
+  steps.forEach((step, i) => {
+    checkPage(d, 15);
+    
+    // Circle
+    sf(d, T.amber50); d.circle(cx + 6, Y + 5, 6, "F");
+    st(d, T.amber700); d.setFont("helvetica", "bold"); d.setFontSize(7);
+    d.text((i + 1).toString(), cx + 6, Y + 7.5, { align: "center" });
+    
+    // Text
+    st(d, T.slate900); d.setFont("helvetica", "bold"); d.setFontSize(10);
+    d.text(step.t, cx + 18, Y + 6);
+    st(d, T.gray500); d.setFont("times", "normal"); d.setFontSize(9);
+    
+    const lines = d.splitTextToSize(step.d, CW - 20) as string[];
+    const h = lines.length * 4.5;
+    d.text(lines, cx + 18, Y + 11);
+    
+    Y += Math.max(16, h + 10);
+  });
+  
   Y += 5;
   sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
 }
@@ -530,7 +542,7 @@ export async function generateReportPDF(s: SessionState, photosArg: any, logo: a
   }
   renderFindings(d, pt, s);
   await renderPhotos(d, photos);
-  renderSteps(d);
+  renderSteps(d, pt);
   renderAgreement(d, s);
   renderFooter(d);
   
