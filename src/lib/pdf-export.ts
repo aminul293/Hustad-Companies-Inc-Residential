@@ -247,15 +247,15 @@ function renderIntro(d: jsPDF, pt: PathType, s: SessionState) {
   if (pt === "no_action") {
     // Top badges
     let bx = M;
-    bx += drawBadge(d, "NO ACTION REQUIRED TODAY", bx, Y, T.emerald500, T.slate900);
+    bx += drawBadge(d, "NO ACTION REQUIRED TODAY", bx, Y, T.emerald700, T.emerald50);
     Y += 10;
     
     // Priorities / Tags
     bx = M;
-    bx += drawBadge(d, "Monitor", bx, Y, T.amber600, T.slate900);
-    bx += drawBadge(d, "Roof Longevity", bx, Y, T.emerald500, T.slate900);
-    bx += drawBadge(d, "Maintenance", bx, Y, T.amber600, T.slate900);
-    bx += drawBadge(d, "Documentation", bx, Y, T.blue400, T.slate900);
+    bx += drawBadge(d, "Monitor", bx, Y, T.amber700, T.amber50);
+    bx += drawBadge(d, "Roof Longevity", bx, Y, T.emerald700, T.emerald50);
+    bx += drawBadge(d, "Maintenance", bx, Y, T.amber700, T.amber50);
+    bx += drawBadge(d, "Documentation", bx, Y, T.blue800, T.blue50);
     Y += 12;
 
     st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(22);
@@ -264,7 +264,7 @@ function renderIntro(d: jsPDF, pt: PathType, s: SessionState) {
     d.text(lines, M, Y);
     Y += lines.length * 8 + 6;
     
-    st(d, T.gray400); d.setFont("times", "normal"); d.setFontSize(10);
+    st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(10);
     const body = "Hustad completed a thorough exterior inspection and did not document meaningful storm-related conditions that support repair, emergency action, or carrier review at this time. All findings have been organized and documented for your property records.";
     const blines = d.splitTextToSize(body, CW) as string[];
     d.text(blines, M, Y);
@@ -278,7 +278,7 @@ function renderIntro(d: jsPDF, pt: PathType, s: SessionState) {
       let px = M;
       for (const p of s.buyerData.buyerPriorities) {
         const text = p.replace(/_/g, " ").toLowerCase();
-        px += drawBadge(d, text, px, Y, T.blue400, T.slate900);
+        px += drawBadge(d, text, px, Y, T.blue800, T.blue50);
       }
       Y += 10;
     }
@@ -369,7 +369,7 @@ function renderFindings(d: jsPDF, pt: PathType, s: SessionState) {
     checkPage(d, 60);
     st(d, T.gray400); d.setFont("helvetica", "bold"); d.setFontSize(6);
     d.text("WHAT THIS MEANS", M, Y + 10);
-    st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(9);
+    st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(10);
     const mText = "Today's inspection did not reveal conditions that support a repair, protection, or carrier review recommendation. Any monitor-only or maintenance items have been documented as a baseline for future comparison. This is an honest finding, and it has real value as a dated property record.";
     const mLines = d.splitTextToSize(mText, CW);
     d.text(mLines, M, Y + 16);
@@ -388,9 +388,9 @@ function renderFindings(d: jsPDF, pt: PathType, s: SessionState) {
     for (let i = 0; i < notSaying.length; i++) {
       st(d, i === 3 ? T.emerald500 : T.red600);
       d.text(i === 3 ? "✓" : "x", M, Y + 3);
-      st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(9);
+      st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(10);
       const lines = d.splitTextToSize(notSaying[i], CW - 10) as string[];
-      const h = lines.length * 4.5 + 1.5;
+      const h = lines.length * 5 + 2;
       d.text(lines, M + 5, Y + 3);
       Y += h;
     }
