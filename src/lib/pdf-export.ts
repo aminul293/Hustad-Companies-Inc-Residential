@@ -178,10 +178,10 @@ async function renderHeader(d: jsPDF, cfg: any) {
 
   // Badge
   const bColors = getBadgeColors(cfg.badgeType);
-  st(d, bColors.txt); d.setFont("helvetica", "bold"); d.setFontSize(6);
-  const bW = d.getTextWidth(cfg.badgeText.toUpperCase()) + 10;
-  sf(d, bColors.bg); d.roundedRect(PW - M - bW, Y + 10, bW, 7, 3.5, 3.5, "F");
-  d.text(cfg.badgeText.toUpperCase(), PW - M - bW / 2, Y + 14.8, { align: "center" });
+  st(d, bColors.txt); d.setFont("helvetica", "bold"); d.setFontSize(8);
+  const bW = d.getTextWidth(cfg.badgeText.toUpperCase()) + 16;
+  sf(d, bColors.bg); d.roundedRect(PW - M - bW, Y + 8, bW, 11, 5.5, 5.5, "F");
+  d.text(cfg.badgeText.toUpperCase(), PW - M - bW / 2, Y + 15.6, { align: "center" });
 
   // Tag & Title
   st(d, T.amber400); d.setFontSize(6); d.text(cfg.tag.toUpperCase(), M, Y + 32);
