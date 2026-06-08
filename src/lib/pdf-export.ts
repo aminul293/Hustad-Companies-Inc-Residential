@@ -772,7 +772,7 @@ function renderFooter(d: jsPDF) {
 }
 
 function renderReportSignature(d: jsPDF, s: SessionState) {
-  const isSigned = !!s.signatureData.signedAt;
+  const isSigned = !!s.signatureData?.signedAt;
   if (!isSigned) return;
 
   checkPage(d, 60);
@@ -781,15 +781,19 @@ function renderReportSignature(d: jsPDF, s: SessionState) {
   d.text("Report Review & Acknowledgement", M, Y);
   Y += 8;
 
-  if (s.signatureData.signatureImage) {
-    d.addImage(s.signatureData.signatureImage, "PNG", M, Y, 50, 15);
-    Y += 18;
+  if (s.signatureData?.signatureImage) {
+    try {
+      d.addImage(s.signatureData.signatureImage, "PNG", M, Y, 50, 15);
+      Y += 18;
+    } catch (e) {
+      console.warn("Failed to add signature image", e);
+    }
   }
   
   st(d, T.gray700); d.setFont("times", "italic"); d.setFontSize(9);
-  d.text(`Electronically signed by ${s.signatureData.signerName} on ${fmtDate(s.signatureData.signedAt)}`, M, Y);
+  d.text(`Electronically signed by ${s.signatureData?.signerName || "Homeowner"} on ${fmtDate(s.signatureData?.signedAt)}`, M, Y);
   Y += 6;
-  if (s.signatureData.signerEmail) {
+  if (s.signatureData?.signerEmail) {
     d.text(`Email: ${s.signatureData.signerEmail}`, M, Y);
     Y += 6;
   }
@@ -910,14 +914,18 @@ export async function generateAgreementPDF(s: SessionState) {
   Y += 8;
   
   if (isSigned) {
-    if (s.signatureData.signatureImage) {
-      d.addImage(s.signatureData.signatureImage, "PNG", M, Y, 50, 15);
-      Y += 18;
+    if (s.signatureData?.signatureImage) {
+      try {
+        d.addImage(s.signatureData.signatureImage, "PNG", M, Y, 50, 15);
+        Y += 18;
+      } catch (e) {
+        console.warn("Failed to add signature image", e);
+      }
     }
     st(d, T.gray700); d.setFont("times", "italic"); d.setFontSize(9);
-    d.text(`Electronically signed by ${s.signatureData.signerName} on ${fmtDate(s.signatureData.signedAt)}`, M, Y);
+    d.text(`Electronically signed by ${s.signatureData?.signerName || "Homeowner"} on ${fmtDate(s.signatureData?.signedAt)}`, M, Y);
     Y += 6;
-    if (s.signatureData.signerEmail) {
+    if (s.signatureData?.signerEmail) {
       d.text(`Email: ${s.signatureData.signerEmail}`, M, Y);
       Y += 6;
     }
