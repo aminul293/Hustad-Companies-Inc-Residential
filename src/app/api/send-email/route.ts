@@ -95,36 +95,48 @@ export async function POST(request: NextRequest) {
 
     const accessToken = await getAccessToken();
 
-    const mailPayload: any = {
-      message: {
-        subject: subject || 'Hustad Forensic Dossier // Audit Complete',
-        body: {
-          contentType: 'HTML',
-          content: html,
-        },
-        toRecipients: [
-          { emailAddress: { address: to } },
-        ],
-        ccRecipients: cc
-          ? cc.split(',').map((email: string) => ({ emailAddress: { address: email.trim() } }))
-          : [],
-        attachments: [
-          ...(pdfBase64 ? [{
-            '@odata.type': '#microsoft.graph.fileAttachment',
-            name: fileName || 'Hustad_Forensic_Dossier.pdf',
-            contentType: 'application/pdf',
-            contentBytes: pdfBase64,
-          }] : []),
-          ...(attachments ? attachments.map((att: any) => ({
+        const processedAttachments = await Promise.all((attachments || []).map(async (att: any) => {
+          let contentBytes = att.contentBytes;
+          if (att.fileUrl) {
+            const res = await fetch(att.fileUrl);
+            if (res.ok) {
+              const arrayBuffer = await res.arrayBuffer();
+              contentBytes = Buffer.from(arrayBuffer).toString('base64');
+            }
+          }
+          return {
             '@odata.type': '#microsoft.graph.fileAttachment',
             name: att.name,
             contentType: att.contentType || 'application/pdf',
-            contentBytes: att.contentBytes,
-          })) : [])
-        ]
-      },
-      saveToSentItems: 'true',
-    };
+            contentBytes: contentBytes,
+          };
+        }));
+
+        const mailPayload: any = {
+          message: {
+            subject: subject || 'Hustad Forensic Dossier // Audit Complete',
+            body: {
+              contentType: 'HTML',
+              content: html,
+            },
+            toRecipients: [
+              { emailAddress: { address: to } },
+            ],
+            ccRecipients: cc
+              ? cc.split(',').map((email: string) => ({ emailAddress: { address: email.trim() } }))
+              : [],
+            attachments: [
+              ...(pdfBase64 ? [{
+                '@odata.type': '#microsoft.graph.fileAttachment',
+                name: fileName || 'Hustad_Forensic_Dossier.pdf',
+                contentType: 'application/pdf',
+                contentBytes: pdfBase64,
+              }] : []),
+              ...processedAttachments
+            ]
+          },
+          saveToSentItems: 'true',
+        };
 
     // Remove empty attachments array
     if (mailPayload.message.attachments.length === 0) {

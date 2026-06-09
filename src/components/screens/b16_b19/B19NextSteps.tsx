@@ -277,6 +277,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
       if (method === "email") {
         // 1. Generate Forensic PDF in background
         const { getSummaryPDFBase64, getAgreementPDFBase64 } = await import("@/lib/pdf-export");
+        const { supabase } = await import("@/lib/supabase");
         const dossierBase64 = await getSummaryPDFBase64(session);
         
         let agreementBase64 = null;
@@ -285,16 +286,33 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
         }
 
         const attachments = [];
+
+        // Helper to upload base64 PDF to Supabase Storage
+        const uploadPdfToSupabase = async (base64Data: string, filename: string) => {
+          const res = await fetch(`data:application/pdf;base64,${base64Data}`);
+          const blob = await res.blob();
+          const path = `reports/${Date.now()}_${filename}`;
+          const { error } = await supabase.storage.from("inspection-reports").upload(path, blob, { upsert: true });
+          if (error) throw error;
+          const { data } = supabase.storage.from("inspection-reports").getPublicUrl(path);
+          return data.publicUrl;
+        };
+
+        const dossierFileName = `Hustad_Dossier_${session.sessionId.slice(-6).toUpperCase()}.pdf`;
+        const dossierUrl = await uploadPdfToSupabase(dossierBase64, dossierFileName);
+        
         attachments.push({
-           name: `Hustad_Dossier_${session.sessionId.slice(-6).toUpperCase()}.pdf`,
-           contentBytes: dossierBase64,
+           name: dossierFileName,
+           fileUrl: dossierUrl,
            contentType: 'application/pdf'
         });
 
         if (agreementBase64) {
+           const agreementFileName = `Hustad_Agreement_${session.sessionId.slice(-6).toUpperCase()}.pdf`;
+           const agreementUrl = await uploadPdfToSupabase(agreementBase64, agreementFileName);
            attachments.push({
-              name: `Hustad_Agreement_${session.sessionId.slice(-6).toUpperCase()}.pdf`,
-              contentBytes: agreementBase64,
+              name: agreementFileName,
+              fileUrl: agreementUrl,
               contentType: 'application/pdf'
            });
         }
