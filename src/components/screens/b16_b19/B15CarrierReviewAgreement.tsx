@@ -272,10 +272,14 @@ function CTABar({
         {onSecondary && secondaryLabel && (
           <button
             onClick={onSecondary}
-            className="w-full flex items-center justify-center gap-2.5 h-[44px] rounded-[10px] text-[14px] font-medium transition-opacity hover:opacity-75"
-            style={{ color: LM.blue, border: `1px solid ${LM.blueBorder}`, background: LM.blueLight }}
+            className="w-full flex items-center justify-center gap-2.5 h-[52px] rounded-[12px] text-[15px] font-semibold transition-all active:scale-[0.99] mt-3"
+            style={{ 
+              color: LM.blue, 
+              border: LM.isDark ? `1.5px solid rgba(99,102,241,0.15)` : `1px solid ${LM.blueBorder}`, 
+              background: LM.isDark ? `#0F1123` : LM.blueLight 
+            }}
           >
-            <Send size={14} strokeWidth={1.5} />
+            <Send size={15} strokeWidth={2} />
             {secondaryLabel}
           </button>
         )}
@@ -1099,13 +1103,13 @@ function SendForReviewModal({
           <button
             onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-opacity hover:opacity-70"
-            style={{ background: LM.pageBg, border: `1px solid ${LM.border}` }}
+            style={{ background: LM.pageBg, border: `1px solid ${LM.borderMid}` }}
           >
             <X size={14} strokeWidth={1.5} style={{ color: LM.navyLight }} />
           </button>
         </div>
 
-        <div style={{ height: "1px", background: LM.border }} />
+        <div style={{ height: "1px", background: LM.borderMid, opacity: 0.5 }} />
 
         {/* Recipient name — only ask if missing */}
         {(needsName || true) && (
