@@ -287,13 +287,23 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
 
         const attachments = [];
 
-        // Helper to upload base64 PDF to Supabase Storage
+        // Helper to upload base64 PDF to Supabase Storage using signed URL
         const uploadPdfToSupabase = async (base64Data: string, filename: string) => {
           const res = await fetch(`data:application/pdf;base64,${base64Data}`);
           const blob = await res.blob();
           const path = `reports/${Date.now()}_${filename}`;
-          const { error } = await supabase.storage.from("inspection-reports").upload(path, blob, { upsert: true });
+          
+          const signedRes = await fetch("/api/get-upload-url", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ path })
+          });
+          const signedData = await signedRes.json();
+          if (!signedRes.ok) throw new Error(signedData.error || "Failed to get upload URL");
+
+          const { error } = await supabase.storage.from("inspection-reports").uploadToSignedUrl(path, signedData.token, blob);
           if (error) throw error;
+          
           const { data } = supabase.storage.from("inspection-reports").getPublicUrl(path);
           return data.publicUrl;
         };
