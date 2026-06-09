@@ -813,19 +813,15 @@ function renderAgreementText(d: jsPDF, s: SessionState) {
   WISCONSIN_CLAIM_NOTICE.lines.forEach((line, i) => {
     d.text(`• ${line}`, M + 6, Y + 14 + (i * 4));
   });
-  Y += 45;
-}
-
-function renderReportSignature(d: jsPDF, pt: PathType, s: SessionState) {
+  Y +=function renderReportSignature(d: jsPDF, pt: PathType, s: SessionState) {
   const isSigned = !!s.signatureData?.signedAt;
-  if (!isSigned) return;
 
   checkPage(d, 60);
   Y += 10;
   st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(12);
 
   const heading = (pt === "carrier_review" || pt === "full_restoration")
-    ? "Insurance Contingency Agreement — Executed Copy"
+    ? (isSigned ? "Insurance Contingency Agreement — Executed Copy" : "Insurance Contingency Agreement — Review Copy")
     : "Report Review & Acknowledgement";
 
   d.text(heading, M, Y);
@@ -836,33 +832,59 @@ function renderReportSignature(d: jsPDF, pt: PathType, s: SessionState) {
   const lineW = CW / 2 - 15;
 
   st(d, T.gray500); d.setFont("times", "bold"); d.setFontSize(8);
-  d.text("HOMEOWNER", col1X, Y);
+  d.text("HOMEOWNER SIGNATURE", col1X, Y);
   d.text("HUSTAD REPRESENTATIVE", col2X, Y);
   Y += 12;
 
   st(d, T.slate900); d.setFont("times", "italic"); d.setFontSize(12);
-  d.text(s.signatureData?.signerName || "Authorized Electronically", col1X, Y);
+  if (isSigned) {
+    d.text(s.signatureData?.signerName || "Authorized Electronically", col1X, Y);
+  }
   d.text(s.repName || "Hustad Representative", col2X, Y);
   Y += 4;
 
   sf(d, T.gray400);
-  d.rect(col1X, Y, lineW, 0.5, "F");
+  if (isSigned) {
+    d.rect(col1X, Y, lineW, 0.5, "F");
+  } else {
+    // draw dashed line for unsigned homeowner
+    st(d, T.gray400);
+    d.setLineDashPattern([2, 2], 0);
+    d.setLineWidth(0.5);
+    d.line(col1X, Y, col1X + lineW, Y);
+    d.setLineDashPattern([], 0); // reset
+  }
+  
   d.rect(col2X, Y, lineW, 0.5, "F");
   Y += 5;
 
   st(d, T.gray500); d.setFont("times", "normal"); d.setFontSize(8);
-  const dateStr = fmtDate(s.signatureData?.signedAt) || "";
-  d.text(dateStr, col1X, Y);
-  d.text(`${dateStr} - Hustad Companies, Inc.`, col2X, Y);
+  if (isSigned) {
+    const dateStr = fmtDate(s.signatureData?.signedAt) || "";
+    d.text(dateStr, col1X, Y);
+    d.text(`${dateStr} · Hustad Companies, Inc.`, col2X, Y);
+  } else {
+    d.text("Date: _________________________________________", col1X, Y);
+    const dateStr = fmtDate(s.createdAt) || "";
+    d.text(`${dateStr} · Hustad Companies, Inc.`, col2X, Y);
+  }
 
   Y += 12;
 
-  st(d, T.gray500); d.setFont("times", "normal"); d.setFontSize(9);
-  const text = (pt === "carrier_review" || pt === "full_restoration")
-    ? "The homeowner acknowledges they have reviewed the inspection findings and agree to the terms of the insurance contingency agreement as executed above."
-    : "The homeowner acknowledges they have reviewed the inspection findings and that this report accurately reflects the documented conditions at the property.";
-  const lines = d.splitTextToSize(text, CW);
-  d.text(lines, M, Y);
+  if (isSigned) {
+    st(d, T.gray500); d.setFont("times", "normal"); d.setFontSize(9);
+    const text = (pt === "carrier_review" || pt === "full_restoration")
+      ? "The homeowner acknowledges they have reviewed the inspection findings and agree to the terms of the insurance contingency agreement as executed above."
+      : "The homeowner acknowledges they have reviewed the inspection findings and that this report accurately reflects the documented conditions at the property.";
+    const lines = d.splitTextToSize(text, CW);
+    d.text(lines, M, Y);
+  } else {
+    st(d, T.gray500); d.setFont("times", "normal"); d.setFontSize(10);
+    const text = "To sign this agreement, contact your Hustad representative or use the secure link provided in your original inspection session email.";
+    const lines = d.splitTextToSize(text, CW);
+    d.text(lines, M, Y);
+  }
+}s, M, Y);
   Y += lines.length * 4.5 + 8;
 }
 
