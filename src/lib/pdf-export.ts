@@ -771,12 +771,22 @@ function renderFooter(d: jsPDF) {
   d.text(lines, PW / 2, Y + 36, { align: "center" });
 }
 
-function renderAgreementText(d: jsPDF) {
+function renderAgreementText(d: jsPDF, s: SessionState) {
   checkPage(d, 40);
   Y += 10;
-  st(d, T.emerald700); d.setFont("times", "bold"); d.setFontSize(14);
-  d.text("Insurance Contingency Agreement", M, Y);
-  Y += 10;
+  
+  sf(d, T.emerald700);
+  d.roundedRect(M, Y, CW, 20, 2, 2, "F");
+  
+  st(d, T.white); d.setFont("helvetica", "bold"); d.setFontSize(10);
+  d.text("INSURANCE CONTINGENCY AGREEMENT - EXECUTED COPY", M + 6, Y + 8);
+  
+  st(d, T.emerald100); d.setFont("helvetica", "normal"); d.setFontSize(8);
+  const dateStr = fmtDate(s.signatureData?.signedAt) || fmtDate(s.createdAt);
+  const addr = s.property.address || "On file";
+  d.text(`Signed: ${dateStr} - Property: ${addr}`, M + 6, Y + 14);
+  
+  Y += 30;
 
   AGREEMENT_SECTIONS.forEach((sec) => {
     checkPage(d, 30);
@@ -810,50 +820,55 @@ function renderReportSignature(d: jsPDF, pt: PathType, s: SessionState) {
   const isSigned = !!s.signatureData?.signedAt;
   if (!isSigned) return;
 
-  checkPage(d, 60);
-  Y += 10;
-  st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(12);
+  const isAgreement = (pt === "carrier_review" || pt === "full_restoration");
+
+  checkPage(d, 55);
+  Y += 8;
   
-  const heading = (pt === "carrier_review" || pt === "full_restoration")
-    ? "Insurance Contingency Agreement — Executed Copy"
-    : "Report Review & Acknowledgement";
-    
-  d.text(heading, M, Y);
-  Y += 12;
+  const boxHeight = 45;
+  sf(d, isAgreement ? T.emerald50 : T.gray50);
+  d.roundedRect(M, Y, CW, boxHeight, 2, 2, "F");
+  
+  sd(d, isAgreement ? T.emerald200 : T.gray200);
+  d.setLineWidth(0.3);
+  d.roundedRect(M, Y, CW, boxHeight, 2, 2, "S");
 
-  const col1X = M;
-  const col2X = M + CW / 2 + 10;
-  const lineW = CW / 2 - 15;
+  if (!isAgreement) {
+    st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(12);
+    d.text("Report Review & Acknowledgement", M + 6, Y + 10);
+  }
 
-  st(d, T.gray500); d.setFont("times", "bold"); d.setFontSize(8);
-  d.text("HOMEOWNER", col1X, Y);
-  d.text("HUSTAD REPRESENTATIVE", col2X, Y);
-  Y += 12;
+  const innerY = Y + (isAgreement ? 10 : 18);
+  const col1X = M + 8;
+  const col2X = M + CW / 2 + 8;
+  const lineW = CW / 2 - 24;
 
+  st(d, T.gray500); d.setFont("helvetica", "bold"); d.setFontSize(7);
+  d.text("HOMEOWNER", col1X, innerY);
+  d.text("HUSTAD REPRESENTATIVE", col2X, innerY);
+  
   st(d, T.slate900); d.setFont("times", "italic"); d.setFontSize(12);
-  d.text(s.signatureData?.signerName || "Authorized Electronically", col1X, Y);
-  d.text(s.repName || "Hustad Representative", col2X, Y);
-  Y += 4;
-
-  sf(d, T.gray400); 
-  d.rect(col1X, Y, lineW, 0.5, "F");
-  d.rect(col2X, Y, lineW, 0.5, "F");
-  Y += 5;
-
-  st(d, T.gray500); d.setFont("times", "normal"); d.setFontSize(8);
-  const dateStr = fmtDate(s.signatureData?.signedAt) || "";
-  d.text(dateStr, col1X, Y);
-  d.text(`${dateStr} - Hustad Companies, Inc.`, col2X, Y);
-
-  Y += 12;
+  d.text(s.signatureData?.signerName || "Authorized Electronically", col1X, innerY + 12);
+  d.text(s.repName || "Hustad Representative", col2X, innerY + 12);
   
-  st(d, T.gray500); d.setFont("times", "normal"); d.setFontSize(9);
-  const text = (pt === "carrier_review" || pt === "full_restoration")
-    ? "The homeowner acknowledges they have reviewed the inspection findings and agree to the terms of the insurance contingency agreement as executed above."
-    : "The homeowner acknowledges they have reviewed the inspection findings and that this report accurately reflects the documented conditions at the property.";
-  const lines = d.splitTextToSize(text, CW);
-  d.text(lines, M, Y);
-  Y += lines.length * 4.5 + 8;
+  sd(d, T.gray400); d.setLineWidth(0.3);
+  d.line(col1X, innerY + 16, col1X + lineW, innerY + 16);
+  d.line(col2X, innerY + 16, col2X + lineW, innerY + 16);
+  
+  st(d, T.gray500); d.setFont("helvetica", "normal"); d.setFontSize(7);
+  const dateStr = fmtDate(s.signatureData?.signedAt) || "";
+  d.text(dateStr, col1X, innerY + 21);
+  d.text(`${dateStr} - Hustad Companies, Inc.`, col2X, innerY + 21);
+
+  Y += boxHeight + 12;
+
+  if (!isAgreement) {
+    st(d, T.gray500); d.setFont("times", "normal"); d.setFontSize(9);
+    const text = "The homeowner acknowledges they have reviewed the inspection findings and that this report accurately reflects the documented conditions at the property.";
+    const lines = d.splitTextToSize(text, CW);
+    d.text(lines, M, Y);
+    Y += lines.length * 4.5 + 8;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -880,7 +895,7 @@ export async function generateReportPDF(s: SessionState, photosArg: any, logo: a
   
   const isSigned = !!s.signatureData?.signedAt;
   if ((pt === "carrier_review" || pt === "full_restoration") && isSigned) {
-    renderAgreementText(d);
+    renderAgreementText(d, s);
   }
   
   renderReportSignature(d, pt, s);
@@ -899,17 +914,19 @@ export async function generateAgreementPDF(s: SessionState) {
   Y = M;
   const isSigned = !!s.signatureData.signedAt;
   
-  // Simple Header
-  sf(d, T.emerald500); d.rect(0, 0, PW, 2, "F");
-  st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(16);
-  d.text("Insurance Contingency Agreement", M, Y + 10);
+  // Header
+  sf(d, T.emerald700);
+  d.roundedRect(M, Y, CW, 20, 2, 2, "F");
   
-  st(d, T.gray500); d.setFont("times", "normal"); d.setFontSize(9);
-  d.text(`Property: ${s.property.address}`, M, Y + 16);
-  d.text(`Owner: ${s.property.homeownerPrimaryName}`, M, Y + 21);
-  d.text(`Date: ${fmtDate(s.createdAt)}`, M, Y + 26);
+  st(d, T.white); d.setFont("helvetica", "bold"); d.setFontSize(10);
+  d.text(isSigned ? "INSURANCE CONTINGENCY AGREEMENT - EXECUTED COPY" : "INSURANCE CONTINGENCY AGREEMENT - DRAFT", M + 6, Y + 8);
   
-  Y += 36;
+  st(d, T.emerald100); d.setFont("helvetica", "normal"); d.setFontSize(8);
+  const dateStr = fmtDate(s.signatureData?.signedAt) || fmtDate(s.createdAt);
+  const addr = s.property.address || "On file";
+  d.text(`Signed: ${dateStr} - Property: ${addr}`, M + 6, Y + 14);
+  
+  Y += 30;
   
   AGREEMENT_SECTIONS.forEach((sec, idx) => {
     checkPage(d, 30);
@@ -967,46 +984,51 @@ export async function generateAgreementPDF(s: SessionState) {
   Y += 6;
   
   // Signature Block
-  checkPage(d, 50);
-  st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(12);
-  d.text("Authorization", M, Y);
-  Y += 12;
+  checkPage(d, 55);
+  Y += 8;
   
-  const col1X = M;
-  const col2X = M + CW / 2 + 10;
-  const lineW = CW / 2 - 15;
+  const boxHeight = 45;
+  sf(d, T.emerald50);
+  d.roundedRect(M, Y, CW, boxHeight, 2, 2, "F");
+  
+  sd(d, T.emerald200);
+  d.setLineWidth(0.3);
+  d.roundedRect(M, Y, CW, boxHeight, 2, 2, "S");
 
-  st(d, T.gray500); d.setFont("times", "bold"); d.setFontSize(8);
-  d.text("HOMEOWNER", col1X, Y);
-  d.text("HUSTAD REPRESENTATIVE", col2X, Y);
-  Y += 12;
+  const innerY = Y + 10;
+  const col1X = M + 8;
+  const col2X = M + CW / 2 + 8;
+  const lineW = CW / 2 - 24;
 
+  st(d, T.gray500); d.setFont("helvetica", "bold"); d.setFontSize(7);
+  d.text("HOMEOWNER", col1X, innerY);
+  d.text("HUSTAD REPRESENTATIVE", col2X, innerY);
+  
   st(d, T.slate900); d.setFont("times", "italic"); d.setFontSize(12);
   if (isSigned) {
-    d.text(s.signatureData?.signerName || "Authorized Electronically", col1X, Y);
-    d.text(s.repName || "Hustad Representative", col2X, Y);
+    d.text(s.signatureData?.signerName || "Authorized Electronically", col1X, innerY + 12);
+    d.text(s.repName || "Hustad Representative", col2X, innerY + 12);
   } else {
     st(d, T.gray500);
-    d.text("UNSIGNED - FOR REVIEW", col1X, Y);
-    d.text("UNSIGNED", col2X, Y);
-  }
-  Y += 4;
-
-  sf(d, T.gray400); 
-  d.rect(col1X, Y, lineW, 0.5, "F");
-  d.rect(col2X, Y, lineW, 0.5, "F");
-  Y += 5;
-
-  st(d, T.gray500); d.setFont("times", "normal"); d.setFontSize(8);
-  if (isSigned) {
-    const dateStr = fmtDate(s.signatureData?.signedAt) || "";
-    d.text(dateStr, col1X, Y);
-    d.text(`${dateStr} - Hustad Companies, Inc.`, col2X, Y);
-  } else {
-    d.text("Date", col1X, Y);
-    d.text("Date - Hustad Companies, Inc.", col2X, Y);
+    d.text("UNSIGNED - FOR REVIEW", col1X, innerY + 12);
+    d.text("UNSIGNED", col2X, innerY + 12);
   }
   
+  sd(d, T.gray400); d.setLineWidth(0.3);
+  d.line(col1X, innerY + 16, col1X + lineW, innerY + 16);
+  d.line(col2X, innerY + 16, col2X + lineW, innerY + 16);
+  
+  st(d, T.gray500); d.setFont("helvetica", "normal"); d.setFontSize(7);
+  if (isSigned) {
+    const dateStr = fmtDate(s.signatureData?.signedAt) || "";
+    d.text(dateStr, col1X, innerY + 21);
+    d.text(`${dateStr} - Hustad Companies, Inc.`, col2X, innerY + 21);
+  } else {
+    d.text("Date", col1X, innerY + 21);
+    d.text("Date - Hustad Companies, Inc.", col2X, innerY + 21);
+  }
+
+  Y += boxHeight + 12;
   // Watermarks
   const total = d.getNumberOfPages();
   for (let i = 1; i <= total; i++) {
