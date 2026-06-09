@@ -59,7 +59,7 @@ export async function draftFindingSummary(req: AISummaryRequest): Promise<AISumm
     
     pdfCopy: "Exhaustive forensic audit confirms structural anomalies consistent with recent weather events. Documentation has been finalized for stakeholder review.",
     
-    followUpNote: "I have prepared the full forensic dossier for your records. Let's discuss the preservation strategy once you've had a chance to review the findings."
+    followUpNote: "I have prepared the full inspection report for your records. Let's discuss the preservation strategy once you've had a chance to review the findings."
   };
 
   if (!process.env.OPENAI_API_KEY) {

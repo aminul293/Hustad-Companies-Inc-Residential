@@ -397,7 +397,7 @@ export async function generateEmailHTML(session: SessionState, reviewUrl: string
 
   const finds = session.findings.findingCategories && session.findings.findingCategories.length > 0
     ? session.findings.findingCategories
-    : ["See full forensic dossier for detailed findings."];
+    : ["See full inspection report for detailed findings."];
 
   let bodyHtml = "";
 

@@ -119,7 +119,7 @@ export async function POST(request: Request) {
     const address  = session.property?.address || 'the property';
 
     // Thread notifications under the original dossier email
-    const threadSubject = `Re: Forensic Dossier Ready — ${address}`;
+    const threadSubject = `Re: Inspection Report Ready — ${address}`;
 
     // CC Dustin on repair/service path sessions
     const isRepairPath =

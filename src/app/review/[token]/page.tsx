@@ -200,7 +200,7 @@ export default function RemoteReviewPage() {
       
       <h1 className="relative z-10 text-5xl font-display font-medium text-[#E8EDF8] mb-6 tracking-tight">Authorization Complete</h1>
       <p className="relative z-10 text-[#7090B0] font-light max-w-md leading-relaxed text-lg mb-12">
-        Thank you. Your digital authorization has been securely transmitted to Hustad Residential. A finalized copy of your Forensic Dossier is being sent to your inbox.
+        Thank you. Your digital authorization has been securely transmitted to Hustad Residential. A finalized copy of your Inspection Report is being sent to your inbox.
       </p>
 
       <StarButton

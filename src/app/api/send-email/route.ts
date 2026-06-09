@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
 
         const mailPayload: any = {
           message: {
-            subject: subject || 'Hustad Forensic Dossier // Audit Complete',
+            subject: subject || 'Hustad Inspection Report // Audit Complete',
             body: {
               contentType: 'HTML',
               content: html,

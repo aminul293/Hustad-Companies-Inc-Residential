@@ -369,7 +369,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
         const response = await sendEmail({
           to: primaryEmail,
           cc: ccList.join(","),
-          subject: `Hustad Forensic Dossier: ${session.property.address}`,
+          subject: `Hustad Inspection Report: ${session.property.address}`,
           attachments,
           sessionId: session.sessionId,
           html: emailHtml
@@ -438,7 +438,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
           sessionId: session.sessionId,
           address: session.property.address,
           outcome: session.findings.outcomeType,
-          message: `Hustad Residential: Your Forensic Dossier for ${session.property.address} is ready. Review & Sign here: ${reviewUrl}`
+          message: `Hustad Residential: Your Inspection Report for ${session.property.address} is ready. Review & Sign here: ${reviewUrl}`
         });
 
         if (!response.ok) {

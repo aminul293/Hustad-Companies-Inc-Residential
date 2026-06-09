@@ -65,7 +65,7 @@ export async function POST(
 
       const mailPayload: any = {
         message: {
-          subject: subject || 'Hustad Forensic Dossier // Audit Complete',
+          subject: subject || 'Hustad Inspection Report // Audit Complete',
           body: {
             contentType: 'HTML',
             content: html,
@@ -127,7 +127,7 @@ export async function POST(
       if (formattedPhone.length === 10) formattedPhone = '+1' + formattedPhone;
       else if (!formattedPhone.startsWith('+')) formattedPhone = '+' + formattedPhone;
 
-      const defaultMessage = `Hustad Residential: Your Forensic Dossier for ${address} is complete. Outcome: ${outcome.toUpperCase().replace(/_/g, ' ')}. A full copy has been sent to your email. Thank you.`;
+      const defaultMessage = `Hustad Residential: Your Inspection Report for ${address} is complete. Outcome: ${outcome.toUpperCase().replace(/_/g, ' ')}. A full copy has been sent to your email. Thank you.`;
 
       const twilio = require('twilio');
       const accountSid = process.env.TWILIO_ACCOUNT_SID || 'AC_PLACEHOLDER';

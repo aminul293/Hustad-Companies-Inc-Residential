@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     if (formattedPhone.length === 10) formattedPhone = '+1' + formattedPhone;
     else if (!formattedPhone.startsWith('+')) formattedPhone = '+' + formattedPhone;
 
-    const defaultMessage = `Hustad Residential: Your Forensic Dossier for ${address} is complete. Outcome: ${outcome.toUpperCase().replace(/_/g, ' ')}. A full copy has been sent to your email. Thank you.`;
+    const defaultMessage = `Hustad Residential: Your Inspection Report for ${address} is complete. Outcome: ${outcome.toUpperCase().replace(/_/g, ' ')}. A full copy has been sent to your email. Thank you.`;
 
     const response = await client.messages.create({
       body: message || defaultMessage,

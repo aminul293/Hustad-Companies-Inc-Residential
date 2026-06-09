@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
           <h1 style="color: #ffffff; margin: 0; font-size: 20px; letter-spacing: 1px;">OFFICE DISPATCH // INSPECTION COMPLETE</h1>
         </div>
         <div style="padding: 32px;">
-          <h2 style="font-size: 18px; color: #0f172a; margin-top: 0;">New Forensic Dossier Received</h2>
+          <h2 style="font-size: 18px; color: #0f172a; margin-top: 0;">New Inspection Report Received</h2>
           <table style="width: 100%; border-collapse: collapse; margin: 24px 0;">
             <tr>
               <td style="padding: 8px 0; font-size: 12px; color: #64748b; text-transform: uppercase;">Address</td>
