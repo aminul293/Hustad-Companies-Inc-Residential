@@ -771,12 +771,22 @@ function renderFooter(d: jsPDF) {
   d.text(lines, PW / 2, Y + 36, { align: "center" });
 }
 
-function renderAgreementText(d: jsPDF) {
+function renderAgreementText(d: jsPDF, s: SessionState) {
   checkPage(d, 40);
   Y += 10;
-  st(d, T.emerald700); d.setFont("times", "bold"); d.setFontSize(14);
-  d.text("Insurance Contingency Agreement", M, Y);
-  Y += 10;
+  
+  const isSigned = !!s.signatureData?.signedAt;
+  const dateStr = fmtDate(s.signatureData?.signedAt || s.createdAt) || "";
+  const addr = s.property.address || "On file";
+
+  // Green Header Box
+  sf(d, T.emerald700); d.roundedRect(M, Y, CW, 24, 2, 2, "F");
+  st(d, [255, 255, 255]); d.setFont("helvetica", "bold"); d.setFontSize(11);
+  d.text("INSURANCE CONTINGENCY AGREEMENT - EXECUTED COPY", M + 6, Y + 10);
+  st(d, T.emerald200); d.setFont("helvetica", "normal"); d.setFontSize(9);
+  d.text(`Signed: ${dateStr} - Property: ${addr}`, M + 6, Y + 18);
+  
+  Y += 34;
 
   AGREEMENT_SECTIONS.forEach((sec) => {
     checkPage(d, 30);
@@ -878,9 +888,8 @@ export async function generateReportPDF(s: SessionState, photosArg: any, logo: a
   await renderPhotos(d, photos);
   renderSteps(d, pt);
 
-  const isSigned = !!s.signatureData?.signedAt;
-  if ((pt === "carrier_review" || pt === "full_restoration") && isSigned) {
-    renderAgreementText(d);
+  if (pt === "carrier_review" || pt === "full_restoration") {
+    renderAgreementText(d, s);
   }
 
   renderReportSignature(d, pt, s);
