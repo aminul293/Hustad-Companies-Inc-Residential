@@ -771,14 +771,54 @@ function renderFooter(d: jsPDF) {
   d.text(lines, PW / 2, Y + 36, { align: "center" });
 }
 
-function renderReportSignature(d: jsPDF, s: SessionState) {
+function renderAgreementText(d: jsPDF) {
+  checkPage(d, 40);
+  Y += 10;
+  st(d, T.emerald700); d.setFont("helvetica", "bold"); d.setFontSize(12);
+  d.text("Insurance Contingency Agreement", M, Y);
+  Y += 10;
+
+  AGREEMENT_SECTIONS.forEach((sec) => {
+    checkPage(d, 30);
+    st(d, T.slate900); d.setFont("helvetica", "bold"); d.setFontSize(9);
+    d.text(sec.heading, M, Y);
+    Y += 6;
+    
+    st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(8);
+    const lines = d.splitTextToSize(sec.body, CW);
+    d.text(lines, M, Y);
+    Y += lines.length * 4 + 6;
+  });
+
+  checkPage(d, 40);
+  Y += 4;
+  
+  sf(d, T.amber50); d.roundedRect(M, Y, CW, 35, 2, 2, "F");
+  sd(d, T.amber500); d.setLineWidth(1); d.line(M, Y, M, Y + 35);
+  
+  st(d, T.amber800); d.setFont("helvetica", "bold"); d.setFontSize(8);
+  d.text(WISCONSIN_CLAIM_NOTICE.heading.toUpperCase(), M + 6, Y + 8);
+  
+  st(d, T.amber900); d.setFont("helvetica", "normal"); d.setFontSize(7);
+  WISCONSIN_CLAIM_NOTICE.lines.forEach((line, i) => {
+    d.text(`• ${line}`, M + 6, Y + 14 + (i * 4));
+  });
+  Y += 45;
+}
+
+function renderReportSignature(d: jsPDF, pt: PathType, s: SessionState) {
   const isSigned = !!s.signatureData?.signedAt;
   if (!isSigned) return;
 
   checkPage(d, 60);
   Y += 10;
   st(d, T.slate900); d.setFont("helvetica", "bold"); d.setFontSize(10);
-  d.text("Report Review & Acknowledgement", M, Y);
+  
+  const heading = (pt === "carrier_review" || pt === "full_restoration")
+    ? "Insurance Contingency Agreement — Executed Copy"
+    : "Report Review & Acknowledgement";
+    
+  d.text(heading, M, Y);
   Y += 12;
 
   const col1X = M;
@@ -808,7 +848,9 @@ function renderReportSignature(d: jsPDF, s: SessionState) {
   Y += 12;
   
   st(d, T.gray500); d.setFont("helvetica", "normal"); d.setFontSize(8);
-  const text = "The homeowner acknowledges they have reviewed the inspection findings and that this report accurately reflects the documented conditions at the property.";
+  const text = (pt === "carrier_review" || pt === "full_restoration")
+    ? "The homeowner acknowledges they have reviewed the inspection findings and agree to the terms of the insurance contingency agreement as executed above."
+    : "The homeowner acknowledges they have reviewed the inspection findings and that this report accurately reflects the documented conditions at the property.";
   const lines = d.splitTextToSize(text, CW);
   d.text(lines, M, Y);
   Y += lines.length * 4 + 8;
@@ -835,7 +877,13 @@ export async function generateReportPDF(s: SessionState, photosArg: any, logo: a
   renderFindings(d, pt, s);
   await renderPhotos(d, photos);
   renderSteps(d, pt);
-  renderReportSignature(d, s);
+  
+  const isSigned = !!s.signatureData?.signedAt;
+  if ((pt === "carrier_review" || pt === "full_restoration") && isSigned) {
+    renderAgreementText(d);
+  }
+  
+  renderReportSignature(d, pt, s);
   renderFooter(d);
   
   return d;
