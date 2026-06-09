@@ -841,9 +841,9 @@ function renderReportSignature(d: jsPDF, pt: PathType, s: SessionState) {
 
   st(d, T.slate900); d.setFont("times", "italic"); d.setFontSize(12);
   if (isSigned) {
-    if (s.signatureData?.signatureBase64) {
+    if (s.signatureData?.signatureImage) {
       try {
-        d.addImage(s.signatureData.signatureBase64, "PNG", col1X, Y - 10, 40, 15);
+        d.addImage(s.signatureData.signatureImage, "PNG", col1X, Y - 10, 40, 15);
       } catch (e) {
         d.text(s.signatureData?.signerName || "Authorized Electronically", col1X, Y);
       }
@@ -1026,9 +1026,9 @@ export async function generateAgreementPDF(s: SessionState) {
 
   st(d, T.slate900); d.setFont("times", "italic"); d.setFontSize(12);
   if (isSigned) {
-    if (s.signatureData?.signatureBase64) {
+    if (s.signatureData?.signatureImage) {
       try {
-        d.addImage(s.signatureData.signatureBase64, "PNG", col1X, Y - 10, 40, 15);
+        d.addImage(s.signatureData.signatureImage, "PNG", col1X, Y - 10, 40, 15);
       } catch (e) {
         d.text(s.signatureData?.signerName || "Authorized Electronically", col1X, Y);
       }
