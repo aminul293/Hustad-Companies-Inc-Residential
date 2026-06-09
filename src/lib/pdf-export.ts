@@ -841,7 +841,15 @@ function renderReportSignature(d: jsPDF, pt: PathType, s: SessionState) {
 
   st(d, T.slate900); d.setFont("times", "italic"); d.setFontSize(12);
   if (isSigned) {
-    d.text(s.signatureData?.signerName || "Authorized Electronically", col1X, Y);
+    if (s.signatureData?.signatureBase64) {
+      try {
+        d.addImage(s.signatureData.signatureBase64, "PNG", col1X, Y - 10, 40, 15);
+      } catch (e) {
+        d.text(s.signatureData?.signerName || "Authorized Electronically", col1X, Y);
+      }
+    } else {
+      d.text(s.signatureData?.signerName || "Authorized Electronically", col1X, Y);
+    }
   }
   d.text(s.repName || "Hustad Representative", col2X, Y);
   Y += 4;
@@ -1018,7 +1026,15 @@ export async function generateAgreementPDF(s: SessionState) {
 
   st(d, T.slate900); d.setFont("times", "italic"); d.setFontSize(12);
   if (isSigned) {
-    d.text(s.signatureData?.signerName || "Authorized Electronically", col1X, Y);
+    if (s.signatureData?.signatureBase64) {
+      try {
+        d.addImage(s.signatureData.signatureBase64, "PNG", col1X, Y - 10, 40, 15);
+      } catch (e) {
+        d.text(s.signatureData?.signerName || "Authorized Electronically", col1X, Y);
+      }
+    } else {
+      d.text(s.signatureData?.signerName || "Authorized Electronically", col1X, Y);
+    }
     d.text(s.repName || "Hustad Representative", col2X, Y);
   } else {
     st(d, T.gray500);
