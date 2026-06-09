@@ -45,8 +45,14 @@ export async function POST(req: NextRequest) {
     // 1. Upload PDF to Supabase Storage
     const pdfBuffer = Buffer.from(pdfBase64, "base64");
     const storagePath = `reports/${session.repId}/${session.sessionId}/${fileName}`;
-    
-    const { data: uploadData, error: uploadErr } = await supabase.storage
+
+    // Ensure bucket exists — createBucket is a no-op if it already exists
+    await supabase.storage.createBucket("inspection-reports", {
+      public: true,
+      fileSizeLimit: 52428800, // 50MB
+    });
+
+    const { error: uploadErr } = await supabase.storage
       .from("inspection-reports")
       .upload(storagePath, pdfBuffer, {
         contentType: "application/pdf",
