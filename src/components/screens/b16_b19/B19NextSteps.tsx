@@ -142,6 +142,8 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
           });
           const oppData = await oppRes.json();
           cpOpportunityId = oppData?.opportunity?.id ?? null;
+          console.log("[CP] Opportunity response:", JSON.stringify(oppData));
+          console.log("[CP] cpOpportunityId captured:", cpOpportunityId);
         } catch (e) {
           console.error("Failed to create CP opportunity on finish", e);
         }
@@ -180,22 +182,31 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
       // Post inspection report link as a note to the CP opportunity History & Notes
       if (cpOpportunityId) {
         try {
+          console.log("[CP_NOTE] Posting note for opportunity:", cpOpportunityId, "reportUrl:", dispatchedSession.reportUrl);
           const noteRes = await fetch("/api/centerpoint/note", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               opportunityId: cpOpportunityId,
-              session: dispatchedSession,
               reportUrl: dispatchedSession.reportUrl,
+              sessionId: dispatchedSession.sessionId,
+              address: dispatchedSession.property?.address,
+              repName: dispatchedSession.repName,
+              outcomeType: dispatchedSession.findings?.outcomeType,
+              createdAt: dispatchedSession.createdAt,
             }),
           });
           if (!noteRes.ok) {
             const noteErr = await noteRes.json().catch(() => ({}));
             console.error("[CP_NOTE] Route returned error:", noteErr);
+          } else {
+            console.log("[CP_NOTE] Note posted successfully");
           }
         } catch (e) {
           console.error("[CP_NOTE] Failed to post CP note", e);
         }
+      } else {
+        console.warn("[CP_NOTE] Skipped — cpOpportunityId is null");
       }
     } catch (err) {
       /* non-fatal */

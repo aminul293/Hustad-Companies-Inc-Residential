@@ -27,17 +27,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { opportunityId, session, reportUrl } = body;
+  const { opportunityId, reportUrl, sessionId, address, repName, outcomeType, createdAt } = body;
 
-  if (!opportunityId || !session) {
-    return NextResponse.json({ error: "Missing opportunityId or session" }, { status: 400 });
+  if (!opportunityId) {
+    return NextResponse.json({ error: "Missing opportunityId" }, { status: 400 });
   }
 
-  const outcome = session.findings?.outcomeType || "unknown";
-  const outcomeLabel = OUTCOME_LABELS[outcome] || outcome;
-  const reportId = session.sessionId?.slice(-8).toUpperCase() || "—";
-  const date = session.createdAt
-    ? new Date(session.createdAt).toLocaleDateString("en-US", {
+  const outcomeLabel = OUTCOME_LABELS[outcomeType] || outcomeType || "Unknown";
+  const reportId = sessionId?.slice(-8).toUpperCase() || "—";
+  const date = createdAt
+    ? new Date(createdAt).toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
         year: "numeric",
@@ -45,8 +44,8 @@ export async function POST(req: NextRequest) {
     : new Date().toLocaleDateString();
 
   const noteBody = [
-    `Hustad Field Inspection — ${session.property?.address || ""}`,
-    `Inspector: ${session.repName || ""}`,
+    `Hustad Field Inspection — ${address || ""}`,
+    `Inspector: ${repName || ""}`,
     `Outcome: ${outcomeLabel}`,
     `Report ID: ${reportId} · Date: ${date}`,
     "",
