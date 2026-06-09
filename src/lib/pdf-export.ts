@@ -813,7 +813,10 @@ function renderAgreementText(d: jsPDF, s: SessionState) {
   WISCONSIN_CLAIM_NOTICE.lines.forEach((line, i) => {
     d.text(`• ${line}`, M + 6, Y + 14 + (i * 4));
   });
-  Y +=function renderReportSignature(d: jsPDF, pt: PathType, s: SessionState) {
+  Y += 45;
+}
+
+function renderReportSignature(d: jsPDF, pt: PathType, s: SessionState) {
   const isSigned = !!s.signatureData?.signedAt;
 
   checkPage(d, 60);
@@ -847,12 +850,11 @@ function renderAgreementText(d: jsPDF, s: SessionState) {
   if (isSigned) {
     d.rect(col1X, Y, lineW, 0.5, "F");
   } else {
-    // draw dashed line for unsigned homeowner
     st(d, T.gray400);
     d.setLineDashPattern([2, 2], 0);
     d.setLineWidth(0.5);
     d.line(col1X, Y, col1X + lineW, Y);
-    d.setLineDashPattern([], 0); // reset
+    d.setLineDashPattern([], 0);
   }
   
   d.rect(col2X, Y, lineW, 0.5, "F");
@@ -884,8 +886,6 @@ function renderAgreementText(d: jsPDF, s: SessionState) {
     const lines = d.splitTextToSize(text, CW);
     d.text(lines, M, Y);
   }
-}s, M, Y);
-  Y += lines.length * 4.5 + 8;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
