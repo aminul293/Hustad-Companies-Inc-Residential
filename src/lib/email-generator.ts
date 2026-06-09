@@ -460,7 +460,6 @@ export async function generateEmailHTML(session: SessionState, reviewUrl: string
       { t: "Sign to Authorize", d: "Signing authorizes Hustad to organize your documentation package and coordinate a carrier inspection." },
       { t: "File or Confirm Your Claim", d: "We can guide you on filing if needed. Let your Hustad rep know the status of your claim." },
     ]);
-    bodyHtml += renderAgreementHTML(isSigned, session);
   } else if (path === "urgent_repair") {
     bodyHtml += renderHeader("Your Direct Repair Report", "Inspection Complete &middot; Repair Recommended", "Report Delivered", "executed", "#ea580c");
     bodyHtml += renderPropRow(prop, dateStr, insp);
