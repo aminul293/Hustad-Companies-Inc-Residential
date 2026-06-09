@@ -774,20 +774,20 @@ function renderFooter(d: jsPDF) {
 function renderAgreementText(d: jsPDF) {
   checkPage(d, 40);
   Y += 10;
-  st(d, T.emerald700); d.setFont("helvetica", "bold"); d.setFontSize(12);
+  st(d, T.emerald700); d.setFont("times", "bold"); d.setFontSize(14);
   d.text("Insurance Contingency Agreement", M, Y);
   Y += 10;
 
   AGREEMENT_SECTIONS.forEach((sec) => {
     checkPage(d, 30);
-    st(d, T.slate900); d.setFont("helvetica", "bold"); d.setFontSize(9);
+    st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(10);
     d.text(sec.heading, M, Y);
     Y += 6;
     
-    st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(8);
+    st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(9);
     const lines = d.splitTextToSize(sec.body, CW);
     d.text(lines, M, Y);
-    Y += lines.length * 4 + 6;
+    Y += lines.length * 4.5 + 6;
   });
 
   checkPage(d, 40);
@@ -796,10 +796,10 @@ function renderAgreementText(d: jsPDF) {
   sf(d, T.amber50); d.roundedRect(M, Y, CW, 35, 2, 2, "F");
   sd(d, T.amber500); d.setLineWidth(1); d.line(M, Y, M, Y + 35);
   
-  st(d, T.amber800); d.setFont("helvetica", "bold"); d.setFontSize(8);
+  st(d, T.amber800); d.setFont("times", "bold"); d.setFontSize(9);
   d.text(WISCONSIN_CLAIM_NOTICE.heading.toUpperCase(), M + 6, Y + 8);
   
-  st(d, T.amber900); d.setFont("helvetica", "normal"); d.setFontSize(7);
+  st(d, T.amber900); d.setFont("times", "normal"); d.setFontSize(8);
   WISCONSIN_CLAIM_NOTICE.lines.forEach((line, i) => {
     d.text(`• ${line}`, M + 6, Y + 14 + (i * 4));
   });
@@ -812,7 +812,7 @@ function renderReportSignature(d: jsPDF, pt: PathType, s: SessionState) {
 
   checkPage(d, 60);
   Y += 10;
-  st(d, T.slate900); d.setFont("helvetica", "bold"); d.setFontSize(10);
+  st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(12);
   
   const heading = (pt === "carrier_review" || pt === "full_restoration")
     ? "Insurance Contingency Agreement — Executed Copy"
@@ -825,12 +825,12 @@ function renderReportSignature(d: jsPDF, pt: PathType, s: SessionState) {
   const col2X = M + CW / 2 + 10;
   const lineW = CW / 2 - 15;
 
-  st(d, T.gray500); d.setFont("helvetica", "bold"); d.setFontSize(7);
+  st(d, T.gray500); d.setFont("times", "bold"); d.setFontSize(8);
   d.text("HOMEOWNER", col1X, Y);
   d.text("HUSTAD REPRESENTATIVE", col2X, Y);
   Y += 12;
 
-  st(d, T.slate900); d.setFont("times", "italic"); d.setFontSize(11);
+  st(d, T.slate900); d.setFont("times", "italic"); d.setFontSize(12);
   d.text(s.signatureData?.signerName || "Authorized Electronically", col1X, Y);
   d.text(s.repName || "Hustad Representative", col2X, Y);
   Y += 4;
@@ -840,20 +840,20 @@ function renderReportSignature(d: jsPDF, pt: PathType, s: SessionState) {
   d.rect(col2X, Y, lineW, 0.5, "F");
   Y += 5;
 
-  st(d, T.gray500); d.setFont("helvetica", "normal"); d.setFontSize(7);
+  st(d, T.gray500); d.setFont("times", "normal"); d.setFontSize(8);
   const dateStr = fmtDate(s.signatureData?.signedAt) || "";
   d.text(dateStr, col1X, Y);
   d.text(`${dateStr} - Hustad Companies, Inc.`, col2X, Y);
 
   Y += 12;
   
-  st(d, T.gray500); d.setFont("helvetica", "normal"); d.setFontSize(8);
+  st(d, T.gray500); d.setFont("times", "normal"); d.setFontSize(9);
   const text = (pt === "carrier_review" || pt === "full_restoration")
     ? "The homeowner acknowledges they have reviewed the inspection findings and agree to the terms of the insurance contingency agreement as executed above."
     : "The homeowner acknowledges they have reviewed the inspection findings and that this report accurately reflects the documented conditions at the property.";
   const lines = d.splitTextToSize(text, CW);
   d.text(lines, M, Y);
-  Y += lines.length * 4 + 8;
+  Y += lines.length * 4.5 + 8;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -904,7 +904,7 @@ export async function generateAgreementPDF(s: SessionState) {
   st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(16);
   d.text("Insurance Contingency Agreement", M, Y + 10);
   
-  st(d, T.gray500); d.setFont("helvetica", "normal"); d.setFontSize(8);
+  st(d, T.gray500); d.setFont("times", "normal"); d.setFontSize(9);
   d.text(`Property: ${s.property.address}`, M, Y + 16);
   d.text(`Owner: ${s.property.homeownerPrimaryName}`, M, Y + 21);
   d.text(`Date: ${fmtDate(s.createdAt)}`, M, Y + 26);
@@ -913,25 +913,27 @@ export async function generateAgreementPDF(s: SessionState) {
   
   AGREEMENT_SECTIONS.forEach((sec, idx) => {
     checkPage(d, 30);
-    st(d, T.slate900); d.setFont("helvetica", "bold"); d.setFontSize(9);
+    st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(10);
     d.text(sec.heading, M, Y);
     Y += 6;
     
-    st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(8);
+    st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(9);
     const lines = d.splitTextToSize(sec.body, CW);
     d.text(lines, M, Y);
-    Y += lines.length * 4 + 6;
+    Y += lines.length * 4.5 + 6;
   });
   
   // Wisconsin Notice
   checkPage(d, 40);
+  Y += 4;
+  
   sf(d, T.amber50); d.roundedRect(M, Y, CW, 35, 2, 2, "F");
   sd(d, T.amber500); d.setLineWidth(1); d.line(M, Y, M, Y + 35);
   
-  st(d, T.amber800); d.setFont("helvetica", "bold"); d.setFontSize(8);
+  st(d, T.amber800); d.setFont("times", "bold"); d.setFontSize(9);
   d.text(WISCONSIN_CLAIM_NOTICE.heading.toUpperCase(), M + 6, Y + 8);
   
-  st(d, T.amber900); d.setFont("helvetica", "normal"); d.setFontSize(7);
+  st(d, T.amber900); d.setFont("times", "normal"); d.setFontSize(8);
   WISCONSIN_CLAIM_NOTICE.lines.forEach((line, i) => {
     d.text(`• ${line}`, M + 6, Y + 14 + (i * 4));
   });
@@ -939,7 +941,7 @@ export async function generateAgreementPDF(s: SessionState) {
   
   // Required Acknowledgements
   checkPage(d, 60);
-  st(d, T.slate900); d.setFont("helvetica", "bold"); d.setFontSize(9);
+  st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(10);
   d.text("REQUIRED ACKNOWLEDGEMENTS", M, Y);
   Y += 8;
   
@@ -956,7 +958,7 @@ export async function generateAgreementPDF(s: SessionState) {
     st(d, isSigned ? T.emerald500 : T.gray400); d.setFontSize(10);
     d.text(isSigned ? "\u2713" : "\u25CB", M, Y + 3); // Checkmark or open circle
     
-    st(d, T.slate900); d.setFont("helvetica", "normal"); d.setFontSize(8);
+    st(d, T.slate900); d.setFont("times", "normal"); d.setFontSize(9);
     const lines = d.splitTextToSize(ack, CW - 10) as string[];
     d.text(lines, M + 8, Y + 3);
     Y += lines.length * 4.5 + 2;
@@ -966,7 +968,7 @@ export async function generateAgreementPDF(s: SessionState) {
   
   // Signature Block
   checkPage(d, 50);
-  st(d, T.slate900); d.setFont("helvetica", "bold"); d.setFontSize(10);
+  st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(12);
   d.text("Authorization", M, Y);
   Y += 12;
   
@@ -974,12 +976,12 @@ export async function generateAgreementPDF(s: SessionState) {
   const col2X = M + CW / 2 + 10;
   const lineW = CW / 2 - 15;
 
-  st(d, T.gray500); d.setFont("helvetica", "bold"); d.setFontSize(7);
+  st(d, T.gray500); d.setFont("times", "bold"); d.setFontSize(8);
   d.text("HOMEOWNER", col1X, Y);
   d.text("HUSTAD REPRESENTATIVE", col2X, Y);
   Y += 12;
 
-  st(d, T.slate900); d.setFont("times", "italic"); d.setFontSize(11);
+  st(d, T.slate900); d.setFont("times", "italic"); d.setFontSize(12);
   if (isSigned) {
     d.text(s.signatureData?.signerName || "Authorized Electronically", col1X, Y);
     d.text(s.repName || "Hustad Representative", col2X, Y);
@@ -995,7 +997,7 @@ export async function generateAgreementPDF(s: SessionState) {
   d.rect(col2X, Y, lineW, 0.5, "F");
   Y += 5;
 
-  st(d, T.gray500); d.setFont("helvetica", "normal"); d.setFontSize(7);
+  st(d, T.gray500); d.setFont("times", "normal"); d.setFontSize(8);
   if (isSigned) {
     const dateStr = fmtDate(s.signatureData?.signedAt) || "";
     d.text(dateStr, col1X, Y);
