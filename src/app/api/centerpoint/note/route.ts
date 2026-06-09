@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     `Report ID: ${reportId} · Date: ${date}`,
     "",
     reportUrl
-      ? `Forensic Report PDF: ${reportUrl}`
+      ? `Forensic Report PDF: <a href="${reportUrl}" target="_blank" style="color: #0056b3; text-decoration: underline;">View PDF</a>`
       : "PDF report delivered via office dispatch.",
   ].join("\n");
 
