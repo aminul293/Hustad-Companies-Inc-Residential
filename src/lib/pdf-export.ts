@@ -28,51 +28,51 @@ type PathType = "carrier_review" | "urgent_repair" | "full_restoration" | "no_ac
 
 // Color Palette (Tailwind)
 const T = {
-  slate900:  [15, 23, 42] as C3,
-  slate950:  [2, 6, 23] as C3,
-  gray50:    [249, 250, 251] as C3,
-  gray100:   [243, 244, 246] as C3,
-  gray200:   [229, 231, 235] as C3,
-  gray300:   [209, 213, 219] as C3,
-  gray400:   [156, 163, 175] as C3,
-  gray500:   [107, 114, 128] as C3,
-  gray600:   [75, 85, 99] as C3,
-  gray700:   [55, 65, 81] as C3,
-  gray800:   [31, 41, 55] as C3,
-  gray900:   [17, 24, 39] as C3,
-  
-  white:     [255, 255, 255] as C3,
-  
-  amber50:   [255, 251, 235] as C3,
-  amber100:  [254, 243, 199] as C3,
-  amber200:  [253, 230, 138] as C3,
-  amber400:  [251, 191, 36] as C3,
-  amber500:  [245, 158, 11] as C3,
-  amber600:  [217, 119, 6] as C3,
-  amber700:  [180, 83, 9] as C3,
-  amber800:  [146, 64, 14] as C3,
-  amber900:  [120, 53, 15] as C3,
+  slate900: [15, 23, 42] as C3,
+  slate950: [2, 6, 23] as C3,
+  gray50: [249, 250, 251] as C3,
+  gray100: [243, 244, 246] as C3,
+  gray200: [229, 231, 235] as C3,
+  gray300: [209, 213, 219] as C3,
+  gray400: [156, 163, 175] as C3,
+  gray500: [107, 114, 128] as C3,
+  gray600: [75, 85, 99] as C3,
+  gray700: [55, 65, 81] as C3,
+  gray800: [31, 41, 55] as C3,
+  gray900: [17, 24, 39] as C3,
+
+  white: [255, 255, 255] as C3,
+
+  amber50: [255, 251, 235] as C3,
+  amber100: [254, 243, 199] as C3,
+  amber200: [253, 230, 138] as C3,
+  amber400: [251, 191, 36] as C3,
+  amber500: [245, 158, 11] as C3,
+  amber600: [217, 119, 6] as C3,
+  amber700: [180, 83, 9] as C3,
+  amber800: [146, 64, 14] as C3,
+  amber900: [120, 53, 15] as C3,
 
   emerald50: [236, 253, 245] as C3,
-  emerald100:[209, 250, 229] as C3,
-  emerald200:[167, 243, 208] as C3,
-  emerald500:[16, 185, 129] as C3,
-  emerald700:[4, 120, 87] as C3,
+  emerald100: [209, 250, 229] as C3,
+  emerald200: [167, 243, 208] as C3,
+  emerald500: [16, 185, 129] as C3,
+  emerald700: [4, 120, 87] as C3,
 
-  blue50:    [239, 246, 255] as C3,
-  blue100:   [219, 234, 254] as C3,
-  blue200:   [191, 219, 254] as C3,
-  blue400:   [96, 165, 250] as C3,
-  blue600:   [37, 99, 235] as C3,
-  blue800:   [30, 64, 175] as C3,
-  blue900:   [30, 58, 138] as C3,
+  blue50: [239, 246, 255] as C3,
+  blue100: [219, 234, 254] as C3,
+  blue200: [191, 219, 254] as C3,
+  blue400: [96, 165, 250] as C3,
+  blue600: [37, 99, 235] as C3,
+  blue800: [30, 64, 175] as C3,
+  blue900: [30, 58, 138] as C3,
 
-  red50:     [254, 242, 242] as C3,
-  red200:    [254, 202, 202] as C3,
-  red400:    [248, 113, 113] as C3,
-  red600:    [220, 38, 38] as C3,
+  red50: [254, 242, 242] as C3,
+  red200: [254, 202, 202] as C3,
+  red400: [248, 113, 113] as C3,
+  red600: [220, 38, 38] as C3,
 
-  orange50:  [255, 237, 213] as C3,
+  orange50: [255, 237, 213] as C3,
   orange100: [255, 237, 213] as C3,
   orange200: [253, 186, 116] as C3,
   orange500: [249, 115, 22] as C3,
@@ -160,19 +160,19 @@ async function loadLogoDataUrl(): Promise<string | null> {
     const svgText = await resp.text();
     const whiteSvg = svgText.replace(/fill:\s*#231f20/g, "fill: #ffffff");
     const blob = new Blob([whiteSvg], { type: "image/svg+xml" });
-    const url  = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
     return await new Promise<string>((resolve, reject) => {
-      const img    = new Image();
-      img.onload   = () => {
+      const img = new Image();
+      img.onload = () => {
         const canvas = document.createElement("canvas");
-        canvas.width  = 1468;
+        canvas.width = 1468;
         canvas.height = 330;
         canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
         URL.revokeObjectURL(url);
         resolve(canvas.toDataURL("image/png"));
       };
       img.onerror = reject;
-      img.src     = url;
+      img.src = url;
     });
   } catch {
     return null;
@@ -195,7 +195,7 @@ async function renderHeader(d: jsPDF, cfg: any, pt: PathType, s: SessionState) {
   const headerHeight = pt === "no_action" ? 55 : 50;
   checkPage(d, headerHeight);
   sf(d, T.slate900); d.rect(0, Y, PW, headerHeight, "F");
-  
+
   // Logo
   const logoDataUrl = await loadLogoDataUrl();
   if (logoDataUrl) {
@@ -221,7 +221,7 @@ async function renderHeader(d: jsPDF, cfg: any, pt: PathType, s: SessionState) {
     // Top badge right aligned
     let bx = PW - M;
     bx -= drawBadgeRight(d, "NO ACTION REQUIRED TODAY", bx, Y + 22, T.emerald500, T.slate900);
-    
+
     // Priorities / Tags right aligned
     bx = PW - M;
     bx -= drawBadgeRight(d, "Documentation", bx, Y + 32, T.blue400, T.slate900);
@@ -242,7 +242,7 @@ async function renderHeader(d: jsPDF, cfg: any, pt: PathType, s: SessionState) {
   st(d, T.amber400); d.setFontSize(6); d.text(cfg.tag.toUpperCase(), M, Y + 32);
   st(d, T.white); d.setFont("times", "bold"); d.setFontSize(18);
   d.text(cfg.title, M, Y + 41);
-  
+
   Y += headerHeight;
 }
 
@@ -287,7 +287,7 @@ function renderIntro(d: jsPDF, pt: PathType, s: SessionState) {
     const lines = d.splitTextToSize(headline, CW) as string[];
     d.text(lines, M, Y);
     Y += lines.length * 8 + 6;
-    
+
     st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(10);
     const body = "Hustad completed a thorough exterior inspection and did not document meaningful storm-related conditions that support repair, emergency action, or carrier review at this time. All findings have been organized and documented for your property records.";
     const blines = d.splitTextToSize(body, CW) as string[];
@@ -306,7 +306,7 @@ function renderIntro(d: jsPDF, pt: PathType, s: SessionState) {
     const hLines = d.splitTextToSize(headline, CW) as string[];
     d.text(hLines, M, Y);
     Y += hLines.length * 8 + 6;
-    
+
     st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(11);
     const subhead = "The documented findings support a targeted repair scope. This path addresses what the evidence supports \u2014 nothing more. No insurance process required, faster scheduling, and full control over timing.";
     const shLines = d.splitTextToSize(subhead, CW) as string[];
@@ -332,7 +332,7 @@ function renderIntro(d: jsPDF, pt: PathType, s: SessionState) {
     const hLines = d.splitTextToSize(headline, CW) as string[];
     d.text(hLines, M, Y);
     Y += hLines.length * 8 + 6;
-    
+
     st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(11);
     const subhead = "Hustad completed an exterior inspection and documented conditions consistent with storm-related impact. These findings do not determine insurance coverage, but they are strong enough to justify a formal carrier review before any out-of-pocket expense.";
     const shLines = d.splitTextToSize(subhead, CW) as string[];
@@ -399,10 +399,10 @@ function renderStats(d: jsPDF, pt: PathType, photosCount: number, s: SessionStat
   const h = 40;
   checkPage(d, h + 10);
   sf(d, T.gray50); d.rect(0, Y, PW, h + 10, "F");
-  
+
   st(d, T.gray400); d.setFont("helvetica", "bold"); d.setFontSize(6);
   d.text("INSPECTION SUMMARY", M, Y + 8);
-  
+
   const boxW = (CW - 10) / 3;
   let cx = M;
   for (const s of stats) {
@@ -414,7 +414,7 @@ function renderStats(d: jsPDF, pt: PathType, photosCount: number, s: SessionStat
     d.text(s.l, cx + boxW / 2, Y + 31, { align: "center" });
     cx += boxW + 5;
   }
-  
+
   Y += h + 10;
   sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
 }
@@ -423,7 +423,7 @@ function renderStormBanner(d: jsPDF) {
   checkPage(d, 20);
   sf(d, T.blue50); d.rect(0, Y, PW, 20, "F");
   sd(d, T.blue200); d.setLineWidth(0.3); d.line(0, Y + 20, PW, Y + 20);
-  
+
   st(d, T.blue800); d.setFont("helvetica", "bold"); d.setFontSize(7);
   d.text("WEATHER EVENT SUPPORT - ", M + 6, Y + 11);
   st(d, T.blue800); d.setFont("helvetica", "normal"); d.setFontSize(7);
@@ -441,11 +441,11 @@ function renderFindings(d: jsPDF, pt: PathType, s: SessionState) {
     const mLines = d.splitTextToSize(mText, CW);
     d.text(mLines, M, Y + 16);
     Y += 16 + mLines.length * 4.5 + 8;
-    
+
     st(d, T.gray400); d.setFont("helvetica", "bold"); d.setFontSize(6);
     d.text("WHAT WE ARE NOT SAYING", M, Y);
     Y += 6;
-    
+
     const notSaying = [
       "We are not saying your roof is perfect forever.",
       "We are not saying every condition needs action today.",
@@ -465,29 +465,29 @@ function renderFindings(d: jsPDF, pt: PathType, s: SessionState) {
     sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
     return;
   }
-  
+
   if (pt === "urgent_repair") {
     checkPage(d, 60);
     st(d, T.slate900); d.setFont("times", "normal"); d.setFontSize(14);
     d.text("Direct Repair", M, Y + 10);
     Y += 16;
-    
+
     st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(10);
     const mText = "Address documented items directly with a scoped repair authorization. No carrier process required. Hustad schedules repair work based on exactly what was documented during the inspection.";
     const mLines = d.splitTextToSize(mText, CW);
     d.text(mLines, M, Y);
     Y += mLines.length * 4.5 + 4;
-    
+
     sd(d, T.gray200); d.setLineWidth(0.3); d.line(M, Y, PW - M, Y);
     Y += 6;
-    
+
     const bullets = [
       "Scope limited to documented findings \u2014 nothing beyond what the evidence supports.",
       "Faster scheduling with no carrier coordination delay.",
       "Full cost transparency before any work begins.",
       "You authorize exactly what gets repaired, and when."
     ];
-    
+
     bullets.forEach(b => {
       st(d, T.red600); d.setFontSize(10); d.text("\u2022", M, Y + 3);
       st(d, T.gray600); d.setFont("helvetica", "normal");
@@ -495,7 +495,7 @@ function renderFindings(d: jsPDF, pt: PathType, s: SessionState) {
       d.text(lines, M + 5, Y + 3);
       Y += lines.length * 4.5 + 2;
     });
-    
+
     Y += 5;
     sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
     return;
@@ -506,16 +506,16 @@ function renderFindings(d: jsPDF, pt: PathType, s: SessionState) {
     st(d, T.slate900); d.setFont("times", "normal"); d.setFontSize(14);
     d.text("How the Carrier Review Agreement Works", M, Y + 10);
     Y += 16;
-    
+
     st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(10);
     const mText = "Coordinate a formal carrier inspection based on documented storm findings. Hustad prepares the documentation package. Your carrier reviews the evidence and makes a coverage determination.";
     const mLines = d.splitTextToSize(mText, CW);
     d.text(mLines, M, Y);
     Y += mLines.length * 4.5 + 4;
-    
+
     sd(d, T.gray200); d.setLineWidth(0.3); d.line(M, Y, PW - M, Y);
     Y += 6;
-    
+
     const steps = [
       {
         title: "01 Document damage",
@@ -534,26 +534,26 @@ function renderFindings(d: jsPDF, pt: PathType, s: SessionState) {
         desc: "No repair work begins until your carrier issues a written determination, you confirm the scope, and you authorize production in writing. You stay in control at every step."
       }
     ];
-    
+
     steps.forEach(s => {
       checkPage(d, 25);
       st(d, T.slate900); d.setFont("helvetica", "bold"); d.setFontSize(9);
       d.text(s.title, M, Y + 3);
       Y += 5;
-      
+
       st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(9);
       const lines = d.splitTextToSize(s.desc, CW) as string[];
       d.text(lines, M, Y + 3);
       Y += lines.length * 4.5 + 4;
     });
-    
+
     Y += 3;
     sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
     Y += 10;
   }
 
   let items: string[] = [];
-  
+
   // 1. Try to get specific finding labels from photos
   if (s.photos && s.photos.length > 0) {
     const findingSet = new Set<string>();
@@ -593,7 +593,7 @@ function renderFindings(d: jsPDF, pt: PathType, s: SessionState) {
   st(d, T.gray400); d.setFont("helvetica", "bold"); d.setFontSize(6);
   d.text("KEY FINDINGS", M, Y + 10);
   Y += 15;
-  
+
   for (const item of items) {
     st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(9);
     const lines = d.splitTextToSize(item, CW - 10) as string[];
@@ -616,16 +616,16 @@ async function renderPhotos(d: jsPDF, photos: PdfPhoto[]) {
   st(d, T.gray400); d.setFont("helvetica", "bold"); d.setFontSize(6);
   d.text("STORM EVIDENCE - STRONGEST PROOF PHOTOS", M, Y + 10);
   Y += 15;
-  
+
   const gap = 4;
   const w = (CW - gap * 2) / 3;
   const h = 28;
-  
+
   for (let i = 0; i < photos.length; i += 3) {
     checkPage(d, h + 15);
     let cx = M;
     const rowPhotos = photos.slice(i, i + 3);
-    
+
     for (let j = 0; j < 3; j++) {
       if (j < rowPhotos.length) {
         const p = rowPhotos[j];
@@ -660,7 +660,7 @@ function renderSteps(d: jsPDF, pt: PathType) {
     st(d, T.slate900); d.setFont("times", "normal"); d.setFontSize(22);
     d.text("Save Baseline & Monitor", M, Y + 10);
     Y += 18;
-    
+
     st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(10);
     const mText = "Your inspection record is documented, organized, and saved as a baseline. If conditions change after a future storm event, you have a dated comparison point. No repair or claim action is needed today.";
     const mLines = d.splitTextToSize(mText, CW);
@@ -694,7 +694,7 @@ function renderSteps(d: jsPDF, pt: PathType) {
     const rLines = d.splitTextToSize(rText, CW);
     d.text(rLines, M, Y);
     Y += rLines.length * 5 + 10;
-    
+
     sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
     return;
   }
@@ -703,7 +703,7 @@ function renderSteps(d: jsPDF, pt: PathType) {
   st(d, T.gray400); d.setFont("helvetica", "bold"); d.setFontSize(6);
   d.text("YOUR NEXT STEPS", M, Y + 10);
   Y += 16;
-  
+
   let steps = [
     { t: "Confirm Your Claim is Active", d: "Let us know if your claim has been filed or needs guidance." },
     { t: "Carrier Inspection Coordinated", d: "Hustad will schedule and be present for the adjuster visit." },
@@ -727,73 +727,63 @@ function renderSteps(d: jsPDF, pt: PathType) {
   let cx = M;
   steps.forEach((step, i) => {
     checkPage(d, 15);
-    
+
     // Circle
     sf(d, T.amber50); d.circle(cx + 6, Y + 5, 6, "F");
     st(d, T.amber700); d.setFont("helvetica", "bold"); d.setFontSize(7);
     d.text((i + 1).toString(), cx + 6, Y + 7.5, { align: "center" });
-    
+
     // Text
     st(d, T.slate900); d.setFont("helvetica", "bold"); d.setFontSize(10);
     d.text(step.t, cx + 18, Y + 6);
     st(d, T.gray500); d.setFont("times", "normal"); d.setFontSize(9);
-    
+
     const lines = d.splitTextToSize(step.d, CW - 20) as string[];
     const h = lines.length * 4.5;
     d.text(lines, cx + 18, Y + 11);
-    
+
     Y += Math.max(16, h + 10);
   });
-  
+
   Y += 5;
   sd(d, T.gray200); d.setLineWidth(0.3); d.line(0, Y, PW, Y);
 }
 
 function renderFooter(d: jsPDF) {
   checkPage(d, 45);
-  
+
   // Anchor footer to the bottom of the page
   const footerHeight = 45;
   Y = PH - footerHeight;
-  
+
   sf(d, T.slate900); d.rect(0, Y, PW, footerHeight, "F");
-  
+
   st(d, T.gray500); d.setFont("helvetica", "normal"); d.setFontSize(8);
   d.text("Hustad Companies, Inc. - Madison, Wisconsin", PW / 2, Y + 14, { align: "center" });
   d.text("Licensed Exterior Restoration Contractor - State of Wisconsin", PW / 2, Y + 19, { align: "center" });
   d.text("General Liability & Workers' Compensation Insurance Verified", PW / 2, Y + 24, { align: "center" });
-  
+
   sd(d, T.gray800); d.line(M + 10, Y + 30, PW - M - 10, Y + 30);
-  
+
   st(d, T.gray600); d.setFont("times", "normal"); d.setFontSize(7);
   const dis = "This report is confidential and prepared solely for the property owner identified above. It reflects conditions observed at the time of inspection and does not constitute a guarantee of insurance coverage or claim outcome.";
   const lines = d.splitTextToSize(dis, CW - 20);
   d.text(lines, PW / 2, Y + 36, { align: "center" });
 }
 
-function renderAgreementText(d: jsPDF, s: SessionState) {
+function renderAgreementText(d: jsPDF) {
   checkPage(d, 40);
   Y += 10;
-  
-  sf(d, T.emerald700);
-  d.roundedRect(M, Y, CW, 20, 2, 2, "F");
-  
-  st(d, T.white); d.setFont("helvetica", "bold"); d.setFontSize(10);
-  d.text("INSURANCE CONTINGENCY AGREEMENT - EXECUTED COPY", M + 6, Y + 8);
-  
-  st(d, T.emerald100); d.setFont("helvetica", "normal"); d.setFontSize(8);
-  const dateStr = fmtDate(s.signatureData?.signedAt) || fmtDate(s.createdAt);
-  const addr = s.property.address || "On file";
-  d.text(`Signed: ${dateStr} - Property: ${addr}`, M + 6, Y + 14);
-  
-  Y += 30;
+  st(d, T.emerald700); d.setFont("times", "bold"); d.setFontSize(14);
+  d.text("Insurance Contingency Agreement", M, Y);
+  Y += 10;
 
   AGREEMENT_SECTIONS.forEach((sec) => {
     checkPage(d, 30);
     st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(10);
     d.text(sec.heading, M, Y);
     Y += 6;
-    
+
     st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(9);
     const lines = d.splitTextToSize(sec.body, CW);
     d.text(lines, M, Y);
@@ -802,13 +792,13 @@ function renderAgreementText(d: jsPDF, s: SessionState) {
 
   checkPage(d, 40);
   Y += 4;
-  
+
   sf(d, T.amber50); d.roundedRect(M, Y, CW, 35, 2, 2, "F");
   sd(d, T.amber500); d.setLineWidth(1); d.line(M, Y, M, Y + 35);
-  
+
   st(d, T.amber800); d.setFont("times", "bold"); d.setFontSize(9);
   d.text(WISCONSIN_CLAIM_NOTICE.heading.toUpperCase(), M + 6, Y + 8);
-  
+
   st(d, T.amber900); d.setFont("times", "normal"); d.setFontSize(8);
   WISCONSIN_CLAIM_NOTICE.lines.forEach((line, i) => {
     d.text(`• ${line}`, M + 6, Y + 14 + (i * 4));
@@ -820,55 +810,50 @@ function renderReportSignature(d: jsPDF, pt: PathType, s: SessionState) {
   const isSigned = !!s.signatureData?.signedAt;
   if (!isSigned) return;
 
-  const isAgreement = (pt === "carrier_review" || pt === "full_restoration");
+  checkPage(d, 60);
+  Y += 10;
+  st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(12);
 
-  checkPage(d, 55);
-  Y += 8;
-  
-  const boxHeight = 45;
-  sf(d, isAgreement ? T.emerald50 : T.gray50);
-  d.roundedRect(M, Y, CW, boxHeight, 2, 2, "F");
-  
-  sd(d, isAgreement ? T.emerald200 : T.gray200);
-  d.setLineWidth(0.3);
-  d.roundedRect(M, Y, CW, boxHeight, 2, 2, "S");
+  const heading = (pt === "carrier_review" || pt === "full_restoration")
+    ? "Insurance Contingency Agreement — Executed Copy"
+    : "Report Review & Acknowledgement";
 
-  if (!isAgreement) {
-    st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(12);
-    d.text("Report Review & Acknowledgement", M + 6, Y + 10);
-  }
+  d.text(heading, M, Y);
+  Y += 12;
 
-  const innerY = Y + (isAgreement ? 10 : 18);
-  const col1X = M + 8;
-  const col2X = M + CW / 2 + 8;
-  const lineW = CW / 2 - 24;
+  const col1X = M;
+  const col2X = M + CW / 2 + 10;
+  const lineW = CW / 2 - 15;
 
-  st(d, T.gray500); d.setFont("helvetica", "bold"); d.setFontSize(7);
-  d.text("HOMEOWNER", col1X, innerY);
-  d.text("HUSTAD REPRESENTATIVE", col2X, innerY);
-  
+  st(d, T.gray500); d.setFont("times", "bold"); d.setFontSize(8);
+  d.text("HOMEOWNER", col1X, Y);
+  d.text("HUSTAD REPRESENTATIVE", col2X, Y);
+  Y += 12;
+
   st(d, T.slate900); d.setFont("times", "italic"); d.setFontSize(12);
-  d.text(s.signatureData?.signerName || "Authorized Electronically", col1X, innerY + 12);
-  d.text(s.repName || "Hustad Representative", col2X, innerY + 12);
-  
-  sd(d, T.gray400); d.setLineWidth(0.3);
-  d.line(col1X, innerY + 16, col1X + lineW, innerY + 16);
-  d.line(col2X, innerY + 16, col2X + lineW, innerY + 16);
-  
-  st(d, T.gray500); d.setFont("helvetica", "normal"); d.setFontSize(7);
+  d.text(s.signatureData?.signerName || "Authorized Electronically", col1X, Y);
+  d.text(s.repName || "Hustad Representative", col2X, Y);
+  Y += 4;
+
+  sf(d, T.gray400);
+  d.rect(col1X, Y, lineW, 0.5, "F");
+  d.rect(col2X, Y, lineW, 0.5, "F");
+  Y += 5;
+
+  st(d, T.gray500); d.setFont("times", "normal"); d.setFontSize(8);
   const dateStr = fmtDate(s.signatureData?.signedAt) || "";
-  d.text(dateStr, col1X, innerY + 21);
-  d.text(`${dateStr} - Hustad Companies, Inc.`, col2X, innerY + 21);
+  d.text(dateStr, col1X, Y);
+  d.text(`${dateStr} - Hustad Companies, Inc.`, col2X, Y);
 
-  Y += boxHeight + 12;
+  Y += 12;
 
-  if (!isAgreement) {
-    st(d, T.gray500); d.setFont("times", "normal"); d.setFontSize(9);
-    const text = "The homeowner acknowledges they have reviewed the inspection findings and that this report accurately reflects the documented conditions at the property.";
-    const lines = d.splitTextToSize(text, CW);
-    d.text(lines, M, Y);
-    Y += lines.length * 4.5 + 8;
-  }
+  st(d, T.gray500); d.setFont("times", "normal"); d.setFontSize(9);
+  const text = (pt === "carrier_review" || pt === "full_restoration")
+    ? "The homeowner acknowledges they have reviewed the inspection findings and agree to the terms of the insurance contingency agreement as executed above."
+    : "The homeowner acknowledges they have reviewed the inspection findings and that this report accurately reflects the documented conditions at the property.";
+  const lines = d.splitTextToSize(text, CW);
+  d.text(lines, M, Y);
+  Y += lines.length * 4.5 + 8;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -877,11 +862,11 @@ function renderReportSignature(d: jsPDF, pt: PathType, s: SessionState) {
 export async function generateReportPDF(s: SessionState, photosArg: any, logo: any, rid: any, ptType: any) {
   const d = new jsPDF({ compress: true });
   Y = 0;
-  
+
   const pt = derivePathType(s);
   const cfg = getPathConfig(pt);
   const photos = await collectPhotos(s);
-  
+
   await renderHeader(d, cfg, pt, s);
   renderPropRow(d, s);
   renderIntro(d, pt, s);
@@ -892,15 +877,15 @@ export async function generateReportPDF(s: SessionState, photosArg: any, logo: a
   renderFindings(d, pt, s);
   await renderPhotos(d, photos);
   renderSteps(d, pt);
-  
+
   const isSigned = !!s.signatureData?.signedAt;
   if ((pt === "carrier_review" || pt === "full_restoration") && isSigned) {
-    renderAgreementText(d, s);
+    renderAgreementText(d);
   }
-  
+
   renderReportSignature(d, pt, s);
   renderFooter(d);
-  
+
   return d;
 }
 
@@ -913,55 +898,57 @@ export async function generateAgreementPDF(s: SessionState) {
   const d = new jsPDF({ compress: true });
   Y = M;
   const isSigned = !!s.signatureData.signedAt;
+
+  // Green Header Box
+  sf(d, T.emerald700); d.roundedRect(M, Y, CW, 24, 2, 2, "F");
+  st(d, [255, 255, 255]); d.setFont("helvetica", "bold"); d.setFontSize(11);
   
-  // Header
-  sf(d, T.emerald700);
-  d.roundedRect(M, Y, CW, 20, 2, 2, "F");
-  
-  st(d, T.white); d.setFont("helvetica", "bold"); d.setFontSize(10);
-  d.text(isSigned ? "INSURANCE CONTINGENCY AGREEMENT - EXECUTED COPY" : "INSURANCE CONTINGENCY AGREEMENT - DRAFT", M + 6, Y + 8);
-  
-  st(d, T.emerald100); d.setFont("helvetica", "normal"); d.setFontSize(8);
-  const dateStr = fmtDate(s.signatureData?.signedAt) || fmtDate(s.createdAt);
-  const addr = s.property.address || "On file";
-  d.text(`Signed: ${dateStr} - Property: ${addr}`, M + 6, Y + 14);
-  
-  Y += 30;
-  
+  if (isSigned) {
+    d.text("INSURANCE CONTINGENCY AGREEMENT - EXECUTED COPY", M + 6, Y + 10);
+    d.setFont("helvetica", "normal"); d.setFontSize(9);
+    d.text(`Signed: ${fmtDate(s.signatureData.signedAt)} - Property: ${s.property.address}`, M + 6, Y + 18);
+  } else {
+    d.text("INSURANCE CONTINGENCY AGREEMENT - DRAFT / FOR REVIEW", M + 6, Y + 10);
+    d.setFont("helvetica", "normal"); d.setFontSize(9);
+    d.text(`Date: ${fmtDate(s.createdAt)} - Property: ${s.property.address}`, M + 6, Y + 18);
+  }
+
+  Y += 36;
+
   AGREEMENT_SECTIONS.forEach((sec, idx) => {
     checkPage(d, 30);
     st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(10);
     d.text(sec.heading, M, Y);
     Y += 6;
-    
+
     st(d, T.gray700); d.setFont("times", "normal"); d.setFontSize(9);
     const lines = d.splitTextToSize(sec.body, CW);
     d.text(lines, M, Y);
     Y += lines.length * 4.5 + 6;
   });
-  
+
   // Wisconsin Notice
   checkPage(d, 40);
   Y += 4;
-  
+
   sf(d, T.amber50); d.roundedRect(M, Y, CW, 35, 2, 2, "F");
   sd(d, T.amber500); d.setLineWidth(1); d.line(M, Y, M, Y + 35);
-  
+
   st(d, T.amber800); d.setFont("times", "bold"); d.setFontSize(9);
   d.text(WISCONSIN_CLAIM_NOTICE.heading.toUpperCase(), M + 6, Y + 8);
-  
+
   st(d, T.amber900); d.setFont("times", "normal"); d.setFontSize(8);
   WISCONSIN_CLAIM_NOTICE.lines.forEach((line, i) => {
     d.text(`• ${line}`, M + 6, Y + 14 + (i * 4));
   });
   Y += 45;
-  
+
   // Required Acknowledgements
   checkPage(d, 60);
   st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(10);
   d.text("REQUIRED ACKNOWLEDGEMENTS", M, Y);
   Y += 8;
-  
+
   const acks = [
     "I reviewed the documented inspection findings and they reflect actual conditions at my property.",
     "I understand my insurance carrier determines coverage \u2014 this agreement does not guarantee claim approval.",
@@ -969,66 +956,61 @@ export async function generateAgreementPDF(s: SessionState) {
     "I understand Hustad will email me the full report and executed agreement upon signing.",
     "I understand this agreement should be reviewed by all required property owners or policyholders."
   ];
-  
+
   acks.forEach(ack => {
     checkPage(d, 15);
     st(d, isSigned ? T.emerald500 : T.gray400); d.setFontSize(10);
     d.text(isSigned ? "\u2713" : "\u25CB", M, Y + 3); // Checkmark or open circle
-    
+
     st(d, T.slate900); d.setFont("times", "normal"); d.setFontSize(9);
     const lines = d.splitTextToSize(ack, CW - 10) as string[];
     d.text(lines, M + 8, Y + 3);
     Y += lines.length * 4.5 + 2;
   });
-  
+
   Y += 6;
-  
+
   // Signature Block
-  checkPage(d, 55);
-  Y += 8;
-  
-  const boxHeight = 45;
-  sf(d, T.emerald50);
-  d.roundedRect(M, Y, CW, boxHeight, 2, 2, "F");
-  
-  sd(d, T.emerald200);
-  d.setLineWidth(0.3);
-  d.roundedRect(M, Y, CW, boxHeight, 2, 2, "S");
+  checkPage(d, 50);
+  st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(12);
+  d.text("Authorization", M, Y);
+  Y += 12;
 
-  const innerY = Y + 10;
-  const col1X = M + 8;
-  const col2X = M + CW / 2 + 8;
-  const lineW = CW / 2 - 24;
+  const col1X = M;
+  const col2X = M + CW / 2 + 10;
+  const lineW = CW / 2 - 15;
 
-  st(d, T.gray500); d.setFont("helvetica", "bold"); d.setFontSize(7);
-  d.text("HOMEOWNER", col1X, innerY);
-  d.text("HUSTAD REPRESENTATIVE", col2X, innerY);
-  
+  st(d, T.gray500); d.setFont("times", "bold"); d.setFontSize(8);
+  d.text("HOMEOWNER", col1X, Y);
+  d.text("HUSTAD REPRESENTATIVE", col2X, Y);
+  Y += 12;
+
   st(d, T.slate900); d.setFont("times", "italic"); d.setFontSize(12);
   if (isSigned) {
-    d.text(s.signatureData?.signerName || "Authorized Electronically", col1X, innerY + 12);
-    d.text(s.repName || "Hustad Representative", col2X, innerY + 12);
+    d.text(s.signatureData?.signerName || "Authorized Electronically", col1X, Y);
+    d.text(s.repName || "Hustad Representative", col2X, Y);
   } else {
     st(d, T.gray500);
-    d.text("UNSIGNED - FOR REVIEW", col1X, innerY + 12);
-    d.text("UNSIGNED", col2X, innerY + 12);
+    d.text("UNSIGNED - FOR REVIEW", col1X, Y);
+    d.text("UNSIGNED", col2X, Y);
   }
-  
-  sd(d, T.gray400); d.setLineWidth(0.3);
-  d.line(col1X, innerY + 16, col1X + lineW, innerY + 16);
-  d.line(col2X, innerY + 16, col2X + lineW, innerY + 16);
-  
-  st(d, T.gray500); d.setFont("helvetica", "normal"); d.setFontSize(7);
+  Y += 4;
+
+  sf(d, T.gray400);
+  d.rect(col1X, Y, lineW, 0.5, "F");
+  d.rect(col2X, Y, lineW, 0.5, "F");
+  Y += 5;
+
+  st(d, T.gray500); d.setFont("times", "normal"); d.setFontSize(8);
   if (isSigned) {
     const dateStr = fmtDate(s.signatureData?.signedAt) || "";
-    d.text(dateStr, col1X, innerY + 21);
-    d.text(`${dateStr} - Hustad Companies, Inc.`, col2X, innerY + 21);
+    d.text(dateStr, col1X, Y);
+    d.text(`${dateStr} - Hustad Companies, Inc.`, col2X, Y);
   } else {
-    d.text("Date", col1X, innerY + 21);
-    d.text("Date - Hustad Companies, Inc.", col2X, innerY + 21);
+    d.text("Date", col1X, Y);
+    d.text("Date - Hustad Companies, Inc.", col2X, Y);
   }
 
-  Y += boxHeight + 12;
   // Watermarks
   const total = d.getNumberOfPages();
   for (let i = 1; i <= total; i++) {
@@ -1038,12 +1020,12 @@ export async function generateAgreementPDF(s: SessionState) {
     d.setGState(new (d as any).GState({ opacity: 0.1 }));
     d.text(isSigned ? "EXECUTED" : "UNSIGNED - REVIEW", PW / 2, PH / 2, { align: "center", angle: 45 });
     d.setGState(new (d as any).GState({ opacity: 1.0 }));
-    
+
     // Page X of Y
     st(d, T.gray400); d.setFont("helvetica", "normal"); d.setFontSize(6);
     d.text(`Page ${i} of ${total}`, PW - M, PH - 10, { align: "right" });
   }
-  
+
   return d;
 }
 
