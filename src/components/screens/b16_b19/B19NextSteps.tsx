@@ -108,6 +108,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
       }
 
       // Map to CP stages
+      let cpOpportunityId: string | null = null;
       if (finalSession.centerpointId && outcome !== "no_damage" && outcome !== "monitor_only") {
         try {
           let targetStage = "Pending";
@@ -121,10 +122,10 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
             oppType = "Roof Replacement";
           } else if (outcome === "claim_review_candidate") {
             targetStage = isSigned ? "Accepted" : "Pending";
-            oppType = "Roof Replacement";
+            oppType = "Hail/Wind Claim";
           }
 
-          await fetch("/api/centerpoint/opportunities", {
+          const oppRes = await fetch("/api/centerpoint/opportunities", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -139,6 +140,8 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
               } : {})
             }),
           });
+          const oppData = await oppRes.json();
+          cpOpportunityId = oppData?.opportunity?.id ?? null;
         } catch (e) {
           console.error("Failed to create CP opportunity on finish", e);
         }
@@ -169,8 +172,30 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
       }));
 
       // Trigger Office Dispatch
+      let dispatchedSession = finalSession;
       if (finalSession.officeDispatchStatus !== "sent") {
-        await handleOfficeDispatch(finalSession);
+        dispatchedSession = await handleOfficeDispatch(finalSession) ?? finalSession;
+      }
+
+      // Post inspection report link as a note to the CP opportunity History & Notes
+      if (cpOpportunityId) {
+        try {
+          const noteRes = await fetch("/api/centerpoint/note", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              opportunityId: cpOpportunityId,
+              session: dispatchedSession,
+              reportUrl: dispatchedSession.reportUrl,
+            }),
+          });
+          if (!noteRes.ok) {
+            const noteErr = await noteRes.json().catch(() => ({}));
+            console.error("[CP_NOTE] Route returned error:", noteErr);
+          }
+        } catch (e) {
+          console.error("[CP_NOTE] Failed to post CP note", e);
+        }
       }
     } catch (err) {
       /* non-fatal */
