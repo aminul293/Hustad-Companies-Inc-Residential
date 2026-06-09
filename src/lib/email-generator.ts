@@ -23,29 +23,9 @@ const T_END = `</td></tr></table>`;
 const CONTAINER_START = `<table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e5e5ea; border-radius: 8px; overflow: hidden; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-shadow: 0 4px 12px rgba(0,0,0,0.03);"><tr><td>`;
 const CONTAINER_END = `</td></tr></table>`;
 
-const LOGO = `
-<table border="0" cellpadding="0" cellspacing="0" role="presentation">
-  <tr>
-    <td width="32" height="32" align="center" valign="middle" style="background-color: #fbbf24; border-radius: 4px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 900; color: #0f172a; font-size: 16px;">H</td>
-    <td style="padding-left: 10px;">
-      <div style="color: #ffffff; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 900; font-size: 13px; letter-spacing: 2px; line-height: 1.1;">HUSTAD</div>
-      <div style="color: #fbbf24; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 1.5px; line-height: 1.1; margin-top: 2px;">COMPANIES</div>
-    </td>
-  </tr>
-</table>
-`;
+const LOGO = `<img src="https://hustad-companies-inc-residental.vercel.app/logo-white.png" width="160" height="36" alt="Hustad Companies" style="display: block; border: 0;" />`;
 
-const LOGO_DARK = `
-<table border="0" cellpadding="0" cellspacing="0" role="presentation">
-  <tr>
-    <td width="32" height="32" align="center" valign="middle" style="background-color: #fbbf24; border-radius: 4px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 900; color: #0f172a; font-size: 16px;">H</td>
-    <td style="padding-left: 10px;">
-      <div style="color: #0f172a; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 900; font-size: 13px; letter-spacing: 2px; line-height: 1.1;">HUSTAD</div>
-      <div style="color: #d97706; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 1.5px; line-height: 1.1; margin-top: 2px;">COMPANIES</div>
-    </td>
-  </tr>
-</table>
-`;
+const LOGO_DARK = LOGO;
 
 function getBadge(text: string, v: "executed" | "pending" | "proposal"): string {
   const map = {

@@ -155,24 +155,13 @@ async function collectPhotos(s: SessionState): Promise<PdfPhoto[]> {
 
 async function loadLogoDataUrl(): Promise<string | null> {
   try {
-    const resp = await fetch("/logo.svg");
+    const resp = await fetch("/logo.png");
     if (!resp.ok) return null;
-    const svgText = await resp.text();
-    const whiteSvg = svgText.replace(/fill:\s*#231f20/g, "fill: #ffffff");
-    const blob = new Blob([whiteSvg], { type: "image/svg+xml" });
-    const url = URL.createObjectURL(blob);
-    return await new Promise<string>((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = 1468;
-        canvas.height = 330;
-        canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
-        URL.revokeObjectURL(url);
-        resolve(canvas.toDataURL("image/png"));
-      };
-      img.onerror = reject;
-      img.src = url;
+    const blob = await resp.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.readAsDataURL(blob);
     });
   } catch {
     return null;
