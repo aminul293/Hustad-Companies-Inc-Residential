@@ -1590,8 +1590,8 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                 repConfirmed 
                   ? "bg-indigo-500 border-indigo-500" 
                   : isHighContrast 
-                    ? "border-black/30" 
-                    : "border-white/30"
+                    ? "border-black/60 bg-black/5" 
+                    : "border-white/50 bg-white/5"
               )}>
                 {repConfirmed && <Check className="w-3 h-3 text-white" />}
               </div>
