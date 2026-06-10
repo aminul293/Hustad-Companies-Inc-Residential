@@ -45,6 +45,7 @@ interface StarButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
   lightColor?: string;
   backgroundColor?: string;
   borderWidth?: number;
+  textColor?: string;
   className?: string;
 }
 
@@ -55,6 +56,7 @@ export function StarButton({
   lightColor = "#FAFAFA",
   backgroundColor = "currentColor",
   borderWidth = 2,
+  textColor,
   className,
   ...props
 }: StarButtonProps) {
@@ -99,13 +101,13 @@ export function StarButton({
         }
       />
       <div
-        className="absolute inset-0 dark:border-white/15 border-black/10 z-[4] overflow-hidden rounded-[inherit] dark:text-black text-[#E8EDF8]"
+        className={cn("absolute inset-0 dark:border-white/15 border-black/10 z-[4] overflow-hidden rounded-[inherit] dark:text-black", textColor || "text-[#E8EDF8]")}
         style={{ borderWidth: "var(--border-width)" }}
         aria-hidden="true"
       >
         <StarBackground color={backgroundColor} />
       </div>
-      <div className="z-10 relative flex items-center justify-center gap-2 text-[#E8EDF8]">
+      <div className={cn("z-10 relative flex items-center justify-center gap-2", textColor || "text-[#E8EDF8]")}>
         {children}
       </div>
     </button>

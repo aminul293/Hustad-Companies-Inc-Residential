@@ -1598,6 +1598,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
               disabled={!outcomeType || !repConfirmed}
               lightColor={isHighContrast ? "#000000" : "#FAFAFA"}
               backgroundColor={isHighContrast ? "#FFFFFF" : "#0A0A0A"}
+              textColor={isHighContrast ? "text-black" : "text-[#E8EDF8]"}
               className={cn(
                 "w-full h-14 md:h-20 rounded-[40px] transition-all duration-500 group border",
                 (!outcomeType || !repConfirmed)
