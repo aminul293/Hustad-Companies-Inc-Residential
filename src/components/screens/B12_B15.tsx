@@ -1083,14 +1083,14 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
                           <p style={{ fontFamily: "'Inter', system-ui", fontSize: "10px", letterSpacing: "1.8px", textTransform: "uppercase", color: "rgba(130,160,255,0.70)", fontWeight: 500 }}>
                             Why It Matters
                           </p>
-                          <p className="font-inter text-[12px] leading-[1.6]" style={{ color: DS.text.secondary }}>{meta.whyItMatters}</p>
+                          <p className="font-inter text-[12px] leading-[1.6]" style={{ color: "rgba(255,255,255,0.72)" }}>{meta.whyItMatters}</p>
                         </div>
                         {/* Inspector note */}
                         <div className="space-y-1.5 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
                           <p style={{ fontFamily: "'Inter', system-ui", fontSize: "10px", letterSpacing: "1.8px", textTransform: "uppercase", color: "rgba(130,160,255,0.70)", fontWeight: 500 }}>
                             Inspector Note
                           </p>
-                          <p className="font-inter text-[11.5px] leading-relaxed italic" style={{ color: DS.text.muted }}>"{meta.inspectorNote}"</p>
+                          <p className="font-inter text-[11.5px] leading-relaxed italic" style={{ color: "rgba(255,255,255,0.48)" }}>"{meta.inspectorNote}"</p>
                         </div>
                       </div>
                     </motion.div>
