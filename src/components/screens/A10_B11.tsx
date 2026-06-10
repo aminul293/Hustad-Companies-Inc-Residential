@@ -1676,9 +1676,11 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
               </button>
               
               <div className="flex flex-col gap-2 mb-2">
-                <h3 className="text-xl font-semibold text-white tracking-wide">Select Building Footprint</h3>
+                <h3 className="text-xl font-semibold text-white tracking-wide">
+                  Select Building Footprint
+                </h3>
                 <p className="text-sm text-white/50">
-                  Multiple buildings were found near this address. Tap the correct roof on the map to set the square footage.
+                  Multiple buildings were found near <span className="text-white/80 font-medium">{session.property.address || "this address"}</span>. Tap the correct roof on the map to set the square footage.
                 </p>
               </div>
 
