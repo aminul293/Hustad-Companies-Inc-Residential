@@ -5,9 +5,11 @@ const UA = "hustad-tablet-platform/1.0 (aminul@hustadcompanies.com)";
 /** Shoelace formula — area of a polygon from lat/lon pairs, in sq meters */
 function polygonAreaSqMeters(coords: [number, number][]): number {
   if (coords.length < 3) return 0;
-  // Convert degrees to approximate meters using equirectangular projection
-  // centered on the polygon's mean latitude
+  // Calculate centroid (mean lat and lon) to translate polygon to origin.
+  // This prevents floating point catastrophic cancellation in the shoelace formula.
   const meanLat = coords.reduce((s, c) => s + c[0], 0) / coords.length;
+  const meanLon = coords.reduce((s, c) => s + c[1], 0) / coords.length;
+  
   const latM = 111320; // 1 degree latitude ≈ 111,320 m
   const lonM = 111320 * Math.cos((meanLat * Math.PI) / 180);
 
@@ -16,7 +18,13 @@ function polygonAreaSqMeters(coords: [number, number][]): number {
   for (let i = 0; i < n; i++) {
     const [lat1, lon1] = coords[i];
     const [lat2, lon2] = coords[(i + 1) % n];
-    area += lon1 * lonM * lat2 * latM - lon2 * lonM * lat1 * latM;
+    
+    const x1 = (lon1 - meanLon) * lonM;
+    const y1 = (lat1 - meanLat) * latM;
+    const x2 = (lon2 - meanLon) * lonM;
+    const y2 = (lat2 - meanLat) * latM;
+    
+    area += (x1 * y2) - (x2 * y1);
   }
   return Math.abs(area / 2);
 }
@@ -83,18 +91,28 @@ export async function GET(req: NextRequest) {
     const overpassData = await overpassRes.json();
     const elements: any[] = overpassData.elements ?? [];
 
-    // Find the largest building footprint (most likely the main structure)
-    let maxArea = 0;
+    // Find the building footprint that is closest to the geocoded address
+    let closestDist = Infinity;
+    let targetArea = 0;
+    
     for (const el of elements) {
       if (el.type === "way" && el.geometry?.length) {
         const coords: [number, number][] = el.geometry.map((g: any) => [g.lat, g.lon]);
-        const areaSqM = polygonAreaSqMeters(coords);
-        if (areaSqM > maxArea) maxArea = areaSqM;
+        
+        // Approximate distance to the centroid of this building
+        const meanBldgLat = coords.reduce((s, c) => s + c[0], 0) / coords.length;
+        const meanBldgLon = coords.reduce((s, c) => s + c[1], 0) / coords.length;
+        const dist = Math.hypot(meanBldgLat - latF, meanBldgLon - lonF);
+        
+        if (dist < closestDist) {
+          closestDist = dist;
+          targetArea = polygonAreaSqMeters(coords);
+        }
       }
     }
 
-    if (maxArea > 0) {
-      const sqFt = Math.round(maxArea * 10.764);
+    if (targetArea > 0) {
+      const sqFt = Math.round(targetArea * 10.764);
       footprintSqFt = sqFt;
       // Apply 1.15 pitch factor — typical for residential roofs (4/12 to 6/12 pitch)
       roofingSqFt   = Math.round(sqFt * 1.15);
