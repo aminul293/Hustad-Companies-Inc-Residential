@@ -1270,7 +1270,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
               </div>
 
               {/* Technical Property Metrics */}
-              <div className={cn("p-10 rounded-[40px] border grid grid-cols-1 md:grid-cols-3 gap-10",
+              <div className={cn("p-10 rounded-[40px] border grid grid-cols-1 md:grid-cols-[1fr,1.5fr,1fr] gap-6",
                 isHighContrast ? "bg-white border-black" : "bg-[var(--bg-surface)] border-[var(--border-color)]"
               )}>
                 <div className="space-y-4">
@@ -1292,7 +1292,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                     </button>
                   </div>
                   <input
-                    className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl py-5 px-6 text-[var(--tx1)] text-xl font-display placeholder:text-[var(--tx4)] outline-none focus:border-indigo-500/40 focus:bg-[var(--bg-base)] transition-all"
+                    className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl py-5 px-5 text-[var(--tx1)] text-xl font-display placeholder:text-[var(--tx4)] outline-none focus:border-indigo-500/40 focus:bg-[var(--bg-base)] transition-all"
                     placeholder="e.g. 3,200"
                     value={roofingArea}
                     onChange={(e) => setRoofingArea(e.target.value)}
@@ -1306,7 +1306,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                   <p className="text-[9px] font-mono text-[var(--tx3)] uppercase tracking-[0.4em] pl-1 font-bold">Roof Material</p>
                   <div className="relative">
                     <select
-                      className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl py-5 pl-6 pr-12 text-[var(--tx1)] text-base font-display outline-none focus:border-indigo-500/40 focus:bg-[var(--bg-base)] transition-all appearance-none cursor-pointer truncate"
+                      className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl py-5 pl-4 pr-10 text-[var(--tx1)] text-sm font-display outline-none focus:border-indigo-500/40 focus:bg-[var(--bg-base)] transition-all appearance-none cursor-pointer truncate"
                       value={roofType}
                       onChange={(e) => setRoofType(e.target.value)}
                     >
@@ -1325,7 +1325,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                 <div className="space-y-4">
                   <p className="text-[9px] font-mono text-[var(--tx3)] uppercase tracking-[0.4em] pl-1 font-bold">Preliminary Value</p>
                   <input
-                    className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl py-5 px-6 text-[var(--tx1)] text-xl font-display placeholder:text-[var(--tx4)] outline-none focus:border-indigo-500/40 focus:bg-[var(--bg-base)] transition-all"
+                    className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl py-5 px-5 text-[var(--tx1)] text-xl font-display placeholder:text-[var(--tx4)] outline-none focus:border-indigo-500/40 focus:bg-[var(--bg-base)] transition-all"
                     placeholder="e.g. $28,800"
                     value={estimatedValue}
                     onChange={(e) => setEstimatedValue(e.target.value)}
