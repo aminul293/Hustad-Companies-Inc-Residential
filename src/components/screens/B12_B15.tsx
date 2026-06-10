@@ -2028,17 +2028,27 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
       )}
 
       {/* ═══ CINEMATIC HOUSE / ROOF IMAGE ════════════════════════════════════════ */}
-      <div className="absolute top-0 right-0 w-[60%] pointer-events-none overflow-hidden" style={{ zIndex: 2, height: "70vh" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={config.heroImage} alt="" aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ objectPosition: config.imagePosition, filter: "brightness(0.42) contrast(1.12) saturate(0.78) hue-rotate(-8deg)" }}
-        />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(5,8,22,1) 0%, rgba(5,8,22,0.92) 28%, rgba(5,8,22,0.62) 58%, rgba(5,8,22,0.12) 100%)" }} />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(5,8,22,0.20) 0%, transparent 38%, rgba(5,8,22,0.88) 100%)" }} />
-        <div className="absolute inset-0" style={{ background: "radial-gradient(circle at center right, rgba(61,90,254,0.18), transparent 40%)" }} />
-      </div>
+      {(() => {
+        const fadeRgb = DS.isDark ? "5,8,22" : theme === "high-contrast" ? "255,255,255" : "247,245,241";
+        return (
+          <div className="absolute top-0 right-0 w-[60%] pointer-events-none overflow-hidden" style={{ zIndex: 2, height: "70vh" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={config.heroImage} alt="" aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover transition-all duration-700"
+              style={{
+                objectPosition: config.imagePosition,
+                filter: DS.isDark 
+                  ? "brightness(0.42) contrast(1.12) saturate(0.78) hue-rotate(-8deg)"
+                  : "brightness(0.95) contrast(1.05) saturate(1.1)",
+              }}
+            />
+            <div className="absolute inset-0" style={{ background: `linear-gradient(90deg, rgba(${fadeRgb},1) 0%, rgba(${fadeRgb},0.92) 28%, rgba(${fadeRgb},0.62) 58%, rgba(${fadeRgb},0.12) 100%)` }} />
+            <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, rgba(${fadeRgb},0.20) 0%, transparent 38%, rgba(${fadeRgb},0.88) 100%)` }} />
+            <div className="absolute inset-0" style={{ background: DS.isDark ? "radial-gradient(circle at center right, rgba(61,90,254,0.18), transparent 40%)" : "radial-gradient(circle at center right, rgba(61,90,254,0.06), transparent 40%)" }} />
+          </div>
+        );
+      })()}
 
       {/* ═══ FLOATING GLASS HEADER ════════════════════════════════════════════════ */}
       <div className="absolute top-0 inset-x-0 z-30 px-6 md:px-10 pt-5 pointer-events-none">
