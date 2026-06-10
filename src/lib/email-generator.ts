@@ -144,15 +144,24 @@ function renderFindings(items: string[], label = "Documented Conditions", iconCo
   `;
 }
 
-function renderPhotos(label = "Storm Evidence &middot; Strongest Proof Photos"): string {
+function renderPhotos(label = "Storm Evidence &middot; Strongest Proof Photos", photos: string[] = []): string {
   let boxes = [];
-  for(let i=1; i<=6; i++) {
-    boxes.push(`
-      <td width="32%" align="center" style="background-color: #f9f9f9; border: 1px solid #f0f0f0; border-radius: 6px; padding: 32px 0;">
-        <span style="font-size: 24px; color: #d1d1d6;">&#128247;</span>
-        <div style="color: #8e8e93; font-size: 11px; font-weight: 500; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin-top: 8px;">Photo ${i}</div>
-      </td>
-    `);
+  for(let i=0; i<6; i++) {
+    const url = photos[i];
+    if (url) {
+      boxes.push(`
+        <td width="32%" align="center" style="background-color: #f9f9f9; border: 1px solid #f0f0f0; border-radius: 6px; overflow: hidden; height: 120px; vertical-align: middle;">
+          <img src="${url}" alt="Inspection Photo" style="width: 100%; height: 100%; object-fit: cover; display: block;" />
+        </td>
+      `);
+    } else {
+      boxes.push(`
+        <td width="32%" align="center" style="background-color: #f9f9f9; border: 1px solid #f0f0f0; border-radius: 6px; padding: 32px 0;">
+          <span style="font-size: 24px; color: #d1d1d6;">&#128247;</span>
+          <div style="color: #8e8e93; font-size: 11px; font-weight: 500; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin-top: 8px;">Photo ${i + 1}</div>
+        </td>
+      `);
+    }
   }
   let row1 = `<tr>${boxes[0]}<td width="2%">&nbsp;</td>${boxes[1]}<td width="2%">&nbsp;</td>${boxes[2]}</tr>`;
   let row2 = `<tr><td colspan="5" height="12"></td></tr><tr>${boxes[3]}<td width="2%">&nbsp;</td>${boxes[4]}<td width="2%">&nbsp;</td>${boxes[5]}</tr>`;
@@ -366,6 +375,12 @@ export async function generateEmailHTML(session: SessionState, reviewUrl: string
   const monitorCount = session.findings.monitorItemsCount;
   const photoCount = session.photoAssets?.length || 0;
 
+  const allPhotos = [
+    ...(session.photoAssets || []).filter(p => p.remoteUrl).map(p => p.remoteUrl as string),
+    ...(session.photos || []).filter(p => p.remoteUrl).map(p => p.remoteUrl as string)
+  ];
+  const topPhotos = allPhotos.slice(0, 6);
+
   const reviewButtonHtml = reviewUrl ? `
     <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #fafafa; border-bottom: 1px solid #f0f0f0;">
       <tr>
@@ -412,7 +427,7 @@ export async function generateEmailHTML(session: SessionState, reviewUrl: string
     bodyHtml += renderStats(stormStats);
     bodyHtml += renderStormBanner();
     bodyHtml += renderFindings(finds, "Documented Conditions", "#d97706", "&bull;");
-    bodyHtml += renderPhotos("Storm Evidence &middot; Strongest Proof Photos");
+    bodyHtml += renderPhotos("Storm Evidence &middot; Strongest Proof Photos", topPhotos);
     bodyHtml += renderSteps([
       { t: "Confirm Your Claim is Active", d: "Let us know if your claim has been filed, or if you need guidance on filing with your carrier." },
       { t: "Carrier Inspection Coordinated", d: "Hustad will schedule the adjuster visit and be present to ensure documented findings are accurately represented." },
@@ -431,7 +446,7 @@ export async function generateEmailHTML(session: SessionState, reviewUrl: string
     bodyHtml += renderStats(stormStats);
     bodyHtml += renderStormBanner();
     bodyHtml += renderFindings(finds, "Documented Conditions", "#d97706", "&bull;");
-    bodyHtml += renderPhotos("Storm Evidence &middot; Strongest Proof Photos");
+    bodyHtml += renderPhotos("Storm Evidence &middot; Strongest Proof Photos", topPhotos);
     bodyHtml += reviewButtonHtml;
     bodyHtml += renderAgreementHTML(isSigned, session);
     bodyHtml += renderSteps([
@@ -450,7 +465,7 @@ export async function generateEmailHTML(session: SessionState, reviewUrl: string
     `;
     bodyHtml += renderStats(repairStats);
     bodyHtml += renderFindings(finds, "Documented Conditions", "#ea580c", "&#9656;");
-    bodyHtml += renderPhotos("Repair Documentation &middot; Inspection Photos");
+    bodyHtml += renderPhotos("Repair Documentation &middot; Inspection Photos", topPhotos);
     bodyHtml += renderSteps([
       { t: "Review This Report", d: "Take time to review the documented findings and recommended repair scope." },
       { t: "Scheduling Confirmation", d: "Expect a call from our scheduling team within 2 business days to confirm your production window." },
@@ -471,7 +486,7 @@ export async function generateEmailHTML(session: SessionState, reviewUrl: string
       { l: "Photos Taken",    v: `${photoCount}`, vc: "#475569" },
     ]);
     bodyHtml += renderFindings(finds, "Documented Conditions", "#ef4444", "&#9656;");
-    bodyHtml += renderPhotos("Project context photos / reference images");
+    bodyHtml += renderPhotos("Project context photos / reference images", topPhotos);
     bodyHtml += renderSteps([
       { t: "Proposal Delivered to You", d: "Your Hustad estimating team will send your custom proposal to this email address within 2&ndash;3 business days." },
       { t: "Review at Your Own Pace", d: "Take time to review the scope, material options, and pricing. No pressure and no deadline to decide." },
@@ -487,7 +502,7 @@ export async function generateEmailHTML(session: SessionState, reviewUrl: string
       </table>
     `;
     bodyHtml += renderFindings(finds.length > 0 ? finds : ["No urgent issues found during inspection."], "Documented Conditions", "#10b981", "&#9656;");
-    bodyHtml += renderPhotos("Inspection Documentation");
+    bodyHtml += renderPhotos("Inspection Documentation", topPhotos);
   }
 
   bodyHtml += renderFooter(session);
