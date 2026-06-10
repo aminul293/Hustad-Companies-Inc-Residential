@@ -2404,7 +2404,6 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
                 <p style={{ fontFamily: "'Inter'", fontSize: "12px", lineHeight: 1.55, color: "rgba(251,191,36,0.60)" }}>{config.repGuardrail}</p>
               </div>
             )}
-          </motion.section>
 
           {/* ── § 5  No-action recheck nudge ─────────────────────────────────── */}
           {pathKey === "no_action" && (
