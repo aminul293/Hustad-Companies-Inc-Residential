@@ -679,9 +679,12 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
   const [showMapModal, setShowMapModal] = useState(false);
   const [mapCenter, setMapCenter] = useState<[number, number]>([0, 0]);
 
-  const fetchPropertyData = async () => {
-    const { address, cityStateZip } = session.property;
-    if (!address) {
+  const [mapSearchText, setMapSearchText] = useState("");
+
+  const fetchPropertyData = async (overrideAddress?: string) => {
+    const searchAddress = overrideAddress || session.property.address;
+    const { cityStateZip } = session.property;
+    if (!searchAddress) {
       setPropertyDataNote("No property address in session. Enter address first.");
       return;
     }
@@ -689,7 +692,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
     setPropertyDataNote(null);
     try {
       const res = await fetch(
-        `/api/property-data?address=${encodeURIComponent(address)}&cityStateZip=${encodeURIComponent(cityStateZip ?? "")}`
+        `/api/property-data?address=${encodeURIComponent(searchAddress)}&cityStateZip=${encodeURIComponent(cityStateZip ?? "")}`
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Lookup failed");
@@ -1682,6 +1685,30 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                 <p className="text-sm text-white/50">
                   Multiple buildings were found near <span className="text-white/80 font-medium">{session.property.address || "this address"}</span>. Tap the correct roof on the map to set the square footage.
                 </p>
+              </div>
+
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  placeholder="Search a different address to re-center the map..."
+                  value={mapSearchText}
+                  onChange={(e) => setMapSearchText(e.target.value)}
+                  className="flex-1 bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/40 focus:outline-none focus:border-white/30"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && mapSearchText) {
+                      fetchPropertyData(mapSearchText);
+                    }
+                  }}
+                />
+                <button
+                  onClick={() => {
+                    if (mapSearchText) fetchPropertyData(mapSearchText);
+                  }}
+                  disabled={isPropertyLoading}
+                  className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg transition-colors disabled:opacity-50 whitespace-nowrap"
+                >
+                  {isPropertyLoading ? "Searching..." : "Search Address"}
+                </button>
               </div>
 
               <div className="w-full h-[500px] rounded-xl overflow-hidden bg-black/50 border border-white/5 relative">
