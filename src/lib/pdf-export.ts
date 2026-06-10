@@ -911,7 +911,9 @@ export async function generateReportPDF(s: SessionState, photosArg: any, logo: a
     renderAgreementText(d, s);
   }
 
-  renderReportSignature(d, pt, s);
+  if (pt !== "no_action") {
+    renderReportSignature(d, pt, s);
+  }
   renderFooter(d);
 
   return d;
