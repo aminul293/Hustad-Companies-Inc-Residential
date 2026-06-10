@@ -612,7 +612,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
   const [isAutoClassifying, setIsAutoClassifying] = useState(false);
   const [autoClassifyResult, setAutoClassifyResult] = useState<{
     classification: string; confidence: number; headline: string;
-    reasoning: string; signals: string[];
+    reasoning: string; signals: string[]; photoCaptions?: string[];
     urgentCount?: number; stormCount?: number; monitorCount?: number;
   } | null>(null);
   const [autoClassifyError, setAutoClassifyError] = useState<string | null>(null);
