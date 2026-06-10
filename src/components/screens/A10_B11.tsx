@@ -574,7 +574,29 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
   const [headline, setHeadline] = useState(f.summaryHeadline);
   const [body, setBody] = useState(f.summaryBody);
   const [roofingArea, setRoofingArea] = useState(f.roofingArea || "3,200");
+  const [roofType, setRoofType] = useState(f.roofType || "Architectural Asphalt Shingles");
   const [estimatedValue, setEstimatedValue] = useState(f.estimatedClaimValue || "$28,800");
+
+  const ROOF_MATERIALS: Record<string, number> = {
+    "3-Tab Asphalt Shingles": 6,
+    "Architectural Asphalt Shingles": 9,
+    "Premium / Designer Asphalt Shingles": 12,
+    "Wood Shakes": 15,
+    "Natural Slate": 25,
+    "Synthetic Slate": 14,
+    "Clay Tile": 18,
+    "Concrete Tile": 12,
+    "Metal Roof": 14,
+    "Stone-Coated Steel": 16,
+  };
+
+  useEffect(() => {
+    const sqft = parseFloat(roofingArea.replace(/,/g, ''));
+    if (!isNaN(sqft)) {
+      const multiplier = ROOF_MATERIALS[roofType] || 9;
+      setEstimatedValue("$" + (sqft * multiplier).toLocaleString());
+    }
+  }, [roofType, roofingArea]);
   const [weatherEvents, setWeatherEvents] = useState(f.weatherEvents || [
     { time: "5:39 PM CDT", reference: "NWS MKX LSR: 1 E Madison, 3.25 inch hail", relevance: "Same east Madison trade area near property." },
     { time: "5:34 PM CDT", reference: "NWS MKX LSR: 1 E Maple Bluff, 3.00 inch hail", relevance: "Confirms large hail north of the property." },
@@ -787,6 +809,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
         stormRelatedItemsCount: stormCount,
         monitorItemsCount: monitorCount,
         roofingArea,
+        roofType,
         estimatedClaimValue: estimatedValue,
         summaryHeadline: headline,
         summaryBody: body,
@@ -1246,7 +1269,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
               </div>
 
               {/* Technical Property Metrics */}
-              <div className={cn("p-10 rounded-[40px] border grid grid-cols-1 md:grid-cols-2 gap-10",
+              <div className={cn("p-10 rounded-[40px] border grid grid-cols-1 md:grid-cols-3 gap-10",
                 isHighContrast ? "bg-white border-black" : "bg-[var(--bg-surface)] border-[var(--border-color)]"
               )}>
                 <div className="space-y-4">
@@ -1277,8 +1300,24 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                     <p className="text-[10px] text-[var(--tx4)] font-light pl-1 leading-relaxed">{propertyDataNote}</p>
                   )}
                 </div>
+
                 <div className="space-y-4">
-                  <p className="text-[9px] font-mono text-[var(--tx3)] uppercase tracking-[0.4em] pl-1 font-bold">Preliminary Restoration Value Range</p>
+                  <p className="text-[9px] font-mono text-[var(--tx3)] uppercase tracking-[0.4em] pl-1 font-bold">Roof Material</p>
+                  <select
+                    className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl py-5 px-6 text-[var(--tx1)] text-lg font-display outline-none focus:border-indigo-500/40 focus:bg-[var(--bg-base)] transition-all appearance-none cursor-pointer"
+                    value={roofType}
+                    onChange={(e) => setRoofType(e.target.value)}
+                  >
+                    {Object.keys(ROOF_MATERIALS).map((material) => (
+                      <option key={material} value={material}>
+                        {material}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-4">
+                  <p className="text-[9px] font-mono text-[var(--tx3)] uppercase tracking-[0.4em] pl-1 font-bold">Preliminary Value</p>
                   <input
                     className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl py-5 px-6 text-[var(--tx1)] text-xl font-display placeholder:text-[var(--tx4)] outline-none focus:border-indigo-500/40 focus:bg-[var(--bg-base)] transition-all"
                     placeholder="e.g. $28,800"

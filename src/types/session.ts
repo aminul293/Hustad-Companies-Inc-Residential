@@ -235,6 +235,7 @@ export interface RepFindingsData {
   stormRelatedItemsCount: number;
   monitorItemsCount: number;
   roofingArea: string;
+  roofType?: string;
   estimatedClaimValue: string;
   summaryHeadline: string;
   summaryBody: string;
