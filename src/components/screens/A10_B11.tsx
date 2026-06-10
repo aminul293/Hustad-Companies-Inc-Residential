@@ -1580,12 +1580,18 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                 "w-full flex items-center gap-4 px-6 py-4 rounded-2xl border transition-all duration-300 text-left",
                 repConfirmed
                   ? "bg-indigo-500/10 border-indigo-500/30"
-                  : "bg-white/[0.03] border-white/10 hover:border-white/20"
+                  : isHighContrast
+                    ? "bg-black/[0.03] border-black/10 hover:border-black/20"
+                    : "bg-white/[0.03] border-white/10 hover:border-white/20"
               )}
             >
               <div className={cn(
                 "w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-all",
-                repConfirmed ? "bg-indigo-500 border-indigo-500" : "border-white/30"
+                repConfirmed 
+                  ? "bg-indigo-500 border-indigo-500" 
+                  : isHighContrast 
+                    ? "border-black/30" 
+                    : "border-white/30"
               )}>
                 {repConfirmed && <Check className="w-3 h-3 text-white" />}
               </div>
