@@ -683,7 +683,8 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
 
   const fetchPropertyData = async (overrideAddress?: string) => {
     const searchAddress = overrideAddress || session.property.address;
-    const { cityStateZip } = session.property;
+    const cityStateZip = overrideAddress ? "" : (session.property.cityStateZip ?? "");
+    
     if (!searchAddress) {
       setPropertyDataNote("No property address in session. Enter address first.");
       return;
@@ -692,7 +693,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
     setPropertyDataNote(null);
     try {
       const res = await fetch(
-        `/api/property-data?address=${encodeURIComponent(searchAddress)}&cityStateZip=${encodeURIComponent(cityStateZip ?? "")}`
+        `/api/property-data?address=${encodeURIComponent(searchAddress)}&cityStateZip=${encodeURIComponent(cityStateZip)}`
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Lookup failed");
@@ -1715,6 +1716,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                 {/* Ensure MapContainer is mounted only on client */}
                 {typeof window !== 'undefined' && (
                   <MapContainer 
+                    key={mapCenter.join(',')}
                     center={mapCenter} 
                     zoom={18} 
                     scrollWheelZoom={true} 
