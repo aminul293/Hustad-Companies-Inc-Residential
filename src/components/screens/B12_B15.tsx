@@ -1252,24 +1252,6 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
             </div>
           </div>
 
-          {/* ── § 8  Guided Questions ──────────────────────────────────────── */}
-          <section className="space-y-5 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-            <MicroLabel icon={MessageCircle} accent={tk.accent}>Rep-Guided Questions</MicroLabel>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {config.repGuidedQs.map((q, i) => (
-                <motion.div
-                  key={i}
-                  whileHover={{ y: -2, transition: { duration: 0.18 } }}
-                  style={DS.card}
-                  className="p-6 space-y-3"
-                >
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center font-mono text-[10px] font-bold"
-                       style={{ background: tk.iconBg, color: tk.accent }}>{i + 1}</div>
-                  <p className="font-inter text-[13px] leading-relaxed" style={{ color: DS.text.secondary }}>{q}</p>
-                </motion.div>
-              ))}
-            </div>
-          </section>
 
           {/* ── Recheck CTA (no_action) ────────────────────────────────────── */}
           {pathKey === "no_action" && (
@@ -2413,28 +2395,6 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
             </motion.section>
           )}
 
-          {/* ── § 4  REP-GUIDED QUESTIONS ─────────────────────────────────────── */}
-          <motion.section
-            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.44 }}
-            className="space-y-4 pt-2"
-            style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
-          >
-            <MicroLabel icon={MessageCircle} accent={tk.accent}>Rep-Guided Questions</MicroLabel>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {companionData.questions.map((qObj, i) => (
-                <motion.div
-                  key={i}
-                  whileHover={{ y: -2, transition: { duration: 0.18 } }}
-                  style={DS.card}
-                  className="p-5 space-y-3"
-                >
-                  <div className="w-6 h-6 rounded-lg flex items-center justify-center font-mono text-[10px] font-bold"
-                    style={{ background: tk.iconBg, color: tk.accent }}>{i + 1}</div>
-                  <p style={{ fontFamily: "'Inter'", fontSize: "13px", lineHeight: 1.62, color: DS.text.secondary }}>{qObj.text}</p>
-                </motion.div>
-              ))}
-            </div>
 
             {/* Rep guardrail (rep mode only) */}
             {session.mode === "rep" && (
