@@ -66,12 +66,11 @@ export async function GET(req: NextRequest) {
   const latF = parseFloat(lat);
   const lonF = parseFloat(lon);
 
-  // ── 2. Building footprint via Overpass ───────────────────────────────────────
   const overpassQuery = `
     [out:json][timeout:10];
     (
-      way(around:60,${latF},${lonF})[building];
-      relation(around:60,${latF},${lonF})[building];
+      way(around:150,${latF},${lonF})[building];
+      relation(around:150,${latF},${lonF})[building];
     );
     out geom;
   `.trim();
