@@ -1252,7 +1252,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
                   <div className="flex items-center justify-between pl-1">
                     <p className="text-[9px] font-mono text-[var(--tx3)] uppercase tracking-[0.4em] font-bold">Roofing Area (SF)</p>
                     <button
-                      onClick={fetchPropertyData}
+                      onClick={() => fetchPropertyData()}
                       disabled={isPropertyLoading}
                       className={cn(
                         "flex items-center gap-1.5 px-3 py-1.5 rounded-xl border uppercase tracking-widest font-mono text-[9px] transition-all active:scale-95",
