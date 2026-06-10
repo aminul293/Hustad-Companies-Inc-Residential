@@ -1299,7 +1299,7 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
           BOTTOM CTA BAR — premium gradient button
       ════════════════════════════════════════════════════════════════════════ */}
       <div className="absolute bottom-0 inset-x-0 z-30 px-6 md:px-10 pb-8 pt-20"
-           style={{ background: "linear-gradient(to top, #050816 60%, transparent)" }}>
+           style={{ background: `linear-gradient(to top, ${DS.isDark ? "#050816" : "#F7F5F1"} 60%, transparent)` }}>
         <div className="max-w-5xl mx-auto space-y-3">
           <div className="flex items-center gap-4">
             {/* Back — glass secondary */}
@@ -1309,8 +1309,8 @@ export function B12FindingsSummary({ session, onUpdate, onNext, onBack, onRepJum
               onClick={onBack}
               className="flex items-center gap-2.5 px-7 font-inter font-medium text-[14px] shrink-0"
               style={{
-                background:         "rgba(255,255,255,0.05)",
-                border:             "1px solid rgba(255,255,255,0.10)",
+                background:         DS.isDark ? "rgba(255,255,255,0.05)" : "rgba(27,43,75,0.04)",
+                border:             DS.isDark ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(27,43,75,0.10)",
                 backdropFilter:     "blur(14px)",
                 WebkitBackdropFilter: "blur(14px)",
                 height:             "56px",
@@ -2469,7 +2469,7 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
 
       {/* ═══ BOTTOM CTA BAR ═══════════════════════════════════════════════════════ */}
       <div className="absolute bottom-0 inset-x-0 z-30 px-6 md:px-10 pb-8 pt-20"
-        style={{ background: "linear-gradient(to top, #050816 60%, transparent)" }}>
+        style={{ background: `linear-gradient(to top, ${DS.isDark ? "#050816" : "#F7F5F1"} 60%, transparent)` }}>
         <div className="max-w-5xl mx-auto space-y-3">
           <div className="flex items-center gap-4">
 
@@ -2478,7 +2478,7 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
               whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
               onClick={onBack}
               className="flex items-center gap-2.5 px-7 font-inter font-medium text-[14px] shrink-0"
-              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", height: "56px", borderRadius: "14px", color: DS.text.secondary }}
+              style={{ background: DS.isDark ? "rgba(255,255,255,0.05)" : "rgba(27,43,75,0.04)", border: DS.isDark ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(27,43,75,0.10)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", height: "56px", borderRadius: "14px", color: DS.text.secondary }}
             >
               <ArrowLeft size={16} strokeWidth={1.5} />
               <span>Previous</span>
