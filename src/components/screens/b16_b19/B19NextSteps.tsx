@@ -54,7 +54,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
     try {
       const { getSummaryPDFBase64 } = await import("@/lib/pdf-export");
       const pdfBase64 = await getSummaryPDFBase64(s);
-      const fileName = `Hustad_Dossier_${s.sessionId.slice(-6).toUpperCase()}.pdf`;
+      const fileName = `Hustad_Inspection_Report_${s.sessionId.slice(-6).toUpperCase()}.pdf`;
 
       const res = await officeDispatch({
         session: s,
@@ -308,7 +308,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
           return data.publicUrl;
         };
 
-        const dossierFileName = `Hustad_Dossier_${session.sessionId.slice(-6).toUpperCase()}.pdf`;
+        const dossierFileName = `Hustad_Inspection_Report_${session.sessionId.slice(-6).toUpperCase()}.pdf`;
         const dossierUrl = await uploadPdfToSupabase(dossierBase64, dossierFileName);
         
         attachments.push({
@@ -319,12 +319,8 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
 
         if (agreementBase64) {
            const agreementFileName = `Hustad_Agreement_${session.sessionId.slice(-6).toUpperCase()}.pdf`;
-           const agreementUrl = await uploadPdfToSupabase(agreementBase64, agreementFileName);
-           attachments.push({
-              name: agreementFileName,
-              fileUrl: agreementUrl,
-              contentType: 'application/pdf'
-           });
+           // Uploading for record keeping, but NOT attaching to email
+           await uploadPdfToSupabase(agreementBase64, agreementFileName);
         }
 
         // 2. Prepare recipients (Sanitize empty strings)

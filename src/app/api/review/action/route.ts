@@ -314,7 +314,7 @@ export async function POST(request: Request) {
 
           const attachments = [{
             '@odata.type': '#microsoft.graph.fileAttachment',
-            name: `Hustad_Dossier_${address?.replace(/\\W+/g, "_") || "Signed"}.pdf`,
+            name: `Hustad_Inspection_Report_${address?.replace(/\\W+/g, "_") || "Signed"}.pdf`,
             contentType: 'application/pdf',
             contentBytes: payload.pdfBase64,
           }];
