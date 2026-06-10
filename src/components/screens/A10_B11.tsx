@@ -7,6 +7,13 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { StarButton } from "@/components/ui/star-button";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { useTheme } from "@/components/ThemeProvider";
+import dynamic from "next/dynamic";
+
+// Dynamically import Leaflet components so it doesn't break SSR
+const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), { ssr: false });
+const Polygon = dynamic(() => import("react-leaflet").then((mod) => mod.Polygon), { ssr: false });
+import "leaflet/dist/leaflet.css";
 import { 
   Activity, 
   Camera, 
@@ -668,6 +675,9 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
   const [isWeatherLoading, setIsWeatherLoading] = useState(false);
   const [isPropertyLoading, setIsPropertyLoading] = useState(false);
   const [propertyDataNote, setPropertyDataNote] = useState<string | null>(null);
+  const [allBuildings, setAllBuildings] = useState<any[]>([]);
+  const [showMapModal, setShowMapModal] = useState(false);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([0, 0]);
 
   const fetchPropertyData = async () => {
     const { address, cityStateZip } = session.property;
@@ -683,8 +693,19 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Lookup failed");
-      if (data.roofingSqFt) {
+      if (data.allBuildings && data.allBuildings.length > 0) {
+        setAllBuildings(data.allBuildings);
+        setMapCenter([data.lat, data.lon]);
+        if (data.allBuildings.length > 1) {
+          setShowMapModal(true);
+        } else {
+          setRoofingArea(data.roofingSqFt.toLocaleString());
+          setEstimatedValue("$" + (data.roofingSqFt * 9).toLocaleString());
+          setPropertyDataNote(`${data.note} (${data.confidence})`);
+        }
+      } else if (data.roofingSqFt) {
         setRoofingArea(data.roofingSqFt.toLocaleString());
+        setEstimatedValue("$" + (data.roofingSqFt * 9).toLocaleString());
         setPropertyDataNote(`${data.note} (${data.confidence})`);
       } else {
         setPropertyDataNote(data.note ?? "No footprint data found for this address.");
@@ -1632,6 +1653,80 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
           </div>
         </div>
       </div>
+      {/* Map Modal for resolving footprint ambiguity */}
+      <AnimatePresence>
+        {showMapModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              className="bg-[#111] border border-white/10 rounded-2xl p-6 w-full max-w-4xl flex flex-col gap-4 shadow-2xl relative"
+            >
+              <button 
+                onClick={() => setShowMapModal(false)}
+                className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors z-10"
+              >
+                &times;
+              </button>
+              
+              <div className="flex flex-col gap-2 mb-2">
+                <h3 className="text-xl font-semibold text-white tracking-wide">Select Building Footprint</h3>
+                <p className="text-sm text-white/50">
+                  Multiple buildings were found near this address. Tap the correct roof on the map to set the square footage.
+                </p>
+              </div>
+
+              <div className="w-full h-[500px] rounded-xl overflow-hidden bg-black/50 border border-white/5 relative">
+                {/* Ensure MapContainer is mounted only on client */}
+                {typeof window !== 'undefined' && (
+                  <MapContainer 
+                    center={mapCenter} 
+                    zoom={18} 
+                    scrollWheelZoom={true} 
+                    style={{ height: '100%', width: '100%', zIndex: 0 }}
+                  >
+                    <TileLayer
+                      url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                      attribution='&copy; <a href="https://www.esri.com/">Esri</a>'
+                      maxZoom={19}
+                    />
+                    
+                    {allBuildings.map((bldg) => (
+                      <Polygon
+                        key={bldg.id}
+                        positions={bldg.polygon}
+                        pathOptions={{ 
+                          color: '#10b981', 
+                          fillColor: '#10b981', 
+                          fillOpacity: 0.4,
+                          weight: 2
+                        }}
+                        eventHandlers={{
+                          click: () => {
+                            setRoofingArea(bldg.roofingSqFt.toLocaleString());
+                            setEstimatedValue("$" + (bldg.roofingSqFt * 9).toLocaleString());
+                            setPropertyDataNote(`Selected footprint: ${bldg.roofingSqFt.toLocaleString()} SF`);
+                            setShowMapModal(false);
+                          }
+                        }}
+                      />
+                    ))}
+                    
+                    {/* Add a marker for the pin itself so user knows where it dropped */}
+                    <div className="absolute top-1/2 left-1/2 w-4 h-4 bg-blue-500 rounded-full border-2 border-white -translate-x-1/2 -translate-y-1/2 shadow-lg z-[400] pointer-events-none" />
+                  </MapContainer>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

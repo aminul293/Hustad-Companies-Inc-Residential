@@ -84,52 +84,81 @@ export async function GET(req: NextRequest) {
   let footprintSqFt: number | null = null;
   let roofingSqFt:   number | null = null;
   let source = "OpenStreetMap";
-  let confidence: "measured" | "estimated" | "not_found" = "not_found";
-
   if (overpassRes.ok) {
     const overpassData = await overpassRes.json();
-    const elements: any[] = overpassData.elements ?? [];
-
-    // Find the building footprint that is closest to the geocoded address
-    let closestDist = Infinity;
-    let targetArea = 0;
     
-    for (const el of elements) {
+    // ── 3. Find ALL building footprints and calculate areas ────────────────────
+    const buildings = [];
+    let closestDist = Infinity;
+    let defaultTargetArea = 0;
+    
+    for (const el of overpassData.elements ?? []) {
       if (el.type === "way" && el.geometry?.length) {
         const coords: [number, number][] = el.geometry.map((g: any) => [g.lat, g.lon]);
         
-        // Approximate distance to the centroid of this building
         const meanBldgLat = coords.reduce((s, c) => s + c[0], 0) / coords.length;
         const meanBldgLon = coords.reduce((s, c) => s + c[1], 0) / coords.length;
         const dist = Math.hypot(meanBldgLat - latF, meanBldgLon - lonF);
         
-        if (dist < closestDist) {
-          closestDist = dist;
-          targetArea = polygonAreaSqMeters(coords);
+        const areaSqM = polygonAreaSqMeters(coords);
+        if (areaSqM > 0) {
+          const sqFt = Math.round(areaSqM * 10.764);
+          const roofSqFt = Math.round(sqFt * 1.15);
+          
+          buildings.push({
+            id: el.id,
+            polygon: coords,
+            footprintSqFt: sqFt,
+            roofingSqFt: roofSqFt,
+            dist: dist
+          });
+
+          if (dist < closestDist) {
+            closestDist = dist;
+            defaultTargetArea = areaSqM;
+          }
         }
       }
     }
 
-    if (targetArea > 0) {
-      const sqFt = Math.round(targetArea * 10.764);
+    // ── 4. Determine response values ───────────────────────────────────────────
+    let footprintSqFt: number | null = null;
+    let roofingSqFt: number | null = null;
+    let confidence = "not_found";
+
+    if (defaultTargetArea > 0) {
+      const sqFt = Math.round(defaultTargetArea * 10.764);
       footprintSqFt = sqFt;
-      // Apply 1.15 pitch factor — typical for residential roofs (4/12 to 6/12 pitch)
+      // Apply 1.15 pitch factor
       roofingSqFt   = Math.round(sqFt * 1.15);
       confidence    = "measured";
     }
+
+    return NextResponse.json({
+      address: geoData[0].display_name,
+      lat: latF,
+      lon: lonF,
+      footprintSqFt,
+      roofingSqFt,
+      allBuildings: buildings,
+      pitchFactor: 1.15,
+      source: "OpenStreetMap",
+      confidence,
+      note: confidence === "not_found"
+        ? "Building footprint not in OpenStreetMap for this address. Enter manually."
+        : "Footprint from OpenStreetMap. Roofing area includes 1.15× pitch factor."
+    });
   }
 
   return NextResponse.json({
     address: display_name,
     lat: latF,
     lon: lonF,
-    footprintSqFt,
-    roofingSqFt,
+    footprintSqFt: null,
+    roofingSqFt: null,
     pitchFactor: 1.15,
-    source,
-    confidence,
-    note: confidence === "not_found"
-      ? "Building footprint not in OpenStreetMap for this address. Enter manually."
-      : "Footprint from OpenStreetMap. Roofing area includes 1.15× pitch factor.",
+    source: "OpenStreetMap",
+    confidence: "not_found",
+    note: "Could not reach OpenStreetMap."
   });
 }
