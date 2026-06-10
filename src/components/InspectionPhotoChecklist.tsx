@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useCallback, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   Camera, CheckCircle2, Trash2, RefreshCw,
   Plus, X, RotateCcw, ChevronRight, ArrowLeft,
@@ -431,51 +432,57 @@ export function InspectionPhotoChecklist({ session, onUpdate }: Props) {
       </div>
 
       {/* ── Guided Capture Overlay ── */}
-      <AnimatePresence>
-        {captureState && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] bg-[#060606] flex flex-col"
-          >
-            {captureState.step === "guide" && (
-              <GuidedCapture
-                captureState={captureState}
-                onClose={() => setCaptureState(null)}
-                onOpenCamera={() => fileInputRef.current?.click()}
-              />
-            )}
-            {captureState.step === "preview" && (
-              <PhotoPreview
-                captureState={captureState}
-                onRetake={handleRetake}
-                onAccept={handleAccept}
-              />
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {typeof document !== "undefined" && createPortal(
+        <AnimatePresence>
+          {captureState && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[9999] bg-[#060606] flex flex-col"
+            >
+              {captureState.step === "guide" && (
+                <GuidedCapture
+                  captureState={captureState}
+                  onClose={() => setCaptureState(null)}
+                  onOpenCamera={() => fileInputRef.current?.click()}
+                />
+              )}
+              {captureState.step === "preview" && (
+                <PhotoPreview
+                  captureState={captureState}
+                  onRetake={handleRetake}
+                  onAccept={handleAccept}
+                />
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* ── Photo Viewer / Delete modal ── */}
-      <AnimatePresence>
-        {viewingPhoto && (
-          <PhotoViewer
-            photo={viewingPhoto.photo}
-            item={viewingPhoto.item}
-            allPhotos={photos.filter(p => p.category === viewingPhoto.item.id)}
-            onDelete={deletePhoto}
-            onRetake={() => {
-              setViewingPhoto(null);
-              const sec = INSPECTION_SHOT_LIST.find(s => s.items.some(i => i.id === viewingPhoto.item.id));
-              const meta = sec ? SECTION_META[sec.title] : null;
-              setTimeout(() => openCapture(viewingPhoto.item, meta?.label ?? ""), 150);
-            }}
-            onClose={() => setViewingPhoto(null)}
-            onRetrySync={(id) => retryPhotoSync(session, id, onUpdate)}
-          />
-        )}
-      </AnimatePresence>
+      {typeof document !== "undefined" && createPortal(
+        <AnimatePresence>
+          {viewingPhoto && (
+            <PhotoViewer
+              photo={viewingPhoto.photo}
+              item={viewingPhoto.item}
+              allPhotos={photos.filter(p => p.category === viewingPhoto.item.id)}
+              onDelete={deletePhoto}
+              onRetake={() => {
+                setViewingPhoto(null);
+                const sec = INSPECTION_SHOT_LIST.find(s => s.items.some(i => i.id === viewingPhoto.item.id));
+                const meta = sec ? SECTION_META[sec.title] : null;
+                setTimeout(() => openCapture(viewingPhoto.item, meta?.label ?? ""), 150);
+              }}
+              onClose={() => setViewingPhoto(null)}
+              onRetrySync={(id) => retryPhotoSync(session, id, onUpdate)}
+            />
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 }
