@@ -678,6 +678,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
     setMonitorCount(autoClassifyResult.monitorCount ?? 0);
     setHeadline(autoClassifyResult.headline);
     setBody(autoClassifyResult.reasoning);
+    
     // Map signals to known categories
     const matched = new Set<string>();
     for (const signal of autoClassifyResult.signals ?? []) {
@@ -686,6 +687,31 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
       }
     }
     if (matched.size > 0) setFindingCategories(Array.from(matched));
+    
+    // Process individual photo captions from the AI
+    if (autoClassifyResult.photoCaptions && Array.isArray(autoClassifyResult.photoCaptions)) {
+      const captions = autoClassifyResult.photoCaptions;
+      let captionIndex = 0;
+
+      let updatedPhotoAssets = session.photoAssets ? [...session.photoAssets] : [];
+      updatedPhotoAssets = updatedPhotoAssets.map(p => {
+        if (p.dataUrl && captionIndex < captions.length) {
+          return { ...p, caption: captions[captionIndex++] };
+        }
+        return p;
+      });
+
+      let updatedPhotos = session.photos ? [...session.photos] : [];
+      updatedPhotos = updatedPhotos.map(p => {
+        if ((p.localUri || p.remoteUrl) && captionIndex < captions.length) {
+          return { ...p, description: captions[captionIndex++] };
+        }
+        return p;
+      });
+
+      onUpdate({ ...session, photoAssets: updatedPhotoAssets, photos: updatedPhotos });
+    }
+
     setErrors({});
     setAutoClassifyResult(null);
   };
