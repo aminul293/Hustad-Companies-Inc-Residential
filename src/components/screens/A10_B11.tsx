@@ -23,6 +23,7 @@ import {
   Plus, 
   Minus,
   ChevronRight,
+  ChevronDown,
   ArrowLeft,
   AlertCircle,
   ShieldCheck,
@@ -1303,17 +1304,22 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
 
                 <div className="space-y-4">
                   <p className="text-[9px] font-mono text-[var(--tx3)] uppercase tracking-[0.4em] pl-1 font-bold">Roof Material</p>
-                  <select
-                    className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl py-5 px-6 text-[var(--tx1)] text-lg font-display outline-none focus:border-indigo-500/40 focus:bg-[var(--bg-base)] transition-all appearance-none cursor-pointer"
-                    value={roofType}
-                    onChange={(e) => setRoofType(e.target.value)}
-                  >
-                    {Object.keys(ROOF_MATERIALS).map((material) => (
-                      <option key={material} value={material}>
-                        {material}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl py-5 pl-6 pr-12 text-[var(--tx1)] text-base font-display outline-none focus:border-indigo-500/40 focus:bg-[var(--bg-base)] transition-all appearance-none cursor-pointer truncate"
+                      value={roofType}
+                      onChange={(e) => setRoofType(e.target.value)}
+                    >
+                      {Object.keys(ROOF_MATERIALS).map((material) => (
+                        <option key={material} value={material}>
+                          {material}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--tx4)]">
+                      <ChevronDown className="w-5 h-5" />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-4">
