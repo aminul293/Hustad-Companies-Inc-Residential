@@ -376,8 +376,8 @@ export async function generateEmailHTML(session: SessionState, reviewUrl: string
   const photoCount = session.photoAssets?.length || 0;
 
   const allPhotos = [
-    ...(session.photoAssets || []).filter(p => p.remoteUrl).map(p => p.remoteUrl as string),
-    ...(session.photos || []).filter(p => p.remoteUrl).map(p => p.remoteUrl as string)
+    ...(session.photoAssets || []).filter(p => p.dataUrl).map(p => p.dataUrl),
+    ...(session.photos || []).filter(p => p.remoteUrl || p.localUri).map(p => (p.remoteUrl || p.localUri) as string)
   ];
   const topPhotos = allPhotos.slice(0, 6);
 
