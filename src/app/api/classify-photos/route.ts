@@ -10,6 +10,7 @@ Analyze the photos and return a JSON object with this exact shape:
   "headline": a short 1-line summary of what you found (max 12 words),
   "reasoning": 2-3 sentences explaining why you chose this classification,
   "signals": an array of strings, each describing a specific damage indicator you observed (e.g. "Hail bruising visible on ridge cap", "Dents on aluminum gutter flashing"),
+  "photoCaptions": an array of strings providing a unique, highly descriptive 1-2 sentence caption for each photo provided (in the exact order the photos were given),
   "urgentCount": integer — number of items requiring immediate action (tarping, emergency repair). 0 for no_damage/monitor_only,
   "stormCount": integer — number of storm-related damage items visible across all photos,
   "monitorCount": integer — number of items to watch over time but not act on yet
