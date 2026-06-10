@@ -396,7 +396,7 @@ export default function RemoteReviewPage() {
               { id: "claim_review" as SelectedPath, label: "Insurance Path", detail: "Forensic filing for carrier determination.", icon: FileText, color: "indigo" },
               { id: "direct_repair" as SelectedPath, label: "Direct Path", detail: "Authorized restoration without carrier filing.", icon: Wrench, color: "emerald" }
             ] as const).filter(path =>
-              outcome === "repair_only" ? path.id === "direct_repair" : true
+              outcome === "repair_only" ? path.id === "direct_repair" : path.id === "claim_review"
             ).map(path => {
               const isSelected = selectedPath === path.id;
               const isOtherSelected = selectedPath && !isSelected;
