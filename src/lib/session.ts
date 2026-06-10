@@ -186,7 +186,7 @@ export function saveSession(session: SessionState): void {
   const missingFields: string[] = [];
   if (!session.property.address) missingFields.push("Address");
   if (!session.property.homeownerPrimaryName || session.property.homeownerPrimaryName === 'Unknown Homeowner') missingFields.push("Homeowner Name");
-  if (!inProgress && session.photoAssets.length === 0) missingFields.push("Photos");
+  if (!inProgress && session.photoAssets.length === 0 && (!session.photos || session.photos.length === 0)) missingFields.push("Photos");
 
   const missing = missingFields.length;
 
