@@ -155,7 +155,7 @@ async function collectPhotos(s: SessionState): Promise<PdfPhoto[]> {
 
 async function loadLogoDataUrl(): Promise<string | null> {
   try {
-    const resp = await fetch("/logo.png");
+    const resp = await fetch("/logo-white.png");
     if (!resp.ok) return null;
     const blob = await resp.blob();
     return new Promise((resolve) => {
