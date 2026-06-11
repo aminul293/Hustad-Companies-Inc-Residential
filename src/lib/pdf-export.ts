@@ -106,6 +106,12 @@ function checkPage(d: jsPDF, heightNeeded: number) {
 }
 
 function derivePathType(s: SessionState): PathType {
+  if (s.pathData?.selectedPath) {
+    if (s.pathData.selectedPath === "direct_repair") return "urgent_repair";
+    if (s.pathData.selectedPath === "claim_review") return "carrier_review";
+    if (s.pathData.selectedPath === "full_restoration") return "full_restoration";
+    if (s.pathData.selectedPath === "no_action") return "no_action";
+  }
   const o = s.findings.outcomeType;
   if (o === "claim_review_candidate") return "carrier_review";
   if (o === "full_restoration_candidate") return "full_restoration";

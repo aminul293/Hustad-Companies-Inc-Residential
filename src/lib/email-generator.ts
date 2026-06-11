@@ -8,6 +8,12 @@ function fmtDate(iso?: string | null): string {
 }
 
 function derivePathType(s: SessionState) {
+  if (s.pathData?.selectedPath) {
+    if (s.pathData.selectedPath === "direct_repair") return "direct_repair";
+    if (s.pathData.selectedPath === "claim_review") return "carrier_review";
+    if (s.pathData.selectedPath === "full_restoration") return "full_restoration";
+    if (s.pathData.selectedPath === "no_action") return "no_action";
+  }
   const o = s.findings.outcomeType;
   const u = s.findings.urgentItemsCount;
   if (o === "repair_only")                                                  return "urgent_repair";
@@ -454,6 +460,23 @@ export async function generateEmailHTML(session: SessionState, reviewUrl: string
       { t: "Review the Agreement", d: "Read the Insurance Contingency Agreement included in the attached PDF." },
       { t: "Sign to Authorize", d: "Signing authorizes Hustad to organize your documentation package and coordinate a carrier inspection." },
       { t: "File or Confirm Your Claim", d: "We can guide you on filing if needed. Let your Hustad rep know the status of your claim." },
+    ]);
+  } else if (path === "direct_repair") {
+    bodyHtml += renderHeader("Your Direct Repair Request", "Inspection Complete &middot; Retail Repair Path", "Reviewing Request", "pending", "#ea580c");
+    bodyHtml += renderPropRow(prop, dateStr, insp);
+    bodyHtml += `
+      <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #ffffff; border-bottom: 1px solid #f0f0f0;">
+        <tr><td style="padding: 32px 40px;"><p style="color: #3a3a3c; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 300; line-height: 1.7; margin: 0;">Hustad Companies has completed your exterior inspection. You have elected to proceed with a direct out-of-pocket repair rather than a formal carrier review. <strong style="color: #1c1c1e; font-weight: 600;">Our estimating team is reviewing the documented findings and will send you a custom repair quote soon.</strong></p></td></tr>
+      </table>
+    `;
+    bodyHtml += renderStats(repairStats);
+    bodyHtml += renderFindings(finds, "Documented Conditions", "#ea580c", "&#9656;");
+    bodyHtml += renderPhotos("Repair Documentation &middot; Inspection Photos", topPhotos);
+    bodyHtml += renderSteps([
+      { t: "Review This Report", d: "Take time to review the documented findings and inspection photos." },
+      { t: "Custom Quote Preparation", d: "Our team will prepare a targeted quote for the required repairs and email it to you." },
+      { t: "Authorize Your Repair", d: "Once you approve the quote, we will organize the materials and schedule your project." },
+      { t: "Completion and Final Invoice", d: "Final invoicing will be provided upon project completion." },
     ]);
   } else if (path === "urgent_repair") {
     bodyHtml += renderHeader("Your Direct Repair Report", "Inspection Complete &middot; Repair Recommended", "Report Delivered", "executed", "#ea580c");
