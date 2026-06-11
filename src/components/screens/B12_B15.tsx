@@ -1879,6 +1879,14 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
   const legacyPK: PathKey = pathKey === "carrier_review" ? "carrier_review" : pathKey === "direct_repair" ? "urgent_repair" : "no_action";
 
   const initialPath = session.pathData.selectedPath ?? config.primaryPathId;
+  const [chosenPath, setChosenPath_] = useState<SelectedPath>(initialPath);
+
+  const activePathKey: B13PathKey = chosenPath === "claim_review" || chosenPath === "full_restoration" 
+    ? "carrier_review" 
+    : chosenPath === "direct_repair" 
+      ? "direct_repair" 
+      : "no_action";
+  const activeConfig = B14_PATH_CONFIGS[activePathKey] || config;
 
   const handleChipClick = (
     qObj: { text: string; ruleId: string },
@@ -1913,7 +1921,7 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
     });
   };
   const [activeChips,     setActiveChips]      = useState<Record<string, string>>({});
-  const [chosenPath,      setChosenPath_]      = useState<SelectedPath>(initialPath);
+  // removed redundant useState since we hoisted it
   const [showCompanion,   setShowCompanion]    = useState(false);
   const [companionAns,    setCompanionAns]     = useState({ q1: "", q2: "", q3: "" });
   const [companionSaved,  setCompanionSaved]   = useState(false);
@@ -2461,7 +2469,7 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
               className="flex-1 flex items-center justify-center gap-3 font-inter font-semibold text-[15px] text-white"
               style={{ background: tk.btnGrad, boxShadow: tk.btnGlow, height: "56px", borderRadius: "14px" }}
             >
-              <span>{config.ctaLabel}</span>
+              <span>{activeConfig.ctaLabel}</span>
               <ChevronRight size={18} strokeWidth={2} />
             </motion.button>
           </div>
