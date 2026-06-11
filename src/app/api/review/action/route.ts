@@ -297,7 +297,7 @@ export async function POST(request: Request) {
         }
         
         // Dispatch executed email to Homeowner & Rep
-        if (payload?.pdfBase64) {
+        if (payload?.pdfBase64 || payload?.pdfUrl) {
           const homeownerEmail = session.property.homeownerPrimaryEmail;
           
           // Send TO the homeowner. If no homeowner email, fallback to rep.
@@ -312,12 +312,24 @@ export async function POST(request: Request) {
             signCc += `, ${repEmail}`;
           }
 
-          const attachments = [{
-            '@odata.type': '#microsoft.graph.fileAttachment',
-            name: `Hustad_Inspection_Report_${address?.replace(/\\W+/g, "_") || "Signed"}.pdf`,
-            contentType: 'application/pdf',
-            contentBytes: payload.pdfBase64,
-          }];
+          let pdfBytes = payload?.pdfBase64;
+          if (!pdfBytes && payload?.pdfUrl) {
+             try {
+               const res = await fetch(payload.pdfUrl);
+               const arrayBuffer = await res.arrayBuffer();
+               pdfBytes = Buffer.from(arrayBuffer).toString('base64');
+             } catch(e) {
+               console.error("Failed to download PDF from URL:", e);
+             }
+          }
+
+          if (pdfBytes) {
+            const attachments = [{
+              '@odata.type': '#microsoft.graph.fileAttachment',
+              name: `Hustad_Inspection_Report_${address?.replace(/\\W+/g, "_") || "Signed"}.pdf`,
+              contentType: 'application/pdf',
+              contentBytes: pdfBytes,
+            }];
           
           const html = `
             <div style="font-family:sans-serif;color:#111827;max-width:600px;margin:0 auto;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
@@ -336,6 +348,7 @@ export async function POST(request: Request) {
           
           // Send from repEmail (it falls back to SENDER_EMAIL inside notifyRep if not provided)
           notifyRep(toEmails, threadSubject, html, signCc, attachments, repEmail);
+          }
         }
         
         break;

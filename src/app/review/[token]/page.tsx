@@ -128,19 +128,39 @@ export default function RemoteReviewPage() {
       };
 
       // Generate PDF on the client first
-      let pdfBase64 = '';
+      let pdfUrl = '';
       try {
         const { getSummaryPDFBase64 } = await import("@/lib/pdf-export");
-        pdfBase64 = await getSummaryPDFBase64(updatedSession);
+        const pdfBase64 = await getSummaryPDFBase64(updatedSession);
+        
+        // Upload to Supabase to bypass Vercel's 4.5MB POST body limit
+        const { supabase } = await import("@/lib/supabase");
+        const path = `reports/${Date.now()}_Hustad_Inspection_Report_${updatedSession.sessionId.slice(-6).toUpperCase()}.pdf`;
+        const resUrl = await fetch("/api/get-upload-url", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ path })
+        });
+        const signedData = await resUrl.json();
+        
+        if (resUrl.ok && signedData.token) {
+          const resBlob = await fetch(`data:application/pdf;base64,${pdfBase64}`);
+          const blob = await resBlob.blob();
+          const { error } = await supabase.storage.from("inspection-reports").uploadToSignedUrl(path, signedData.token, blob);
+          if (!error) {
+            const { data } = supabase.storage.from("inspection-reports").getPublicUrl(path);
+            pdfUrl = data.publicUrl;
+          }
+        }
       } catch (pdfErr) {
-        console.error("PDF generation failed:", pdfErr);
+        console.error("PDF generation or upload failed:", pdfErr);
       }
 
       const res = await postReviewAction(token, 'sign', {
         signerName,
         signatureImage,
         selectedPath,
-        pdfBase64
+        pdfUrl
       });
 
       if (!res.ok) {
