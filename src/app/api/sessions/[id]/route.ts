@@ -51,11 +51,16 @@ export async function DELETE(
     const payload = await requireAuth(req);
     const db = getServiceClient();
 
-    const { error } = await db
+    let query = db
       .from("inspection_sessions")
       .update({ session_status: "archived" })
-      .eq("session_id", params.id)
-      .eq("rep_id", payload.repId);
+      .eq("session_id", params.id);
+
+    if (payload.role !== "admin" && payload.role !== "manager") {
+      query = query.eq("rep_id", payload.repId);
+    }
+
+    const { error } = await query;
 
     if (error) throw error;
 

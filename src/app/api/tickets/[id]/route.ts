@@ -190,7 +190,10 @@ export async function DELETE(
     const supabase = getServiceClient();
 
     // Delete touches first (in case there's no cascade)
-    await supabase.from("ticket_touches").delete().eq("hustad_ticket_id", params.id);
+    const { error: touchError } = await supabase.from("ticket_touches").delete().eq("ticket_id", params.id);
+    if (touchError) {
+      console.warn("Failed to delete ticket_touches:", touchError);
+    }
 
     const { error } = await supabase
       .from("hustad_tickets")
