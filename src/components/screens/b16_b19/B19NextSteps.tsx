@@ -142,8 +142,8 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
           );
 
           if (effectivePath === "direct_repair") {
-            targetStage = "Quote Repairs";
-            oppType = "Service";
+            targetStage = "Quote Replacement";
+            oppType = "Roof Replacement";
           } else if (effectivePath === "full_restoration") {
             targetStage = "Quote Replacement";
             oppType = "Roof Replacement";
@@ -153,8 +153,8 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
           } else {
             // Fallback to outcome if selectedPath is somehow null but outcome is actionable
             if (outcome === "repair_only") {
-              targetStage = "Quote Repairs";
-              oppType = "Service";
+              targetStage = "Quote Replacement";
+              oppType = "Roof Replacement";
             } else if (outcome === "full_restoration_candidate") {
               targetStage = "Quote Replacement";
               oppType = "Roof Replacement";
