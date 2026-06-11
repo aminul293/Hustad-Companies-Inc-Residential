@@ -32,9 +32,9 @@ async function getAccessToken() {
 export async function POST(req: NextRequest) {
   try {
     await requireAuth(req);
-    const { session, pdfBase64, fileName } = await req.json();
+    const { session, pdfBase64, pdfUrl, fileName } = await req.json();
 
-    if (!session || !pdfBase64) {
+    if (!session || (!pdfBase64 && !pdfUrl)) {
       return NextResponse.json({ error: "Missing session or PDF data" }, { status: 400 });
     }
 
@@ -42,34 +42,49 @@ export async function POST(req: NextRequest) {
     const photoCount = session.photos?.length || 0;
     const syncedCount = session.photos?.filter((p: any) => p.syncStatus === "synced").length || 0;
 
-    // 1. Upload PDF to Supabase Storage
-    const pdfBuffer = Buffer.from(pdfBase64, "base64");
-    const storagePath = `reports/${session.repId}/${session.sessionId}/${fileName}`;
+    let finalPdfBytes = pdfBase64;
+    let reportUrl = pdfUrl;
 
-    // Ensure bucket exists — createBucket is a no-op if it already exists
-    await supabase.storage.createBucket("inspection-reports", {
-      public: true,
-      fileSizeLimit: 52428800, // 50MB
-    });
-
-    const { error: uploadErr } = await supabase.storage
-      .from("inspection-reports")
-      .upload(storagePath, pdfBuffer, {
-        contentType: "application/pdf",
-        upsert: true,
-      });
-
-    if (uploadErr) {
-      console.error("[OFFICE_DISPATCH] Storage Upload Failed:", uploadErr);
-      throw new Error(`Storage error: ${uploadErr.message}`);
+    if (!finalPdfBytes && pdfUrl) {
+      try {
+        const res = await fetch(pdfUrl);
+        const arrayBuffer = await res.arrayBuffer();
+        finalPdfBytes = Buffer.from(arrayBuffer).toString('base64');
+      } catch (e) {
+        console.error("Failed to download PDF from URL:", e);
+      }
     }
 
-    // Generate signed URL or public URL
-    const { data: urlData } = supabase.storage
-      .from("inspection-reports")
-      .getPublicUrl(storagePath);
-    
-    const reportUrl = urlData.publicUrl;
+    // 1. Upload PDF to Supabase Storage (if not already uploaded via pdfUrl)
+    if (!reportUrl && finalPdfBytes) {
+      const pdfBuffer = Buffer.from(finalPdfBytes, "base64");
+      const storagePath = `reports/${session.repId}/${session.sessionId}/${fileName}`;
+
+      // Ensure bucket exists — createBucket is a no-op if it already exists
+      await supabase.storage.createBucket("inspection-reports", {
+        public: true,
+        fileSizeLimit: 52428800, // 50MB
+      });
+
+      const { error: uploadErr } = await supabase.storage
+        .from("inspection-reports")
+        .upload(storagePath, pdfBuffer, {
+          contentType: "application/pdf",
+          upsert: true,
+        });
+
+      if (uploadErr) {
+        console.error("[OFFICE_DISPATCH] Storage Upload Failed:", uploadErr);
+        throw new Error(`Storage error: ${uploadErr.message}`);
+      }
+
+      // Generate signed URL or public URL
+      const { data: urlData } = supabase.storage
+        .from("inspection-reports")
+        .getPublicUrl(storagePath);
+      
+      reportUrl = urlData.publicUrl;
+    }
 
     // 2. Dispatch Email to Office via Microsoft Graph
     const accessToken = await getAccessToken();
@@ -119,14 +134,14 @@ export async function POST(req: NextRequest) {
         subject: `[DISPATCH] Inspection Complete: ${session.property.address} (${session.repName})`,
         body: { contentType: "HTML", content: html },
         toRecipients: [{ emailAddress: { address: OFFICE_EMAIL } }],
-        attachments: [
+        attachments: finalPdfBytes ? [
           {
             "@odata.type": "#microsoft.graph.fileAttachment",
             name: fileName,
             contentType: "application/pdf",
-            contentBytes: pdfBase64,
+            contentBytes: finalPdfBytes,
           },
-        ],
+        ] : [],
       },
       saveToSentItems: "true",
     };

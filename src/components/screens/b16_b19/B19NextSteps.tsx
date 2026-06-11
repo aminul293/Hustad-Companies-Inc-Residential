@@ -56,9 +56,30 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
       const pdfBase64 = await getSummaryPDFBase64(s);
       const fileName = `Hustad_Inspection_Report_${s.sessionId.slice(-6).toUpperCase()}.pdf`;
 
+      // Upload to Supabase to bypass Vercel's 4.5MB limit
+      const { supabase } = await import("@/lib/supabase");
+      const path = `reports/${Date.now()}_${fileName}`;
+      const resUrl = await fetch("/api/get-upload-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path })
+      });
+      const signedData = await resUrl.json();
+      
+      let pdfUrl = "";
+      if (resUrl.ok && signedData.token) {
+        const resBlob = await fetch(`data:application/pdf;base64,${pdfBase64}`);
+        const blob = await resBlob.blob();
+        const { error } = await supabase.storage.from("inspection-reports").uploadToSignedUrl(path, signedData.token, blob);
+        if (!error) {
+          const { data } = supabase.storage.from("inspection-reports").getPublicUrl(path);
+          pdfUrl = data.publicUrl;
+        }
+      }
+
       const res = await officeDispatch({
         session: s,
-        pdfBase64,
+        pdfUrl, // Pass URL instead of Base64
         fileName
       });
 
