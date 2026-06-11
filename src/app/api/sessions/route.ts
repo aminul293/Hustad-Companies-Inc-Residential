@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase-server";
 import { requireAuth } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 // GET /api/sessions — List sessions for the authenticated rep
 export async function GET(req: NextRequest) {
   try {

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase-server";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const PAGE_SIZE = 25;
 
 // ─── GET /api/tickets ─────────────────────────────────────────────────────────
