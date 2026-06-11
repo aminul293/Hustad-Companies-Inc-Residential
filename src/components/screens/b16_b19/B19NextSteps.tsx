@@ -135,33 +135,18 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
           let targetStage = "Pending";
           let oppType = "Roof Replacement";
 
-          const effectivePath = finalSession.pathData?.selectedPath || (
-             outcome === "repair_only" ? "direct_repair" :
-             outcome === "full_restoration_candidate" ? "full_restoration" :
-             outcome === "claim_review_candidate" ? "claim_review" : null
-          );
-
-          if (effectivePath === "direct_repair") {
+          if (finalSession.pathData?.selectedPath === "direct_repair") {
             targetStage = "Quote Replacement";
             oppType = "Roof Replacement";
-          } else if (effectivePath === "full_restoration") {
+          } else if (outcome === "repair_only") {
+            targetStage = "Quote Repairs";
+            oppType = "Service";
+          } else if (outcome === "full_restoration_candidate") {
             targetStage = "Quote Replacement";
             oppType = "Roof Replacement";
-          } else if (effectivePath === "claim_review") {
+          } else if (outcome === "claim_review_candidate") {
             targetStage = isSigned ? "Accepted" : "Pending";
             oppType = "Hail/Wind Claim";
-          } else {
-            // Fallback to outcome if selectedPath is somehow null but outcome is actionable
-            if (outcome === "repair_only") {
-              targetStage = "Quote Replacement";
-              oppType = "Roof Replacement";
-            } else if (outcome === "full_restoration_candidate") {
-              targetStage = "Quote Replacement";
-              oppType = "Roof Replacement";
-            } else if (outcome === "claim_review_candidate") {
-              targetStage = isSigned ? "Accepted" : "Pending";
-              oppType = "Hail/Wind Claim";
-            }
           }
 
           const oppRes = await fetch("/api/centerpoint/opportunities", {
