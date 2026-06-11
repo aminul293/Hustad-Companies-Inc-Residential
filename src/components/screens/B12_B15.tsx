@@ -2270,7 +2270,7 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
                   style={{
                     ...DS.card,
                     padding: "24px",
-                    outline: chosenPath !== config.primaryPathId && config.showAlternatePath ? "1.5px solid rgba(255,255,255,0.18)" : "1.5px solid transparent",
+                    outline: chosenPath !== config.primaryPathId && config.showAlternatePath ? `1.5px solid ${tk.accent}55` : "1.5px solid transparent",
                     outlineOffset: "2px",
                     transition: "outline 0.25s ease",
                   }}
@@ -2285,12 +2285,14 @@ export function B13RecommendedPath({ session, onUpdate, onNext, onBack }: Props)
                     </p>
                     <div className="flex items-center gap-2 pt-1">
                       <div className="w-4 h-4 rounded-full border flex items-center justify-center transition-all"
-                        style={{ borderColor: chosenPath !== config.primaryPathId && config.showAlternatePath ? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.20)" }}>
+                        style={{ borderColor: chosenPath !== config.primaryPathId && config.showAlternatePath ? tk.accent : (DS.isDark ? "rgba(255,255,255,0.20)" : "rgba(0,0,0,0.20)") }}>
                         {chosenPath !== config.primaryPathId && config.showAlternatePath && (
-                          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-1.5 h-1.5 rounded-full bg-white" />
+                          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-1.5 h-1.5 rounded-full" style={{ background: tk.accent }} />
                         )}
                       </div>
-                      <span style={{ fontFamily: "'Inter'", fontSize: "11px", color: DS.text.muted }}>Choose alternate path</span>
+                      <span style={{ fontFamily: "'Inter'", fontSize: "11px", color: chosenPath !== config.primaryPathId && config.showAlternatePath ? tk.accent : DS.text.muted }}>
+                        {chosenPath !== config.primaryPathId && config.showAlternatePath ? "Selected" : "Choose alternate path"}
+                      </span>
                     </div>
                   </div>
                 </motion.div>
