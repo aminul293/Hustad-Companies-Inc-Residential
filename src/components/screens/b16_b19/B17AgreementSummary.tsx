@@ -180,7 +180,9 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
       let type: string | undefined = undefined;
       let opportunityType: string | undefined = undefined;
 
-      if (outcome === "repair_only") {
+      if (session.pathData.selectedPath === "direct_repair") {
+        opportunityType = "Roof Replacement";
+      } else if (outcome === "repair_only") {
         opportunityType = "Service";
       } else if (outcome === "claim_review_candidate") {
         opportunityType = "Hail/Wind Claim";
@@ -193,7 +195,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           centerpointId: session.centerpointId,
-          targetStage: stage,
+          targetStage: session.pathData.selectedPath === "direct_repair" ? "Quote Replacement" : stage,
           domain,
           type,
           opportunityType,

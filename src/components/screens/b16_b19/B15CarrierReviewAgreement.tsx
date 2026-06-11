@@ -705,7 +705,10 @@ function Step15C({
         let opportunityType: string | undefined = undefined;
 
         const outcome = session.findings.outcomeType;
-        if (outcome === "repair_only") {
+        if (session.pathData.selectedPath === "direct_repair") {
+          opportunityType = "Roof Replacement";
+          // targetStage is explicitly set to Accepted in the fetch body below for signing
+        } else if (outcome === "repair_only") {
           opportunityType = "Service";
         } else if (outcome === "claim_review_candidate") {
           opportunityType = "Hail/Wind Claim";
@@ -718,7 +721,7 @@ function Step15C({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             centerpointId: session.centerpointId,
-            targetStage: "Accepted",
+            targetStage: session.pathData.selectedPath === "direct_repair" ? "Quote Replacement" : "Accepted",
             domain,
             type,
             opportunityType,
@@ -1014,7 +1017,9 @@ function SendForReviewModal({
         let opportunityType: string | undefined = undefined;
 
         const outcome = session.findings.outcomeType;
-        if (outcome === "repair_only") {
+        if (session.pathData.selectedPath === "direct_repair") {
+          opportunityType = "Roof Replacement";
+        } else if (outcome === "repair_only") {
           opportunityType = "Service";
         } else if (outcome === "claim_review_candidate") {
           opportunityType = "Hail/Wind Claim";
@@ -1027,7 +1032,7 @@ function SendForReviewModal({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             centerpointId: session.centerpointId,
-            targetStage: "Pending",
+            targetStage: session.pathData.selectedPath === "direct_repair" ? "Quote Replacement" : "Pending",
             domain,
             type,
             opportunityType,

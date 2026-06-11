@@ -135,7 +135,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
           let targetStage = "Pending";
           let oppType = "Roof Replacement";
 
-          if (finalSession.pathData?.selectedPath === "direct_repair") {
+          if (finalSession.pathData.selectedPath === "direct_repair") {
             targetStage = "Quote Replacement";
             oppType = "Roof Replacement";
           } else if (outcome === "repair_only") {
