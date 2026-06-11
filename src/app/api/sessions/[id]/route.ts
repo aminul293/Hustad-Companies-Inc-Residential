@@ -56,10 +56,6 @@ export async function DELETE(
       .update({ session_status: "archived" })
       .eq("session_id", params.id);
 
-    if (payload.role !== "admin" && payload.role !== "manager") {
-      query = query.eq("rep_id", payload.repId);
-    }
-
     const { error } = await query;
 
     if (error) throw error;
