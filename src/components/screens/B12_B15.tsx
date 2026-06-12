@@ -189,7 +189,7 @@ const PAGE_CONFIGS: Record<PathKey, PageConfig> = {
     BadgeIcon: Wrench,
     theme: "red",
     whatMeansTitle: "Direct Replacement",
-    whatMeans: "Address documented items directly with a scoped replacement authorization. No carrier process required. Hustad schedules replacement work based on exactly what was documented during the inspection.",
+    whatMeans: "Address documented items directly with a scoped replacement proposal. No carrier process required. Hustad will prepare a proposal based on exactly what was documented during the inspection.",
     whatMeansBullets: [
       "Scope limited to documented findings — nothing beyond what the evidence supports.",
       "Faster scheduling with no carrier coordination delay.",
@@ -1788,7 +1788,7 @@ const B14_PATH_CONFIGS: Record<B13PathKey, B13Config> = {
     PathBadgeIcon:  Wrench,
     primaryPathId:          "direct_repair",
     primaryPathLabel:       "Direct Replacement",
-    primaryPathDescription: "Address documented items directly with a scoped replacement authorization. No carrier process required. Hustad schedules replacement work based on exactly what was documented during the inspection.",
+    primaryPathDescription: "Address documented items directly with a scoped replacement proposal. No carrier process required. Hustad will prepare a proposal based on exactly what was documented during the inspection.",
     primaryBullets: [
       "Scope limited to documented findings — nothing beyond what the evidence supports.",
       "Faster scheduling with no carrier coordination delay.",
@@ -1810,10 +1810,10 @@ const B14_PATH_CONFIGS: Record<B13PathKey, B13Config> = {
     repGuidedQs: [
       "Does the repair scope feel aligned with what you saw in the documentation?",
       "Is there anything about the repair process or timeline you'd like to clarify before we move forward?",
-      "Would you like to review the authorization together on the next screen before making any decision?",
+      "Would you like to review the request together on the next screen before making any decision?",
     ],
     repGuardrail: "Do not expand the scope beyond what the evidence supports. Do not introduce insurance options unless the homeowner specifically asks. Stay focused on the documented repair items.",
-    ctaLabel: "Review the Replacement Authorization",
+    ctaLabel: "Review the Replacement Request",
   },
 
   no_action: {
@@ -2740,13 +2740,13 @@ function buildRepCompanion(session: any, pathKey: string) {
     guardrail = "Do not introduce insurance options unless the homeowner specifically asks. Stay focused on the documented repair items.";
   }
 
-  let closeSentence = "Confirm the path and proceed to the authorization.";
+  let closeSentence = "Confirm the path and proceed to the request.";
   if (hasOtherDecisionMaker) {
     closeSentence = `Since another decision maker is involved, offer to send a digital copy of the Dossier and schedule a quick follow-up review for ${pathKey === 'carrier_review' ? 'insurance next steps' : 'repair options'}.`;
   } else if (pathKey === "carrier_review") {
     closeSentence = "If they agree the evidence warrants a review, move to the Contingency Agreement.";
   } else if (pathKey === "direct_repair") {
-    closeSentence = "If they agree with the scope, move directly to the Replacement Authorization.";
+    closeSentence = "If they agree with the scope, move directly to the Replacement Request.";
   }
 
   return {

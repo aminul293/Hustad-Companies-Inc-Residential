@@ -468,7 +468,7 @@ function renderFindings(d: jsPDF, pt: PathType, s: SessionState) {
     Y += 16;
 
     st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(10);
-    const mText = "Address documented items directly with a scoped repair authorization. No carrier process required. Hustad schedules repair work based on exactly what was documented during the inspection.";
+    const mText = "Address documented items directly with a scoped replacement proposal. No carrier process required. Hustad will prepare a proposal based on exactly what was documented during the inspection.";
     const mLines = d.splitTextToSize(mText, CW);
     d.text(mLines, M, Y);
     Y += mLines.length * 4.5 + 4;

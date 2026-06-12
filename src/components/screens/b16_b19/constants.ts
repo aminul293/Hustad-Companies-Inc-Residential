@@ -6,10 +6,10 @@ export const CLAIM_TERMS = [
 ];
 
 export const REPAIR_TERMS = [
-  "Hustad will perform specific repair items documented in today's findings.",
-  "This authorization covers only the items in scope as presented.",
-  "Scheduling will be confirmed after authorization. No work begins before that.",
-  "This is a direct contract arrangement — not an insurance claim.",
+  "Hustad will prepare a proposal for the specific replacement items documented in today's findings.",
+  "This request covers only the items in scope as presented.",
+  "Scheduling will be confirmed after you review and accept the proposal.",
+  "This is a direct replacement path — not an insurance claim.",
 ];
 
 export const NEXT_STEPS_CONFIG: Record<string, { headline: string; detail: string; steps: string[]; finishLabel: string }> = {
@@ -34,14 +34,14 @@ export const NEXT_STEPS_CONFIG: Record<string, { headline: string; detail: strin
     finishLabel: "Confirm Monitor Plan & Close",
   },
   repair_only: {
-    headline: "Direct replacement authorized.",
-    detail: "Targeted repairs are scheduled without an insurance claim.",
+    headline: "Direct replacement proposal requested.",
+    detail: "A targeted replacement proposal is being prepared without an insurance claim.",
     steps: [
-      "Your signed repair authorization will be emailed immediately.",
-      "Production scheduling confirmation within 1–2 business days.",
-      "A final quality review is performed upon project completion.",
+      "Your proposal request summary will be emailed immediately.",
+      "Our estimating department will prepare your custom proposal.",
+      "We will send the proposal for your review within 2–3 business days.",
     ],
-    finishLabel: "Submit Repair Order & Close",
+    finishLabel: "Submit Request & Close",
   },
   claim_review_candidate: {
     headline: "Storm package secured. Carrier review initiated.",
@@ -80,7 +80,7 @@ export const NEXT_STEPS_CONFIG: Record<string, { headline: string; detail: strin
 export const DELIVERABLES: Record<string, string[]> = {
   no_damage:                   ["No-damage summary (PDF)", "Forensic photo record"],
   monitor_only:                ["Monitor summary (PDF)", "Check-in roadmap"],
-  repair_only:                 ["Signed authorization (PDF)", "Production scope"],
+  repair_only:                 ["Proposal request (PDF)", "Production scope"],
   claim_review_candidate:      ["Claim-ready package (PDF)", "Coordination authorization"],
   full_restoration_candidate:  ["Restoration authorization (PDF)", "Warranty & Selections"],
   deferred:                    ["Forensic report (PDF)", "Executable agreement (Unsigned)", "Co-owner summary"],
