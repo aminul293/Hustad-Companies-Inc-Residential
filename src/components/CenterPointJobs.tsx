@@ -205,6 +205,7 @@ export function CenterPointJobs() {
     if (idx !== -1) return idx;
     // Handle aliases
     if (s === "closed_out") return STAGE_ORDER.indexOf("closed");
+    if (s === "opened") return STAGE_ORDER.indexOf("accepted");
     return -1;
   };
 
@@ -315,7 +316,8 @@ export function CenterPointJobs() {
           <>
             {jobs.map((job) => {
               const attr = job.attributes;
-              const stage = STAGES[attr.status] ?? { label: attr.displayStatus, next: null, color: "bg-white/10 text-[#567090] border-white/10", ring: "bg-white/30" };
+              const normalizedStatus = attr.status === "opened" ? "accepted" : attr.status;
+              const stage = STAGES[normalizedStatus] ?? { label: attr.displayStatus, next: null, color: "bg-white/10 text-[#567090] border-white/10", ring: "bg-white/30", chip: { bg: "#f6f9fc", fg: "#64748d", dot: "#94a3b8" } };
               const nextStage = stage.next;
               const isExpanded = expandedId === job.id;
               const isTransitioning = transitioningId === job.id;
