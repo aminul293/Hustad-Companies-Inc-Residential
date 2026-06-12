@@ -231,12 +231,14 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                 { id: "schedule", label: "My Schedule" },
                 { id: "calendar", label: "Calendar" },
                 { id: "opportunities", label: "Opps" },
-                { id: "manager", label: "Manager" },
+                ...(currentRep?.role === "admin" || currentRep?.role === "manager"
+                  ? [{ id: "manager", label: "Manager" }]
+                  : []),
                 { id: "settings", label: "Settings" },
               ] as const).map(tab => (
                 <button
                   key={tab.id}
-                  onClick={() => r.setView(tab.id)}
+                  onClick={() => r.setView(tab.id as any)}
                   className={cn(
                     "px-4 py-2 rounded-full text-xs font-inter transition-all",
                     r.view === tab.id ? "bg-white text-black" : "text-[#567090] hover:text-[#E8EDF8]"
@@ -357,7 +359,14 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
         {r.view === "calendar" ? (
           <CalendarView currentRep={currentRep} managerMode={r.view === "calendar"} />
         ) : r.view === "manager" ? (
-          <ManagerDashboard currentRep={currentRep} />
+          currentRep?.role === "admin" || currentRep?.role === "manager" ? (
+            <ManagerDashboard currentRep={currentRep} />
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-white/40">
+              <Activity className="w-10 h-10 mb-4 opacity-20" />
+              <p>Unauthorized access</p>
+            </div>
+          )
         ) : r.view === "centerpoint" ? (
           <CenterPointJobs />
         ) : r.view === "opportunities" ? (
@@ -589,7 +598,8 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
       <MobileMoreDrawer
         open={r.moreOpen}
         view={r.view}
-        onNavigate={v => { r.setView(v); r.setMoreOpen(false); }}
+        currentRep={currentRep}
+        onNavigate={(v) => { r.setView(v); r.setMoreOpen(false); }}
         onClose={() => r.setMoreOpen(false)}
         onNewSession={onNewSession}
       />

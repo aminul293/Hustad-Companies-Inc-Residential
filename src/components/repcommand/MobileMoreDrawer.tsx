@@ -10,19 +10,24 @@ import type { CommandCenterView } from "./useRepCommandCenter";
 interface Props {
   open: boolean;
   view: CommandCenterView;
+  currentRep?: any;
   onNavigate: (v: CommandCenterView) => void;
   onClose: () => void;
   onNewSession?: () => void;
 }
 
-const ITEMS = [
+const ITEMS_BASE = [
   { id: "opportunities" as const, label: "Opportunities",    icon: TrendingUp,  sub: "Sales opps from sessions" },
   { id: "calendar"      as const, label: "Calendar",         icon: CalendarDays, sub: "Day & week view" },
-  { id: "manager"       as const, label: "Manager Dashboard",icon: Activity,     sub: "All-rep activity" },
-  { id: "settings"      as const, label: "Settings",         icon: Settings,     sub: "Reps & configuration" },
-] as const;
+];
 
-export function MobileMoreDrawer({ open, view, onNavigate, onClose, onNewSession }: Props) {
+export function MobileMoreDrawer({ open, view, currentRep, onNavigate, onClose, onNewSession }: Props) {
+  const isManagerOrAdmin = currentRep?.role === "admin" || currentRep?.role === "manager";
+  const items = [
+    ...ITEMS_BASE,
+    ...(isManagerOrAdmin ? [{ id: "manager" as const, label: "Manager Dashboard", icon: Activity, sub: "All-rep activity" }] : []),
+    { id: "settings" as const, label: "Settings", icon: Settings, sub: "Reps & configuration" },
+  ];
   return (
     <AnimatePresence>
       {open && (
@@ -46,7 +51,7 @@ export function MobileMoreDrawer({ open, view, onNavigate, onClose, onNewSession
               </button>
             </div>
 
-            {ITEMS.map(item => (
+            {items.map(item => (
               <button
                 key={item.id}
                 onClick={() => { onNavigate(item.id); onClose(); }}
