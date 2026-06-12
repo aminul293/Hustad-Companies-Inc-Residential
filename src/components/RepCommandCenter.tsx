@@ -207,7 +207,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
                 <h1 className="text-xl md:text-3xl font-display font-medium tracking-tight">
-                  {{ dashboard: "Inspections", pipeline: "Pipeline", schedule: "My Schedule", calendar: "Calendar", centerpoint: "CP Inbox", opportunities: "Opportunities", tickets: "Tickets", manager: "Manager", settings: "Settings" }[r.view]}
+                  {{ dashboard: "Inspections", pipeline: "Pipeline", schedule: "My Schedule", calendar: "Calendar", centerpoint: "New Leads", opportunities: "Opportunities", tickets: "Tickets", manager: "Manager", settings: "Settings" }[r.view]}
                 </h1>
                 {r.pendingCompletions > 0 && (
                   <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/25 text-[9px] font-mono text-amber-400 uppercase tracking-widest">
@@ -225,7 +225,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
             {/* Tab switcher — tablet/desktop only */}
             <div className="hidden md:flex items-center gap-1 p-1 bg-white/5 border border-white/10 rounded-full">
               {([
-                { id: "centerpoint", label: "CP Inbox" },
+                { id: "centerpoint", label: "New Leads" },
                 { id: "dashboard", label: "Inspections" },
                 { id: "pipeline", label: "Pipeline" },
                 { id: "schedule", label: "My Schedule" },
@@ -556,7 +556,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
       {/* ── Mobile Bottom Nav (hidden on md+) ─────────────────────────────────── */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around bg-[#0a0f1a]/95 backdrop-blur-xl border-t border-white/[0.08] pb-safe">
         {([
-          { id: "centerpoint", label: "CP Inbox", icon: Inbox },
+          { id: "centerpoint", label: "New Leads", icon: Inbox },
           { id: "dashboard",   label: "Inspect",  icon: LayoutGrid },
           { id: "pipeline",    label: "Pipeline", icon: Activity },
           { id: "schedule",    label: "Schedule", icon: Calendar },
