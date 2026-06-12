@@ -22,7 +22,7 @@ const ITEMS_BASE = [
 ];
 
 export function MobileMoreDrawer({ open, view, currentRep, onNavigate, onClose, onNewSession }: Props) {
-  const isManagerOrAdmin = currentRep?.role === "admin" || currentRep?.role === "manager";
+  const isManagerOrAdmin = currentRep?.role === "admin" || currentRep?.role === "manager" || currentRep?.role === "owner";
   const items = [
     ...ITEMS_BASE,
     ...(isManagerOrAdmin ? [{ id: "manager" as const, label: "Manager Dashboard", icon: Activity, sub: "All-rep activity" }] : []),
