@@ -522,7 +522,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
         </div>
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto min-h-0 px-6 md:px-10 pt-20 pb-64 text-center">
+      <div className="relative z-10 flex-1 overflow-y-auto min-h-0 px-6 md:px-10 pt-36 pb-64 text-center">
         <div className="max-w-[1400px] mx-auto space-y-16">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <div className={cn("inline-flex items-center gap-3 px-4 py-1.5 rounded-full border backdrop-blur-md w-fit mx-auto", isDark ? "bg-white/[0.03] border-white/[0.08]" : "bg-zinc-100 border-zinc-200")}>
