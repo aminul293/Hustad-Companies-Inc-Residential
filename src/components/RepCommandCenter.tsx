@@ -231,7 +231,6 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                 { id: "schedule", label: "My Schedule" },
                 { id: "calendar", label: "Calendar" },
                 { id: "opportunities", label: "Opps" },
-                { id: "tickets", label: "Tickets" },
                 { id: "manager", label: "Manager" },
                 { id: "settings", label: "Settings" },
               ] as const).map(tab => (

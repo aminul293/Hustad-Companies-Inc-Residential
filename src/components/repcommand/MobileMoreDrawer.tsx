@@ -18,7 +18,6 @@ interface Props {
 const ITEMS = [
   { id: "opportunities" as const, label: "Opportunities",    icon: TrendingUp,  sub: "Sales opps from sessions" },
   { id: "calendar"      as const, label: "Calendar",         icon: CalendarDays, sub: "Day & week view" },
-  { id: "tickets"       as const, label: "Hustad Tickets",   icon: CheckCircle2, sub: "Pipeline write-back" },
   { id: "manager"       as const, label: "Manager Dashboard",icon: Activity,     sub: "All-rep activity" },
   { id: "settings"      as const, label: "Settings",         icon: Settings,     sub: "Reps & configuration" },
 ] as const;
