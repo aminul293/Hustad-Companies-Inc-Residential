@@ -225,11 +225,11 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
             {/* Tab switcher — tablet/desktop only */}
             <div className="hidden md:flex items-center gap-1 p-1 bg-white/5 border border-white/10 rounded-full">
               {([
+                { id: "centerpoint", label: "CP Inbox" },
                 { id: "dashboard", label: "Inspections" },
                 { id: "pipeline", label: "Pipeline" },
                 { id: "schedule", label: "My Schedule" },
                 { id: "calendar", label: "Calendar" },
-                { id: "centerpoint", label: "CP Inbox" },
                 { id: "opportunities", label: "Opps" },
                 { id: "tickets", label: "Tickets" },
                 { id: "manager", label: "Manager" },
@@ -556,10 +556,10 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
       {/* ── Mobile Bottom Nav (hidden on md+) ─────────────────────────────────── */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around bg-[#0a0f1a]/95 backdrop-blur-xl border-t border-white/[0.08] pb-safe">
         {([
+          { id: "centerpoint", label: "CP Inbox", icon: Inbox },
           { id: "dashboard",   label: "Inspect",  icon: LayoutGrid },
           { id: "pipeline",    label: "Pipeline", icon: Activity },
           { id: "schedule",    label: "Schedule", icon: Calendar },
-          { id: "centerpoint", label: "CP Inbox", icon: Inbox },
         ] as const).map(tab => (
           <button
             key={tab.id}
