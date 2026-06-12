@@ -189,7 +189,7 @@ const PAGE_CONFIGS: Record<PathKey, PageConfig> = {
     BadgeIcon: Wrench,
     theme: "red",
     whatMeansTitle: "Direct Replacement",
-    whatMeans: "Address documented items directly with a scoped repair authorization. No carrier process required. Hustad schedules repair work based on exactly what was documented during the inspection.",
+    whatMeans: "Address documented items directly with a scoped replacement authorization. No carrier process required. Hustad schedules replacement work based on exactly what was documented during the inspection.",
     whatMeansBullets: [
       "Scope limited to documented findings — nothing beyond what the evidence supports.",
       "Faster scheduling with no carrier coordination delay.",
@@ -1788,7 +1788,7 @@ const B14_PATH_CONFIGS: Record<B13PathKey, B13Config> = {
     PathBadgeIcon:  Wrench,
     primaryPathId:          "direct_repair",
     primaryPathLabel:       "Direct Replacement",
-    primaryPathDescription: "Address documented items directly with a scoped repair authorization. No carrier process required. Hustad schedules repair work based on exactly what was documented during the inspection.",
+    primaryPathDescription: "Address documented items directly with a scoped replacement authorization. No carrier process required. Hustad schedules replacement work based on exactly what was documented during the inspection.",
     primaryBullets: [
       "Scope limited to documented findings — nothing beyond what the evidence supports.",
       "Faster scheduling with no carrier coordination delay.",
@@ -1813,7 +1813,7 @@ const B14_PATH_CONFIGS: Record<B13PathKey, B13Config> = {
       "Would you like to review the authorization together on the next screen before making any decision?",
     ],
     repGuardrail: "Do not expand the scope beyond what the evidence supports. Do not introduce insurance options unless the homeowner specifically asks. Stay focused on the documented repair items.",
-    ctaLabel: "Review the Repair Authorization",
+    ctaLabel: "Review the Replacement Authorization",
   },
 
   no_action: {
@@ -2746,7 +2746,7 @@ function buildRepCompanion(session: any, pathKey: string) {
   } else if (pathKey === "carrier_review") {
     closeSentence = "If they agree the evidence warrants a review, move to the Contingency Agreement.";
   } else if (pathKey === "direct_repair") {
-    closeSentence = "If they agree with the scope, move directly to the Repair Authorization.";
+    closeSentence = "If they agree with the scope, move directly to the Replacement Authorization.";
   }
 
   return {
