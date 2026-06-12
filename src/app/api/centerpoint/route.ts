@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
       .order("cp_updated_at", { ascending: false, nullsFirst: false })
       .range(offset, offset + PAGE_SIZE - 1);
 
-    if (status) {
+    if (status && status !== "all") {
       if (status === "accepted") {
         query = query.in("status", ["accepted", "opened"]);
       } else {

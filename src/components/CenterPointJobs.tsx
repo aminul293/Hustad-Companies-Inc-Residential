@@ -97,7 +97,7 @@ export function CenterPointJobs() {
     try {
       const params = new URLSearchParams({ page: String(targetPage) });
       if (search) params.set("search", search);
-      if (statusFilter) params.set("status", statusFilter);
+      if (statusFilter && statusFilter !== "all") params.set("status", statusFilter);
 
       const res = await fetchCenterpointJobs(Object.fromEntries(params.entries()));
       if (!res.ok) {
