@@ -86,16 +86,18 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
           <p className="text-[#2D4060] text-sm mt-2">Import tickets from CP Inbox to get started</p>
         </div>
       ) : (
-        <div className="flex gap-5 overflow-x-auto pb-6 -mx-8 px-8 h-full min-h-[60vh]">
+        <div className="flex flex-col gap-8 pb-10">
           {KANBAN_COLUMNS.map(col => {
             const colLeads = p.leads.filter(l => col.statuses.includes(l.pipeline_status));
+            // Only show sections that have leads to avoid vertical clutter
+            if (colLeads.length === 0) return null;
             return (
-              <div key={col.id} className="flex-shrink-0 w-[340px] flex flex-col bg-white/[0.02] border border-white/[0.05] rounded-2xl overflow-hidden h-[calc(100vh-240px)] min-h-[500px]">
-                <div className="p-4 border-b border-white/[0.05] bg-black/20 flex items-center justify-between shrink-0">
-                  <h3 className="text-sm font-medium text-[#E8EDF8] tracking-wide">{col.label}</h3>
-                  <span className="text-[10px] font-mono text-[#7090B0] bg-white/[0.05] px-2 py-0.5 rounded-full">{colLeads.length}</span>
+              <div key={col.id} className="flex flex-col">
+                <div className="flex items-center gap-3 mb-4">
+                  <h3 className="text-lg font-medium text-[#E8EDF8] tracking-tight">{col.label}</h3>
+                  <span className="text-[10px] font-mono text-[#7090B0] bg-white/[0.05] border border-white/10 px-2.5 py-0.5 rounded-full">{colLeads.length}</span>
                 </div>
-                <div className="flex-1 overflow-y-auto p-3 space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <AnimatePresence>
                     {colLeads.map((lead) => (
                       <PipelineLeadCard
@@ -119,11 +121,6 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                       />
                     ))}
                   </AnimatePresence>
-                  {colLeads.length === 0 && (
-                     <div className="flex flex-col items-center justify-center py-10 opacity-30">
-                       <p className="text-xs text-[#7090B0]">Empty</p>
-                     </div>
-                  )}
                 </div>
               </div>
             );
