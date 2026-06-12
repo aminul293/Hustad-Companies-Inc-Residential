@@ -13,6 +13,8 @@ import {
 } from "./pipelineTypes";
 
 interface Props {
+  variant?: "default" | "compact";
+  onClick?: () => void;
   lead: PipelineLead;
   repId?: string;
   removing: boolean;
@@ -30,6 +32,7 @@ interface Props {
 }
 
 export function PipelineLeadCard({
+  variant = "default", onClick,
   lead, repId, removing,
   onStageClick, onCall, onFollowUp, onSchedule, onStartInspection,
   onNotes, onDraftEmail, onEditPhone, onEditEmail, onDeadLead, onRemove,
@@ -51,6 +54,61 @@ export function PipelineLeadCard({
     const entries = parseNoteEntries(lead.lead_notes || "");
     return entries.filter(e => e.isActivity).slice(-1)[0] ?? null;
   })();
+
+  if (variant === "compact") {
+    return (
+      <motion.div
+        layout
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: removing ? 0.35 : 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ duration: 0.2 }}
+        onClick={onClick}
+        className={cn(
+          "bg-[#0b0b0b] border border-white/[0.07] rounded-xl flex flex-col overflow-hidden transition-all duration-300",
+          onClick && "cursor-pointer hover:border-[#2563ba]/40 hover:bg-white/[0.02]"
+        )}
+      >
+        <div className="h-[3px] bg-white/[0.04] shrink-0 w-full">
+          <div className={cn("h-full transition-all duration-500", cfg.bar)} style={{ width: `${((stageIdx + 1) / 5) * 100}%` }} />
+        </div>
+        <div className="p-4 flex flex-col gap-2.5">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <h3 className="text-[13px] font-inter font-medium text-[#E8EDF8] tracking-tight leading-snug truncate">
+                {lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name}
+              </h3>
+              <p className="text-[10px] text-[#7090B0] mt-0.5 font-light truncate">
+                {lead.centerpoint_jobs?.raw?._owner ? (lead.centerpoint_jobs.raw._owner as string).replace(/\b\w/g, c => c.toUpperCase()) : "Unknown Owner"}
+              </p>
+            </div>
+            {(isUrgent || isWarning) && (
+              <div className="shrink-0 mt-0.5">
+                {isUrgent ? <Flame className="w-3.5 h-3.5 text-rose-400" /> : <AlertCircle className="w-3.5 h-3.5 text-amber-400" />}
+              </div>
+            )}
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] font-mono text-[#8BA5C5] bg-white/[0.04] border border-white/[0.06] px-1.5 py-0.5 rounded-md truncate">
+              #{lead.cpc_ticket_id}
+            </span>
+            <div className="text-[10px] font-medium shrink-0 ml-2">
+              {isScheduled ? (
+                <span className="text-[#3aada3]">{lead.scheduled_start_at ? fmtDate(lead.scheduled_start_at) : "—"}</span>
+              ) : (
+                <span className={cn(isUrgent ? "text-rose-400" : isWarning ? "text-amber-400" : "text-[#7090B0]")}>
+                  {lead.pipeline_status === "follow_up_needed" && lead.next_follow_up_at
+                    ? fmtDate(lead.next_follow_up_at)
+                    : idleDays !== null ? `${idleDays}d idle` : "New"}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div

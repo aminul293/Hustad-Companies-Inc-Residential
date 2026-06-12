@@ -9,9 +9,11 @@ import {
   CallModal, DraftEmailModal, EditPhoneModal, EditEmailModal,
   FollowUpModal, DeadLeadModal, ConfirmRemoveModal, BlockedModal, StageBackModal,
 } from "./pipeline/PipelineModals";
-import { usePipelineLeads } from "./pipeline/usePipelineLeads";
 import { PipelineLeadCard } from "./pipeline/PipelineLeadCard";
+import { PipelineLeadSlideOver } from "./pipeline/PipelineLeadSlideOver";
+import { usePipelineLeads } from "./pipeline/usePipelineLeads";
 import { AnimatePresence } from "framer-motion";
+import { useState } from "react";
 
 interface PipelineLeadsProps {
   repId?: string;
@@ -20,6 +22,17 @@ interface PipelineLeadsProps {
 
 export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
   const p = usePipelineLeads(repId, repEmail);
+  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+
+  const selectedLead = p.leads.find(l => l.id === selectedLeadId) || null;
+
+  const KANBAN_COLUMNS = [
+    { id: 0, label: "New Leads", statuses: ["new_lead"] },
+    { id: 1, label: "Attempted / Follow Up", statuses: ["contact_attempted", "follow_up_needed"] },
+    { id: 2, label: "Contacted", statuses: ["contacted"] },
+    { id: 3, label: "Scheduled", statuses: ["scheduled", "appointment_confirmed"] },
+    { id: 4, label: "In Field / Closed", statuses: ["inspection_in_progress", "inspection_completed", "signed", "closed", "dead_lead"] },
+  ];
 
   return (
     <div className="p-8 space-y-8 overflow-y-auto h-full bg-black/20">
@@ -73,30 +86,69 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
           <p className="text-[#2D4060] text-sm mt-2">Import tickets from CP Inbox to get started</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <AnimatePresence>
-            {p.leads.map((lead) => (
-              <PipelineLeadCard
-                key={lead.id}
-                lead={lead}
-                repId={repId}
-                removing={p.removing === lead.id}
-                onStageClick={p.handleStageClick}
-                onCall={p.handleCall}
-                onFollowUp={p.openFollowModal}
-                onSchedule={p.openSchedModal}
-                onStartInspection={p.handleStartInspection}
-                onNotes={p.openNotes}
-                onDraftEmail={p.openDraftEmail}
-                onEditPhone={p.openEditPhone}
-                onEditEmail={p.openEditEmail}
-                onDeadLead={p.handleDeadLead}
-                onRemove={p.handleRemoveClick}
-              />
-            ))}
-          </AnimatePresence>
+        <div className="flex gap-5 overflow-x-auto pb-6 -mx-8 px-8 h-full min-h-[60vh]">
+          {KANBAN_COLUMNS.map(col => {
+            const colLeads = p.leads.filter(l => col.statuses.includes(l.pipeline_status));
+            return (
+              <div key={col.id} className="flex-shrink-0 w-[340px] flex flex-col bg-white/[0.02] border border-white/[0.05] rounded-2xl overflow-hidden h-[calc(100vh-240px)] min-h-[500px]">
+                <div className="p-4 border-b border-white/[0.05] bg-black/20 flex items-center justify-between shrink-0">
+                  <h3 className="text-sm font-medium text-[#E8EDF8] tracking-wide">{col.label}</h3>
+                  <span className="text-[10px] font-mono text-[#7090B0] bg-white/[0.05] px-2 py-0.5 rounded-full">{colLeads.length}</span>
+                </div>
+                <div className="flex-1 overflow-y-auto p-3 space-y-3">
+                  <AnimatePresence>
+                    {colLeads.map((lead) => (
+                      <PipelineLeadCard
+                        key={lead.id}
+                        variant="compact"
+                        onClick={() => setSelectedLeadId(lead.id)}
+                        lead={lead}
+                        repId={repId}
+                        removing={p.removing === lead.id}
+                        onStageClick={p.handleStageClick}
+                        onCall={p.handleCall}
+                        onFollowUp={p.openFollowModal}
+                        onSchedule={p.openSchedModal}
+                        onStartInspection={p.handleStartInspection}
+                        onNotes={p.openNotes}
+                        onDraftEmail={p.openDraftEmail}
+                        onEditPhone={p.openEditPhone}
+                        onEditEmail={p.openEditEmail}
+                        onDeadLead={p.handleDeadLead}
+                        onRemove={p.handleRemoveClick}
+                      />
+                    ))}
+                  </AnimatePresence>
+                  {colLeads.length === 0 && (
+                     <div className="flex flex-col items-center justify-center py-10 opacity-30">
+                       <p className="text-xs text-[#7090B0]">Empty</p>
+                     </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
+
+      <PipelineLeadSlideOver
+        open={!!selectedLeadId}
+        onClose={() => setSelectedLeadId(null)}
+        lead={selectedLead}
+        repId={repId}
+        removing={selectedLead ? p.removing === selectedLead.id : false}
+        onStageClick={p.handleStageClick}
+        onCall={p.handleCall}
+        onFollowUp={p.openFollowModal}
+        onSchedule={p.openSchedModal}
+        onStartInspection={p.handleStartInspection}
+        onNotes={p.openNotes}
+        onDraftEmail={p.openDraftEmail}
+        onEditPhone={p.openEditPhone}
+        onEditEmail={p.openEditEmail}
+        onDeadLead={p.handleDeadLead}
+        onRemove={p.handleRemoveClick}
+      />
 
       <ScheduleModal
         open={!!p.schedModal}
