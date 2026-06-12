@@ -34,7 +34,7 @@ export const NEXT_STEPS_CONFIG: Record<string, { headline: string; detail: strin
     finishLabel: "Confirm Monitor Plan & Close",
   },
   repair_only: {
-    headline: "Direct repair authorized.",
+    headline: "Direct replacement authorized.",
     detail: "Targeted repairs are scheduled without an insurance claim.",
     steps: [
       "Your signed repair authorization will be emailed immediately.",

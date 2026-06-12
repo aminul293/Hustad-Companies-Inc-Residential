@@ -124,7 +124,7 @@ function getPathConfig(pt: PathType) {
     case "carrier_review":
       return { title: "Your Carrier Review Report", tag: "Inspection Complete · Claim Path", badgeText: "Carrier Review", badgeType: "pending" };
     case "urgent_repair":
-      return { title: "Your Direct Repair Report", tag: "Inspection Complete · Repair Recommended", badgeText: "Report Delivered", badgeType: "executed" };
+      return { title: "Your Direct Replacement Report", tag: "Inspection Complete · Repair Recommended", badgeText: "Report Delivered", badgeType: "executed" };
     case "full_restoration":
       return { title: "Your Roof Replacement Proposal", tag: "Inspection Complete · Full Replacement", badgeText: "Proposal in Progress", badgeType: "proposal" };
     default:
@@ -297,7 +297,7 @@ function renderIntro(d: jsPDF, pt: PathType, s: SessionState) {
   if (pt === "urgent_repair") {
     Y += 12;
     st(d, T.slate900); d.setFont("times", "bold"); d.setFontSize(22);
-    const headline = "Direct repair is the recommended path forward.";
+    const headline = "Direct replacement is the recommended path forward.";
     const hLines = d.splitTextToSize(headline, CW) as string[];
     d.text(hLines, M, Y);
     Y += hLines.length * 8 + 6;
@@ -464,7 +464,7 @@ function renderFindings(d: jsPDF, pt: PathType, s: SessionState) {
   if (pt === "urgent_repair") {
     checkPage(d, 60);
     st(d, T.slate900); d.setFont("times", "normal"); d.setFontSize(14);
-    d.text("Direct Repair", M, Y + 10);
+    d.text("Direct Replacement", M, Y + 10);
     Y += 16;
 
     st(d, T.gray600); d.setFont("helvetica", "normal"); d.setFontSize(10);

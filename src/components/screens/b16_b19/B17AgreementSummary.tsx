@@ -264,7 +264,7 @@ export function B17AgreementSummary({ session, onUpdate, onNext, onBack }: Props
             Page 17 · Agreement Summary
           </p>
           <h1 style={{ color: LM.navy, fontSize: "clamp(26px, 4vw, 36px)", fontWeight: 700, lineHeight: 1.08, letterSpacing: "-0.02em", marginTop: "4px" }}>
-            {isClaimPath ? "Insurance Contingency Agreement Review" : "Direct Repair Agreement Review"}
+            {isClaimPath ? "Insurance Contingency Agreement Review" : "Direct Replacement Agreement Review"}
           </h1>
           <p style={{ color: LM.navyMid, fontSize: "14.5px", lineHeight: 1.5, marginTop: "6px" }}>
             Review what you are authorizing before you proceed.

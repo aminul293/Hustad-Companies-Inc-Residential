@@ -462,7 +462,7 @@ export async function generateEmailHTML(session: SessionState, reviewUrl: string
       { t: "File or Confirm Your Claim", d: "We can guide you on filing if needed. Let your Hustad rep know the status of your claim." },
     ]);
   } else if (path === "direct_repair") {
-    bodyHtml += renderHeader("Your Direct Repair Request", "Inspection Complete &middot; Retail Repair Path", "Reviewing Request", "pending", "#ea580c");
+    bodyHtml += renderHeader("Your Direct Replacement Request", "Inspection Complete &middot; Retail Repair Path", "Reviewing Request", "pending", "#ea580c");
     bodyHtml += renderPropRow(prop, dateStr, insp);
     bodyHtml += `
       <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #ffffff; border-bottom: 1px solid #f0f0f0;">
@@ -479,7 +479,7 @@ export async function generateEmailHTML(session: SessionState, reviewUrl: string
       { t: "Completion and Final Invoice", d: "Final invoicing will be provided upon project completion." },
     ]);
   } else if (path === "urgent_repair") {
-    bodyHtml += renderHeader("Your Direct Repair Report", "Inspection Complete &middot; Repair Recommended", "Report Delivered", "executed", "#ea580c");
+    bodyHtml += renderHeader("Your Direct Replacement Report", "Inspection Complete &middot; Repair Recommended", "Report Delivered", "executed", "#ea580c");
     bodyHtml += renderPropRow(prop, dateStr, insp);
     bodyHtml += `
       <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #ffffff; border-bottom: 1px solid #f0f0f0;">
