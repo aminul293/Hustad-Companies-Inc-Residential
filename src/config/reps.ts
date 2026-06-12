@@ -15,12 +15,6 @@ export interface RepIdentity {
  */
 export const FIELD_REPS: RepIdentity[] = [
   { 
-    id: "rep_owner_00", 
-    name: "System Owner", 
-    role: "owner", 
-    active: true 
-  },
-  { 
     id: "rep_alpha_01", 
     name: "Field Operative Alpha", 
     role: "Senior Field Specialist", 

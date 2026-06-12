@@ -231,14 +231,12 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                 { id: "schedule", label: "My Schedule" },
                 { id: "calendar", label: "Calendar" },
                 { id: "opportunities", label: "Opps" },
-                ...(currentRep?.role === "admin" || currentRep?.role === "manager" || currentRep?.role === "owner"
-                  ? [{ id: "manager", label: "Manager" }]
-                  : []),
+                { id: "manager", label: "Manager" },
                 { id: "settings", label: "Settings" },
               ] as const).map(tab => (
                 <button
                   key={tab.id}
-                  onClick={() => r.setView(tab.id as any)}
+                  onClick={() => r.setView(tab.id)}
                   className={cn(
                     "px-4 py-2 rounded-full text-xs font-inter transition-all",
                     r.view === tab.id ? "bg-white text-black" : "text-[#567090] hover:text-[#E8EDF8]"
@@ -359,14 +357,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
         {r.view === "calendar" ? (
           <CalendarView currentRep={currentRep} managerMode={r.view === "calendar"} />
         ) : r.view === "manager" ? (
-          currentRep?.role === "admin" || currentRep?.role === "manager" || currentRep?.role === "owner" ? (
-            <ManagerDashboard currentRep={currentRep} />
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full text-white/40">
-              <Activity className="w-10 h-10 mb-4 opacity-20" />
-              <p>Unauthorized access</p>
-            </div>
-          )
+          <ManagerDashboard currentRep={currentRep} />
         ) : r.view === "centerpoint" ? (
           <CenterPointJobs />
         ) : r.view === "opportunities" ? (
@@ -487,86 +478,76 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
               </button>
             </div>
 
-            {currentRep?.role === "owner" ? (
-              <>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <h3 className="text-xl font-display font-medium">Field Operatives</h3>
-                    <p className="text-xs text-[#567090]">Add or manage reps authorized for forensic sessions.</p>
-                  </div>
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <h3 className="text-xl font-display font-medium">Field Operatives</h3>
+                <p className="text-xs text-[#567090]">Add or manage reps authorized for forensic sessions.</p>
+              </div>
+              <button 
+                onClick={() => r.setIsAdding(!r.isAdding)}
+                className="flex items-center gap-2 text-xs font-inter text-[#4a8fd4] hover:text-[#8BA5C5] transition-colors"
+              >
+                <UserPlus className="w-4 h-4" />
+                Add New Rep
+              </button>
+            </div>
+
+            {r.isAdding && (
+              <div className="p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <input 
+                    className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#2563ba]/60" 
+                    placeholder="Rep Full Name" 
+                    value={r.newRep.name}
+                    onChange={(e) => r.setNewRep({...r.newRep, name: e.target.value})}
+                  />
+                  <input 
+                    className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#2563ba]/60" 
+                    placeholder="Role (e.g. Director)" 
+                    value={r.newRep.role}
+                    onChange={(e) => r.setNewRep({...r.newRep, role: e.target.value})}
+                  />
+                </div>
+                <div className="flex justify-end gap-3">
+                  <button onClick={() => r.setIsAdding(false)} className="text-xs text-[#567090] px-4">Cancel</button>
                   <button 
-                    onClick={() => r.setIsAdding(!r.isAdding)}
-                    className="flex items-center gap-2 text-xs font-inter text-[#4a8fd4] hover:text-[#8BA5C5] transition-colors"
+                    onClick={() => {
+                      saveCustomRep({ id: `custom_${Date.now()}`, name: r.newRep.name, role: r.newRep.role, active: true });
+                      r.setIsAdding(false);
+                      r.setNewRep({ name: "", role: "" });
+                      r.setLiveReps(getLiveReps());
+                    }}
+                    className="bg-[#2563ba] text-[#E8EDF8] px-6 py-2 rounded-2xl text-xs font-inter font-medium"
                   >
-                    <UserPlus className="w-4 h-4" />
-                    Add New Rep
+                    Save Operative
                   </button>
                 </div>
-
-                {r.isAdding && (
-                  <div className="p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <input 
-                        className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#2563ba]/60" 
-                        placeholder="Rep Full Name" 
-                        value={r.newRep.name}
-                        onChange={(e) => r.setNewRep({...r.newRep, name: e.target.value})}
-                      />
-                      <input 
-                        className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#2563ba]/60" 
-                        placeholder="Role (e.g. admin or manager)" 
-                        value={r.newRep.role}
-                        onChange={(e) => r.setNewRep({...r.newRep, role: e.target.value})}
-                      />
-                    </div>
-                    <div className="flex justify-end gap-3">
-                      <button onClick={() => r.setIsAdding(false)} className="text-xs text-[#567090] px-4">Cancel</button>
-                      <button 
-                        onClick={() => {
-                          saveCustomRep({ id: `custom_${Date.now()}`, name: r.newRep.name, role: r.newRep.role, active: true });
-                          r.setIsAdding(false);
-                          r.setNewRep({ name: "", role: "" });
-                          r.setLiveReps(getLiveReps());
-                        }}
-                        className="bg-[#2563ba] text-[#E8EDF8] px-6 py-2 rounded-2xl text-xs font-inter font-medium"
-                      >
-                        Save Operative
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 gap-3">
-                  {r.liveReps.map((rep) => (
-                    <div key={rep.id} className="p-5 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-between group hover:bg-white/[0.04] transition-all">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
-                          <User className="w-5 h-5 text-[#567090]" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-[#E8EDF8]">{rep.name}</p>
-                          <p className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest">{rep.role}</p>
-                        </div>
-                      </div>
-                      {rep.id.startsWith("custom_") && (
-                        <button 
-                          onClick={() => { deleteCustomRep(rep.id); r.setLiveReps(getLiveReps()); }}
-                          className="p-2 text-[#1F2E48] hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-all"
-                        >
-                          <Trash className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="p-8 rounded-3xl bg-white/[0.02] border border-white/[0.05] text-center mt-8">
-                <Shield className="w-10 h-10 mx-auto mb-4 opacity-30 text-rose-400" />
-                <p className="text-sm font-display font-medium text-[#E8EDF8]">Restricted Settings</p>
-                <p className="text-xs text-[#567090] mt-1.5 max-w-sm mx-auto">Only the System Owner is authorized to manage field operatives, assign admin roles, and modify system access.</p>
               </div>
             )}
+
+            <div className="grid grid-cols-1 gap-3">
+              {r.liveReps.map((rep) => (
+                <div key={rep.id} className="p-5 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-between group hover:bg-white/[0.04] transition-all">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                      <User className="w-5 h-5 text-[#567090]" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-[#E8EDF8]">{rep.name}</p>
+                      <p className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest">{rep.role}</p>
+                    </div>
+                  </div>
+                  {rep.id.startsWith("custom_") && (
+                    <button 
+                      onClick={() => { deleteCustomRep(rep.id); r.setLiveReps(getLiveReps()); }}
+                      className="p-2 text-[#1F2E48] hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-all"
+                    >
+                      <Trash className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -608,8 +589,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
       <MobileMoreDrawer
         open={r.moreOpen}
         view={r.view}
-        currentRep={currentRep}
-        onNavigate={(v) => { r.setView(v); r.setMoreOpen(false); }}
+        onNavigate={v => { r.setView(v); r.setMoreOpen(false); }}
         onClose={() => r.setMoreOpen(false)}
         onNewSession={onNewSession}
       />

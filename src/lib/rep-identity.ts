@@ -24,12 +24,7 @@ export function getAuthenticatedRep(
     const email = (user.email || "").trim();
     const name = (user.name || email || "Hustad Rep").trim();
     const id = String((user as any).id || email || name).trim();
-    if (id) {
-      if (email.toLowerCase() === "aminul@hustadcompanies.com") {
-        return { id, name, email, role: "owner" };
-      }
-      return { id, name, email };
-    }
+    if (id) return { id, name, email };
   }
 
   // 2. QA/Staging Path: URL-based mock identity (rep_001 only)
