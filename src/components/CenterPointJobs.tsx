@@ -15,15 +15,15 @@ const STAGES: Record<string, {
   ring: string;
   chip: { bg: string; fg: string; dot: string };
 }> = {
-  new_service:   { label: "New Service", next: "opened",        color: "bg-sky-500/20 text-sky-300 border-sky-500/30",               ring: "bg-sky-400",     chip: { bg: "#d0e4f7", fg: "#1e4d8c", dot: "#2563ba" } },
-  opened:        { label: "Opened",      next: "scheduled",     color: "bg-[#2563ba]/20 text-[#4a8fd4] border-[#2563ba]/30",          ring: "bg-[#2563ba]",   chip: { bg: "#c5daf4", fg: "#163975", dot: "#2563ba" } },
+  new_service:   { label: "New Service", next: "accepted",        color: "bg-sky-500/20 text-sky-300 border-sky-500/30",               ring: "bg-sky-400",     chip: { bg: "#d0e4f7", fg: "#1e4d8c", dot: "#2563ba" } },
+  accepted:      { label: "Accepted",    next: "scheduled",     color: "bg-[#2563ba]/20 text-[#4a8fd4] border-[#2563ba]/30",          ring: "bg-[#2563ba]",   chip: { bg: "#c5daf4", fg: "#163975", dot: "#2563ba" } },
   scheduled:     { label: "Scheduled",   next: "started",       color: "bg-[#1e4d8c]/25 text-[#4a8fd4] border-[#1e4d8c]/35",          ring: "bg-[#1e4d8c]",   chip: { bg: "#b9d0ef", fg: "#123068", dot: "#1e4d8c" } },
   started:       { label: "In Progress", next: "completed",     color: "bg-[#2a8a82]/20 text-[#3aada3] border-[#2a8a82]/30",          ring: "bg-[#2a8a82]",   chip: { bg: "#b8d9d7", fg: "#165955", dot: "#2a8a82" } },
   completed:     { label: "Completed",   next: "closed",        color: "bg-[#2a8a82]/25 text-[#3aada3] border-[#2a8a82]/35",          ring: "bg-[#3aada3]",   chip: { bg: "#a8d2d0", fg: "#115250", dot: "#2a8a82" } },
   closed:        { label: "Closed Out",  next: null,            color: "bg-white/10 text-[#567090] border-white/10",                  ring: "bg-white/30",    chip: { bg: "#f6f9fc", fg: "#64748d", dot: "#94a3b8" } },
 };
 
-const STAGE_ORDER = ["new_service","opened","scheduled","started","completed","closed"];
+const STAGE_ORDER = ["new_service","accepted","scheduled","started","completed","closed"];
 
 const STATUS_FILTERS = [
   { id: "all", label: "All Stages" },
