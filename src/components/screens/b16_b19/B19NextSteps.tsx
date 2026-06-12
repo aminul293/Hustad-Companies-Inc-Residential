@@ -37,7 +37,10 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
   const isSigned = !!session.signatureData.signedAt;
   const isDeferred = session.sessionStatus === "deferred";
   const isSessionClosed = session.sessionStatus.startsWith("closed_") || session.sessionStatus === "signed";
-  const outcomeKey = isDeferred ? "deferred" : (outcome || "no_damage");
+  let outcomeKey = isDeferred ? "deferred" : (outcome || "no_damage");
+  if (!isDeferred && session.pathData.selectedPath === "direct_repair") {
+    outcomeKey = "repair_only";
+  }
   const config = NEXT_STEPS_CONFIG[outcomeKey] || NEXT_STEPS_CONFIG.no_damage;
   const [exported, setExported] = useState(false);
   const [deliverySent, setDeliverySent] = useState<string | null>(null);
