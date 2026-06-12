@@ -28,6 +28,11 @@ const STAGE_ORDER = ["new_service","accepted","scheduled","started","completed",
 const STATUS_FILTERS = [
   { id: "all", label: "All Stages" },
   { id: "new_service", label: "New Service" },
+  { id: "accepted", label: "Accepted" },
+  { id: "scheduled", label: "Scheduled" },
+  { id: "started", label: "In Progress" },
+  { id: "completed", label: "Completed" },
+  { id: "closed", label: "Closed Out" },
 ];
 
 interface CPJob {
@@ -296,6 +301,27 @@ export function CenterPointJobs() {
             Search
           </button>
         </form>
+
+        {/* Filters */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide pt-4">
+          {STATUS_FILTERS.map((f) => {
+            const isActive = statusFilter === f.id;
+            return (
+              <button
+                key={f.id}
+                onClick={() => setStatusFilter(f.id)}
+                className={cn(
+                  "px-4 py-1.5 rounded-full text-xs font-inter whitespace-nowrap transition-all border",
+                  isActive
+                    ? "bg-[#2563ba]/20 border-[#2563ba]/30 text-[#4a8fd4]"
+                    : "bg-white/[0.02] border-white/10 text-[#567090] hover:bg-white/[0.06]"
+                )}
+              >
+                {f.label}
+              </button>
+            );
+          })}
+        </div>
 
 
       </div>

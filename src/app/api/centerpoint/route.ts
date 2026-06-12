@@ -6,7 +6,7 @@ export const fetchCache = "force-no-store";
 export const revalidate = 0;
 
 const PAGE_SIZE = 25;
-const STAGE_ORDER = ["new_service","opened","scheduled","started","completed","closed"];
+const STAGE_ORDER = ["new_service","accepted","opened","scheduled","started","completed","closed"];
 
 export async function GET(req: NextRequest) {
   try {
@@ -29,7 +29,15 @@ export async function GET(req: NextRequest) {
       .order("cp_updated_at", { ascending: false, nullsFirst: false })
       .range(offset, offset + PAGE_SIZE - 1);
 
-    query = query.or('status.in.("new_service","opened","scheduled","started"),inbox_status.eq.imported_to_pipeline');
+    if (status) {
+      if (status === "accepted") {
+        query = query.in("status", ["accepted", "opened"]);
+      } else {
+        query = query.eq("status", status);
+      }
+    } else {
+      query = query.or('status.in.("new_service","opened","accepted","scheduled","started"),inbox_status.eq.imported_to_pipeline');
+    }
 
     if (search) {
       query = query.or(`name.ilike.%${search}%,property_name.ilike.%${search}%`);
