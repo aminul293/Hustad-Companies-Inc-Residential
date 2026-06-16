@@ -27,6 +27,8 @@ import {
   Activity,
   Inbox,
   X,
+  BookOpen,
+  ExternalLink,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
@@ -477,6 +479,25 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                 Sign out
               </button>
             </div>
+
+            {/* ── User Guide ── */}
+            <a
+              href="/guide"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-between gap-4 hover:bg-white/[0.05] hover:border-[#4a8fd4]/30 transition-all group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-[#1e4d8c]/20 border border-[#2563ba]/25 flex items-center justify-center shrink-0">
+                  <BookOpen className="w-5 h-5 text-[#4a8fd4]" />
+                </div>
+                <div>
+                  <p className="text-sm font-display font-medium text-[#E8EDF8]">Platform User Guide</p>
+                  <p className="text-[11px] font-mono text-[#4D678A]">Walkthroughs, field workflows, and AI classification reference</p>
+                </div>
+              </div>
+              <ExternalLink className="w-4 h-4 text-[#3F5878] group-hover:text-[#4a8fd4] transition-colors shrink-0" />
+            </a>
 
             <div className="flex items-center justify-between">
               <div className="space-y-1">

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=820px" />
+<title>Guide Preview — With Screenshots</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #06090F;
+    color: #E8EDF8;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    padding: 32px 24px 48px;
+    width: 820px;
+  }
+  .label {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #567090;
+    font-family: monospace;
+    margin-bottom: 4px;
+  }
+  h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+  .card {
+    background: #0d1525;
+    border: 1px solid #1e3050;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 16px rgba(15,29,53,0.10);
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid #1e3050;
+  }
+  .card-icon {
+    width: 28px; height: 28px;
+    background: #141f33;
+    border: 1px solid #1e3050;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+  .card-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .card-body { padding: 20px; }
+  .intro {
+    font-size: 12px;
+    color: #8BA5C5;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .phases {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 24px;
+  }
+  .phase-label {
+    font-size: 10px;
+    font-family: monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+  .phase-a .phase-label { color: #4a8fd4; }
+  .phase-b .phase-label { color: #2a8a82; }
+  .step {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .step-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 2px;
+  }
+  .step-id {
+    font-family: monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .phase-a .step-id { background: rgba(74,143,212,0.12); border: 1px solid rgba(74,143,212,0.25); color: #93c5fd; }
+  .phase-b .step-id { background: rgba(42,138,130,0.12); border: 1px solid rgba(42,138,130,0.25); color: #5eead4; }
+  .step-line {
+    width: 1px;
+    flex: 1;
+    min-height: 14px;
+    background: #1e3050;
+    margin-top: 3px;
+  }
+  .step-content { padding-bottom: 10px; flex: 1; }
+  .step-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #E8EDF8;
+    line-height: 1.3;
+  }
+  .step-desc {
+    font-size: 11px;
+    color: #8BA5C5;
+    margin-top: 2px;
+    line-height: 1.5;
+  }
+
+  /* Screenshot row */
+  .step-with-img {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 4px;
+    align-items: flex-start;
+  }
+  .step-screenshot {
+    width: 72px;
+    height: 52px;
+    border-radius: 6px;
+    object-fit: cover;
+    object-position: top;
+    border: 1px solid #1e3050;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .note {
+    background: #141f33;
+    border: 1px dashed #2d4060;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 11px;
+    color: #567090;
+    margin-top: 16px;
+    text-align: center;
+    font-family: monospace;
+    letter-spacing: 0.05em;
+  }
+  .divider {
+    border: none;
+    border-top: 1px solid #1e3050;
+    margin: 20px 0;
+  }
+  .compare-label {
+    font-size: 11px;
+    font-family: monospace;
+    color: #567090;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<p class="label">Preview — Workflow Section</p>
+<h1>With Screenshots Embedded</h1>
+
+<div class="card">
+  <div class="card-header">
+    <div class="card-icon">⬡</div>
+    <span class="card-title">Your Workflow at a Glance</span>
+  </div>
+  <div class="card-body">
+    <p class="intro">Every appointment follows this fixed sequence. Phase A runs while the homeowner watches. At the Inspection Hold screen you step away to the roof. Phase B begins when you return with documented findings.</p>
+
+    <!-- BEFORE: current text-only version -->
+    <p class="compare-label">▸ Current (text only)</p>
+    <div class="phases">
+      <div class="phase-a">
+        <p class="phase-label">Phase A — Presentation</p>
+        <div class="step">
+          <div class="step-left"><span class="step-id">P00</span><div class="step-line"></div></div>
+          <div class="step-content"><p class="step-label">Command Center</p><p class="step-desc">Select or create a session. Import jobs from the New Leads tab.</p></div>
+        </div>
+        <div class="step">
+          <div class="step-left"><span class="step-id">A01</span><div class="step-line"></div></div>
+          <div class="step-content"><p class="step-label">Welcome</p><p class="step-desc">Greet the homeowner by name. Sets professional tone.</p></div>
+        </div>
+        <div class="step">
+          <div class="step-left"><span class="step-id">A02</span><div class="step-line"></div></div>
+          <div class="step-content"><p class="step-label">Why We Inspect</p><p class="step-desc">Frame the purpose — documented evidence, not a sales pitch.</p></div>
+        </div>
+        <div class="step">
+          <div class="step-left"><span class="step-id">A03</span><div class="step-line"></div></div>
+          <div class="step-content"><p class="step-label">What We Inspect</p><p class="step-desc">Three categories: Exterior, Roof Assembly, Storm Evidence.</p></div>
+        </div>
+      </div>
+      <div class="phase-b">
+        <p class="phase-label">Phase B — Findings &amp; Close</p>
+        <div class="step">
+          <div class="step-left"><span class="step-id">B12</span><div class="step-line"></div></div>
+          <div class="step-content"><p class="step-label">Findings Summary</p><p class="step-desc">Present documented storm damage with full photo evidence.</p></div>
+        </div>
+        <div class="step">
+          <div class="step-left"><span class="step-id">B13</span><div class="step-line"></div></div>
+          <div class="step-content"><p class="step-label">Recommended Path</p><p class="step-desc">Rep recommends Carrier Review, Urgent Repair, or No Action.</p></div>
+        </div>
+        <div class="step">
+          <div class="step-left"><span class="step-id">B14</span><div class="step-line"></div></div>
+          <div class="step-content"><p class="step-label">Path Decision</p><p class="step-desc">Homeowner selects their preferred path.</p></div>
+        </div>
+        <div class="step">
+          <div class="step-left"><span class="step-id">B17</span><div class="step-line"></div></div>
+          <div class="step-content"><p class="step-label">Agreement Summary</p><p class="step-desc">Review full scope, terms, and pricing before signing.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- AFTER: with screenshots -->
+    <p class="compare-label">▸ Proposed (with screen thumbnails)</p>
+    <div class="phases">
+      <div class="phase-a">
+        <p class="phase-label">Phase A — Presentation</p>
+        <div class="step-with-img">
+          <div class="step-left"><span class="step-id">P00</span><div class="step-line"></div></div>
+          <img class="step-screenshot" src="/screenshots/P00_rep_launch.png" alt="Command Center" />
+          <div class="step-content"><p class="step-label">Command Center</p><p class="step-desc">Select or create a session. Import jobs from the New Leads tab.</p></div>
+        </div>
+        <div class="step-with-img">
+          <div class="step-left"><span class="step-id">A01</span><div class="step-line"></div></div>
+          <img class="step-screenshot" src="/screenshots/A01_welcome.png" alt="Welcome" />
+          <div class="step-content"><p class="step-label">Welcome</p><p class="step-desc">Greet the homeowner by name. Sets professional tone.</p></div>
+        </div>
+        <div class="step-with-img">
+          <div class="step-left"><span class="step-id">A02</span><div class="step-line"></div></div>
+          <img class="step-screenshot" src="/screenshots/A02_why_inspection.png" alt="Why Inspect" />
+          <div class="step-content"><p class="step-label">Why We Inspect</p><p class="step-desc">Frame the purpose — documented evidence, not a sales pitch.</p></div>
+        </div>
+        <div class="step-with-img">
+          <div class="step-left"><span class="step-id">A03</span><div class="step-line"></div></div>
+          <img class="step-screenshot" src="/screenshots/A03_what_we_inspect.png" alt="What We Inspect" />
+          <div class="step-content"><p class="step-label">What We Inspect</p><p class="step-desc">Three categories: Exterior, Roof Assembly, Storm Evidence.</p></div>
+        </div>
+      </div>
+      <div class="phase-b">
+        <p class="phase-label">Phase B — Findings &amp; Close</p>
+        <div class="step-with-img">
+          <div class="step-left"><span class="step-id">A04</span><div class="step-line"></div></div>
+          <img class="step-screenshot" src="/screenshots/A04_how_findings_sorted.png" alt="How Findings Sorted" />
+          <div class="step-content"><p class="step-label">How Findings Are Sorted</p><p class="step-desc">Three outcome paths: Carrier Review, Urgent Repair, No Action.</p></div>
+        </div>
+        <div class="step-with-img">
+          <div class="step-left"><span class="step-id">A05</span><div class="step-line"></div></div>
+          <img class="step-screenshot" src="/screenshots/A05_insurance_clarity.png" alt="Insurance Clarity" />
+          <div class="step-content"><p class="step-label">Insurance Clarity</p><p class="step-desc">Deductible, ACV vs. RCV — set accurate expectations.</p></div>
+        </div>
+        <div class="step-with-img">
+          <div class="step-left"><span class="step-id">A07</span><div class="step-line"></div></div>
+          <img class="step-screenshot" src="/screenshots/A07_why_hustad.png" alt="Why Hustad" />
+          <div class="step-content"><p class="step-label">Why Hustad</p><p class="step-desc">Credentials, restoration volume, and insurance expertise.</p></div>
+        </div>
+        <div class="step-with-img">
+          <div class="step-left"><span class="step-id">A09</span><div class="step-line"></div></div>
+          <img class="step-screenshot" src="/screenshots/A09_buyer_priorities.png" alt="Buyer Priorities" />
+          <div class="step-content"><p class="step-label">Buyer Priorities</p><p class="step-desc">Homeowner selects their top concerns to personalize findings.</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="note">✦ Each screen step would show a thumbnail of the actual screen · Click to enlarge (optional)</div>
+  </div>
+</div>
+
+</body>
+</html>
