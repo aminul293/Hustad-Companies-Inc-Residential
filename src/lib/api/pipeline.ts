@@ -29,6 +29,14 @@ export async function createPipelineLead(body: Record<string, unknown>): Promise
   });
 }
 
+export async function assignLeadByJob(centerpointJobId: string, repId: string): Promise<Response> {
+  return fetch(BASE, {
+    method: "PATCH",
+    headers: JSON_HEADERS,
+    body: JSON.stringify({ centerpoint_job_id: centerpointJobId, assigned_rep_id: repId }),
+  });
+}
+
 export async function unlinkPipelineByTicket(cpcTicketId: string): Promise<Response> {
   return fetch(`${BASE}?cpc_ticket_id=${encodeURIComponent(cpcTicketId)}`, {
     method: "DELETE",

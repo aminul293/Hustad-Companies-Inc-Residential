@@ -65,7 +65,11 @@ export async function GET(request: NextRequest) {
       `)
       .order('created_at', { ascending: false });
 
-    // No rep-specific isolation filter — returns all pipeline leads for all users
+    // When repId is provided, restrict to leads assigned to that rep (sales rep isolation).
+    // Managers call without repId and see the full pipeline.
+    if (repId) {
+      query = query.eq('assigned_rep_id', repId);
+    }
 
     const { data, error } = await query;
     if (error) throw error;
@@ -76,6 +80,38 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized", message: "Valid session required." }, { status: 401 });
     }
     return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: error.status || 500 });
+  }
+}
+
+// PATCH /api/pipeline — assign a rep to a pipeline lead
+// Body: { centerpoint_job_id: string; assigned_rep_id: string }
+export async function PATCH(request: NextRequest) {
+  try {
+    await requireAuth(request);
+    const { centerpoint_job_id, assigned_rep_id } = await request.json();
+
+    if (!centerpoint_job_id || !assigned_rep_id) {
+      return NextResponse.json({ error: 'Missing centerpoint_job_id or assigned_rep_id' }, { status: 400 });
+    }
+
+    const supabase = getServiceClient();
+    const { data, error } = await supabase
+      .from('pipeline_leads')
+      .update({ assigned_rep_id })
+      .eq('centerpoint_job_id', centerpoint_job_id)
+      .select('id, assigned_rep_id')
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data) {
+      return NextResponse.json({ error: 'No pipeline lead found for this job. Import the job to Pipeline first.' }, { status: 404 });
+    }
+    return NextResponse.json({ success: true, lead: data });
+  } catch (error: any) {
+    if (error.status === 401) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }
 

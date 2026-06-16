@@ -1,8 +1,8 @@
 "use client";
 
-import { fetchCenterpointJobs, fetchCenterpointSyncStatus, triggerCenterpointSync, patchCenterpointJob, createPipelineLead, unlinkPipelineByTicket } from "@/lib/api";
+import { fetchCenterpointJobs, fetchCenterpointSyncStatus, triggerCenterpointSync, patchCenterpointJob, createPipelineLead, unlinkPipelineByTicket, assignLeadByJob, fetchCurrentUser, fetchReps } from "@/lib/api";
 import { useState, useEffect, useCallback } from "react";
-import { Search, ChevronRight, RefreshCw, Building2, ArrowRight, CloudDownload, CheckCircle2, ArrowLeft, X } from "lucide-react";
+import { Search, ChevronRight, RefreshCw, Building2, ArrowRight, CloudDownload, CheckCircle2, ArrowLeft, X, UserPlus, User, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -86,6 +86,13 @@ export function CenterPointJobs() {
   const [unlinkingId, setUnlinkingId] = useState<string | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [stagePickerJobId, setStagePickerJobId] = useState<string | null>(null);
+
+  // Role-aware assign-rep state
+  const [userRole, setUserRole]         = useState<string | null>(null);
+  const [reps, setReps]                 = useState<{ id: string; name: string; email: string }[]>([]);
+  const [assigningJobId, setAssigningJobId] = useState<string | null>(null);
+  const [savingAssignId, setSavingAssignId] = useState<string | null>(null);
+  const [jobAssignments, setJobAssignments] = useState<Record<string, string>>({}); // cpcTicketId → repId
 
   const fetchJobs = useCallback(async (opts?: { refresh?: boolean; newPage?: number }) => {
     const isRefresh = opts?.refresh;
@@ -173,6 +180,40 @@ export function CenterPointJobs() {
     setPage(1);
     fetchJobs({ newPage: 1 });
   }, [search, statusFilter]);
+
+  useEffect(() => {
+    (async () => {
+      const me = await fetchCurrentUser();
+      if (!me) return;
+      setUserRole(me.role);
+      if (me.role === "manager") {
+        const res = await fetchReps();
+        if (res.ok) {
+          const json = await res.json();
+          setReps(json.reps ?? []);
+        }
+      }
+    })();
+  }, []);
+
+  const handleAssignRep = async (centerpointJobId: string, repId: string) => {
+    setSavingAssignId(centerpointJobId);
+    try {
+      const res = await assignLeadByJob(centerpointJobId, repId);
+      if (res.ok) {
+        setJobAssignments(prev => ({ ...prev, [centerpointJobId]: repId }));
+        setAssigningJobId(null);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setImportError(err.error || "Failed to assign rep. Please try again.");
+        setTimeout(() => setImportError(null), 6000);
+      }
+    } finally {
+      setSavingAssignId(null);
+    }
+  };
+
+  const isManager = userRole === "manager";
 
   const handleLoadMore = () => {
     const next = page + 1;
@@ -399,11 +440,10 @@ export function CenterPointJobs() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-6 shrink-0">
+                    <div className="flex items-center gap-4 shrink-0">
                       {attr.price > 0 && (
                         <div className="text-right hidden md:block">
                           <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-widest mb-0.5">Value</p>
-                          {/* Tabular figures — Stripi financial data treatment */}
                           <p
                             className="text-sm font-inter font-normal text-[#E8EDF8]"
                             style={{ fontFeatureSettings: '"ss01" 1, "tnum" 1', letterSpacing: "-0.42px" }}
@@ -412,6 +452,61 @@ export function CenterPointJobs() {
                           </p>
                         </div>
                       )}
+
+                      {/* Inline assign-rep — manager only, imported jobs only */}
+                      {isManager && job.inbox_status === "imported_to_pipeline" && (
+                        <div className="relative" onClick={e => e.stopPropagation()}>
+                          <button
+                            onClick={() => setAssigningJobId(assigningJobId === job.id ? null : job.id)}
+                            disabled={savingAssignId === job.id}
+                            className={cn(
+                              "flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-mono transition-all",
+                              jobAssignments[job.id]
+                                ? "bg-[#2a8a82]/10 border-[#2a8a82]/25 text-[#3aada3]"
+                                : "bg-white/[0.03] border-white/10 text-[#3F5878] hover:text-[#8BA5C5] hover:border-white/20"
+                            )}
+                          >
+                            {savingAssignId === job.id
+                              ? <RefreshCw className="w-2.5 h-2.5 animate-spin" />
+                              : <UserPlus className="w-2.5 h-2.5" />
+                            }
+                            {jobAssignments[job.id]
+                              ? (reps.find(r => r.id === jobAssignments[job.id])?.name?.split(" ")[0] ?? "Assigned")
+                              : "Assign"
+                            }
+                          </button>
+
+                          <AnimatePresence>
+                            {assigningJobId === job.id && reps.length > 0 && (
+                              <motion.div
+                                initial={{ opacity: 0, y: -4, scale: 0.97 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -4, scale: 0.97 }}
+                                transition={{ duration: 0.12 }}
+                                className="absolute right-0 top-full mt-2 z-20 w-52 rounded-xl border border-white/[0.12] bg-[#0c0c0c] shadow-2xl overflow-hidden"
+                              >
+                                <p className="px-3 py-2 text-[9px] font-mono text-[#2D4060] uppercase tracking-widest border-b border-white/[0.06]">
+                                  Assign to rep
+                                </p>
+                                {reps.map(rep => (
+                                  <button
+                                    key={rep.id}
+                                    onClick={() => handleAssignRep(job.id, rep.id)}
+                                    className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-white/[0.04] transition-colors text-left"
+                                  >
+                                    <User className="w-3 h-3 text-[#3F5878] shrink-0" />
+                                    <span className="text-xs font-inter text-[#AABDCF] truncate flex-1">{rep.name}</span>
+                                    {jobAssignments[job.id] === rep.id && (
+                                      <Check className="w-3 h-3 text-[#3aada3] shrink-0" />
+                                    )}
+                                  </button>
+                                ))}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      )}
+
                       <ChevronRight className={cn("w-4 h-4 text-[#2D4060] transition-transform duration-200", isExpanded && "rotate-90")} />
                     </div>
                   </button>
@@ -477,6 +572,67 @@ export function CenterPointJobs() {
                               </div>
                             ))}
                           </div>
+
+                          {/* Assign rep — manager + imported jobs only */}
+                          {isManager && job.inbox_status === "imported_to_pipeline" && (
+                            <div className="border-t border-white/[0.05] pt-5">
+                              <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest mb-3">Assigned Rep</p>
+                              <div className="flex items-center gap-3 flex-wrap">
+                                {jobAssignments[job.id] ? (
+                                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#2a8a82]/10 border border-[#2a8a82]/25">
+                                    <User className="w-3.5 h-3.5 text-[#3aada3]" />
+                                    <span className="text-xs font-inter text-[#3aada3]">
+                                      {reps.find(r => r.id === jobAssignments[job.id])?.name ?? "Assigned"}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <span className="text-xs font-inter text-[#3F5878]">Unassigned</span>
+                                )}
+                                <div className="relative">
+                                  <button
+                                    onClick={() => setAssigningJobId(assigningJobId === `detail-${job.id}` ? null : `detail-${job.id}`)}
+                                    disabled={savingAssignId === job.id}
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/10 text-[10px] font-mono text-[#567090] hover:text-[#AABDCF] hover:border-white/20 transition-all"
+                                  >
+                                    {savingAssignId === job.id
+                                      ? <RefreshCw className="w-3 h-3 animate-spin" />
+                                      : <UserPlus className="w-3 h-3" />
+                                    }
+                                    {jobAssignments[job.id] ? "Reassign" : "Assign Rep"}
+                                  </button>
+
+                                  <AnimatePresence>
+                                    {assigningJobId === `detail-${job.id}` && reps.length > 0 && (
+                                      <motion.div
+                                        initial={{ opacity: 0, y: -4, scale: 0.97 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: -4, scale: 0.97 }}
+                                        transition={{ duration: 0.12 }}
+                                        className="absolute left-0 top-full mt-2 z-20 w-52 rounded-xl border border-white/[0.12] bg-[#0c0c0c] shadow-2xl overflow-hidden"
+                                      >
+                                        <p className="px-3 py-2 text-[9px] font-mono text-[#2D4060] uppercase tracking-widest border-b border-white/[0.06]">
+                                          Assign to rep
+                                        </p>
+                                        {reps.map(rep => (
+                                          <button
+                                            key={rep.id}
+                                            onClick={() => handleAssignRep(job.id, rep.id)}
+                                            className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-white/[0.04] transition-colors text-left"
+                                          >
+                                            <User className="w-3 h-3 text-[#3F5878] shrink-0" />
+                                            <span className="text-xs font-inter text-[#AABDCF] truncate flex-1">{rep.name}</span>
+                                            {jobAssignments[job.id] === rep.id && (
+                                              <Check className="w-3 h-3 text-[#3aada3] shrink-0" />
+                                            )}
+                                          </button>
+                                        ))}
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
+                              </div>
+                            </div>
+                          )}
 
                           {/* Stage transition CTA & Import to Pipeline */}
                           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pt-2 border-t border-white/[0.05]">

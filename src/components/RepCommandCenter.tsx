@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import {
   Search,
   ChevronRight,
@@ -56,6 +56,7 @@ import { MySchedule } from "@/components/MySchedule";
 import { CalendarView } from "@/components/CalendarView";
 import { ManagerDashboard } from "@/components/ManagerDashboard";
 import { buildRepCaptureEmail } from "@/lib/rep-capture-email";
+import { fetchCurrentUser } from "@/lib/api";
 
 export type { IntakePrefill };
 
@@ -70,6 +71,16 @@ interface Props {
 
 export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPrefillAndStart, onBack, onResetSession }: Props) {
   const r = useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart, onResetSession });
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  const loadRole = useCallback(async () => {
+    const me = await fetchCurrentUser();
+    if (me) setUserRole(me.role);
+  }, []);
+
+  useEffect(() => { loadRole(); }, [loadRole]);
+
+  const isManager = userRole === "manager";
 
   return (
     <div className="flex flex-col h-full bg-[#060606] text-[#E8EDF8]">
@@ -227,15 +238,15 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
             {/* Tab switcher — tablet/desktop only */}
             <div className="hidden md:flex items-center gap-1 p-1 bg-white/5 border border-white/10 rounded-full">
               {([
-                { id: "centerpoint", label: "New Leads" },
-                { id: "dashboard", label: "Inspections" },
-                { id: "pipeline", label: "Pipeline" },
-                { id: "schedule", label: "My Schedule" },
-                { id: "calendar", label: "Calendar" },
-                { id: "opportunities", label: "Opps" },
-                { id: "manager", label: "Manager" },
-                { id: "settings", label: "Settings" },
-              ] as const).map(tab => (
+                { id: "centerpoint",   label: "New Leads",  managerOnly: false },
+                { id: "dashboard",     label: "Inspections",managerOnly: false },
+                { id: "pipeline",      label: "Pipeline",   managerOnly: false },
+                { id: "schedule",      label: "My Schedule",managerOnly: false },
+                { id: "calendar",      label: "Calendar",   managerOnly: false },
+                { id: "opportunities", label: "Opps",       managerOnly: false },
+                { id: "manager",       label: "Manager",    managerOnly: true  },
+                { id: "settings",      label: "Settings",   managerOnly: false },
+              ] as const).filter(tab => !tab.managerOnly || isManager).map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => r.setView(tab.id)}
@@ -367,7 +378,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
         ) : r.view === "schedule" ? (
           <MySchedule currentRep={currentRep} />
         ) : r.view === "pipeline" ? (
-          <PipelineLeads repId={currentRep.id} repEmail={currentRep.email} />
+          <PipelineLeads repId={isManager ? undefined : currentRep.id} repEmail={currentRep.email} />
         ) : r.view === "tickets" ? (
           <HustadTickets />
         ) : r.view === "dashboard" ? (

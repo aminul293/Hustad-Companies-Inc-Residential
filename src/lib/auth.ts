@@ -60,22 +60,28 @@ export const authOptions: NextAuthOptions = {
           (azureProfile.preferred_username as string | undefined) ||
           token.email;
       }
-      // Upsert on every sign-in (user present) so names stay current.
-      // Placed outside `if (profile)` because profile only fires on first OAuth login.
+      // On every sign-in: create the rep row if it doesn't exist yet (ignoreDuplicates),
+      // then update only the profile fields — never touching `role` so manager-assigned
+      // roles are preserved across logins.
       if (user) {
         const repId = String(token.id || token.sub || "");
         if (repId) {
           try {
-            await getServiceClient().from("reps").upsert(
-              {
-                id: repId,
-                name: String(token.name || token.email || repId),
-                email: String(token.email || ""),
-                last_seen_at: new Date().toISOString(),
-                active: true,
-              },
-              { onConflict: "id" }
+            const supabase = getServiceClient();
+            const profileName  = String(token.name || token.email || repId);
+            const profileEmail = String(token.email || "");
+            const lastSeen     = new Date().toISOString();
+
+            // Insert only — DO NOTHING on conflict so role is never reset for existing reps
+            await supabase.from("reps").upsert(
+              { id: repId, name: profileName, email: profileEmail, last_seen_at: lastSeen, active: true },
+              { onConflict: "id", ignoreDuplicates: true }
             );
+
+            // Update profile fields for existing reps (role is intentionally excluded)
+            await supabase.from("reps")
+              .update({ name: profileName, email: profileEmail, last_seen_at: lastSeen, active: true })
+              .eq("id", repId);
           } catch {
             // Non-fatal — auth still succeeds if upsert fails
           }

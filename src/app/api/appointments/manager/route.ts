@@ -15,7 +15,7 @@ export async function GET() {
     const todayStart = new Date(now); todayStart.setHours(0, 0, 0, 0);
     const todayEnd   = new Date(now); todayEnd.setHours(23, 59, 59, 999);
 
-    const [apptRes, overdueRes, queueRes] = await Promise.all([
+    const [apptRes, overdueRes, queueRes, pipelineRes] = await Promise.all([
       supabase
         .from('appointments')
         .select(`
@@ -46,11 +46,32 @@ export async function GET() {
         .not('error', 'is', null)
         .order('updated_at', { ascending: false })
         .limit(20),
+
+      supabase
+        .from('pipeline_leads')
+        .select('id, pipeline_status, assigned_rep_id, cpc_ticket_id, contact_attempt_count, next_follow_up_at, centerpoint_jobs(name, property_name, raw)')
+        .not('pipeline_status', 'in', '("closed")')
+        .limit(500),
     ]);
 
     const appointments: any[] = apptRes.data ?? [];
     const overdue_followups: any[] = overdueRes.data ?? [];
     const outbound_failures: any[] = queueRes.data ?? [];
+    const pipelineLeads: any[] = pipelineRes.data ?? [];
+
+    // "needs_work" = leads still requiring rep action (pre-inspection only).
+    // Explicitly excludes inspection_completed + signed so it never overlaps with "completed".
+    const NEEDS_WORK = ['new_lead', 'contact_attempted', 'follow_up_needed', 'contacted', 'scheduled', 'appointment_confirmed', 'inspection_in_progress'];
+
+    const pipeline_stats = {
+      total:       pipelineLeads.filter(l => NEEDS_WORK.includes(l.pipeline_status)).length,
+      new_lead:    pipelineLeads.filter(l => l.pipeline_status === 'new_lead').length,
+      in_outreach: pipelineLeads.filter(l => ['contact_attempted', 'follow_up_needed', 'contacted'].includes(l.pipeline_status)).length,
+      scheduled:   pipelineLeads.filter(l => ['scheduled', 'appointment_confirmed'].includes(l.pipeline_status)).length,
+      in_field:    pipelineLeads.filter(l => l.pipeline_status === 'inspection_in_progress').length,
+      completed:   pipelineLeads.filter(l => ['inspection_completed', 'signed'].includes(l.pipeline_status)).length,
+      dead_lead:   pipelineLeads.filter(l => l.pipeline_status === 'dead_lead').length,
+    };
 
     // Detect scheduling conflicts (same rep, overlapping times, non-cancelled)
     const active = appointments.filter(a =>
@@ -83,6 +104,8 @@ export async function GET() {
       conflicts,
       overdue_followups,
       outbound_failures,
+      pipeline_stats,
+      pipeline_leads_detail: pipelineLeads,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

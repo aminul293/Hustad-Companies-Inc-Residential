@@ -1,13 +1,14 @@
 "use client";
 
-import { fetchManagerAppointments, fetchReps, processQueue, patchAppointment, dismissQueueItems, dismissAllQueueFailures } from "@/lib/api";
+import { fetchManagerAppointments, fetchReps, processQueue, patchAppointment, dismissQueueItems, dismissAllQueueFailures, patchLead } from "@/lib/api";
+import { AccessControlPanel } from "@/components/AccessControlPanel";
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CalendarDays, UserX, AlarmClock, CheckCircle2, AlertTriangle,
-  RefreshCw, ChevronDown, Users, Zap, X,
+  RefreshCw, ChevronDown, Users, Zap, X, Check,
   Clock, Phone, Navigation2, PlayCircle, Database,
-  Activity, UserPlus
+  Activity, UserPlus, Inbox, TrendingUp, ExternalLink, User, Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AuthenticatedRep } from "@/lib/rep-identity";
@@ -52,16 +53,59 @@ interface OutboundFailure {
   target_id: string | null;
 }
 
+interface PipelineStats {
+  total: number;
+  new_lead: number;
+  in_outreach: number;
+  scheduled: number;
+  in_field: number;
+  completed: number;
+  dead_lead: number;
+}
+
+interface PipelineLeadDetail {
+  id: string;
+  pipeline_status: string;
+  assigned_rep_id: string | null;
+  cpc_ticket_id: string;
+  contact_attempt_count: number;
+  next_follow_up_at: string | null;
+  centerpoint_jobs: { name: string; property_name: string | null; raw?: Record<string, any> } | null;
+}
+
 interface ManagerData {
   appointments_today: Appointment[];
   conflicts: Array<{ a: Appointment; b: Appointment }>;
   overdue_followups: OverdueLead[];
   outbound_failures: OutboundFailure[];
+  pipeline_stats?: PipelineStats;
+  pipeline_leads_detail?: PipelineLeadDetail[];
 }
 
 interface Props {
   currentRep: AuthenticatedRep;
 }
+
+// ── Status display config ──────────────────────────────────────────────────────
+const STATUS_LABELS: Record<string, string> = {
+  new_lead: "New Lead", contact_attempted: "Attempted", follow_up_needed: "Follow Up",
+  contacted: "Contacted", scheduled: "Scheduled", appointment_confirmed: "Confirmed",
+  inspection_in_progress: "In Field", inspection_completed: "Inspected",
+  signed: "Signed", dead_lead: "Dead Lead", closed: "Closed",
+};
+const STATUS_COLORS: Record<string, string> = {
+  new_lead:               "text-sky-400 bg-sky-500/10 border-sky-500/20",
+  contact_attempted:      "text-amber-400 bg-amber-500/10 border-amber-500/20",
+  follow_up_needed:       "text-orange-400 bg-orange-500/10 border-orange-500/20",
+  contacted:              "text-[#2563ba] bg-[#2563ba]/10 border-[#2563ba]/20",
+  scheduled:              "text-[#3aada3] bg-[#3aada3]/10 border-[#3aada3]/20",
+  appointment_confirmed:  "text-sky-400 bg-sky-500/10 border-sky-500/20",
+  inspection_in_progress: "text-[#4a8fd4] bg-[#2563ba]/10 border-[#2563ba]/20",
+  inspection_completed:   "text-[#4a8fd4] bg-[#4a8fd4]/10 border-[#4a8fd4]/20",
+  signed:                 "text-green-400 bg-green-500/10 border-green-500/20",
+  dead_lead:              "text-rose-400 bg-rose-500/10 border-rose-500/20",
+  closed:                 "text-[#3F5878] bg-white/5 border-white/10",
+};
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 function fmtTime(iso: string) {
@@ -78,46 +122,73 @@ function navigate(address: string) {
     : `https://www.google.com/maps/dir/?api=1&destination=${encoded}`;
   window.open(url, "_blank");
 }
-
 function getAddress(a: Appointment) {
-  return a.pipeline_leads?.centerpoint_jobs?.property_name ||
-         a.pipeline_leads?.cpc_ticket_id || "Unknown";
+  return a.pipeline_leads?.centerpoint_jobs?.property_name || a.pipeline_leads?.cpc_ticket_id || "Unknown";
 }
-function getOwner(a: Appointment) {
-  return a.pipeline_leads?.centerpoint_jobs?.raw?._owner || "";
+function getOwner(a: Appointment) { return a.pipeline_leads?.centerpoint_jobs?.raw?._owner || ""; }
+function getPhone(a: Appointment) { return a.pipeline_leads?.centerpoint_jobs?.raw?._phone || ""; }
+function getLeadAddress(l: PipelineLeadDetail) {
+  return l.centerpoint_jobs?.property_name || l.centerpoint_jobs?.name || l.cpc_ticket_id || "Unknown";
 }
-function getPhone(a: Appointment) {
-  return a.pipeline_leads?.centerpoint_jobs?.raw?._phone || "";
+function getLeadOwner(l: PipelineLeadDetail) { return l.centerpoint_jobs?.raw?._owner || ""; }
+
+// ── Stage filter ───────────────────────────────────────────────────────────────
+type StageKey = "all" | "new_lead" | "in_outreach" | "scheduled" | "in_field" | "completed";
+
+const STAGE_LABEL_MAP: Record<StageKey, string> = {
+  all:         "Needs Action",
+  new_lead:    "New Leads",
+  in_outreach: "In Outreach",
+  scheduled:   "Scheduled",
+  in_field:    "In Field",
+  completed:   "Completed",
+};
+
+function getLeadsForStage(stageKey: StageKey, leads: PipelineLeadDetail[]): PipelineLeadDetail[] {
+  switch (stageKey) {
+    case "all":         return leads.filter(l => ["new_lead", "contact_attempted", "follow_up_needed", "contacted", "scheduled", "appointment_confirmed", "inspection_in_progress"].includes(l.pipeline_status));
+    case "new_lead":    return leads.filter(l => l.pipeline_status === "new_lead");
+    case "in_outreach": return leads.filter(l => ["contact_attempted", "follow_up_needed", "contacted"].includes(l.pipeline_status));
+    case "scheduled":   return leads.filter(l => ["scheduled", "appointment_confirmed"].includes(l.pipeline_status));
+    case "in_field":    return leads.filter(l => l.pipeline_status === "inspection_in_progress");
+    case "completed":   return leads.filter(l => ["inspection_completed", "signed"].includes(l.pipeline_status));
+  }
 }
 
+// ── Appointment status helpers ─────────────────────────────────────────────────
 const STATUS_DOT: Record<string, string> = {
-  scheduled:   "bg-[#2a8a82]",
-  confirmed:   "bg-sky-400",
-  rescheduled: "bg-amber-400",
-  no_show:     "bg-rose-400",
-  cancelled:   "bg-white/20",
-  completed:   "bg-[#2a8a82]",
+  scheduled: "bg-[#2a8a82]", confirmed: "bg-sky-400", rescheduled: "bg-amber-400",
+  no_show: "bg-rose-400", cancelled: "bg-white/20", completed: "bg-[#2a8a82]",
 };
 const STATUS_LABEL: Record<string, string> = {
   scheduled: "Scheduled", confirmed: "Confirmed", rescheduled: "Rescheduled",
   no_show: "No Show", cancelled: "Cancelled", completed: "Completed",
 };
 
+// ── Pipeline funnel config ─────────────────────────────────────────────────────
+const FUNNEL_STAGES: { key: StageKey; label: string; color: string; text: string }[] = [
+  { key: "new_lead",    label: "New Leads",  color: "bg-sky-500",   text: "text-sky-400"    },
+  { key: "in_outreach", label: "Outreach",   color: "bg-amber-500", text: "text-amber-400"  },
+  { key: "scheduled",   label: "Scheduled",  color: "bg-[#2a8a82]", text: "text-[#3aada3]" },
+  { key: "in_field",    label: "In Field",   color: "bg-[#2563ba]", text: "text-[#4a8fd4]" },
+  { key: "completed",   label: "Completed",  color: "bg-green-600", text: "text-green-400"  },
+];
+
 // ── Main Component ─────────────────────────────────────────────────────────────
-export function ManagerDashboard({ currentRep }: Props) {
+export function ManagerDashboard({ currentRep: _currentRep }: Props) {
   const [data, setData]       = useState<ManagerData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState<string | null>(null);
-  const [expandedRep, setExpandedRep] = useState<string | null>(null);
+  const [expandedRep, setExpandedRep]     = useState<string | null>(null);
+  const [selectedStage, setSelectedStage] = useState<StageKey | null>(null);
   const [retryCooldown, setRetryCooldown] = useState(false);
-  const [dismissing, setDismissing] = useState<string | "all" | null>(null);
+  const [dismissing, setDismissing]       = useState<string | "all" | null>(null);
   const [dbReps, setDbReps]   = useState<{ id: string; name: string; email: string }[]>([]);
 
-  const resolveRepName = (id: string) => {
-    if (id === "unassigned") return "Unassigned";
+  const resolveRepName = (id: string | null) => {
+    if (!id || id === "unassigned") return "Unassigned";
     const match = dbReps.find(r => r.id === id);
-    if (match) return match.name;
-    return `Rep …${id.slice(-6)}`;
+    return match ? match.name : `Rep …${id.slice(-6)}`;
   };
 
   const fetchData = useCallback(async () => {
@@ -132,7 +203,6 @@ export function ManagerDashboard({ currentRep }: Props) {
       if (repsRes.ok) {
         const repsJson = await repsRes.json();
         if (repsJson.reps) setDbReps(repsJson.reps);
-      } else {
       }
     } catch (e: any) {
       setError(e.message);
@@ -150,7 +220,6 @@ export function ManagerDashboard({ currentRep }: Props) {
       </div>
     );
   }
-
   if (error) {
     return (
       <div className="p-8 text-center">
@@ -161,43 +230,46 @@ export function ManagerDashboard({ currentRep }: Props) {
       </div>
     );
   }
-
   if (!data) return null;
 
   const { appointments_today, conflicts, overdue_followups, outbound_failures } = data;
+  const ps: PipelineStats = data.pipeline_stats ?? { total: 0, new_lead: 0, in_outreach: 0, scheduled: 0, in_field: 0, completed: 0, dead_lead: 0 };
+  const pipelineDetail: PipelineLeadDetail[] = data.pipeline_leads_detail ?? [];
 
-  // Derive stats
-  const total        = appointments_today.length;
-  const completed    = appointments_today.filter(a => a.appointment_status === "completed").length;
-  const noShows      = appointments_today.filter(a => a.appointment_status === "no_show").length;
-  const scheduled    = appointments_today.filter(a => ["scheduled", "confirmed", "rescheduled"].includes(a.appointment_status)).length;
+  const total         = appointments_today.length;
+  const noShows       = appointments_today.filter(a => a.appointment_status === "no_show").length;
   const conflictCount = conflicts.length;
   const overdueCount  = overdue_followups.length;
   const failedQueue   = outbound_failures.length;
 
-  // Group appointments by rep
   const byRep: Record<string, Appointment[]> = {};
   for (const a of appointments_today) {
     const key = a.assigned_rep_id ?? "unassigned";
     if (!byRep[key]) byRep[key] = [];
     byRep[key].push(a);
   }
-
-  // Conflict appointment IDs
   const conflictApptIds = new Set<string>();
-  for (const { a, b } of conflicts) {
-    conflictApptIds.add(a.id); conflictApptIds.add(b.id);
-  }
+  for (const { a, b } of conflicts) { conflictApptIds.add(a.id); conflictApptIds.add(b.id); }
+
+  const funnelMax = Math.max(ps.new_lead, ps.in_outreach, ps.scheduled, ps.in_field, ps.completed, 1);
+
+  const PIPELINE_KPIS: { label: string; value: number; icon: any; color: string; bg: string; border: string; stageKey: StageKey }[] = [
+    { label: "Needs Action",  value: ps.total,       icon: Activity,     color: "text-[#8BA5C5]", bg: "bg-white/[0.02]",      border: "border-white/[0.07]",    stageKey: "all"         },
+    { label: "New Leads",     value: ps.new_lead,    icon: Inbox,        color: "text-sky-400",   bg: "bg-sky-500/[0.04]",    border: "border-sky-500/[0.12]",  stageKey: "new_lead"    },
+    { label: "In Outreach",   value: ps.in_outreach, icon: Phone,        color: "text-amber-400", bg: "bg-amber-500/[0.04]",  border: "border-amber-500/[0.12]",stageKey: "in_outreach" },
+    { label: "Scheduled",     value: ps.scheduled,   icon: CalendarDays, color: "text-[#3aada3]", bg: "bg-[#2a8a82]/[0.06]", border: "border-[#2a8a82]/20",    stageKey: "scheduled"   },
+    { label: "In Field",      value: ps.in_field,    icon: PlayCircle,   color: "text-[#4a8fd4]", bg: "bg-[#2563ba]/[0.06]", border: "border-[#2563ba]/20",    stageKey: "in_field"    },
+    { label: "Completed",     value: ps.completed,   icon: CheckCircle2, color: "text-green-400", bg: "bg-green-500/[0.04]",  border: "border-green-500/[0.12]",stageKey: "completed"   },
+  ];
 
   return (
     <div className="flex-1 overflow-y-auto p-8 space-y-8">
-      {/* Refresh row */}
+
+      {/* ── Date + Refresh ── */}
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-[9px] font-mono text-[#354D6F] uppercase tracking-[0.2em]">
-            {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-          </p>
-        </div>
+        <p className="text-[9px] font-mono text-[#354D6F] uppercase tracking-[0.2em]">
+          {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+        </p>
         <button onClick={fetchData}
           className="flex items-center gap-2 text-[10px] font-mono text-[#3F5878] hover:text-[#E8EDF8] uppercase tracking-widest transition-colors">
           <RefreshCw className={cn("w-3.5 h-3.5", loading && "animate-spin")} />
@@ -205,30 +277,112 @@ export function ManagerDashboard({ currentRep }: Props) {
         </button>
       </div>
 
-      {/* ── KPI Cards ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: "Total Today",       value: total,         icon: CalendarDays, color: "text-[#8BA5C5]",    bg: "bg-white/[0.02]",       border: "border-white/[0.07]" },
-          { label: "Remaining",         value: scheduled,     icon: Clock,        color: "text-[#3aada3]",   bg: "bg-[#2a8a82]/[0.06]",  border: "border-[#2a8a82]/20" },
-          { label: "Completed",         value: completed,     icon: CheckCircle2, color: "text-[#2563ba]",   bg: "bg-[#2563ba]/[0.06]",  border: "border-[#2563ba]/20" },
-          { label: "No Shows",          value: noShows,       icon: UserX,        color: "text-rose-400",    bg: "bg-rose-500/[0.04]",    border: "border-rose-500/[0.12]" },
-          { label: "Conflicts",         value: conflictCount, icon: AlertTriangle,color: "text-amber-400",   bg: "bg-amber-500/[0.04]",   border: "border-amber-500/[0.12]" },
-          { label: "Overdue Follow-ups",value: overdueCount,  icon: AlarmClock,   color: "text-orange-400",  bg: "bg-orange-500/[0.04]",  border: "border-orange-500/[0.12]" },
-          { label: "Failed Queue",      value: failedQueue,   icon: Database,     color: "text-red-400",     bg: "bg-red-500/[0.04]",     border: "border-red-500/[0.12]" },
-          { label: "Active Reps Today", value: Object.keys(byRep).length, icon: Users, color: "text-sky-400", bg: "bg-sky-500/[0.04]", border: "border-sky-500/[0.12]" },
-        ].map((s, i) => (
-          <motion.div key={s.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-            className={cn("p-6 rounded-2xl border transition-all", s.bg, s.border)}>
-            <div className="flex items-center justify-between mb-4">
-              <div className={cn("p-2 rounded-xl bg-white/5", s.color)}>
-                <s.icon className="w-4 h-4" />
+      {/* ── Pipeline Health KPIs ── */}
+      <section className="space-y-4">
+        <SectionHeader icon={TrendingUp} label="Pipeline Health" color="text-[#8BA5C5]" />
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {PIPELINE_KPIS.map((s, i) => {
+            const isSelected = selectedStage === s.stageKey;
+            const isClickable = s.value > 0;
+            return (
+              <motion.div
+                key={s.label}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+                onClick={() => isClickable && setSelectedStage(isSelected ? null : s.stageKey)}
+                className={cn(
+                  "p-6 rounded-2xl border transition-all select-none",
+                  s.bg, s.border,
+                  isClickable && "cursor-pointer hover:border-white/20 hover:bg-white/[0.04]",
+                  isSelected && "ring-1 ring-white/25 border-white/20"
+                )}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className={cn("p-2 rounded-xl bg-white/5", s.color)}>
+                    <s.icon className="w-4 h-4" />
+                  </div>
+                  {isClickable && (
+                    <span className={cn("text-[9px] font-mono uppercase tracking-wider opacity-40", s.color)}>
+                      {isSelected ? "Close ×" : "View →"}
+                    </span>
+                  )}
+                </div>
+                <p className="text-3xl font-inter font-light tracking-tight mb-1">{s.value}</p>
+                <p className="text-[10px] font-mono text-[#4D678A] uppercase tracking-widest">{s.label}</p>
+              </motion.div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── Pipeline Stage Funnel ── */}
+      {ps.total > 0 && (
+        <section className="space-y-4">
+          <SectionHeader icon={Activity} label="Stage Breakdown" color="text-[#567090]" />
+          <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/[0.06] space-y-3">
+            {FUNNEL_STAGES.map((stage, i) => {
+              const val = ps[stage.key as keyof PipelineStats] as number;
+              const pct = ps.total > 0 ? Math.round((val / ps.total) * 100) : 0;
+              const barWidth = funnelMax > 0 ? (val / funnelMax) * 100 : 0;
+              const isSelected = selectedStage === stage.key;
+              const isClickable = val > 0;
+              return (
+                <motion.div
+                  key={stage.key}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  onClick={() => isClickable && setSelectedStage(isSelected ? null : stage.key)}
+                  className={cn(
+                    "flex items-center gap-4 rounded-xl px-3 py-2 -mx-3 transition-all",
+                    isClickable && "cursor-pointer hover:bg-white/[0.03]",
+                    isSelected && "bg-white/[0.04]"
+                  )}
+                >
+                  <span className="w-20 text-[10px] font-mono text-[#4D678A] uppercase tracking-wider shrink-0 text-right">{stage.label}</span>
+                  <div className="flex-1 h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${barWidth}%` }}
+                      transition={{ duration: 0.6, delay: i * 0.08, ease: "easeOut" }}
+                      className={cn("h-full rounded-full", stage.color)}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 w-16 justify-end">
+                    <span className={cn("text-sm font-inter font-light", stage.text)}>{val}</span>
+                    <span className="text-[9px] font-mono text-[#2D4060]">{pct}%</span>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* ── Today's Operations ── */}
+      <section className="space-y-4">
+        <SectionHeader icon={Clock} label="Today's Operations" color="text-[#567090]" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: "Appointments",  value: total,         icon: CalendarDays,  color: "text-[#8BA5C5]",  bg: "bg-white/[0.02]",      border: "border-white/[0.07]"     },
+            { label: "Conflicts",     value: conflictCount, icon: AlertTriangle, color: "text-amber-400",  bg: "bg-amber-500/[0.04]",  border: "border-amber-500/[0.12]" },
+            { label: "Overdue F/U",   value: overdueCount,  icon: AlarmClock,    color: "text-orange-400", bg: "bg-orange-500/[0.04]", border: "border-orange-500/[0.12]"},
+            { label: "Failed Queue",  value: failedQueue,   icon: Database,      color: "text-red-400",    bg: "bg-red-500/[0.04]",    border: "border-red-500/[0.12]"   },
+          ].map((s, i) => (
+            <motion.div key={s.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
+              className={cn("p-5 rounded-2xl border transition-all", s.bg, s.border)}>
+              <div className="flex items-center justify-between mb-3">
+                <div className={cn("p-1.5 rounded-lg bg-white/5", s.color)}>
+                  <s.icon className="w-3.5 h-3.5" />
+                </div>
               </div>
-            </div>
-            <p className="text-3xl font-inter font-light tracking-tight mb-1">{s.value}</p>
-            <p className="text-[10px] font-mono text-[#4D678A] uppercase tracking-widest">{s.label}</p>
-          </motion.div>
-        ))}
-      </div>
+              <p className="text-2xl font-inter font-light tracking-tight mb-0.5">{s.value}</p>
+              <p className="text-[10px] font-mono text-[#4D678A] uppercase tracking-widest">{s.label}</p>
+            </motion.div>
+          ))}
+        </div>
+      </section>
 
       {/* ── Conflicts ── */}
       {conflicts.length > 0 && (
@@ -239,7 +393,7 @@ export function ManagerDashboard({ currentRep }: Props) {
               <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
                 className="p-5 rounded-2xl bg-amber-500/[0.05] border border-amber-500/25 space-y-3">
                 <p className="text-[9px] font-mono text-amber-400/70 uppercase tracking-widest">
-                  Rep: {resolveRepName(a.assigned_rep_id ?? "unassigned")}
+                  Rep: {resolveRepName(a.assigned_rep_id)}
                 </p>
                 <div className="grid grid-cols-2 gap-3">
                   {[a, b].map(appt => (
@@ -262,12 +416,11 @@ export function ManagerDashboard({ currentRep }: Props) {
         <SectionHeader icon={Users} label="Schedule by Rep" count={total} color="text-sky-400" />
         <div className="space-y-3">
           {Object.entries(byRep).map(([repId, appts], idx) => {
-            const isOpen = expandedRep === repId;
+            const isOpen        = expandedRep === repId;
             const repCompleted  = appts.filter(a => a.appointment_status === "completed").length;
             const repNoShows    = appts.filter(a => a.appointment_status === "no_show").length;
             const repRemaining  = appts.filter(a => ["scheduled", "confirmed", "rescheduled"].includes(a.appointment_status)).length;
             const repConflicts  = appts.filter(a => conflictApptIds.has(a.id)).length;
-
             return (
               <motion.div key={repId} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
                 className="bg-white/[0.02] border border-white/[0.06] rounded-3xl">
@@ -278,9 +431,7 @@ export function ManagerDashboard({ currentRep }: Props) {
                       <Users className="w-4 h-4 text-[#3F5878]" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-inter font-medium text-[#DDE5F5] truncate">
-                        {resolveRepName(repId)}
-                      </p>
+                      <p className="text-sm font-inter font-medium text-[#DDE5F5] truncate">{resolveRepName(repId)}</p>
                       <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                         <Pill label={`${appts.length} total`} color="text-[#3F5878]" />
                         {repRemaining > 0 && <Pill label={`${repRemaining} remaining`} color="text-[#3aada3]" />}
@@ -292,11 +443,10 @@ export function ManagerDashboard({ currentRep }: Props) {
                   </div>
                   <ChevronDown className={cn("w-4 h-4 text-[#2D4060] transition-transform shrink-0", isOpen && "rotate-180")} />
                 </button>
-
                 <AnimatePresence>
                   {isOpen && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }} 
+                      transition={{ duration: 0.2 }}
                       className={cn("transition-all", isOpen ? "overflow-visible" : "overflow-hidden")}>
                       <div className="border-t border-white/[0.05] divide-y divide-white/[0.04]">
                         {appts.map(appt => (
@@ -309,7 +459,6 @@ export function ManagerDashboard({ currentRep }: Props) {
               </motion.div>
             );
           })}
-
           {Object.keys(byRep).length === 0 && (
             <div className="py-12 text-center">
               <CalendarDays className="w-8 h-8 text-[#1F2E48] mx-auto mb-3" />
@@ -319,7 +468,7 @@ export function ManagerDashboard({ currentRep }: Props) {
         </div>
       </section>
 
-      {/* ── No Shows (today) ── */}
+      {/* ── No Shows ── */}
       {noShows > 0 && (
         <section className="space-y-4">
           <SectionHeader icon={UserX} label="No Shows Today" count={noShows} color="text-rose-400" />
@@ -330,7 +479,7 @@ export function ManagerDashboard({ currentRep }: Props) {
                 <div className="min-w-0">
                   <p className="text-sm font-inter font-medium text-[#DDE5F5] truncate">{getAddress(appt)}</p>
                   <p className="text-[10px] font-mono text-[#3F5878] mt-0.5">
-                    {fmtTime(appt.appointment_start_at)} · {appt.assigned_rep_id ? resolveRepName(appt.assigned_rep_id) : "Unassigned"}
+                    {fmtTime(appt.appointment_start_at)} · {resolveRepName(appt.assigned_rep_id)}
                   </p>
                 </div>
                 <div className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
@@ -402,18 +551,12 @@ export function ManagerDashboard({ currentRep }: Props) {
                         disabled={dismissing !== null}
                         onClick={async () => {
                           setDismissing(item.id);
-                          try {
-                            await dismissQueueItems([item.id]);
-                            await fetchData();
-                          } finally {
-                            setDismissing(null);
-                          }
+                          try { await dismissQueueItems([item.id]); await fetchData(); }
+                          finally { setDismissing(null); }
                         }}
                         className="p-1 rounded-lg text-[#3F5878] hover:text-red-400 hover:bg-red-500/10 transition-all disabled:opacity-30"
                         title="Dismiss">
-                        {dismissing === item.id
-                          ? <RefreshCw className="w-3 h-3 animate-spin" />
-                          : <X className="w-3 h-3" />}
+                        {dismissing === item.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : <X className="w-3 h-3" />}
                       </button>
                     </div>
                   </div>
@@ -428,18 +571,13 @@ export function ManagerDashboard({ currentRep }: Props) {
                 </motion.div>
               ))}
             </AnimatePresence>
-
             <div className="pt-2 flex items-center gap-2">
               <button
                 disabled={retryCooldown}
                 onClick={async () => {
                   setRetryCooldown(true);
-                  try {
-                    await processQueue();
-                    await fetchData();
-                  } finally {
-                    setTimeout(() => setRetryCooldown(false), 5000);
-                  }
+                  try { await processQueue(); await fetchData(); }
+                  finally { setTimeout(() => setRetryCooldown(false), 5000); }
                 }}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-[#567090] hover:text-[#E8EDF8] hover:bg-white/10 transition-all disabled:opacity-40">
                 <Zap className="w-3.5 h-3.5" />
@@ -449,17 +587,11 @@ export function ManagerDashboard({ currentRep }: Props) {
                 disabled={dismissing !== null}
                 onClick={async () => {
                   setDismissing("all");
-                  try {
-                    await dismissAllQueueFailures();
-                    await fetchData();
-                  } finally {
-                    setDismissing(null);
-                  }
+                  try { await dismissAllQueueFailures(); await fetchData(); }
+                  finally { setDismissing(null); }
                 }}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-500/[0.06] border border-red-500/15 text-xs font-mono text-red-400/60 hover:text-red-300 hover:bg-red-500/10 transition-all disabled:opacity-40">
-                {dismissing === "all"
-                  ? <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  : <X className="w-3.5 h-3.5" />}
+                {dismissing === "all" ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5" />}
                 Dismiss All
               </button>
             </div>
@@ -467,25 +599,240 @@ export function ManagerDashboard({ currentRep }: Props) {
         </section>
       )}
 
-      {/* All clear state */}
-      {total === 0 && overdue_followups.length === 0 && outbound_failures.length === 0 && (
+      {/* All clear */}
+      {ps.total === 0 && total === 0 && overdue_followups.length === 0 && outbound_failures.length === 0 && (
         <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
           <Activity className="w-8 h-8 text-[#1F2E48]" />
           <p className="text-lg font-inter font-medium text-[#3F5878]">All clear</p>
-          <p className="text-sm text-[#2D4060] font-light">No appointments, follow-ups, or queue failures today.</p>
+          <p className="text-sm text-[#2D4060] font-light">No pipeline leads, appointments, follow-ups, or queue failures.</p>
         </div>
       )}
+
+      {/* ── Access Control ── */}
+      <section className="space-y-4 border-t border-white/[0.05] pt-8">
+        <SectionHeader icon={Shield} label="Access Control" color="text-[#4a8fd4]" />
+        <AccessControlPanel />
+      </section>
+
+      {/* ── Stage Drill-Down Panel ── */}
+      <AnimatePresence>
+        {selectedStage && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setSelectedStage(null)}
+              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 28, stiffness: 260 }}
+              className="fixed top-0 right-0 bottom-0 z-50 w-[420px] max-w-[92vw] flex flex-col bg-[#080808] border-l border-white/[0.08] shadow-2xl"
+            >
+              <StageLeadsPanel
+                stageKey={selectedStage}
+                leads={getLeadsForStage(selectedStage, pipelineDetail)}
+                resolveRepName={resolveRepName}
+                reps={dbReps}
+                onAssign={fetchData}
+                onClose={() => setSelectedStage(null)}
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ── Stage Leads Panel ──────────────────────────────────────────────────────────
+function StageLeadsPanel({
+  stageKey, leads, resolveRepName, reps, onAssign, onClose,
+}: {
+  stageKey: StageKey;
+  leads: PipelineLeadDetail[];
+  resolveRepName: (id: string | null) => string;
+  reps: { id: string; name: string; email: string }[];
+  onAssign: () => void;
+  onClose: () => void;
+}) {
+  const [assigningLead, setAssigningLead] = useState<string | null>(null);
+  const [saving, setSaving] = useState<string | null>(null);
+
+  const handleAssign = async (leadId: string, repId: string) => {
+    setSaving(leadId);
+    try {
+      await patchLead(leadId, { assigned_rep_id: repId });
+      onAssign();
+      setAssigningLead(null);
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.07] shrink-0">
+        <div>
+          <p className="text-[9px] font-mono text-[#354D6F] uppercase tracking-[0.2em] mb-0.5">Pipeline · Drill-down</p>
+          <h2 className="text-base font-inter font-medium text-[#DDE5F5]">{STAGE_LABEL_MAP[stageKey]}</h2>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-[#8BA5C5]">
+            {leads.length}
+          </span>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-xl bg-white/5 border border-white/10 text-[#3F5878] hover:text-[#E8EDF8] hover:bg-white/10 transition-all"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* "View in Pipeline" shortcut */}
+      <div className="px-6 py-3 border-b border-white/[0.05] shrink-0">
+        <button
+          onClick={() => {
+            window.dispatchEvent(new CustomEvent("changeView", { detail: "pipeline" }));
+            onClose();
+          }}
+          className="flex items-center gap-2 text-[10px] font-mono text-[#3F5878] hover:text-[#8BA5C5] uppercase tracking-widest transition-colors"
+        >
+          <ExternalLink className="w-3 h-3" />
+          Open in Pipeline view
+        </button>
+      </div>
+
+      {/* Lead list */}
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2">
+        {leads.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
+            <Activity className="w-7 h-7 text-[#1F2E48]" />
+            <p className="text-sm text-[#354D6F]">No leads in this stage.</p>
+          </div>
+        ) : (
+          leads.map((lead, i) => {
+            const address     = getLeadAddress(lead);
+            const owner       = getLeadOwner(lead);
+            const statusLabel = STATUS_LABELS[lead.pipeline_status] ?? lead.pipeline_status;
+            const statusColor = STATUS_COLORS[lead.pipeline_status] ?? "text-[#8BA5C5] bg-white/5 border-white/10";
+            const isAssigning = assigningLead === lead.id;
+            const isSaving    = saving === lead.id;
+            return (
+              <motion.div
+                key={lead.id}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.03 }}
+                className="p-4 rounded-2xl bg-white/[0.025] border border-white/[0.07] hover:border-white/[0.12] hover:bg-white/[0.04] transition-all space-y-2.5"
+              >
+                {/* Address + status badge */}
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-sm font-inter font-medium text-[#DDE5F5] leading-snug">{address}</p>
+                  <span className={cn("shrink-0 text-[9px] font-mono px-2 py-0.5 rounded-full border", statusColor)}>
+                    {statusLabel}
+                  </span>
+                </div>
+
+                {/* Meta row */}
+                <div className="flex items-center gap-3 flex-wrap">
+                  {lead.cpc_ticket_id && (
+                    <span className="text-[10px] font-mono text-[#2D4060] bg-white/[0.03] border border-white/[0.06] rounded px-1.5 py-0.5">
+                      #{lead.cpc_ticket_id}
+                    </span>
+                  )}
+                  {owner && (
+                    <span className="flex items-center gap-1 text-[10px] font-mono text-[#3F5878] uppercase tracking-wider">
+                      <User className="w-2.5 h-2.5" />
+                      {owner}
+                    </span>
+                  )}
+                  {lead.contact_attempt_count > 0 && (
+                    <span className="text-[10px] font-mono text-[#2D4060]">
+                      {lead.contact_attempt_count} {lead.contact_attempt_count === 1 ? "touch" : "touches"}
+                    </span>
+                  )}
+                </div>
+
+                {/* Rep + follow-up row */}
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[10px] font-mono text-[#354D6F]">
+                    {resolveRepName(lead.assigned_rep_id)}
+                  </span>
+                  {lead.next_follow_up_at && (
+                    <span className="text-[10px] font-mono text-orange-400/60">
+                      F/U {fmtShortDate(lead.next_follow_up_at)}
+                    </span>
+                  )}
+                </div>
+
+                {/* Assign rep */}
+                <div className="relative pt-0.5">
+                  <button
+                    onClick={() => setAssigningLead(isAssigning ? null : lead.id)}
+                    disabled={isSaving}
+                    className="flex items-center gap-1.5 text-[10px] font-mono text-[#3F5878] hover:text-[#8BA5C5] uppercase tracking-wider transition-colors"
+                  >
+                    {isSaving
+                      ? <RefreshCw className="w-2.5 h-2.5 animate-spin" />
+                      : <UserPlus className="w-2.5 h-2.5" />
+                    }
+                    {lead.assigned_rep_id ? "Reassign" : "Assign Rep"}
+                  </button>
+
+                  <AnimatePresence>
+                    {isAssigning && reps.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -4, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -4, scale: 0.97 }}
+                        transition={{ duration: 0.12 }}
+                        className="absolute bottom-full left-0 mb-2 z-10 w-52 rounded-xl border border-white/[0.12] bg-[#0c0c0c] shadow-2xl overflow-hidden"
+                      >
+                        <p className="px-3 py-2 text-[9px] font-mono text-[#2D4060] uppercase tracking-widest border-b border-white/[0.06]">
+                          Assign to rep
+                        </p>
+                        {reps.map(rep => (
+                          <button
+                            key={rep.id}
+                            onClick={() => handleAssign(lead.id, rep.id)}
+                            className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-white/[0.04] transition-colors text-left"
+                          >
+                            <User className="w-3 h-3 text-[#3F5878] shrink-0" />
+                            <span className="text-xs font-inter text-[#AABDCF] truncate flex-1">{rep.name}</span>
+                            {lead.assigned_rep_id === rep.id && (
+                              <Check className="w-3 h-3 text-[#3aada3] shrink-0" />
+                            )}
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 }
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
-function SectionHeader({ icon: Icon, label, count, color }: { icon: any; label: string; count: number; color: string }) {
+function SectionHeader({ icon: Icon, label, count, color }: { icon: any; label: string; count?: number; color: string }) {
   return (
     <div className="flex items-center gap-3">
       <Icon className={cn("w-4 h-4", color)} />
       <h3 className="text-sm font-inter font-medium text-[#AABDCF]">{label}</h3>
-      <span className={cn("text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5", color)}>{count}</span>
+      {count !== undefined && (
+        <span className={cn("text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5", color)}>{count}</span>
+      )}
     </div>
   );
 }
@@ -522,11 +869,8 @@ function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
       await patchAppointment(appt.id, { assigned_rep_id: newRepId });
       setShowReassign(false);
       onReassigned();
-    } catch (err) {
-      /* non-fatal */
-    } finally {
-      setReassigning(false);
-    }
+    } catch { /* non-fatal */ }
+    finally { setReassigning(false); }
   };
 
   return (
