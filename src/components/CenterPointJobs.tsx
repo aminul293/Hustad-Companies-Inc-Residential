@@ -196,12 +196,12 @@ export function CenterPointJobs() {
     })();
   }, []);
 
-  const handleAssignRep = async (centerpointJobId: string, repId: string) => {
-    setSavingAssignId(centerpointJobId);
+  const handleAssignRep = async (cpcTicketId: string, repId: string) => {
+    setSavingAssignId(cpcTicketId);
     try {
-      const res = await assignLeadByJob(centerpointJobId, repId);
+      const res = await assignLeadByJob(cpcTicketId, repId);
       if (res.ok) {
-        setJobAssignments(prev => ({ ...prev, [centerpointJobId]: repId }));
+        setJobAssignments(prev => ({ ...prev, [cpcTicketId]: repId }));
         setAssigningJobId(null);
       } else {
         const err = await res.json().catch(() => ({}));
@@ -458,20 +458,20 @@ export function CenterPointJobs() {
                         <div className="relative" onClick={e => e.stopPropagation()}>
                           <button
                             onClick={() => setAssigningJobId(assigningJobId === job.id ? null : job.id)}
-                            disabled={savingAssignId === job.id}
+                            disabled={savingAssignId === attr.name}
                             className={cn(
                               "flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-mono transition-all",
-                              jobAssignments[job.id]
+                              jobAssignments[attr.name]
                                 ? "bg-[#2a8a82]/10 border-[#2a8a82]/25 text-[#3aada3]"
                                 : "bg-white/[0.03] border-white/10 text-[#3F5878] hover:text-[#8BA5C5] hover:border-white/20"
                             )}
                           >
-                            {savingAssignId === job.id
+                            {savingAssignId === attr.name
                               ? <RefreshCw className="w-2.5 h-2.5 animate-spin" />
                               : <UserPlus className="w-2.5 h-2.5" />
                             }
-                            {jobAssignments[job.id]
-                              ? (reps.find(r => r.id === jobAssignments[job.id])?.name?.split(" ")[0] ?? "Assigned")
+                            {jobAssignments[attr.name]
+                              ? (reps.find(r => r.id === jobAssignments[attr.name])?.name?.split(" ")[0] ?? "Assigned")
                               : "Assign"
                             }
                           </button>
@@ -491,12 +491,12 @@ export function CenterPointJobs() {
                                 {reps.map(rep => (
                                   <button
                                     key={rep.id}
-                                    onClick={() => handleAssignRep(job.id, rep.id)}
+                                    onClick={() => handleAssignRep(attr.name, rep.id)}
                                     className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-white/[0.04] transition-colors text-left"
                                   >
                                     <User className="w-3 h-3 text-[#3F5878] shrink-0" />
                                     <span className="text-xs font-inter text-[#AABDCF] truncate flex-1">{rep.name}</span>
-                                    {jobAssignments[job.id] === rep.id && (
+                                    {jobAssignments[attr.name] === rep.id && (
                                       <Check className="w-3 h-3 text-[#3aada3] shrink-0" />
                                     )}
                                   </button>
@@ -578,11 +578,11 @@ export function CenterPointJobs() {
                             <div className="border-t border-white/[0.05] pt-5">
                               <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest mb-3">Assigned Rep</p>
                               <div className="flex items-center gap-3 flex-wrap">
-                                {jobAssignments[job.id] ? (
+                                {jobAssignments[attr.name] ? (
                                   <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#2a8a82]/10 border border-[#2a8a82]/25">
                                     <User className="w-3.5 h-3.5 text-[#3aada3]" />
                                     <span className="text-xs font-inter text-[#3aada3]">
-                                      {reps.find(r => r.id === jobAssignments[job.id])?.name ?? "Assigned"}
+                                      {reps.find(r => r.id === jobAssignments[attr.name])?.name ?? "Assigned"}
                                     </span>
                                   </div>
                                 ) : (
@@ -591,14 +591,14 @@ export function CenterPointJobs() {
                                 <div className="relative">
                                   <button
                                     onClick={() => setAssigningJobId(assigningJobId === `detail-${job.id}` ? null : `detail-${job.id}`)}
-                                    disabled={savingAssignId === job.id}
+                                    disabled={savingAssignId === attr.name}
                                     className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/10 text-[10px] font-mono text-[#567090] hover:text-[#AABDCF] hover:border-white/20 transition-all"
                                   >
-                                    {savingAssignId === job.id
+                                    {savingAssignId === attr.name
                                       ? <RefreshCw className="w-3 h-3 animate-spin" />
                                       : <UserPlus className="w-3 h-3" />
                                     }
-                                    {jobAssignments[job.id] ? "Reassign" : "Assign Rep"}
+                                    {jobAssignments[attr.name] ? "Reassign" : "Assign Rep"}
                                   </button>
 
                                   <AnimatePresence>
@@ -616,12 +616,12 @@ export function CenterPointJobs() {
                                         {reps.map(rep => (
                                           <button
                                             key={rep.id}
-                                            onClick={() => handleAssignRep(job.id, rep.id)}
+                                            onClick={() => handleAssignRep(attr.name, rep.id)}
                                             className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-white/[0.04] transition-colors text-left"
                                           >
                                             <User className="w-3 h-3 text-[#3F5878] shrink-0" />
                                             <span className="text-xs font-inter text-[#AABDCF] truncate flex-1">{rep.name}</span>
-                                            {jobAssignments[job.id] === rep.id && (
+                                            {jobAssignments[attr.name] === rep.id && (
                                               <Check className="w-3 h-3 text-[#3aada3] shrink-0" />
                                             )}
                                           </button>

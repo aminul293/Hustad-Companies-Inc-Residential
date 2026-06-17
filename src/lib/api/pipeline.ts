@@ -29,11 +29,11 @@ export async function createPipelineLead(body: Record<string, unknown>): Promise
   });
 }
 
-export async function assignLeadByJob(centerpointJobId: string, repId: string): Promise<Response> {
+export async function assignLeadByJob(cpcTicketId: string, repId: string): Promise<Response> {
   return fetch(BASE, {
     method: "PATCH",
     headers: JSON_HEADERS,
-    body: JSON.stringify({ centerpoint_job_id: centerpointJobId, assigned_rep_id: repId }),
+    body: JSON.stringify({ cpc_ticket_id: cpcTicketId, assigned_rep_id: repId }),
   });
 }
 

@@ -83,28 +83,28 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PATCH /api/pipeline — assign a rep to a pipeline lead
-// Body: { centerpoint_job_id: string; assigned_rep_id: string }
+// PATCH /api/pipeline — assign a rep to a pipeline lead by CPC ticket ID (TEXT)
+// Body: { cpc_ticket_id: string; assigned_rep_id: string }
 export async function PATCH(request: NextRequest) {
   try {
     await requireAuth(request);
-    const { centerpoint_job_id, assigned_rep_id } = await request.json();
+    const { cpc_ticket_id, assigned_rep_id } = await request.json();
 
-    if (!centerpoint_job_id || !assigned_rep_id) {
-      return NextResponse.json({ error: 'Missing centerpoint_job_id or assigned_rep_id' }, { status: 400 });
+    if (!cpc_ticket_id || !assigned_rep_id) {
+      return NextResponse.json({ error: 'Missing cpc_ticket_id or assigned_rep_id' }, { status: 400 });
     }
 
     const supabase = getServiceClient();
     const { data, error } = await supabase
       .from('pipeline_leads')
       .update({ assigned_rep_id })
-      .eq('centerpoint_job_id', centerpoint_job_id)
+      .eq('cpc_ticket_id', cpc_ticket_id)
       .select('id, assigned_rep_id')
       .maybeSingle();
 
     if (error) throw error;
     if (!data) {
-      return NextResponse.json({ error: 'No pipeline lead found for this job. Import the job to Pipeline first.' }, { status: 404 });
+      return NextResponse.json({ error: 'No pipeline lead found for this ticket. Import the job to Pipeline first.' }, { status: 404 });
     }
     return NextResponse.json({ success: true, lead: data });
   } catch (error: any) {
