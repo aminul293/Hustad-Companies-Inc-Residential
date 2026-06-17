@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     let query = supabase
       .from("centerpoint_jobs")
       .select(
-        "id, cp_id, name, property_name, opportunity_type, work_type, domain, status, display_status, price, start_date, cp_created_at, cp_updated_at, stage_transitioned_at, description, service_type_hustad, promoted_at, promoted_ticket_id, inbox_status",
+        "id, cp_id, name, property_name, opportunity_type, work_type, domain, status, display_status, price, start_date, cp_created_at, cp_updated_at, stage_transitioned_at, description, service_type_hustad, promoted_at, promoted_ticket_id, inbox_status, cp_additional_managers",
         { count: "exact" }
       )
       .order("cp_updated_at", { ascending: false, nullsFirst: false })
@@ -91,6 +91,7 @@ export async function GET(req: NextRequest) {
         custom: { description: row.description },
         customWithLabels: { serviceTypeHustad: row.service_type_hustad },
       },
+      cpAdditionalManagers: row.cp_additional_managers ?? null,
     }));
 
     return NextResponse.json({

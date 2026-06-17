@@ -40,6 +40,7 @@ interface CPJob {
   inbox_status: string;
   promotedAt: string | null;
   promotedTicketId: string | null;
+  cpAdditionalManagers: string | null;
   attributes: {
     name: string;
     propertyName: string | null;
@@ -242,6 +243,11 @@ export function CenterPointJobs() {
   };
 
   const isManager = userRole === "manager";
+
+  const parseCpManagers = (raw: string | null | undefined): string[] => {
+    if (!raw) return [];
+    try { return JSON.parse(raw); } catch { return []; }
+  };
 
   const handleLoadMore = () => {
     const next = page + 1;
@@ -464,11 +470,15 @@ export function CenterPointJobs() {
                           {(attr.opportunityType || attr.workType) && (
                             <span className="text-[10px] font-mono text-[#3F5878]">{attr.opportunityType || attr.workType}</span>
                           )}
-                          {jobAssignments[attr.name] && (
+                          {jobAssignments[attr.name] ? (
                             <span className="text-[10px] font-inter text-[#3aada3]">
                               {reps.find(r => r.id === jobAssignments[attr.name])?.name ?? "Assigned"}
                             </span>
-                          )}
+                          ) : parseCpManagers(job.cpAdditionalManagers)[0] ? (
+                            <span className="text-[10px] font-inter text-[#3aada3]/60">
+                              {parseCpManagers(job.cpAdditionalManagers)[0]}
+                            </span>
+                          ) : null}
                         </div>
                       </div>
                     </div>
@@ -614,6 +624,14 @@ export function CenterPointJobs() {
                                     <span className="text-xs font-inter text-[#3aada3]">
                                       {reps.find(r => r.id === jobAssignments[attr.name])?.name ?? "Assigned"}
                                     </span>
+                                  </div>
+                                ) : parseCpManagers(job.cpAdditionalManagers)[0] ? (
+                                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#2a8a82]/05 border border-[#2a8a82]/15">
+                                    <User className="w-3.5 h-3.5 text-[#3aada3]/60" />
+                                    <span className="text-xs font-inter text-[#3aada3]/60">
+                                      {parseCpManagers(job.cpAdditionalManagers)[0]}
+                                    </span>
+                                    <span className="text-[9px] font-mono text-[#2a8a82]/50 uppercase tracking-widest">from CP</span>
                                   </div>
                                 ) : (
                                   <span className="text-xs font-inter text-[#3F5878]">Unassigned</span>

@@ -454,10 +454,30 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ── Post-Sync: Auto-assign reps from CP Additional Managers ─────────────
-    // The bulk API doesn't return Additional Managers in attributes, so we make
-    // individual calls only for pipeline leads that are unassigned.
-    const syncedTicketIds = finalRows.map(r => r.name);
+    // ── Enrich: fetch Additional Manager names for all synced jobs ──────────
+    // Individual API calls per job (bulk sync API doesn't include this field).
+    // Stored in cp_additional_managers so the UI can show them without import.
+    const ENRICH_CONCURRENCY = 5;
+    for (let i = 0; i < finalRows.length; i += ENRICH_CONCURRENCY) {
+      const batch = finalRows.slice(i, i + ENRICH_CONCURRENCY);
+      await Promise.all(batch.map(async (row: any) => {
+        try {
+          const managers = await fetchServiceManagerNames(row.cp_id);
+          if (managers.length > 0) {
+            const val = JSON.stringify(managers);
+            await supabase
+              .from("centerpoint_jobs")
+              .update({ cp_additional_managers: val })
+              .eq("cp_id", row.cp_id);
+            row.cp_additional_managers = val; // update in-memory for assignment step below
+          }
+        } catch { /* non-fatal */ }
+      }));
+    }
+
+    // ── Post-Sync: Auto-assign pipeline leads from stored manager names ──────
+    // Uses in-memory enriched rows — no extra API calls needed here.
+    const syncedTicketIds = finalRows.map((r: any) => r.name);
     const { data: unassignedLeads } = await supabase
       .from("pipeline_leads")
       .select("cpc_ticket_id")
@@ -470,35 +490,34 @@ export async function POST(request: NextRequest) {
         .select("id, name")
         .eq("active", true);
 
-      const ticketToCpId = new Map<string, string>(finalRows.map(r => [r.name, r.cp_id]));
+      const ticketToManagers = new Map<string, string[]>(
+        (finalRows as any[])
+          .filter(r => r.cp_additional_managers)
+          .map(r => {
+            try { return [r.name, JSON.parse(r.cp_additional_managers)] as [string, string[]]; } catch { return null; }
+          })
+          .filter(Boolean) as [string, string[]][]
+      );
 
-      const CONCURRENCY = 3;
-      for (let i = 0; i < unassignedLeads.length; i += CONCURRENCY) {
-        const batch = unassignedLeads.slice(i, i + CONCURRENCY);
-        await Promise.all(batch.map(async (lead: any) => {
-          const cpId = ticketToCpId.get(lead.cpc_ticket_id);
-          if (!cpId) return;
-          try {
-            const managers = await fetchServiceManagerNames(cpId);
-            for (const mgrName of managers) {
-              const lower = mgrName.toLowerCase();
-              const match = allReps?.find(
-                (r: any) =>
-                  r.name.toLowerCase() === lower ||
-                  r.name.toLowerCase().includes(lower) ||
-                  lower.includes(r.name.toLowerCase())
-              );
-              if (match) {
-                await supabase
-                  .from("pipeline_leads")
-                  .update({ assigned_rep_id: match.id })
-                  .eq("cpc_ticket_id", lead.cpc_ticket_id)
-                  .is("assigned_rep_id", null);
-                break;
-              }
-            }
-          } catch { /* non-fatal */ }
-        }));
+      for (const lead of unassignedLeads) {
+        const managers = ticketToManagers.get(lead.cpc_ticket_id) ?? [];
+        for (const mgrName of managers) {
+          const lower = mgrName.toLowerCase();
+          const match = allReps?.find(
+            (r: any) =>
+              r.name.toLowerCase() === lower ||
+              r.name.toLowerCase().includes(lower) ||
+              lower.includes(r.name.toLowerCase())
+          );
+          if (match) {
+            await supabase
+              .from("pipeline_leads")
+              .update({ assigned_rep_id: match.id })
+              .eq("cpc_ticket_id", lead.cpc_ticket_id)
+              .is("assigned_rep_id", null);
+            break;
+          }
+        }
       }
     }
 
