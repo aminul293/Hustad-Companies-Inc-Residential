@@ -49,6 +49,43 @@ export async function acceptOpportunity(cpId: string, cpKey: string): Promise<vo
   }
 }
 
+// ─── Fetch "Additional Managers" names for a single service record ────────────
+// CenterPoint stores additional managers as a JSON:API relationship.
+// We try the most common include types and extract names from `data.included`.
+// Returns an empty array if the field isn't available or the API call fails.
+export async function fetchServiceManagerNames(cpId: string): Promise<string[]> {
+  const token = getCpToken();
+  // Try several possible include parameter values
+  const includeAttempts = ["employees", "managers,employees", "managers"];
+  for (const include of includeAttempts) {
+    try {
+      const res = await fetch(
+        `${CP_BASE}/services/${cpId}?include=${include}`,
+        { headers: { Accept: "application/json", Authorization: token }, cache: "no-store" }
+      );
+      if (!res.ok) continue;
+      const data = await res.json();
+      const included: any[] = data.included ?? [];
+      // Look for any included resource that looks like an employee/manager
+      const managerTypes = ["employees", "employee", "managers", "manager", "users", "user"];
+      const found = included
+        .filter((item: any) => managerTypes.includes(item.type))
+        .map((item: any) =>
+          item.attributes?.name ??
+          item.attributes?.fullName ??
+          item.attributes?.displayName ??
+          [item.attributes?.firstName, item.attributes?.lastName].filter(Boolean).join(" ") ??
+          ""
+        )
+        .filter(Boolean);
+      if (found.length > 0) return found;
+    } catch {
+      continue;
+    }
+  }
+  return [];
+}
+
 export function getCpToken(): string {
   const key = process.env.CENTERPOINT_API_KEY;
   if (!key) throw new Error("CENTERPOINT_API_KEY is not set");
@@ -102,7 +139,6 @@ export async function advanceWorkflowToTarget(
     const transitions = data.included ? data.included.filter((x: any) => x.type === "workflow_transitions") : [];
     const currentStage = data.included ? data.included.find((x: any) => x.type === "workflow_stages") : null;
     const stageName = currentStage?.attributes?.name;
-    const currentStatus = data.data?.attributes?.status;
 
     // Check if we reached the target stage or status
     if (stageName === "Closed" || transitions.length === 0) {

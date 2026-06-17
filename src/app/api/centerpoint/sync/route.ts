@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getServiceClient } from "@/lib/supabase-server";
 import { requireAuth } from "@/lib/auth";
-import { CP_BASE, getCpToken } from "@/lib/centerpoint/client";
+import { CP_BASE, getCpToken, fetchServiceManagerNames } from "@/lib/centerpoint/client";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
@@ -455,37 +455,50 @@ export async function POST(request: NextRequest) {
     }
 
     // ── Post-Sync: Auto-assign reps from CP Additional Managers ─────────────
-    // For each synced job that has Additional Managers set, if the job is
-    // already in pipeline_leads with no assigned_rep_id, auto-match by name.
-    const jobsWithManagers = finalRows.filter(r => r.cp_additional_managers);
-    if (jobsWithManagers.length > 0) {
+    // The bulk API doesn't return Additional Managers in attributes, so we make
+    // individual calls only for pipeline leads that are unassigned.
+    const syncedTicketIds = finalRows.map(r => r.name);
+    const { data: unassignedLeads } = await supabase
+      .from("pipeline_leads")
+      .select("cpc_ticket_id")
+      .in("cpc_ticket_id", syncedTicketIds)
+      .is("assigned_rep_id", null);
+
+    if (unassignedLeads && unassignedLeads.length > 0) {
       const { data: allReps } = await supabase
         .from("reps")
         .select("id, name")
         .eq("active", true);
 
-      for (const job of jobsWithManagers) {
-        let managers: string[] = [];
-        try { managers = JSON.parse(job.cp_additional_managers); } catch { continue; }
+      const ticketToCpId = new Map<string, string>(finalRows.map(r => [r.name, r.cp_id]));
 
-        for (const mgrName of managers) {
-          const lower = mgrName.toLowerCase();
-          const match = allReps?.find(
-            (r: any) =>
-              r.name.toLowerCase() === lower ||
-              r.name.toLowerCase().includes(lower) ||
-              lower.includes(r.name.toLowerCase())
-          );
-          if (match) {
-            // Only assign if the pipeline lead exists and has no rep yet
-            await supabase
-              .from("pipeline_leads")
-              .update({ assigned_rep_id: match.id })
-              .eq("cpc_ticket_id", job.name)
-              .is("assigned_rep_id", null);
-            break;
-          }
-        }
+      const CONCURRENCY = 3;
+      for (let i = 0; i < unassignedLeads.length; i += CONCURRENCY) {
+        const batch = unassignedLeads.slice(i, i + CONCURRENCY);
+        await Promise.all(batch.map(async (lead: any) => {
+          const cpId = ticketToCpId.get(lead.cpc_ticket_id);
+          if (!cpId) return;
+          try {
+            const managers = await fetchServiceManagerNames(cpId);
+            for (const mgrName of managers) {
+              const lower = mgrName.toLowerCase();
+              const match = allReps?.find(
+                (r: any) =>
+                  r.name.toLowerCase() === lower ||
+                  r.name.toLowerCase().includes(lower) ||
+                  lower.includes(r.name.toLowerCase())
+              );
+              if (match) {
+                await supabase
+                  .from("pipeline_leads")
+                  .update({ assigned_rep_id: match.id })
+                  .eq("cpc_ticket_id", lead.cpc_ticket_id)
+                  .is("assigned_rep_id", null);
+                break;
+              }
+            }
+          } catch { /* non-fatal */ }
+        }));
       }
     }
 
