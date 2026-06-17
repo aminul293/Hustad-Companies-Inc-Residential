@@ -272,22 +272,22 @@ async function runCleanup(supabase: any) {
 }
 
 // ─── POST /api/centerpoint/sync ──────────────────────────────────────────────
-const MANAGER_EMAILS = ["aminul@hustadcompanies.com", "system@hustadcompanies.com"];
+const SYNC_MANAGER_EMAILS = ["aminul@hustadcompanies.com", "system@hustadcompanies.com"];
 
 export async function POST(request: NextRequest) {
   // 1. Authenticate and enforce manager-only access
-  let auth: Awaited<ReturnType<typeof requireAuth>>;
+  let syncAuth: Awaited<ReturnType<typeof requireAuth>>;
   try {
-    auth = await requireAuth(request);
-  } catch (e: any) {
+    syncAuth = await requireAuth(request);
+  } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const supabase = getServiceClient();
 
-  const { data: authRep } = await supabase.from("reps").select("role").eq("id", auth.repId).maybeSingle();
-  const role = authRep?.role ?? (MANAGER_EMAILS.includes(auth.email) ? "manager" : "sales_rep");
-  if (role !== "manager") {
+  const { data: syncRep } = await supabase.from("reps").select("role").eq("id", syncAuth.repId).maybeSingle();
+  const syncRole: string = (syncRep as any)?.role ?? (SYNC_MANAGER_EMAILS.includes(syncAuth.email) ? "manager" : "sales_rep");
+  if (syncRole !== "manager") {
     return NextResponse.json({ error: "Only managers can trigger a sync." }, { status: 403 });
   }
 
