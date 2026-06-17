@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
 }
 
 // PATCH /api/pipeline — assign a rep to a pipeline lead by CPC ticket ID (TEXT).
-// If the job has not been imported yet, it is auto-imported first, then assigned.
+// Auto-imports the job if it hasn't been imported yet, then assigns.
 // Body: { cpc_ticket_id: string; assigned_rep_id: string }
 export async function PATCH(request: NextRequest) {
   try {
