@@ -8,9 +8,18 @@ export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 export const revalidate = 0;
 
+const MANAGER_EMAILS = ['aminul@hustadcompanies.com', 'system@hustadcompanies.com'];
+
+// Look up the authoritative role from the DB (JWT role can be stale).
+async function getDbRole(repId: string, email: string, supabase: any): Promise<string> {
+  const { data } = await supabase.from('reps').select('role, email').eq('id', repId).maybeSingle();
+  return data?.role ?? (MANAGER_EMAILS.includes(email) ? 'manager' : 'sales_rep');
+}
+
+// POST /api/pipeline — import a CenterPoint job to the pipeline (manager-only).
 export async function POST(request: NextRequest) {
   try {
-    await requireAuth(request);
+    const auth = await requireAuth(request);
     const { job } = await request.json();
 
     if (!job) {
@@ -18,7 +27,11 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = getServiceClient();
-    // Look up the internal UUID for this job
+    const role = await getDbRole(auth.repId, auth.email, supabase);
+    if (role !== 'manager') {
+      return NextResponse.json({ error: 'Only managers can import jobs to the pipeline.' }, { status: 403 });
+    }
+
     const { data: cpJob, error: cpError } = await supabase
       .from('centerpoint_jobs')
       .select('id')
@@ -29,7 +42,6 @@ export async function POST(request: NextRequest) {
       throw new Error("Could not find internal centerpoint_job record.");
     }
 
-    // Call the RPC to atomically import/update the pipeline lead and update centerpoint_jobs.inbox_status
     const { data: lead, error: rpcError } = await supabase
       .rpc('import_job_to_pipeline', {
         p_cp_job_id: cpJob.id,
@@ -81,13 +93,17 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// GET /api/pipeline — managers see all leads (or filtered by repId param);
+// sales reps are automatically restricted to their own assigned leads.
 export async function GET(request: NextRequest) {
   try {
-    await requireAuth(request);
+    const auth = await requireAuth(request);
     const { searchParams } = new URL(request.url);
-    const repId = searchParams.get('repId');
+    const requestedRepId = searchParams.get('repId');
 
     const supabase = getServiceClient();
+    const role = await getDbRole(auth.repId, auth.email, supabase);
+    const isManager = role === 'manager';
 
     let query = supabase
       .from('pipeline_leads')
@@ -98,10 +114,12 @@ export async function GET(request: NextRequest) {
       `)
       .order('created_at', { ascending: false });
 
-    // When repId is provided, restrict to leads assigned to that rep (sales rep isolation).
-    // Managers call without repId and see the full pipeline.
-    if (repId) {
-      query = query.eq('assigned_rep_id', repId);
+    if (!isManager) {
+      // Reps always see only their own assigned leads — repId param is ignored
+      query = query.eq('assigned_rep_id', auth.repId);
+    } else if (requestedRepId) {
+      // Managers can optionally filter to a specific rep's leads
+      query = query.eq('assigned_rep_id', requestedRepId);
     }
 
     const { data, error } = await query;
@@ -116,12 +134,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PATCH /api/pipeline — assign or unassign a rep on a pipeline lead by CPC ticket ID.
+// PATCH /api/pipeline — assign or unassign a rep on a pipeline lead (manager-only).
 // Body: { cpc_ticket_id: string; assigned_rep_id: string | null }
-// Pass assigned_rep_id: null to unassign. Auto-imports the job if assigning and not yet in pipeline.
 export async function PATCH(request: NextRequest) {
   try {
-    await requireAuth(request);
+    const auth = await requireAuth(request);
     const body = await request.json();
     const { cpc_ticket_id } = body;
     const assigned_rep_id: string | null = body.assigned_rep_id ?? null;
@@ -131,6 +148,10 @@ export async function PATCH(request: NextRequest) {
     }
 
     const supabase = getServiceClient();
+    const role = await getDbRole(auth.repId, auth.email, supabase);
+    if (role !== 'manager') {
+      return NextResponse.json({ error: 'Only managers can assign or unassign reps.' }, { status: 403 });
+    }
 
     // Unassign — just clear and return; no auto-import needed
     if (assigned_rep_id === null) {
@@ -190,12 +211,10 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
-// DELETE /api/pipeline?cpc_ticket_id=1329675
-// Unlinks a CP Inbox job from pipeline — finds the lead by ticket ID,
-// deletes it, and resets centerpoint_jobs.inbox_status back to null.
+// DELETE /api/pipeline?cpc_ticket_id=1329675 — unlink a job from pipeline (manager-only).
 export async function DELETE(request: NextRequest) {
   try {
-    await requireAuth(request);
+    const auth = await requireAuth(request);
     const { searchParams } = new URL(request.url);
     const cpcTicketId = searchParams.get('cpc_ticket_id');
 
@@ -204,8 +223,11 @@ export async function DELETE(request: NextRequest) {
     }
 
     const supabase = getServiceClient();
+    const role = await getDbRole(auth.repId, auth.email, supabase);
+    if (role !== 'manager') {
+      return NextResponse.json({ error: 'Only managers can remove pipeline leads.' }, { status: 403 });
+    }
 
-    // Find the pipeline lead by ticket ID
     const { data: lead, error: fetchErr } = await supabase
       .from('pipeline_leads')
       .select('id, centerpoint_job_id')
@@ -215,7 +237,6 @@ export async function DELETE(request: NextRequest) {
     if (fetchErr) throw fetchErr;
 
     if (lead) {
-      // Reset inbox_status using the FK
       if (lead.centerpoint_job_id) {
         const { error: resetErr } = await supabase
           .from('centerpoint_jobs')
@@ -229,11 +250,9 @@ export async function DELETE(request: NextRequest) {
           .eq('name', cpcTicketId);
         if (resetErr) throw resetErr;
       }
-      // Delete the pipeline lead
       const { error: deleteErr } = await supabase.from('pipeline_leads').delete().eq('id', lead.id);
       if (deleteErr) throw deleteErr;
     } else {
-      // No pipeline lead found — just clear any stale inbox_status by looking up the job directly
       const { error: resetErr } = await supabase
         .from('centerpoint_jobs')
         .update({ inbox_status: 'new' })
