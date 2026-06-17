@@ -83,7 +83,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PATCH /api/pipeline — assign a rep to a pipeline lead by CPC ticket ID (TEXT)
+// PATCH /api/pipeline — assign a rep to a pipeline lead by CPC ticket ID (TEXT).
+// If the job has not been imported yet, it is auto-imported first, then assigned.
 // Body: { cpc_ticket_id: string; assigned_rep_id: string }
 export async function PATCH(request: NextRequest) {
   try {
@@ -95,7 +96,9 @@ export async function PATCH(request: NextRequest) {
     }
 
     const supabase = getServiceClient();
-    const { data, error } = await supabase
+
+    // Try to assign directly (job already imported to pipeline)
+    let { data, error } = await supabase
       .from('pipeline_leads')
       .update({ assigned_rep_id })
       .eq('cpc_ticket_id', cpc_ticket_id)
@@ -103,9 +106,37 @@ export async function PATCH(request: NextRequest) {
       .maybeSingle();
 
     if (error) throw error;
+
+    // Not in pipeline yet — auto-import then assign
     if (!data) {
-      return NextResponse.json({ error: 'No pipeline lead found for this ticket. Import the job to Pipeline first.' }, { status: 404 });
+      const { data: cpJob, error: cpErr } = await supabase
+        .from('centerpoint_jobs')
+        .select('id, status')
+        .eq('name', cpc_ticket_id)
+        .maybeSingle();
+
+      if (cpErr) throw cpErr;
+      if (!cpJob) {
+        return NextResponse.json({ error: 'Job not found in CenterPoint records.' }, { status: 404 });
+      }
+
+      const { error: rpcErr } = await supabase.rpc('import_job_to_pipeline', {
+        p_cp_job_id: cpJob.id,
+        p_cpc_ticket_id: cpc_ticket_id,
+        p_original_status: cpJob.status,
+      });
+      if (rpcErr) throw rpcErr;
+
+      const { data: assigned, error: assignErr } = await supabase
+        .from('pipeline_leads')
+        .update({ assigned_rep_id })
+        .eq('cpc_ticket_id', cpc_ticket_id)
+        .select('id, assigned_rep_id')
+        .maybeSingle();
+      if (assignErr) throw assignErr;
+      data = assigned;
     }
+
     return NextResponse.json({ success: true, lead: data });
   } catch (error: any) {
     if (error.status === 401) {

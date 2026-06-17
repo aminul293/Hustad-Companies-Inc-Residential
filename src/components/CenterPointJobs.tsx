@@ -453,8 +453,8 @@ export function CenterPointJobs() {
                         </div>
                       )}
 
-                      {/* Inline assign-rep — manager only, imported jobs only */}
-                      {isManager && job.inbox_status === "imported_to_pipeline" && (
+                      {/* Inline assign-rep — manager only */}
+                      {isManager && (
                         <div className="relative" onClick={e => e.stopPropagation()}>
                           <button
                             onClick={() => setAssigningJobId(assigningJobId === job.id ? null : job.id)}
@@ -573,8 +573,8 @@ export function CenterPointJobs() {
                             ))}
                           </div>
 
-                          {/* Assign rep — manager + imported jobs only */}
-                          {isManager && job.inbox_status === "imported_to_pipeline" && (
+                          {/* Assign rep — manager only */}
+                          {isManager && (
                             <div className="border-t border-white/[0.05] pt-5">
                               <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest mb-3">Assigned Rep</p>
                               <div className="flex items-center gap-3 flex-wrap">
