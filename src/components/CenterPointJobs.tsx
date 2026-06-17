@@ -249,6 +249,21 @@ export function CenterPointJobs() {
     try { return JSON.parse(raw); } catch { return []; }
   };
 
+  // Returns the rep ID for the first CP Additional Manager that matches our reps list.
+  const getCpRepId = (job: CPJob): string | null => {
+    const names = parseCpManagers(job.cpAdditionalManagers);
+    for (const name of names) {
+      const lower = name.toLowerCase();
+      const match = reps.find(r =>
+        r.name.toLowerCase() === lower ||
+        r.name.toLowerCase().includes(lower) ||
+        lower.includes(r.name.toLowerCase())
+      );
+      if (match) return match.id;
+    }
+    return null;
+  };
+
   const handleLoadMore = () => {
     const next = page + 1;
     setPage(next);
@@ -499,6 +514,21 @@ export function CenterPointJobs() {
                       {/* Inline assign-rep — manager only */}
                       {isManager && (
                         <div className="relative" onClick={e => e.stopPropagation()}>
+                          {/* When a CP pre-assignment exists and the rep is in our system,
+                              clicking directly confirms that rep without opening the dropdown. */}
+                          {!jobAssignments[attr.name] && getCpRepId(job) ? (
+                            <button
+                              onClick={() => handleAssignRep(attr.name, getCpRepId(job)!)}
+                              disabled={savingAssignId === attr.name}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-mono transition-all bg-[#2a8a82]/10 border-[#2a8a82]/25 text-[#3aada3] hover:bg-[#2a8a82]/20"
+                            >
+                              {savingAssignId === attr.name
+                                ? <RefreshCw className="w-2.5 h-2.5 animate-spin" />
+                                : <UserPlus className="w-2.5 h-2.5" />
+                              }
+                              Assign
+                            </button>
+                          ) : (
                           <button
                             onClick={() => setAssigningJobId(assigningJobId === job.id ? null : job.id)}
                             disabled={savingAssignId === attr.name}
@@ -515,6 +545,7 @@ export function CenterPointJobs() {
                             }
                             {jobAssignments[attr.name] ? "Reassign" : "Assign"}
                           </button>
+                          )}
 
                           <AnimatePresence>
                             {assigningJobId === job.id && reps.length > 0 && (
@@ -649,6 +680,20 @@ export function CenterPointJobs() {
                                     Unassign
                                   </button>
                                 )}
+                                {/* CP pre-assignment: show Confirm button that directly assigns, plus Choose Rep */}
+                                {!jobAssignments[attr.name] && getCpRepId(job) && (
+                                  <button
+                                    onClick={() => handleAssignRep(attr.name, getCpRepId(job)!)}
+                                    disabled={savingAssignId === attr.name}
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2a8a82]/10 border border-[#2a8a82]/25 text-[10px] font-mono text-[#3aada3] hover:bg-[#2a8a82]/20 transition-all disabled:opacity-40"
+                                  >
+                                    {savingAssignId === attr.name
+                                      ? <RefreshCw className="w-3 h-3 animate-spin" />
+                                      : <UserPlus className="w-3 h-3" />
+                                    }
+                                    Confirm Assignment
+                                  </button>
+                                )}
                                 <div className="relative">
                                   <button
                                     onClick={() => setAssigningJobId(assigningJobId === `detail-${job.id}` ? null : `detail-${job.id}`)}
@@ -659,7 +704,7 @@ export function CenterPointJobs() {
                                       ? <RefreshCw className="w-3 h-3 animate-spin" />
                                       : <UserPlus className="w-3 h-3" />
                                     }
-                                    {jobAssignments[attr.name] ? "Reassign" : "Assign Rep"}
+                                    {jobAssignments[attr.name] ? "Reassign" : "Choose Rep"}
                                   </button>
 
                                   <AnimatePresence>
