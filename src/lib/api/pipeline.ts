@@ -37,6 +37,14 @@ export async function assignLeadByJob(cpcTicketId: string, repId: string): Promi
   });
 }
 
+export async function unassignLead(cpcTicketId: string): Promise<Response> {
+  return fetch(BASE, {
+    method: "PATCH",
+    headers: JSON_HEADERS,
+    body: JSON.stringify({ cpc_ticket_id: cpcTicketId, assigned_rep_id: null }),
+  });
+}
+
 export async function unlinkPipelineByTicket(cpcTicketId: string): Promise<Response> {
   return fetch(`${BASE}?cpc_ticket_id=${encodeURIComponent(cpcTicketId)}`, {
     method: "DELETE",

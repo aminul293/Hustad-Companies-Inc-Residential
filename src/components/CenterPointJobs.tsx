@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchCenterpointJobs, fetchCenterpointSyncStatus, triggerCenterpointSync, patchCenterpointJob, createPipelineLead, unlinkPipelineByTicket, assignLeadByJob, fetchCurrentUser, fetchReps, fetchLeads } from "@/lib/api";
+import { fetchCenterpointJobs, fetchCenterpointSyncStatus, triggerCenterpointSync, patchCenterpointJob, createPipelineLead, unlinkPipelineByTicket, assignLeadByJob, unassignLead, fetchCurrentUser, fetchReps, fetchLeads } from "@/lib/api";
 import { useState, useEffect, useCallback } from "react";
 import { Search, ChevronRight, RefreshCw, Building2, ArrowRight, CloudDownload, CheckCircle2, ArrowLeft, X, UserPlus, User, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -92,6 +92,7 @@ export function CenterPointJobs() {
   const [reps, setReps]                 = useState<{ id: string; name: string; email: string }[]>([]);
   const [assigningJobId, setAssigningJobId] = useState<string | null>(null);
   const [savingAssignId, setSavingAssignId] = useState<string | null>(null);
+  const [unassigningId, setUnassigningId] = useState<string | null>(null);
   const [jobAssignments, setJobAssignments] = useState<Record<string, string>>({}); // cpcTicketId → repId
 
   const fetchJobs = useCallback(async (opts?: { refresh?: boolean; newPage?: number }) => {
@@ -217,6 +218,26 @@ export function CenterPointJobs() {
       }
     } finally {
       setSavingAssignId(null);
+    }
+  };
+
+  const handleUnassignRep = async (cpcTicketId: string) => {
+    setUnassigningId(cpcTicketId);
+    try {
+      const res = await unassignLead(cpcTicketId);
+      if (res.ok) {
+        setJobAssignments(prev => {
+          const next = { ...prev };
+          delete next[cpcTicketId];
+          return next;
+        });
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setImportError(err.error || "Failed to unassign rep. Please try again.");
+        setTimeout(() => setImportError(null), 6000);
+      }
+    } finally {
+      setUnassigningId(null);
     }
   };
 
@@ -597,10 +618,23 @@ export function CenterPointJobs() {
                                 ) : (
                                   <span className="text-xs font-inter text-[#3F5878]">Unassigned</span>
                                 )}
+                                {jobAssignments[attr.name] && (
+                                  <button
+                                    onClick={() => handleUnassignRep(attr.name)}
+                                    disabled={unassigningId === attr.name || savingAssignId === attr.name}
+                                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/[0.06] border border-rose-500/20 text-[10px] font-mono text-rose-400/70 hover:text-rose-300 hover:border-rose-500/35 transition-all disabled:opacity-40"
+                                  >
+                                    {unassigningId === attr.name
+                                      ? <RefreshCw className="w-3 h-3 animate-spin" />
+                                      : <X className="w-3 h-3" />
+                                    }
+                                    Unassign
+                                  </button>
+                                )}
                                 <div className="relative">
                                   <button
                                     onClick={() => setAssigningJobId(assigningJobId === `detail-${job.id}` ? null : `detail-${job.id}`)}
-                                    disabled={savingAssignId === attr.name}
+                                    disabled={savingAssignId === attr.name || unassigningId === attr.name}
                                     className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/10 text-[10px] font-mono text-[#567090] hover:text-[#AABDCF] hover:border-white/20 transition-all"
                                   >
                                     {savingAssignId === attr.name

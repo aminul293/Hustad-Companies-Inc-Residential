@@ -122,19 +122,30 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PATCH /api/pipeline — assign a rep to a pipeline lead by CPC ticket ID (TEXT).
-// Auto-imports the job if it hasn't been imported yet, then assigns.
-// Body: { cpc_ticket_id: string; assigned_rep_id: string }
+// PATCH /api/pipeline — assign or unassign a rep on a pipeline lead by CPC ticket ID.
+// Body: { cpc_ticket_id: string; assigned_rep_id: string | null }
+// Pass assigned_rep_id: null to unassign. Auto-imports the job if assigning and not yet in pipeline.
 export async function PATCH(request: NextRequest) {
   try {
     await requireAuth(request);
-    const { cpc_ticket_id, assigned_rep_id } = await request.json();
+    const body = await request.json();
+    const { cpc_ticket_id } = body;
+    const assigned_rep_id: string | null = body.assigned_rep_id ?? null;
 
-    if (!cpc_ticket_id || !assigned_rep_id) {
-      return NextResponse.json({ error: 'Missing cpc_ticket_id or assigned_rep_id' }, { status: 400 });
+    if (!cpc_ticket_id) {
+      return NextResponse.json({ error: 'Missing cpc_ticket_id' }, { status: 400 });
     }
 
     const supabase = getServiceClient();
+
+    // Unassign — just clear and return; no auto-import needed
+    if (assigned_rep_id === null) {
+      await supabase
+        .from('pipeline_leads')
+        .update({ assigned_rep_id: null })
+        .eq('cpc_ticket_id', cpc_ticket_id);
+      return NextResponse.json({ success: true });
+    }
 
     // Try to assign directly (job already imported to pipeline)
     let { data, error } = await supabase
