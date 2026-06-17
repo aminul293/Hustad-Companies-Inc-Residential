@@ -443,6 +443,11 @@ export function CenterPointJobs() {
                           {(attr.opportunityType || attr.workType) && (
                             <span className="text-[10px] font-mono text-[#3F5878]">{attr.opportunityType || attr.workType}</span>
                           )}
+                          {jobAssignments[attr.name] && (
+                            <span className="text-[10px] font-inter text-[#3aada3]">
+                              {reps.find(r => r.id === jobAssignments[attr.name])?.name ?? "Assigned"}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
