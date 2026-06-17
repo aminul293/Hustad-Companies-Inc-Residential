@@ -38,6 +38,45 @@ export async function POST(request: NextRequest) {
 
     if (rpcError) throw rpcError;
 
+    // Auto-assign from CenterPoint Additional Managers if available and not yet assigned
+    try {
+      const { data: cpJobData } = await supabase
+        .from("centerpoint_jobs")
+        .select("cp_additional_managers")
+        .eq("id", cpJob.id)
+        .maybeSingle();
+
+      if (cpJobData?.cp_additional_managers) {
+        const managers: string[] = JSON.parse(cpJobData.cp_additional_managers);
+        if (managers.length > 0) {
+          const { data: allReps } = await supabase
+            .from("reps")
+            .select("id, name")
+            .eq("active", true);
+
+          for (const mgrName of managers) {
+            const lower = mgrName.toLowerCase();
+            const match = allReps?.find(
+              (r: any) =>
+                r.name.toLowerCase() === lower ||
+                r.name.toLowerCase().includes(lower) ||
+                lower.includes(r.name.toLowerCase())
+            );
+            if (match) {
+              await supabase
+                .from("pipeline_leads")
+                .update({ assigned_rep_id: match.id })
+                .eq("cpc_ticket_id", job.attributes.name)
+                .is("assigned_rep_id", null);
+              break;
+            }
+          }
+        }
+      }
+    } catch {
+      // Non-fatal — import still succeeds without auto-assignment
+    }
+
     return NextResponse.json({ success: true, lead });
   } catch (error: any) {
     console.error('[PIPELINE_POST_ERROR]', error);

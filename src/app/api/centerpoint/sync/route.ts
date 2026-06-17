@@ -168,6 +168,27 @@ const CP_STATUS_REMAP: Record<string, string> = {
   closed:        "closed",
 };
 
+// ─── Extract Additional Managers names from a CenterPoint attributes object ───
+// CenterPoint may return this under several field names depending on the tenant config.
+function extractAdditionalManagers(a: any): string[] {
+  const raw =
+    a.additionalManagers ??
+    a.managers ??
+    a.customWithLabels?.additionalManagers ??
+    a.custom?.additionalManagers ??
+    a.employees ??
+    [];
+  if (!raw) return [];
+  const arr = Array.isArray(raw) ? raw : [raw];
+  return arr
+    .map((m: any) =>
+      typeof m === "string"
+        ? m
+        : (m.name ?? m.fullName ?? m.displayName ?? m.label ?? "")
+    )
+    .filter(Boolean);
+}
+
 // ─── Map CenterPoint record → Supabase row ───────────────────────────────────
 function toRow(r: any, contacts?: CompanyContacts) {
   const a = r.attributes;
@@ -184,6 +205,8 @@ function toRow(r: any, contacts?: CompanyContacts) {
   if (ownerName)  rawExtras._owner = ownerName;
   if (ownerPhone) rawExtras._phone = String(ownerPhone);
   if (ownerEmail) rawExtras._email = String(ownerEmail);
+
+  const additionalManagers = extractAdditionalManagers(a);
 
   return {
     cp_id: String(r.id),
@@ -202,6 +225,7 @@ function toRow(r: any, contacts?: CompanyContacts) {
     stage_transitioned_at: a.latestStageTransitionedAt ?? null,
     cp_created_at: a.createdAt ?? null,
     cp_updated_at: a.updatedAt ?? null,
+    cp_additional_managers: additionalManagers.length > 0 ? JSON.stringify(additionalManagers) : null,
     raw: { ...a, ...rawExtras },
     synced_at: new Date().toISOString(),
   };
@@ -426,6 +450,41 @@ export async function POST(request: NextRequest) {
           console.warn(`[SYNC] Failed to remove stale records: ${deleteError.message}`);
         } else {
           deleted = staleIds.length;
+        }
+      }
+    }
+
+    // ── Post-Sync: Auto-assign reps from CP Additional Managers ─────────────
+    // For each synced job that has Additional Managers set, if the job is
+    // already in pipeline_leads with no assigned_rep_id, auto-match by name.
+    const jobsWithManagers = finalRows.filter(r => r.cp_additional_managers);
+    if (jobsWithManagers.length > 0) {
+      const { data: allReps } = await supabase
+        .from("reps")
+        .select("id, name")
+        .eq("active", true);
+
+      for (const job of jobsWithManagers) {
+        let managers: string[] = [];
+        try { managers = JSON.parse(job.cp_additional_managers); } catch { continue; }
+
+        for (const mgrName of managers) {
+          const lower = mgrName.toLowerCase();
+          const match = allReps?.find(
+            (r: any) =>
+              r.name.toLowerCase() === lower ||
+              r.name.toLowerCase().includes(lower) ||
+              lower.includes(r.name.toLowerCase())
+          );
+          if (match) {
+            // Only assign if the pipeline lead exists and has no rep yet
+            await supabase
+              .from("pipeline_leads")
+              .update({ assigned_rep_id: match.id })
+              .eq("cpc_ticket_id", job.name)
+              .is("assigned_rep_id", null);
+            break;
+          }
         }
       }
     }
