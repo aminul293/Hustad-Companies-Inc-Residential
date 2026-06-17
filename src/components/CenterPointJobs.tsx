@@ -482,10 +482,7 @@ export function CenterPointJobs() {
                               ? <RefreshCw className="w-2.5 h-2.5 animate-spin" />
                               : <UserPlus className="w-2.5 h-2.5" />
                             }
-                            {jobAssignments[attr.name]
-                              ? (reps.find(r => r.id === jobAssignments[attr.name])?.name?.split(" ")[0] ?? "Assigned")
-                              : "Assign"
-                            }
+                            {jobAssignments[attr.name] ? "Reassign" : "Assign"}
                           </button>
 
                           <AnimatePresence>

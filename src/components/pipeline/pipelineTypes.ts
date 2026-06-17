@@ -4,6 +4,7 @@ export interface PipelineLead {
   id: string;
   cpc_ticket_id: string;
   pipeline_status: string;
+  assigned_rep_id: string | null;
   contact_attempt_count: number;
   last_contacted_at: string | null;
   next_follow_up_at: string | null;

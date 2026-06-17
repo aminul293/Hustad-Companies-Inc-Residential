@@ -2,7 +2,7 @@
 import { motion } from "framer-motion";
 import {
   Phone, Calendar, Clock, XCircle, CalendarDays, CheckCircle2,
-  PlayCircle, MinusCircle, MessageSquare, Mail, User,
+  PlayCircle, MinusCircle, MessageSquare, Mail, User, UserCheck,
   Flame, AlertCircle, PenLine, Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ interface Props {
   onClick?: () => void;
   lead: PipelineLead;
   repId?: string;
+  repsMap?: Record<string, string>;
   removing: boolean;
   onStageClick:       (lead: PipelineLead, idx: number) => void;
   onCall:             (lead: PipelineLead) => void;
@@ -33,7 +34,7 @@ interface Props {
 
 export function PipelineLeadCard({
   variant = "default", onClick,
-  lead, repId, removing,
+  lead, repId, repsMap, removing,
   onStageClick, onCall, onFollowUp, onSchedule, onStartInspection,
   onNotes, onDraftEmail, onEditPhone, onEditEmail, onDeadLead, onRemove,
 }: Props) {
@@ -206,6 +207,14 @@ export function PipelineLeadCard({
             <div className="w-1 h-1 rounded-full bg-white/15" />
             <span className="text-[9px] font-mono text-[#7090B0] uppercase tracking-widest">Residential</span>
           </div>
+          {lead.assigned_rep_id && repsMap?.[lead.assigned_rep_id] && (
+            <div className="flex items-center gap-1.5 mt-1">
+              <UserCheck className="w-3 h-3 text-[#3aada3] shrink-0" />
+              <span className="text-[11px] font-inter text-[#3aada3]">
+                {repsMap[lead.assigned_rep_id]}
+              </span>
+            </div>
+          )}
 
           {/* Phone row */}
           {ph ? (

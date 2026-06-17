@@ -13,7 +13,8 @@ import { PipelineLeadCard } from "./pipeline/PipelineLeadCard";
 import { PipelineLeadSlideOver } from "./pipeline/PipelineLeadSlideOver";
 import { usePipelineLeads } from "./pipeline/usePipelineLeads";
 import { AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { fetchReps } from "@/lib/api";
 
 interface PipelineLeadsProps {
   repId?: string;
@@ -23,6 +24,17 @@ interface PipelineLeadsProps {
 export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
   const p = usePipelineLeads(repId, repEmail);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+  const [repsMap, setRepsMap] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    fetchReps().then(async res => {
+      if (!res.ok) return;
+      const json = await res.json();
+      const map: Record<string, string> = {};
+      for (const r of (json.reps ?? [])) map[r.id] = r.name;
+      setRepsMap(map);
+    });
+  }, []);
 
   const selectedLead = p.leads.find(l => l.id === selectedLeadId) || null;
 
@@ -104,6 +116,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
                         onClick={() => setSelectedLeadId(lead.id)}
                         lead={lead}
                         repId={repId}
+                        repsMap={repsMap}
                         removing={p.removing === lead.id}
                         onStageClick={p.handleStageClick}
                         onCall={p.handleCall}
@@ -136,6 +149,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
         onClose={() => setSelectedLeadId(null)}
         lead={selectedLead}
         repId={repId}
+        repsMap={repsMap}
         removing={selectedLead ? p.removing === selectedLead.id : false}
         onStageClick={p.handleStageClick}
         onCall={p.handleCall}

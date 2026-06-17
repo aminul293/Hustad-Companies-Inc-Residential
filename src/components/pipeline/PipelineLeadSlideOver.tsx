@@ -10,6 +10,7 @@ interface Props {
   onClose: () => void;
   lead: PipelineLead | null;
   repId?: string;
+  repsMap?: Record<string, string>;
   removing: boolean;
   onStageClick:       (lead: PipelineLead, idx: number) => void;
   onCall:             (lead: PipelineLead) => void;
