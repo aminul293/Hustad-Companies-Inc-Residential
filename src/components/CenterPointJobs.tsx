@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchCenterpointJobs, fetchCenterpointSyncStatus, triggerCenterpointSync, patchCenterpointJob, createPipelineLead, unlinkPipelineByTicket, assignLeadByJob, fetchCurrentUser, fetchReps } from "@/lib/api";
+import { fetchCenterpointJobs, fetchCenterpointSyncStatus, triggerCenterpointSync, patchCenterpointJob, createPipelineLead, unlinkPipelineByTicket, assignLeadByJob, fetchCurrentUser, fetchReps, fetchLeads } from "@/lib/api";
 import { useState, useEffect, useCallback } from "react";
 import { Search, ChevronRight, RefreshCw, Building2, ArrowRight, CloudDownload, CheckCircle2, ArrowLeft, X, UserPlus, User, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -187,11 +187,18 @@ export function CenterPointJobs() {
       if (!me) return;
       setUserRole(me.role);
       if (me.role === "manager") {
-        const res = await fetchReps();
-        if (res.ok) {
-          const json = await res.json();
+        const [repsRes, leads] = await Promise.all([fetchReps(), fetchLeads()]);
+        if (repsRes.ok) {
+          const json = await repsRes.json();
           setReps(json.reps ?? []);
         }
+        const existing: Record<string, string> = {};
+        for (const lead of leads) {
+          if (lead.cpc_ticket_id && lead.assigned_rep_id) {
+            existing[lead.cpc_ticket_id] = lead.assigned_rep_id;
+          }
+        }
+        setJobAssignments(existing);
       }
     })();
   }, []);
