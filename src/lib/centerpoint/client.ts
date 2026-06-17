@@ -50,13 +50,20 @@ export async function acceptOpportunity(cpId: string, cpKey: string): Promise<vo
 }
 
 // ─── Fetch "Additional Managers" names for a single service record ────────────
-// CenterPoint stores additional managers as a JSON:API relationship.
-// We try the most common include types and extract names from `data.included`.
-// Returns an empty array if the field isn't available or the API call fails.
+// CenterPoint API docs show managers and accountManager are the correct includes.
+// We use relationship IDs first to identify which included items are managers,
+// then fall back to type-based matching.
 export async function fetchServiceManagerNames(cpId: string): Promise<string[]> {
   const token = getCpToken();
-  // Try several possible include parameter values
-  const includeAttempts = ["employees", "managers,employees", "managers"];
+  const includeAttempts = [
+    "managers,accountManager",
+    "managers.helpers,accountManager",
+    "managers",
+    "accountManager",
+    "managers,employees",
+    "employees",
+  ];
+
   for (const include of includeAttempts) {
     try {
       const res = await fetch(
@@ -66,10 +73,42 @@ export async function fetchServiceManagerNames(cpId: string): Promise<string[]> 
       if (!res.ok) continue;
       const data = await res.json();
       const included: any[] = data.included ?? [];
-      // Look for any included resource that looks like an employee/manager
-      const managerTypes = ["employees", "employee", "managers", "manager", "users", "user"];
-      const found = included
-        .filter((item: any) => managerTypes.includes(item.type))
+      if (included.length === 0) continue;
+
+      // Primary strategy: use relationship linkage to find manager resource IDs
+      const relationships = data.data?.relationships ?? {};
+      const managerRelIds = new Set<string>();
+      for (const relKey of ["managers", "accountManager", "additionalManagers"]) {
+        const rel = relationships[relKey];
+        if (!rel) continue;
+        const relData = Array.isArray(rel.data) ? rel.data : rel.data ? [rel.data] : [];
+        for (const item of relData) {
+          if (item?.id) managerRelIds.add(String(item.id));
+        }
+      }
+
+      if (managerRelIds.size > 0) {
+        const names = included
+          .filter((item: any) => managerRelIds.has(String(item.id)))
+          .map((item: any) =>
+            item.attributes?.name ??
+            item.attributes?.fullName ??
+            item.attributes?.displayName ??
+            [item.attributes?.firstName, item.attributes?.lastName].filter(Boolean).join(" ") ??
+            ""
+          )
+          .filter(Boolean);
+        if (names.length > 0) {
+          console.log(`[CP] fetchServiceManagerNames cpId=${cpId} found via relationships:`, names);
+          return names;
+        }
+      }
+
+      // Fallback: filter included items by type
+      const personTypes = ["employees", "employee", "managers", "manager",
+        "users", "user", "accountmanagers", "accountmanager", "profiles", "profile"];
+      const names = included
+        .filter((item: any) => personTypes.includes((item.type ?? "").toLowerCase()))
         .map((item: any) =>
           item.attributes?.name ??
           item.attributes?.fullName ??
@@ -78,11 +117,18 @@ export async function fetchServiceManagerNames(cpId: string): Promise<string[]> 
           ""
         )
         .filter(Boolean);
-      if (found.length > 0) return found;
+      if (names.length > 0) {
+        console.log(`[CP] fetchServiceManagerNames cpId=${cpId} found via type filter:`, names);
+        return names;
+      }
+
+      console.log(`[CP] fetchServiceManagerNames cpId=${cpId} include=${include} no managers — included types: [${[...new Set(included.map((i: any) => i.type))].join(", ")}]`);
     } catch {
       continue;
     }
   }
+
+  console.log(`[CP] fetchServiceManagerNames cpId=${cpId} exhausted all include attempts`);
   return [];
 }
 
