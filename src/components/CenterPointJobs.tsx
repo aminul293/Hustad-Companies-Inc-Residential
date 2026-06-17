@@ -353,22 +353,20 @@ export function CenterPointJobs() {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            {/* Sync from CenterPoint → Supabase (manager-only) */}
-            {isManager && (
-              <button
-                onClick={handleSync}
-                disabled={syncStatus.syncing}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2.5 rounded-[14px] border text-xs font-inter transition-all",
-                  syncStatus.syncing
-                    ? "bg-[#2563ba]/10 border-[#2563ba]/20 text-[#2563ba]/50 cursor-not-allowed"
-                    : "bg-[#2563ba]/10 border-[#2563ba]/20 text-[#4a8fd4] hover:bg-[#2563ba]/20"
-                )}
-              >
-                <CloudDownload className={cn("w-3.5 h-3.5", syncStatus.syncing && "animate-pulse")} />
-                {syncStatus.syncing ? "Syncing…" : "Sync Now"}
-              </button>
-            )}
+            {/* Sync from CenterPoint → Supabase */}
+            <button
+              onClick={handleSync}
+              disabled={syncStatus.syncing}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2.5 rounded-[14px] border text-xs font-inter transition-all",
+                syncStatus.syncing
+                  ? "bg-[#2563ba]/10 border-[#2563ba]/20 text-[#2563ba]/50 cursor-not-allowed"
+                  : "bg-[#2563ba]/10 border-[#2563ba]/20 text-[#4a8fd4] hover:bg-[#2563ba]/20"
+              )}
+            >
+              <CloudDownload className={cn("w-3.5 h-3.5", syncStatus.syncing && "animate-pulse")} />
+              {syncStatus.syncing ? "Syncing…" : "Sync Now"}
+            </button>
             {/* Refresh list from Supabase */}
             <button
               onClick={() => fetchJobs({ refresh: true, newPage: 1 })}
