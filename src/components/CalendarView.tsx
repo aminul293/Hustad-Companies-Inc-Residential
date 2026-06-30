@@ -68,7 +68,7 @@ const STATUS_CFG: Record<string, { label: string; color: string; dot: string; bg
   confirmed:   { label: "Confirmed",   color: "text-sky-400",     dot: "bg-sky-400",     bg: "border-sky-500/25 bg-sky-500/[0.08]" },
   rescheduled: { label: "Rescheduled", color: "text-amber-400",   dot: "bg-amber-400",   bg: "border-amber-500/25 bg-amber-500/[0.08]" },
   no_show:     { label: "No Show",     color: "text-rose-400",    dot: "bg-rose-400",    bg: "border-rose-500/25 bg-rose-500/[0.08]" },
-  cancelled:   { label: "Cancelled",   color: "text-[#3F5878]",   dot: "bg-white/20",    bg: "border-white/10 bg-white/[0.03]" },
+  cancelled:   { label: "Cancelled",   color: "text-[#3F5878]",   dot: "dark:bg-white/20 bg-black/20",    bg: "dark:border-white/10 border-black/10 dark:bg-white/[0.03] bg-black/[0.04]" },
   completed:   { label: "Completed",   color: "text-[#2563ba]",   dot: "bg-[#2563ba]",   bg: "border-[#2563ba]/25 bg-[#2563ba]/[0.08]" },
 };
 
@@ -325,16 +325,16 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
     a.pipeline_leads?.centerpoint_jobs?.raw?._phone || "";
 
   return (
-    <div className="flex flex-col h-full bg-[#060606] text-[#E8EDF8]">
+    <div className="flex flex-col h-full bg-[var(--bg-base)] text-[var(--tx1)] transition-colors duration-300">
       {/* ── Header ── */}
-      <div className="p-6 pb-4 border-b border-white/[0.06] space-y-4 shrink-0">
+      <div className="p-6 pb-4 dark:border-b dark:border-white/[0.06] border-b border-black/[0.08] space-y-4 shrink-0">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           {/* View toggle */}
-          <div className="flex items-center gap-1 p-1 bg-white/5 border border-white/10 rounded-xl">
+          <div className="flex items-center gap-1 p-1 dark:bg-white/5 bg-black/5 dark:border-white/10 border-black/10 rounded-xl">
             {(["day", "week"] as CalView[]).map(v => (
               <button key={v} onClick={() => setCalView(v)}
                 className={cn("px-5 py-2 rounded-lg text-xs font-inter transition-all capitalize",
-                  calView === v ? "bg-white text-black" : "text-[#567090] hover:text-[#E8EDF8]"
+                  calView === v ? "bg-[var(--tx1)] text-[var(--bg-base)]" : "text-[#567090] hover:text-[var(--tx1)]"
                 )}>{v}</button>
             ))}
           </div>
@@ -342,19 +342,19 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
           {/* Date navigation */}
           <div className="flex items-center gap-2">
             <button onClick={() => setSelectedDate(d => addDays(d, calView === "day" ? -1 : -7))}
-              className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
+              className="p-2 rounded-xl dark:bg-white/5 bg-black/5 dark:border-white/10 border-black/10 dark:hover:bg-white/10 hover:bg-black/10 transition-all">
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button onClick={() => setSelectedDate(new Date())}
               className={cn("px-4 py-2 rounded-xl text-xs font-mono transition-all border",
                 sameDay(selectedDate, new Date())
-                  ? "bg-white text-black border-white"
-                  : "bg-white/5 border-white/10 hover:bg-white/10 text-[#8BA5C5]"
+                  ? "bg-[var(--tx1)] text-[var(--bg-base)] border-[var(--tx1)]"
+                  : "dark:bg-white/5 bg-black/5 dark:border-white/10 border-black/10 dark:hover:bg-white/10 hover:bg-black/10 text-[#8BA5C5]"
               )}>
               {calView === "day" ? fmtDate(selectedDate) : `${fmtDate(selectedDate)} – ${fmtDate(addDays(selectedDate, 6))}`}
             </button>
             <button onClick={() => setSelectedDate(d => addDays(d, calView === "day" ? 1 : 7))}
-              className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
+              className="p-2 rounded-xl dark:bg-white/5 bg-black/5 dark:border-white/10 border-black/10 dark:hover:bg-white/10 hover:bg-black/10 transition-all">
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
@@ -364,7 +364,7 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
             {managerMode && (
               <div className="relative">
                 <button onClick={() => setRepMenuOpen(o => !o)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-[#8BA5C5] hover:text-[#E8EDF8] transition-all">
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl dark:bg-white/5 bg-black/5 dark:border-white/10 border-black/10 text-xs text-[#8BA5C5] hover:text-[var(--tx1)] transition-all">
                   <User className="w-3.5 h-3.5" />
                   {repFilter === "all"
                     ? "All Reps"
@@ -376,19 +376,19 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
                 <AnimatePresence>
                   {repMenuOpen && (
                     <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
-                      className="absolute right-0 mt-2 w-56 bg-[#111] border border-white/10 rounded-2xl shadow-xl z-20 overflow-hidden py-1">
+                      className="absolute right-0 mt-2 w-56 dark:bg-[#111] bg-white dark:border-white/10 border-black/10 rounded-2xl shadow-xl z-20 overflow-hidden py-1">
                       <button onClick={() => { setRepFilter("all"); setRepMenuOpen(false); }}
-                        className={cn("w-full px-4 py-3 text-left text-xs font-mono hover:bg-white/5 transition-all",
-                          repFilter === "all" ? "text-[#E8EDF8]" : "text-[#567090]"
+                        className={cn("w-full px-4 py-3 text-left text-xs font-mono dark:hover:bg-white/5 hover:bg-black/5 transition-all",
+                          repFilter === "all" ? "text-[var(--tx1)]" : "text-[#567090]"
                         )}>All Reps</button>
                       <button onClick={() => { setRepFilter(currentRep.id); setRepMenuOpen(false); }}
-                        className={cn("w-full px-4 py-3 text-left text-xs font-mono hover:bg-white/5 transition-all",
-                          repFilter === currentRep.id ? "text-[#E8EDF8]" : "text-[#567090]"
+                        className={cn("w-full px-4 py-3 text-left text-xs font-mono dark:hover:bg-white/5 hover:bg-black/5 transition-all",
+                          repFilter === currentRep.id ? "text-[var(--tx1)]" : "text-[#567090]"
                         )}>{currentRep.name}</button>
                       {availableReps.filter(r => r.id !== currentRep.id).map(r => (
                         <button key={r.id} onClick={() => { setRepFilter(r.id); setRepMenuOpen(false); }}
-                          className={cn("w-full px-4 py-3 text-left text-xs font-mono hover:bg-white/5 transition-all",
-                            repFilter === r.id ? "text-[#E8EDF8]" : "text-[#567090]"
+                          className={cn("w-full px-4 py-3 text-left text-xs font-mono dark:hover:bg-white/5 hover:bg-black/5 transition-all",
+                            repFilter === r.id ? "text-[var(--tx1)]" : "text-[#567090]"
                           )}>{r.name}</button>
                       ))}
                     </motion.div>
@@ -397,7 +397,7 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
               </div>
             )}
             <button onClick={fetchAppointments}
-              className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-[#3F5878] hover:text-[#E8EDF8] transition-all">
+              className="p-2.5 rounded-xl dark:bg-white/5 bg-black/5 dark:border-white/10 border-black/10 text-[#3F5878] hover:text-[var(--tx1)] transition-all">
               <RefreshCw className={cn("w-3.5 h-3.5", loading && "animate-spin")} />
             </button>
           </div>
@@ -462,7 +462,7 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: "100%", opacity: 0 }}
               transition={{ type: "spring", damping: 28, stiffness: 260 }}
-              className="w-80 shrink-0 border-l border-white/[0.06] flex flex-col overflow-y-auto"
+              className="w-80 shrink-0 dark:border-l dark:border-white/[0.06] border-l border-black/[0.08] flex flex-col overflow-y-auto"
             >
               <AppointmentDetailPanel
                 appt={selectedAppt}
@@ -518,7 +518,7 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4">
             <motion.div initial={{ scale: 0.96, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96 }}
               transition={{ type: "spring", damping: 28, stiffness: 320 }}
-              className="bg-[#0d0d0d] border border-white/10 rounded-3xl p-8 w-full max-w-sm shadow-2xl">
+              className="dark:bg-[#0d0d0d] bg-white dark:border-white/10 border-black/10 rounded-3xl p-8 w-full max-w-sm shadow-2xl text-[var(--tx1)]">
               <div className="flex items-start justify-between mb-7">
                 <div>
                   <div className="flex items-center gap-2.5 mb-1">
@@ -531,7 +531,7 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
                   </div>
                   <p className="text-sm text-[#4D678A] font-light">{followUpPrompt.label}</p>
                 </div>
-                <button onClick={() => setFollowUpPrompt(null)} className="p-2 rounded-2xl text-[#3F5878] hover:text-[#E8EDF8] hover:bg-white/5 transition-all">
+                <button onClick={() => setFollowUpPrompt(null)} className="p-2 rounded-2xl text-[#3F5878] hover:text-[var(--tx1)] dark:hover:bg-white/5 hover:bg-black/5 transition-all">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -544,7 +544,7 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
                       className={cn("py-3 rounded-2xl text-sm font-medium transition-all",
                         followUpDate === d
                           ? "bg-rose-500/15 border border-rose-500/30 text-rose-300"
-                          : "bg-white/[0.04] text-[#567090] hover:bg-white/[0.08] hover:text-[#AABDCF]"
+                          : "dark:bg-white/[0.04] bg-black/[0.04] text-[#567090] dark:hover:bg-white/[0.08] hover:bg-black/[0.08] hover:text-[var(--tx2)]"
                       )}>{opt.label}</button>
                   );
                 })}
@@ -553,16 +553,16 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
                 <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2">Custom Date</label>
                 <input type="date" value={followUpDate} min={new Date().toISOString().slice(0, 10)}
                   onChange={e => setFollowUpDate(e.target.value)}
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-[#E8EDF8] text-sm focus:outline-none focus:border-rose-500/40 [color-scheme:dark]" />
+                  className="w-full dark:bg-white/[0.04] bg-black/[0.04] dark:border-white/10 border-black/10 rounded-2xl px-4 py-3 text-[var(--tx1)] text-sm focus:outline-none focus:border-rose-500/40 [color-scheme:light] dark:[color-scheme:dark]" />
               </div>
               <div className="flex gap-3">
                 <button onClick={() => setFollowUpPrompt(null)}
-                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-[#7090B0] hover:text-[#E8EDF8] transition-all text-sm">Back</button>
+                  className="flex-1 py-3 rounded-2xl dark:bg-white/5 bg-black/5 dark:border-white/10 border-black/10 text-[#7090B0] hover:text-[var(--tx1)] transition-all text-sm">Back</button>
                 <button onClick={confirmFollowUp}
                   className={cn("flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl transition-all text-sm font-medium",
                     followUpPrompt.action === "no_show"
                       ? "bg-rose-500/15 border border-rose-500/25 text-rose-300 hover:bg-rose-500/25"
-                      : "bg-white/[0.07] border border-white/15 text-[#C2D0E4] hover:bg-white/[0.12]"
+                      : "dark:bg-white/[0.07] bg-black/[0.07] dark:border-white/15 border-black/15 text-[var(--tx2)] dark:hover:bg-white/[0.12] hover:bg-black/[0.12]"
                   )}>
                   <ChevronRight className="w-4 h-4" />
                   {followUpPrompt.action === "no_show" ? "Confirm No Show" : "Confirm Cancel"}
@@ -580,7 +580,7 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4">
             <motion.div initial={{ scale: 0.96, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96 }}
               transition={{ type: "spring", damping: 28, stiffness: 320 }}
-              className="bg-[#0d0d0d] border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl">
+              className="dark:bg-[#0d0d0d] bg-white dark:border-white/10 border-black/10 rounded-3xl p-8 w-full max-w-md shadow-2xl text-[var(--tx1)]">
               <div className="flex items-start justify-between mb-7">
                 <div>
                   <div className="flex items-center gap-2.5 mb-1">
@@ -589,14 +589,14 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
                   </div>
                   <p className="text-sm text-[#4D678A] font-light">{reschedModal.label}</p>
                 </div>
-                <button onClick={() => setReschedModal(null)} className="p-2 rounded-2xl text-[#3F5878] hover:text-[#E8EDF8] hover:bg-white/5 transition-all">
+                <button onClick={() => setReschedModal(null)} className="p-2 rounded-2xl text-[#3F5878] hover:text-[var(--tx1)] dark:hover:bg-white/5 hover:bg-black/5 transition-all">
                   <X className="w-4 h-4" />
                 </button>
               </div>
               <div className="mb-6">
                 <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2">New Date</label>
                 <input type="date" value={reschedDate} onChange={e => setReschedDate(e.target.value)}
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-[#E8EDF8] text-sm focus:outline-none focus:border-amber-500/50 [color-scheme:dark]" />
+                  className="w-full dark:bg-white/[0.04] bg-black/[0.04] dark:border-white/10 border-black/10 rounded-2xl px-4 py-3 text-[var(--tx1)] text-sm focus:outline-none focus:border-amber-500/50 [color-scheme:light] dark:[color-scheme:dark]" />
               </div>
               <div className="mb-6">
                 <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2.5">Time</label>
@@ -604,7 +604,7 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
                   {TIME_SLOTS.map(slot => (
                     <button key={slot} onClick={() => setReschedTime(slot)}
                       className={cn("py-2.5 rounded-xl text-xs font-medium transition-all",
-                        reschedTime === slot ? "bg-amber-500 text-[#E8EDF8]" : "bg-white/[0.04] text-[#4D678A] hover:bg-white/[0.08]"
+                        reschedTime === slot ? "bg-amber-500 text-white" : "dark:bg-white/[0.04] bg-black/[0.04] text-[#4D678A] dark:hover:bg-white/[0.08] hover:bg-black/[0.08]"
                       )}>
                       {new Date(`2000-01-01T${slot}:00`).toLocaleTimeString("en-US", { hour: "numeric", hour12: true })}
                     </button>
@@ -617,14 +617,14 @@ export function CalendarView({ currentRep, managerMode = false }: Props) {
                   {DURATIONS.map(d => (
                     <button key={d.value} onClick={() => setReschedDur(d.value)}
                       className={cn("flex-1 py-2.5 rounded-xl text-xs font-medium transition-all",
-                        reschedDur === d.value ? "bg-amber-500/20 border border-amber-500/40 text-amber-300" : "bg-white/[0.04] text-[#3F5878] hover:bg-white/[0.07]"
+                        reschedDur === d.value ? "bg-amber-500/20 border border-amber-500/40 text-amber-300" : "dark:bg-white/[0.04] bg-black/[0.04] text-[#3F5878] dark:hover:bg-white/[0.07] hover:bg-black/[0.07]"
                       )}>{d.label}</button>
                   ))}
                 </div>
               </div>
               <div className="flex gap-3">
                 <button onClick={() => setReschedModal(null)}
-                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-[#7090B0] hover:text-[#E8EDF8] transition-all text-sm">Cancel</button>
+                  className="flex-1 py-3 rounded-2xl dark:bg-white/5 bg-black/5 dark:border-white/10 border-black/10 text-[#7090B0] hover:text-[var(--tx1)] transition-all text-sm">Cancel</button>
                 <button onClick={confirmReschedule}
                   className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-amber-500/20 border border-amber-500/30 text-amber-300 hover:bg-amber-500/30 transition-all text-sm font-medium">
                   Confirm <ChevronRight className="w-4 h-4" />
@@ -671,16 +671,16 @@ function DayGrid({ appts, conflictIds, currentTimeTop, selectedId, actionLoading
       </div>
 
       {/* Grid */}
-      <div className="flex-1 relative border-l border-white/[0.05]" style={{ height: GRID_HEIGHT }}>
+      <div className="flex-1 relative dark:border-l dark:border-white/[0.05] border-l border-black/[0.08]" style={{ height: GRID_HEIGHT }}>
         {/* Hour lines */}
         {HOURS.map(h => (
-          <div key={h} className="absolute left-0 right-0 border-t border-white/[0.05]"
+          <div key={h} className="absolute left-0 right-0 dark:border-t dark:border-white/[0.05] border-t border-black/[0.08]"
             style={{ top: (h - DAY_START_HOUR) * HOUR_PX }} />
         ))}
 
         {/* Half-hour lines */}
         {HOURS.slice(0, -1).map(h => (
-          <div key={`half-${h}`} className="absolute left-0 right-0 border-t border-white/[0.025]"
+          <div key={`half-${h}`} className="absolute left-0 right-0 dark:border-t dark:border-white/[0.025] border-t border-black/[0.04]"
             style={{ top: (h - DAY_START_HOUR) * HOUR_PX + HOUR_PX / 2 }} />
         ))}
 
@@ -727,7 +727,7 @@ function DayGrid({ appts, conflictIds, currentTimeTop, selectedId, actionLoading
               animate={{ opacity: 1, scale: 1 }}
               className={cn(
                 "absolute rounded-xl border overflow-hidden cursor-pointer transition-all group",
-                isSelected ? "ring-2 ring-white/30 ring-offset-1 ring-offset-black" : "hover:ring-1 hover:ring-white/20",
+                isSelected ? "dark:ring-2 dark:ring-white/30 ring-2 ring-black/20 ring-offset-1 dark:ring-offset-black ring-offset-white" : "hover:ring-1 dark:hover:ring-white/20 hover:ring-black/20",
                 isConflict
                   ? "border-amber-500/40 bg-amber-500/10"
                   : cn(cfg.bg)
@@ -745,7 +745,7 @@ function DayGrid({ appts, conflictIds, currentTimeTop, selectedId, actionLoading
                   {fmtTime(appt.appointment_start_at)}
                 </p>
                 {height > 50 && (
-                  <p className="text-xs font-inter font-medium text-[#DDE5F5] leading-tight truncate mt-0.5">
+                  <p className="text-xs font-inter font-medium dark:text-[#DDE5F5] text-[var(--tx1)] leading-tight truncate mt-0.5">
                     {address}
                   </p>
                 )}
@@ -753,7 +753,7 @@ function DayGrid({ appts, conflictIds, currentTimeTop, selectedId, actionLoading
                   <p className="text-[9px] font-mono text-[#4D678A] truncate mt-0.5">{owner}</p>
                 )}
                 {height > 90 && (
-                  <div className="mt-auto flex items-center gap-1 pt-1 border-t border-white/10">
+                  <div className="mt-auto flex items-center gap-1 pt-1 dark:border-t dark:border-white/10 border-t border-black/10">
                     {canStart && (
                       <button onClick={e => { e.stopPropagation(); onStartInspection(appt); }}
                         className="flex items-center gap-1 text-[9px] font-mono text-[#3aada3] hover:text-[#2a8a82]">

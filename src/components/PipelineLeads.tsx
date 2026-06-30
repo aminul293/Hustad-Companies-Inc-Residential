@@ -47,14 +47,14 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
   ];
 
   return (
-    <div className="p-8 space-y-8 overflow-y-auto h-full bg-black/20">
+    <div className="p-8 space-y-8 overflow-y-auto h-full dark:bg-black/20 bg-black/5 transition-colors duration-300">
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="flex items-center gap-6">
           <button
             onClick={() => window.dispatchEvent(new CustomEvent("changeView", { detail: "dashboard" }))}
-            className="p-4 rounded-[14px] bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all shadow-2xl"
+            className="p-4 rounded-[14px] dark:bg-white/5 bg-black/5 dark:border-white/10 border-black/10 hover:bg-[var(--tx1)] hover:text-[var(--bg-base)] transition-all shadow-2xl"
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
@@ -70,7 +70,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
             { label: "Scheduled",    value: p.stats.scheduled,   sub: "upcoming inspections",            icon: CalendarDays, color: "text-[#3aada3]" },
             { label: "Avg Touches",  value: p.stats.avgAttempts, sub: "contact attempts",                icon: Phone, color: "text-sky-400" },
           ].map((s, i) => (
-            <div key={i} className="px-5 py-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] min-w-[148px]">
+            <div key={i} className="px-5 py-4 rounded-2xl dark:bg-white/[0.03] bg-black/[0.04] dark:border-white/[0.08] border-black/[0.08] min-w-[148px]">
               <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-[0.2em] mb-1">{s.label}</p>
               <div className="flex items-baseline gap-2">
                 <s.icon className={cn("w-3.5 h-3.5 shrink-0", s.color)} />
@@ -86,12 +86,12 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
       {p.isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {[1, 2, 3].map(i => (
-            <div key={i} className="bg-[#0b0b0b] border border-white/[0.07] rounded-2xl h-64 animate-pulse" />
+            <div key={i} className="dark:bg-[#0b0b0b] bg-black/[0.06] dark:border-white/[0.07] border-black/[0.07] rounded-2xl h-64 animate-pulse" />
           ))}
         </div>
       ) : p.leads.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="w-16 h-16 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
+          <div className="w-16 h-16 rounded-3xl dark:bg-white/5 bg-black/5 dark:border-white/10 border-black/10 flex items-center justify-center mb-6">
             <Activity className="w-7 h-7 text-[#2D4060]" />
           </div>
           <p className="text-[#567090] font-light text-lg">No leads in pipeline</p>
@@ -102,10 +102,10 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
           {KANBAN_COLUMNS.map(col => {
             const colLeads = p.leads.filter(l => col.statuses.includes(l.pipeline_status));
             return (
-              <div key={col.id} className="flex-shrink-0 w-[340px] flex flex-col bg-white/[0.02] border border-white/[0.05] rounded-2xl overflow-hidden h-[calc(100vh-240px)] min-h-[500px]">
-                <div className="p-4 border-b border-white/[0.05] bg-black/20 flex items-center justify-between shrink-0">
-                  <h3 className="text-sm font-medium text-[#E8EDF8] tracking-wide">{col.label}</h3>
-                  <span className="text-[10px] font-mono text-[#7090B0] bg-white/[0.05] px-2 py-0.5 rounded-full">{colLeads.length}</span>
+              <div key={col.id} className="flex-shrink-0 w-[340px] flex flex-col dark:bg-white/[0.02] bg-black/[0.04] dark:border-white/[0.05] border-black/[0.08] rounded-2xl overflow-hidden h-[calc(100vh-240px)] min-h-[500px]">
+                <div className="p-4 dark:border-b dark:border-white/[0.05] border-b border-black/[0.08] dark:bg-black/20 bg-black/[0.04] flex items-center justify-between shrink-0">
+                  <h3 className="text-sm font-medium text-[var(--tx1)] tracking-wide">{col.label}</h3>
+                  <span className="text-[10px] font-mono text-[#7090B0] dark:bg-white/[0.05] bg-black/[0.05] px-2 py-0.5 rounded-full">{colLeads.length}</span>
                 </div>
                 <div className="flex-1 overflow-y-auto p-3 space-y-3">
                   <AnimatePresence>
