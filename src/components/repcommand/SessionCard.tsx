@@ -41,7 +41,7 @@ export function SessionCard({
   return (
     <div
       onClick={() => onOpen(d.sessionId)}
-      className="w-full group p-4 md:p-6 rounded-[24px] md:rounded-[32px] bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/20 transition-all text-left relative overflow-hidden cursor-pointer active:scale-[0.99]"
+      className="w-full group p-4 md:p-6 rounded-[24px] md:rounded-[32px] dark:bg-white/[0.02] bg-black/[0.03] dark:border-white/[0.06] border-black/[0.08] dark:hover:bg-white/[0.04] hover:bg-black/[0.05] dark:hover:border-white/20 hover:border-black/20 transition-all text-left relative overflow-hidden cursor-pointer active:scale-[0.99]"
     >
       {/* Hover gradient */}
       <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-indigo-500/0 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -119,19 +119,19 @@ export function SessionCard({
             </p>
           </div>
 
-          <div className="h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:scale-105 transition-all">
-            <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-[#E8EDF8] group-hover:text-black transition-colors" />
+          <div className="h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl dark:bg-white/5 bg-black/5 dark:border-white/10 border-black/10 flex items-center justify-center group-hover:bg-[var(--tx1)] group-hover:scale-105 transition-all">
+            <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-[var(--tx1)] group-hover:text-[var(--bg-base)] transition-colors" />
           </div>
         </div>
       </div>
 
       {/* Rep Camera Link */}
       <div
-        className="mt-4 pt-4 border-t border-white/[0.05] flex items-center gap-3 relative z-10"
+        className="mt-4 pt-4 dark:border-t dark:border-white/[0.05] border-t border-black/[0.08] flex items-center gap-3 relative z-10"
         onClick={e => e.stopPropagation()}
       >
         <img
-          src={`https://api.qrserver.com/v1/create-qr-code/?size=64x64&data=${encodeURIComponent(`${typeof window !== "undefined" ? window.location.origin : ""}/rep-capture?s=${d.sessionId}`)}&bgcolor=0d0d1a&color=a5b4fc&qzone=1&format=png`}
+          src={`https://api.qrserver.com/v1/create-qr-code/?size=64x64&data=${encodeURIComponent(`${typeof window !== "undefined" ? window.location.origin : ""}/rep-capture?s=${d.sessionId}`)}&bgcolor=f5f0e8&color=3730a3&qzone=1&format=png`}
           alt="Rep capture QR"
           className="hidden md:block w-16 h-16 rounded-xl border border-indigo-500/20 shrink-0"
         />
@@ -156,7 +156,7 @@ export function SessionCard({
 
       {/* Action buttons */}
       <div
-        className="mt-3 pt-3 border-t border-white/[0.04] flex items-center gap-2 relative z-10 flex-wrap"
+        className="mt-3 pt-3 dark:border-t dark:border-white/[0.04] border-t border-black/[0.08] flex items-center gap-2 relative z-10 flex-wrap"
         onClick={e => e.stopPropagation()}
       >
         <button
