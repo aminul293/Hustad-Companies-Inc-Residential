@@ -298,7 +298,6 @@ export async function POST(request: NextRequest) {
 
   try {
     const contacts = await getResidentialCompanies();
-    const { ids: residentialIds } = contacts;
 
     // ── Pass 1: Scan all services to collect qualifying rows + billedCompanyIds ──
     let cpPage = 1;
@@ -338,18 +337,17 @@ export async function POST(request: NextRequest) {
         scanned++;
         const a = r.attributes;
         const isHailInspection = a?.customWithLabels?.serviceTypeHustad === HUSTAD_TYPE;
-        const isResidentialId = residentialIds.has(Number(a?.billedCompanyId));
         const isInspectionType = a?.workType === "Inspection";
-        const isResidentialModule =
-          a?.module?.toLowerCase() === "residential" ||
-          a?.category?.toLowerCase() === "residential" ||
-          isResidentialId;
 
         const rawStatus = (a?.status || "").toLowerCase().replace(/\s+/g, "_");
         const isActiveStatus = ["new_service", "new", "opened", "open", "accepted", "scheduled", "en_route", "started", "in_progress"].includes(rawStatus);
-        const isServiceDomain = a?.domain?.toLowerCase() === "service";
+        const isServiceDomain = (a?.domain || "").toLowerCase() === "service";
 
-        if (!isHailInspection || !isResidentialModule || !isInspectionType || !isActiveStatus || !isServiceDomain) continue;
+        // isHailInspection (serviceTypeHustad === STORM INSPECTION-HAIL) is the
+        // residential qualifier — billing company type check removed because billing
+        // companies are sometimes not classified Residential in CenterPoint even for
+        // valid residential jobs, causing false negatives.
+        if (!isHailInspection || !isInspectionType || !isActiveStatus || !isServiceDomain) continue;
         allRawRecords.push(r);
       }
 
