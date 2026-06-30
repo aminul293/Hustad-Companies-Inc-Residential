@@ -22,6 +22,10 @@ interface CompanyContacts {
   names: Map<number, string>;
   phones: Map<number, string>;
   emails: Map<number, string>;
+  // Property-level lookups: propertyId → phone/email for the right homeowner
+  // when multiple profiles share the same billing company (e.g. "Hustad Residential Customer")
+  propertyPhones: Map<number, string>;
+  propertyEmails: Map<number, string>;
 }
 
 // ─── Fetch residential company IDs + names ───────────────────────────────────
@@ -30,6 +34,8 @@ async function getResidentialCompanies(): Promise<CompanyContacts> {
   const names = new Map<number, string>();
   const phones = new Map<number, string>();
   const emails = new Map<number, string>();
+  const propertyPhones = new Map<number, string>();
+  const propertyEmails = new Map<number, string>();
   let page = 1;
   while (true) {
     const params = new URLSearchParams({
@@ -70,7 +76,7 @@ async function getResidentialCompanies(): Promise<CompanyContacts> {
       break;
     }
   }
-  return { ids, names, phones, emails };
+  return { ids, names, phones, emails, propertyPhones, propertyEmails };
 }
 
 // ─── Fetch profiles targeted per company ID (Concurrently with Concurrency Cap) ──
@@ -109,18 +115,19 @@ async function enrichWithContacts(companyIds: Set<number>, contacts: CompanyCont
           const a = r.attributes ?? {};
 
           const phone = a.mobile ?? a.office ?? a.custom?.phone ?? null;
-          if (phone && !contacts.phones.has(companyId)) {
-            contacts.phones.set(companyId, String(phone));
+          const email = (a.email ?? "").trim() || null;
+
+          // Index contact by every property this profile is linked to so toRow()
+          // can look up the right homeowner when many profiles share one billing company.
+          const propIds: number[] = Array.isArray(a.propertyIds) ? a.propertyIds.map(Number) : [];
+          for (const pid of propIds) {
+            if (phone && !contacts.propertyPhones.has(pid)) contacts.propertyPhones.set(pid, String(phone));
+            if (email && !contacts.propertyEmails.has(pid)) contacts.propertyEmails.set(pid, email);
           }
 
-          const email = a.email ?? null;
-          if (email && !contacts.emails.has(companyId)) {
-            contacts.emails.set(companyId, String(email));
-          }
-
-          if (!contacts.names.has(companyId) && a.name) {
-            contacts.names.set(companyId, String(a.name));
-          }
+          if (phone && !contacts.phones.has(companyId)) contacts.phones.set(companyId, String(phone));
+          if (email && !contacts.emails.has(companyId)) contacts.emails.set(companyId, email);
+          if (!contacts.names.has(companyId) && a.name) contacts.names.set(companyId, String(a.name));
 
           if (contacts.phones.has(companyId) && contacts.emails.has(companyId)) break;
         }
@@ -196,10 +203,21 @@ function toRow(r: any, contacts?: CompanyContacts) {
   const raw = (a.status || "").toLowerCase().replace(/\s+/g, "_");
   const normalizedStatus = CP_STATUS_REMAP[raw] ?? "new_service";
 
-  const billedId = a.billedCompanyId ? Number(a.billedCompanyId) : null;
-  const ownerName  = billedId && contacts ? (contacts.names.get(billedId) ?? null) : null;
-  const ownerPhone = billedId && contacts ? (contacts.phones.get(billedId) ?? null) : null;
-  const ownerEmail = billedId && contacts ? (contacts.emails.get(billedId) ?? null) : null;
+  // propertyName from the service record is the homeowner name — billing company
+  // profiles belong to Hustad staff, not the homeowner.
+  const ownerName = a.propertyName ?? null;
+
+  const propertyId = a.propertyId ? Number(a.propertyId) : null;
+  const billedId   = a.billedCompanyId ? Number(a.billedCompanyId) : null;
+
+  // Prefer property-keyed contact (matches the specific homeowner within a shared
+  // billing company like "Hustad Residential Customer"), fall back to company-level.
+  const ownerPhone = (propertyId && contacts?.propertyPhones.get(propertyId))
+    || (billedId && contacts ? (contacts.phones.get(billedId) ?? null) : null)
+    || null;
+  const ownerEmail = (propertyId && contacts?.propertyEmails.get(propertyId))
+    || (billedId && contacts ? (contacts.emails.get(billedId) ?? null) : null)
+    || null;
 
   const rawExtras: Record<string, string> = {};
   if (ownerName)  rawExtras._owner = ownerName;

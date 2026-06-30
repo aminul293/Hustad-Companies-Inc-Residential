@@ -35,8 +35,6 @@ export async function GET(req: NextRequest) {
 
   const a = r.attributes ?? {};
 
-  const billedId = a.billedCompanyId ? Number(a.billedCompanyId) : null;
-
   // Run each sync filter (mirrors logic in /api/centerpoint/sync/route.ts)
   const rawStatus = (a.status || "").toLowerCase().replace(/\s+/g, "_");
   const filters = {
@@ -54,13 +52,7 @@ export async function GET(req: NextRequest) {
     allPass,
     failing,
     filters,
-    rawAttributes: {
-      status: a.status,
-      workType: a.workType,
-      domain: a.domain,
-      billedCompanyId: billedId,
-      customWithLabels: a.customWithLabels,
-      name: a.name,
-    },
+    allAttributeKeys: Object.keys(a),
+    rawAttributes: a,
   });
 }
