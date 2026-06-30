@@ -277,7 +277,7 @@ export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart
       const lead = (e as CustomEvent<any>).detail;
       if (!lead?.id) { showImportError("This pipeline lead has missing data and cannot be imported."); return; }
       const address = lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name;
-      const homeownerName: string = lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.raw?._owner || "";
+      const homeownerName: string = lead.centerpoint_jobs?.raw?._owner || "";
       const homeownerEmail = resolveEmail(lead) || "";
       const homeownerPhone = resolvePhone(lead) || "";
       const appointmentId: string | undefined = lead.appointmentId ?? undefined;
