@@ -128,6 +128,7 @@ export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart
 
   const serverSessionsRef = useRef<any[]>([]);
   const lastBulkRetryAt   = useRef(0);
+  const [cpRefreshKey, setCpRefreshKey] = useState(0);
 
   // Auto-dismiss delete confirm after 3s
   useEffect(() => {
@@ -136,7 +137,14 @@ export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart
     return () => clearTimeout(t);
   }, [confirmDeleteId]);
 
-  // Load server data + scheduled leads whenever view changes
+  // Listen for cpDataRefresh (fired by ResidentialCompanyModal after Sync Now)
+  useEffect(() => {
+    const handler = () => setCpRefreshKey(k => k + 1);
+    window.addEventListener("cpDataRefresh", handler);
+    return () => window.removeEventListener("cpDataRefresh", handler);
+  }, []);
+
+  // Load server data + scheduled leads whenever view changes or cpDataRefresh fires
   useEffect(() => {
     setLiveReps(getLiveReps());
 
@@ -184,7 +192,7 @@ export function useRepCommandCenter({ currentRep, onLoadDraft, onPrefillAndStart
       };
       triggerRetry();
     }
-  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [view, cpRefreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { serverSessionsRef.current = serverSessions; }, [serverSessions]);
 

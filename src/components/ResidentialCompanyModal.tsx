@@ -17,14 +17,16 @@ import {
   Tag,
   User,
   ChevronRight,
-  Mail,
+  RefreshCw,
+  Ticket,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Step = "search" | "form" | "pending";
+type Step = "search" | "form" | "confirm" | "success";
 
 interface CompanyResult {
   id: string;
@@ -77,7 +79,7 @@ const INITIAL_FORM: FormState = {
   manager: "",
 };
 
-// ─── Input component ─────────────────────────────────────────────────────────
+// ─── Field wrapper ────────────────────────────────────────────────────────────
 
 function Field({
   label,
@@ -148,7 +150,7 @@ function SearchStep({
       if (!data.success) throw new Error(data.message);
       setResults(data.companies ?? []);
       setSearched(true);
-    } catch (err: any) {
+    } catch {
       setError("Search failed. Check your connection and try again.");
     } finally {
       setIsSearching(false);
@@ -177,13 +179,26 @@ function SearchStep({
           disabled={isSearching || !query.trim()}
           className="absolute right-2 top-1/2 -translate-y-1/2 px-5 py-2 rounded-xl bg-indigo-500 disabled:opacity-40 hover:bg-indigo-400 transition-all text-[#E8EDF8] text-sm font-medium flex items-center gap-2"
         >
-          {isSearching ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-          ) : (
-            "Search"
-          )}
+          {isSearching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Search"}
         </button>
       </div>
+
+      {/* Direct create button — always visible */}
+      <button
+        onClick={() => onNotFound(query.trim() || undefined)}
+        className="w-full flex items-center justify-between px-5 py-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/15 hover:border-emerald-500/30 active:scale-[0.99] transition-all group"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center shrink-0">
+            <Building2 className="w-4 h-4 text-emerald-400" />
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-display font-medium text-emerald-300">Create New Residential Company</p>
+            <p className="text-[10px] font-mono text-emerald-500/60 uppercase tracking-widest">Skip search — go directly to form</p>
+          </div>
+        </div>
+        <ChevronRight className="w-4 h-4 text-emerald-400/50 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all" />
+      </button>
 
       {/* Error */}
       {error && (
@@ -215,9 +230,7 @@ function SearchStep({
                       className="p-4 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-between group"
                     >
                       <div className="space-y-1 min-w-0">
-                        <p className="text-sm font-display font-medium text-[#E8EDF8] truncate">
-                          {c.name}
-                        </p>
+                        <p className="text-sm font-display font-medium text-[#E8EDF8] truncate">{c.name}</p>
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-[9px] font-mono text-indigo-400 uppercase tracking-widest px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20">
                             {c.salesStatus}
@@ -239,42 +252,36 @@ function SearchStep({
                     </div>
                   ))}
                 </div>
-
-                {/* Option to create anyway */}
                 <div className="pt-2 border-t border-white/[0.06]">
                   <button
                     onClick={() => onNotFound(query)}
                     className="w-full py-3 rounded-2xl border border-dashed border-white/10 text-[#567090] hover:text-[#8BA5C5] hover:border-white/20 transition-all text-xs font-mono uppercase tracking-widest"
                   >
-                    Company not listed? Request a new one
+                    Company not listed? Create a new one
                   </button>
                 </div>
               </>
             ) : (
-              /* No results state */
               <div className="py-4 space-y-5">
                 <div className="p-8 rounded-[28px] border border-dashed border-white/[0.08] flex flex-col items-center justify-center text-center space-y-3">
                   <div className="w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
                     <Building2 className="w-6 h-6 text-[#2D4060]" />
                   </div>
                   <div>
-                    <p className="text-sm font-display text-[#8BA5C5]">
-                      No company found for
-                    </p>
+                    <p className="text-sm font-display text-[#8BA5C5]">No company found for</p>
                     <p className="text-base font-display font-medium text-[#E8EDF8] mt-0.5">
                       &ldquo;{query}&rdquo;
                     </p>
                   </div>
                   <p className="text-[11px] text-[#3F5878] font-mono max-w-xs">
-                    This company does not exist in CenterPoint as a Residential account.
+                    Not in CenterPoint yet. Create it now.
                   </p>
                 </div>
-
                 <button
                   onClick={() => onNotFound(query)}
                   className="w-full py-4 rounded-2xl bg-indigo-500 hover:bg-indigo-400 active:scale-[0.98] transition-all text-[#E8EDF8] font-display font-semibold flex items-center justify-center gap-3 shadow-[0_0_40px_rgba(99,102,241,0.25)]"
                 >
-                  Request New Residential Company
+                  Create New Residential Company
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
@@ -292,7 +299,7 @@ function SearchStep({
           >
             <Search className="w-8 h-8 text-[#1F2E48]" />
             <p className="text-[11px] font-mono text-[#2D4060] uppercase tracking-widest">
-              Search CenterPoint before creating
+              Search CenterPoint first to avoid duplicates
             </p>
           </motion.div>
         )}
@@ -301,35 +308,26 @@ function SearchStep({
   );
 }
 
-// ─── Step 2: Request Form ─────────────────────────────────────────────────────
+// ─── Step 2: Form ─────────────────────────────────────────────────────────────
 
-function RequestForm({
+function CompanyForm({
   prefill,
   onBack,
-  onSuccess,
-  repEmail,
+  onReview,
 }: {
   prefill?: string;
   onBack: () => void;
-  onSuccess: (expiresAt: string) => void;
-  repEmail: string;
+  onReview: (form: FormState) => void;
 }) {
-  const [form, setForm] = useState<FormState>({
-    ...INITIAL_FORM,
-    name: prefill ?? "",
-  });
+  const [form, setForm] = useState<FormState>({ ...INITIAL_FORM, name: prefill ?? "" });
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const [isFetchingManager, setIsFetchingManager] = useState(true);
 
   useEffect(() => {
     fetchCenterpointMe()
       .then((res) => res.json())
       .then((data) => {
-        if (data.employeeId) {
-          setForm((f) => ({ ...f, manager: data.employeeId }));
-        }
+        if (data.employeeId) setForm((f) => ({ ...f, manager: data.employeeId }));
       })
       .catch(() => {})
       .finally(() => setIsFetchingManager(false));
@@ -351,40 +349,10 @@ function RequestForm({
     return e;
   };
 
-  const handleSubmit = async () => {
+  const handleReview = () => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
-
-    setIsSubmitting(true);
-    setSubmitError(null);
-
-    try {
-      const res = await fetch("/api/companies/residential/request", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name.trim(),
-          salesStatus: form.salesStatus,
-          timezone: form.timezone,
-          ...(form.streetAddress.trim() && { streetAddress: form.streetAddress.trim() }),
-          ...(form.locality.trim() && { locality: form.locality.trim() }),
-          ...(form.region.trim() && { region: form.region.trim() }),
-          ...(form.postalCode.trim() && { postalCode: form.postalCode.trim() }),
-          ...(form.manager.trim() && { manager: form.manager.trim() }),
-        }),
-      });
-
-      const data = await res.json();
-      if (!data.success) {
-        setSubmitError(data.message ?? "Failed to submit request");
-        return;
-      }
-      onSuccess(data.expiresAt);
-    } catch {
-      setSubmitError("Network error. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    onReview(form);
   };
 
   return (
@@ -414,9 +382,7 @@ function RequestForm({
               className={cn(selectCls, "pl-10 appearance-none")}
             >
               {SALES_STATUSES.map((s) => (
-                <option key={s} value={s} className="bg-[#111]">
-                  {s}
-                </option>
+                <option key={s} value={s} className="bg-[#111]">{s}</option>
               ))}
             </select>
           </div>
@@ -431,20 +397,16 @@ function RequestForm({
               className={cn(selectCls, "pl-10 appearance-none")}
             >
               {TIMEZONES.map((t) => (
-                <option key={t.value} value={t.value} className="bg-[#111]">
-                  {t.label}
-                </option>
+                <option key={t.value} value={t.value} className="bg-[#111]">{t.label}</option>
               ))}
             </select>
           </div>
         </Field>
       </div>
 
-      {/* Address section */}
+      {/* Address */}
       <div className="space-y-3 pt-2 border-t border-white/[0.06]">
-        <p className="text-[10px] font-mono text-[#2D4060] uppercase tracking-widest">
-          Address — optional
-        </p>
+        <p className="text-[10px] font-mono text-[#2D4060] uppercase tracking-widest">Address — optional</p>
         <Field label="Street Address">
           <div className="relative">
             <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400/50" />
@@ -456,75 +418,39 @@ function RequestForm({
             />
           </div>
         </Field>
-
         <div className="grid grid-cols-3 gap-3">
           <div className="col-span-1">
             <Field label="City">
-              <input
-                value={form.locality}
-                onChange={(e) => set("locality", e.target.value)}
-                placeholder="Madison"
-                className={inputCls()}
-              />
+              <input value={form.locality} onChange={(e) => set("locality", e.target.value)} placeholder="Madison" className={inputCls()} />
             </Field>
           </div>
           <Field label="State">
-            <input
-              value={form.region}
-              onChange={(e) => set("region", e.target.value)}
-              placeholder="WI"
-              maxLength={2}
-              className={inputCls()}
-            />
+            <input value={form.region} onChange={(e) => set("region", e.target.value)} placeholder="WI" maxLength={2} className={inputCls()} />
           </Field>
           <Field label="Zip Code">
-            <input
-              value={form.postalCode}
-              onChange={(e) => set("postalCode", e.target.value)}
-              placeholder="53703"
-              className={inputCls()}
-            />
+            <input value={form.postalCode} onChange={(e) => set("postalCode", e.target.value)} placeholder="53703" className={inputCls()} />
           </Field>
         </div>
       </div>
 
-      {/* Manager ID */}
+      {/* Manager */}
       <div className="pt-2 border-t border-white/[0.06]">
         <Field label="Manager ID (CenterPoint Employee ID)" error={errors.manager}>
           <div className="relative">
-            {isFetchingManager ? (
-              <Loader2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400/50 animate-spin" />
-            ) : (
-              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400/50" />
-            )}
+            {isFetchingManager
+              ? <Loader2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400/50 animate-spin" />
+              : <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400/50" />
+            }
             <input
               value={form.manager}
               onChange={(e) => set("manager", e.target.value)}
-              placeholder={isFetchingManager ? "Looking up..." : "74522"}
+              placeholder={isFetchingManager ? "Looking up…" : "74522"}
               disabled={isFetchingManager}
               className={cn(inputCls(errors.manager), "pl-10", isFetchingManager && "opacity-50")}
             />
           </div>
         </Field>
       </div>
-
-      {/* Note */}
-      <div className="flex items-start gap-3 p-4 rounded-2xl bg-indigo-500/[0.06] border border-indigo-500/[0.12]">
-        <Mail className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
-        <p className="text-[11px] text-indigo-300/70 leading-relaxed">
-          The service manager will receive an approval email. Once approved, the company
-          and inspection ticket will be created in CenterPoint. You will be notified at{" "}
-          <span className="text-indigo-300 font-medium">{repEmail}</span>.
-        </p>
-      </div>
-
-      {/* Submit error */}
-      {submitError && (
-        <div className="flex items-center gap-3 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20">
-          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-          <p className="text-sm text-rose-300">{submitError}</p>
-        </div>
-      )}
 
       {/* Actions */}
       <div className="flex gap-3 pt-2">
@@ -536,19 +462,143 @@ function RequestForm({
           Back
         </button>
         <button
-          onClick={handleSubmit}
-          disabled={isSubmitting}
-          className="flex-1 flex items-center justify-center gap-3 py-3.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 disabled:opacity-50 active:scale-[0.98] transition-all text-[#E8EDF8] font-display font-semibold shadow-[0_0_30px_rgba(99,102,241,0.25)]"
+          onClick={handleReview}
+          className="flex-1 flex items-center justify-center gap-3 py-3.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 active:scale-[0.98] transition-all text-[#E8EDF8] font-display font-semibold shadow-[0_0_30px_rgba(99,102,241,0.25)]"
         >
-          {isSubmitting ? (
+          Review & Create
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Step 3: Confirm ──────────────────────────────────────────────────────────
+
+function ConfirmStep({
+  form,
+  onBack,
+  onSuccess,
+}: {
+  form: FormState;
+  onBack: () => void;
+  onSuccess: (companyId: string, ticketId: string) => void;
+}) {
+  const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const tz = TIMEZONES.find((t) => t.value === form.timezone)?.label ?? form.timezone;
+  const address = [form.streetAddress, form.locality, form.region, form.postalCode]
+    .filter(Boolean).join(", ");
+
+  const handleCreate = async () => {
+    setIsCreating(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/companies/residential/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          salesStatus: form.salesStatus,
+          timezone: form.timezone,
+          ...(form.streetAddress.trim() && { streetAddress: form.streetAddress.trim() }),
+          ...(form.locality.trim() && { locality: form.locality.trim() }),
+          ...(form.region.trim() && { region: form.region.trim() }),
+          ...(form.postalCode.trim() && { postalCode: form.postalCode.trim() }),
+          ...(form.manager.trim() && { manager: form.manager.trim() }),
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setError(data.message ?? "Failed to create company");
+        return;
+      }
+      onSuccess(data.companyId, data.ticketId);
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  return (
+    <div className="space-y-5">
+      <p className="text-[11px] font-mono text-[#3F5878] uppercase tracking-widest">
+        This will be created directly in CenterPoint
+      </p>
+
+      {/* Summary card */}
+      <div className="rounded-2xl bg-white/[0.03] border border-white/[0.08] overflow-hidden">
+        {/* Company name hero */}
+        <div className="p-5 border-b border-white/[0.06] bg-indigo-500/[0.06]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-center shrink-0">
+              <Building2 className="w-5 h-5 text-indigo-400" />
+            </div>
+            <div>
+              <p className="text-[9px] font-mono text-indigo-400/60 uppercase tracking-widest">Company Name</p>
+              <p className="text-base font-display font-medium text-[#E8EDF8]">{form.name}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Detail rows */}
+        <div className="divide-y divide-white/[0.05]">
+          {[
+            { label: "Sales Status", value: form.salesStatus },
+            { label: "Timezone", value: tz },
+            ...(address ? [{ label: "Address", value: address }] : []),
+            ...(form.manager ? [{ label: "Manager ID", value: form.manager }] : []),
+          ].map((row) => (
+            <div key={row.label} className="flex items-center justify-between px-5 py-3">
+              <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest">{row.label}</span>
+              <span className="text-sm text-[#A0BAD8] font-body text-right max-w-[60%] truncate">{row.value}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Ticket info */}
+        <div className="px-5 py-3.5 bg-emerald-500/[0.04] border-t border-emerald-500/[0.1] flex items-center gap-3">
+          <Ticket className="w-4 h-4 text-emerald-400/70 shrink-0" />
+          <p className="text-[11px] text-emerald-300/60 font-mono">
+            Inspection ticket will be created automatically
+          </p>
+        </div>
+      </div>
+
+      {/* Error */}
+      {error && (
+        <div className="flex items-center gap-3 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20">
+          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+          <p className="text-sm text-rose-300">{error}</p>
+        </div>
+      )}
+
+      {/* Actions */}
+      <div className="flex gap-3 pt-1">
+        <button
+          onClick={onBack}
+          disabled={isCreating}
+          className="flex items-center gap-2 px-5 py-3.5 rounded-xl bg-white/[0.05] border border-white/[0.1] text-[#7090B0] hover:text-[#E8EDF8] hover:bg-white/[0.08] disabled:opacity-40 transition-all text-sm"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </button>
+        <button
+          onClick={handleCreate}
+          disabled={isCreating}
+          className="flex-1 flex items-center justify-center gap-3 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 active:scale-[0.98] transition-all text-white font-display font-semibold shadow-[0_0_30px_rgba(16,185,129,0.25)]"
+        >
+          {isCreating ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Submitting…
+              Creating in CenterPoint…
             </>
           ) : (
             <>
-              Submit for Approval
-              <ArrowRight className="w-4 h-4" />
+              <CheckCircle2 className="w-4 h-4" />
+              Confirm & Create
             </>
           )}
         </button>
@@ -557,17 +607,40 @@ function RequestForm({
   );
 }
 
-// ─── Step 3: Pending approval ─────────────────────────────────────────────────
+// ─── Step 4: Success ──────────────────────────────────────────────────────────
 
-function PendingStep({
-  expiresAt,
+function SuccessStep({
+  companyId,
+  ticketId,
   onClose,
 }: {
-  expiresAt: string;
+  companyId: string;
+  ticketId: string;
   onClose: () => void;
 }) {
+  const [syncing, setSyncing] = useState(false);
+  const [synced, setSynced] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    setSyncError(null);
+    try {
+      const res = await fetch("/api/centerpoint/sync", { method: "POST" });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error ?? "Sync failed");
+      setSynced(true);
+      window.dispatchEvent(new CustomEvent("cpDataRefresh"));
+    } catch (err: any) {
+      setSyncError(err.message ?? "Sync failed — try again from the dashboard");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   return (
-    <div className="py-6 flex flex-col items-center text-center space-y-6">
+    <div className="py-4 flex flex-col items-center text-center space-y-6">
+      {/* Success icon */}
       <motion.div
         initial={{ scale: 0.5, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -577,36 +650,70 @@ function PendingStep({
         <CheckCircle2 className="w-9 h-9 text-emerald-400" />
       </motion.div>
 
-      <div className="space-y-2">
-        <h3 className="text-xl font-display font-medium text-[#E8EDF8]">
-          Request Submitted
-        </h3>
+      <div className="space-y-1">
+        <h3 className="text-xl font-display font-medium text-[#E8EDF8]">Created in CenterPoint</h3>
         <p className="text-sm text-[#7090B0] max-w-xs leading-relaxed">
-          The service manager has been notified and will approve or reject this request.
-          You will receive an email with the outcome.
+          Company and inspection ticket are live. Sync now to see them in your dashboard.
         </p>
       </div>
 
-      <div className="w-full p-5 rounded-2xl bg-white/[0.03] border border-white/[0.07] space-y-3">
-        <div className="flex items-center justify-between text-xs">
-          <span className="font-mono text-[#3F5878] uppercase tracking-widest">Status</span>
-          <span className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 font-mono text-[10px] uppercase tracking-widest">
-            Pending Approval
-          </span>
+      {/* IDs */}
+      <div className="w-full rounded-2xl bg-white/[0.03] border border-white/[0.07] divide-y divide-white/[0.05]">
+        <div className="flex items-center justify-between px-5 py-3.5">
+          <div className="flex items-center gap-2">
+            <Building2 className="w-3.5 h-3.5 text-indigo-400/60" />
+            <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest">Company ID</span>
+          </div>
+          <span className="text-sm font-mono text-indigo-300">{companyId}</span>
         </div>
-        <div className="flex items-center justify-between text-xs">
-          <span className="font-mono text-[#3F5878] uppercase tracking-widest">Link Expires</span>
-          <span className="text-[#7090B0] font-mono text-[11px]">
-            {new Date(expiresAt).toLocaleString()} (48h)
-          </span>
+        <div className="flex items-center justify-between px-5 py-3.5">
+          <div className="flex items-center gap-2">
+            <Ticket className="w-3.5 h-3.5 text-emerald-400/60" />
+            <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest">Ticket ID</span>
+          </div>
+          <span className="text-sm font-mono text-emerald-300">{ticketId}</span>
         </div>
       </div>
 
+      {/* Sync error */}
+      {syncError && (
+        <div className="w-full flex items-center gap-3 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20">
+          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+          <p className="text-sm text-rose-300 text-left">{syncError}</p>
+        </div>
+      )}
+
+      {/* Sync Now button */}
+      {!synced ? (
+        <button
+          onClick={handleSync}
+          disabled={syncing}
+          className="w-full flex items-center justify-center gap-3 py-4 rounded-xl bg-indigo-500 hover:bg-indigo-400 disabled:opacity-60 active:scale-[0.98] transition-all text-[#E8EDF8] font-display font-semibold shadow-[0_0_30px_rgba(99,102,241,0.2)]"
+        >
+          {syncing ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Syncing from CenterPoint…
+            </>
+          ) : (
+            <>
+              <Zap className="w-4 h-4" />
+              Sync Now
+            </>
+          )}
+        </button>
+      ) : (
+        <div className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-display font-medium">
+          <RefreshCw className="w-4 h-4" />
+          Synced — ticket is now in your dashboard
+        </div>
+      )}
+
       <button
         onClick={onClose}
-        className="w-full py-4 rounded-xl bg-white text-black font-display font-semibold hover:bg-neutral-200 active:scale-[0.98] transition-all"
+        className="w-full py-3.5 rounded-xl bg-white/[0.05] border border-white/[0.1] text-[#7090B0] hover:text-[#E8EDF8] hover:bg-white/[0.08] transition-all text-sm font-medium"
       >
-        Done — Back to Inspection
+        Done
       </button>
     </div>
   );
@@ -615,31 +722,38 @@ function PendingStep({
 // ─── Main Modal ───────────────────────────────────────────────────────────────
 
 const STEP_TITLES: Record<Step, string> = {
-  search: "Find Residential Company",
-  form: "Request New Company",
-  pending: "Request Submitted",
+  search:  "Find Residential Company",
+  form:    "New Residential Company",
+  confirm: "Confirm Details",
+  success: "Company Created",
 };
 
 const STEP_SUBTITLES: Record<Step, string> = {
-  search: "Search CenterPoint before creating a new one",
-  form: "Requires service manager approval",
-  pending: "",
+  search:  "Search CenterPoint before creating a new one",
+  form:    "Fill in the details below",
+  confirm: "Review before creating in CenterPoint",
+  success: "",
 };
+
+const ALL_STEPS: Step[] = ["search", "form", "confirm", "success"];
 
 export function ResidentialCompanyModal({ isOpen, onClose }: Props) {
   const { data: authSession } = useSession();
-  const repEmail = authSession?.user?.email ?? "your email";
+  void authSession; // repEmail removed — no longer shown in form
 
   const [step, setStep] = useState<Step>("search");
   const [namePrefill, setNamePrefill] = useState<string | undefined>(undefined);
-  const [expiresAt, setExpiresAt] = useState("");
+  const [pendingForm, setPendingForm] = useState<FormState | null>(null);
+  const [companyId, setCompanyId] = useState("");
+  const [ticketId, setTicketId] = useState("");
 
-  // Reset to search when modal opens
   useEffect(() => {
     if (isOpen) {
       setStep("search");
       setNamePrefill(undefined);
-      setExpiresAt("");
+      setPendingForm(null);
+      setCompanyId("");
+      setTicketId("");
     }
   }, [isOpen]);
 
@@ -648,9 +762,15 @@ export function ResidentialCompanyModal({ isOpen, onClose }: Props) {
     setStep("form");
   };
 
-  const handleSuccess = (exp: string) => {
-    setExpiresAt(exp);
-    setStep("pending");
+  const handleReview = (form: FormState) => {
+    setPendingForm(form);
+    setStep("confirm");
+  };
+
+  const handleCreated = (cId: string, tId: string) => {
+    setCompanyId(cId);
+    setTicketId(tId);
+    setStep("success");
   };
 
   return (
@@ -662,7 +782,7 @@ export function ResidentialCompanyModal({ isOpen, onClose }: Props) {
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-xl flex items-center justify-center p-6"
           onClick={(e) => {
-            if (e.target === e.currentTarget && step !== "pending") onClose();
+            if (e.target === e.currentTarget && step !== "success") onClose();
           }}
         >
           <motion.div
@@ -676,18 +796,18 @@ export function ResidentialCompanyModal({ isOpen, onClose }: Props) {
             <div className="px-8 pt-8 pb-6 border-b border-white/[0.06]">
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
-                  {/* Step indicator */}
+                  {/* Step dots */}
                   <div className="flex items-center gap-1.5 mb-3">
-                    {(["search", "form", "pending"] as Step[]).map((s, i) => (
+                    {ALL_STEPS.map((s, i) => (
                       <div
                         key={s}
                         className={cn(
                           "h-1 rounded-full transition-all duration-300",
                           step === s
                             ? "w-6 bg-indigo-400"
-                            : (["search", "form", "pending"].indexOf(step) > i
+                            : ALL_STEPS.indexOf(step) > i
                               ? "w-2 bg-indigo-500/40"
-                              : "w-2 bg-white/10")
+                              : "w-2 bg-white/10"
                         )}
                       />
                     ))}
@@ -701,7 +821,7 @@ export function ResidentialCompanyModal({ isOpen, onClose }: Props) {
                     </p>
                   )}
                 </div>
-                {step !== "pending" && (
+                {step !== "success" && (
                   <button
                     onClick={onClose}
                     className="p-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-[#567090] hover:text-[#E8EDF8] hover:bg-white/10 transition-all"
@@ -716,47 +836,34 @@ export function ResidentialCompanyModal({ isOpen, onClose }: Props) {
             <div className="px-8 py-6">
               <AnimatePresence mode="wait">
                 {step === "search" && (
-                  <motion.div
-                    key="search"
-                    initial={{ opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -12 }}
-                    transition={{ duration: 0.18 }}
-                  >
-                    <SearchStep
-                      onFound={onClose}
-                      onNotFound={handleNotFound}
-                    />
+                  <motion.div key="search" initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} transition={{ duration: 0.18 }}>
+                    <SearchStep onFound={onClose} onNotFound={handleNotFound} />
                   </motion.div>
                 )}
 
                 {step === "form" && (
-                  <motion.div
-                    key="form"
-                    initial={{ opacity: 0, x: 12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 12 }}
-                    transition={{ duration: 0.18 }}
-                    className="max-h-[60vh] overflow-y-auto pr-1 space-y-1"
-                  >
-                    <RequestForm
+                  <motion.div key="form" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }} transition={{ duration: 0.18 }} className="max-h-[60vh] overflow-y-auto pr-1 space-y-1">
+                    <CompanyForm
                       prefill={namePrefill}
                       onBack={() => setStep("search")}
-                      onSuccess={handleSuccess}
-                      repEmail={repEmail}
+                      onReview={handleReview}
                     />
                   </motion.div>
                 )}
 
-                {step === "pending" && (
-                  <motion.div
-                    key="pending"
-                    initial={{ opacity: 0, scale: 0.96 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <PendingStep expiresAt={expiresAt} onClose={onClose} />
+                {step === "confirm" && pendingForm && (
+                  <motion.div key="confirm" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }} transition={{ duration: 0.18 }}>
+                    <ConfirmStep
+                      form={pendingForm}
+                      onBack={() => setStep("form")}
+                      onSuccess={handleCreated}
+                    />
+                  </motion.div>
+                )}
+
+                {step === "success" && (
+                  <motion.div key="success" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                    <SuccessStep companyId={companyId} ticketId={ticketId} onClose={onClose} />
                   </motion.div>
                 )}
               </AnimatePresence>

@@ -1,6 +1,7 @@
 import { getServiceClient } from "@/lib/supabase-server";
 import { getApprovalRequest } from "./getApprovalRequest";
 import { createResidentialCompany } from "@/lib/centerpoint/createResidentialCompany";
+import { createResidentialProperty } from "@/lib/centerpoint/createResidentialProperty";
 import { createResidentialTicket } from "@/lib/centerpoint/createResidentialTicket";
 import { sendRepDecisionEmail } from "@/lib/email/sendRepDecisionEmail";
 import type { ResidentialRequestInput } from "@/lib/validation/residentialRequestSchema";
@@ -99,9 +100,20 @@ export async function approveRequest(
 
   if (!ticketCreated && companyId) {
     try {
+      const property = await createResidentialProperty({
+        name: req.company_name,
+        companyId,
+        streetAddress: req.street_address ?? undefined,
+        locality: req.locality ?? undefined,
+        region: req.region ?? undefined,
+        postalCode: req.postal_code ?? undefined,
+        timezone: req.timezone ?? "America/Chicago",
+      });
+
       const ticket = await createResidentialTicket({
         companyName: req.company_name,
         companyId: companyId,
+        propertyId: property.id,
         managerId: req.manager_id ?? undefined,
       });
 

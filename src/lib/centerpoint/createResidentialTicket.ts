@@ -3,6 +3,7 @@ import { CP_BASE, cpJsonHeaders } from "./client";
 export interface TicketInput {
   companyName: string;
   companyId: string;
+  propertyId: string;
   managerId?: string;
 }
 
@@ -22,12 +23,15 @@ export async function createResidentialTicket(input: TicketInput): Promise<CpTic
         domain: "Service",
         workType: "Inspection",
         custom: {
-          serviceTypeHustad: "STORM INSPECTION-HAIL",
+          description: "STORM INSPECTION-HAIL",
         },
       },
       relationships: {
         billedCompany: {
           data: { type: "companies", id: input.companyId },
+        },
+        property: {
+          data: { type: "properties", id: input.propertyId },
         },
         ...(input.managerId
           ? {
