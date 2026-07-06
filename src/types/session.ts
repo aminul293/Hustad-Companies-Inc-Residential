@@ -143,6 +143,18 @@ export interface Annotation {
   text?: string;
 }
 
+export interface PhotoEvaluation {
+  photoIndex: number;
+  category?: string;
+  hasStormDamage: boolean;
+  hasUrgentDamage: boolean;
+  hasMonitorWear: boolean;
+  damageType: string;
+  confidence: number;
+  reason: string;
+  caption: string;
+}
+
 export interface PhotoAsset {
   assetId: string;
   dataUrl: string; // base64 data URL from camera/file input
@@ -158,6 +170,7 @@ export interface PhotoAsset {
   wasInPdf?: boolean;
   comparisonAssetId?: string;
   createdAt: string;
+  evaluation?: PhotoEvaluation;
 }
 
 export type InspectionPhotoSyncStatus = "local" | "syncing" | "synced" | "error";
@@ -181,6 +194,7 @@ export interface InspectionPhoto {
   retryCount?: number;
   lastSyncAttemptAt?: string;
   lastSyncedAt?: string;
+  evaluation?: PhotoEvaluation;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

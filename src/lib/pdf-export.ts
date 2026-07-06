@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import type { SessionState } from "@/types/session";
+import type { SessionState, PhotoEvaluation } from "@/types/session";
 import { format } from "date-fns";
 import { getPhotoBlob, blobToBase64 } from "@/lib/photoStorage";
 import { AGREEMENT_SECTIONS, WISCONSIN_CLAIM_NOTICE } from "@/components/screens/b16_b19/constants";
@@ -15,6 +15,7 @@ export interface PhotoData {
   label?: string;
   category?: string;
   description?: string;
+  evaluation?: PhotoEvaluation;
 }
 
 interface PdfPhoto {
@@ -22,6 +23,7 @@ interface PdfPhoto {
   label?: string;
   category?: string;
   description?: string;
+  evaluation?: PhotoEvaluation;
 }
 
 type PathType = "carrier_review" | "urgent_repair" | "full_restoration" | "no_action";
@@ -144,7 +146,7 @@ async function collectPhotos(s: SessionState): Promise<PdfPhoto[]> {
   const result: PdfPhoto[] = [];
   const assets = (s as any).photoAssets ?? [];
   for (const p of assets.filter((a: any) => a.selectedForSummary && !a.isSensitive)) {
-    result.push({ dataUrl: p.dataUrl, label: p.caption, category: p.category, description: undefined });
+    result.push({ dataUrl: p.dataUrl, label: p.caption, category: p.category, description: undefined, evaluation: p.evaluation });
   }
   for (const p of (s.photos ?? []).filter((ph: any) => ph.selectedForSummary)) {
     let dataUrl = p.remoteUrl ?? p.localUri;
@@ -152,7 +154,7 @@ async function collectPhotos(s: SessionState): Promise<PdfPhoto[]> {
       const blob = await getPhotoBlob(p.storageKey);
       if (blob) dataUrl = await blobToBase64(blob);
     }
-    if (dataUrl) result.push({ dataUrl, label: p.label, category: p.category, description: p.description });
+    if (dataUrl) result.push({ dataUrl, label: p.label, category: p.category, description: p.description, evaluation: p.evaluation });
   }
   return result;
 }
@@ -582,6 +584,35 @@ function renderFindings(d: jsPDF, pt: PathType, s: SessionState) {
       "Exterior inspection completed.",
       "Photo documentation collected for property records."
     ];
+  }
+
+  // Audited Photo Evaluations Prepend
+  const auditedDamage: string[] = [];
+  if (s.photoAssets && s.photoAssets.length > 0) {
+    s.photoAssets.forEach((p, idx) => {
+      if (p.evaluation && p.evaluation.hasStormDamage && p.evaluation.confidence >= 70 && p.evaluation.damageType !== "none") {
+        const lbl = p.caption || p.category || `Photo ${idx + 1}`;
+        const dtype = p.evaluation.damageType.replace(/_/g, " ");
+        auditedDamage.push(
+          `[Photo Asset ${idx + 1}: ${lbl}] Observed ${dtype} (${p.evaluation.confidence}% confidence): ${p.evaluation.reason}`
+        );
+      }
+    });
+  }
+  if (s.photos && s.photos.length > 0) {
+    s.photos.forEach((p, idx) => {
+      if (p.evaluation && p.evaluation.hasStormDamage && p.evaluation.confidence >= 70 && p.evaluation.damageType !== "none") {
+        const lbl = p.label || p.category || `Photo ${idx + 1}`;
+        const dtype = p.evaluation.damageType.replace(/_/g, " ");
+        auditedDamage.push(
+          `[Photo ${idx + 1}: ${lbl}] Observed ${dtype} (${p.evaluation.confidence}% confidence): ${p.evaluation.reason}`
+        );
+      }
+    });
+  }
+
+  if (auditedDamage.length > 0) {
+    items = [...auditedDamage, ...items];
   }
 
   checkPage(d, 40);

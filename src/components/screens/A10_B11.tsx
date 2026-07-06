@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { fetchWeatherNws } from "@/lib/api";
-import type { SessionState, OutcomeType } from "@/types/session";
+import type { SessionState, OutcomeType, PhotoEvaluation } from "@/types/session";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { StarButton } from "@/components/ui/star-button";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
@@ -614,6 +614,7 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
     classification: string; confidence: number; headline: string;
     reasoning: string; signals: string[]; photoCaptions?: string[];
     urgentCount?: number; stormCount?: number; monitorCount?: number;
+    photoEvaluations?: PhotoEvaluation[];
   } | null>(null);
   const [autoClassifyError, setAutoClassifyError] = useState<string | null>(null);
   const [repConfirmed, setRepConfirmed] = useState(false);
@@ -673,9 +674,21 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
     if (!autoClassifyResult) return;
     const cls = autoClassifyResult.classification as OutcomeType;
     setOutcome(cls);
-    setUrgentCount(autoClassifyResult.urgentCount ?? 0);
-    setStormCount(autoClassifyResult.stormCount ?? 0);
-    setMonitorCount(autoClassifyResult.monitorCount ?? 0);
+
+    let calculatedUrgent = autoClassifyResult.urgentCount ?? 0;
+    let calculatedStorm = autoClassifyResult.stormCount ?? 0;
+    let calculatedMonitor = autoClassifyResult.monitorCount ?? 0;
+
+    if (autoClassifyResult.photoEvaluations && Array.isArray(autoClassifyResult.photoEvaluations)) {
+      const evs = autoClassifyResult.photoEvaluations;
+      calculatedStorm = evs.filter(e => e.hasStormDamage === true && e.confidence >= 70 && e.damageType !== "none").length;
+      calculatedUrgent = evs.filter(e => e.hasUrgentDamage === true && e.confidence >= 70 && e.damageType !== "none").length;
+      calculatedMonitor = evs.filter(e => e.hasMonitorWear === true && e.confidence >= 70 && e.damageType !== "none").length;
+    }
+
+    setUrgentCount(calculatedUrgent);
+    setStormCount(calculatedStorm);
+    setMonitorCount(calculatedMonitor);
     setHeadline(autoClassifyResult.headline);
     setBody(autoClassifyResult.reasoning);
     
@@ -688,29 +701,60 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
     }
     if (matched.size > 0) setFindingCategories(Array.from(matched));
     
-    // Process individual photo captions from the AI
-    if (autoClassifyResult.photoCaptions && Array.isArray(autoClassifyResult.photoCaptions)) {
+    let updatedPhotoAssets = session.photoAssets ? [...session.photoAssets] : [];
+    let updatedPhotos = session.photos ? [...session.photos] : [];
+
+    if (autoClassifyResult.photoEvaluations && Array.isArray(autoClassifyResult.photoEvaluations)) {
+      const evaluations = autoClassifyResult.photoEvaluations;
+      const photoAssetsCount = updatedPhotoAssets.length;
+      
+      updatedPhotoAssets = updatedPhotoAssets.map((p, idx) => {
+        const ev = evaluations.find(e => e.photoIndex === idx);
+        if (ev) {
+          return { ...p, caption: ev.caption || p.caption, evaluation: ev };
+        }
+        return p;
+      });
+
+      updatedPhotos = updatedPhotos.map((p, idx) => {
+        const globalIndex = photoAssetsCount + idx;
+        const ev = evaluations.find(e => e.photoIndex === globalIndex);
+        if (ev) {
+          return { ...p, description: ev.caption || p.description, evaluation: ev };
+        }
+        return p;
+      });
+    } else if (autoClassifyResult.photoCaptions && Array.isArray(autoClassifyResult.photoCaptions)) {
       const captions = autoClassifyResult.photoCaptions;
       let captionIndex = 0;
-
-      let updatedPhotoAssets = session.photoAssets ? [...session.photoAssets] : [];
       updatedPhotoAssets = updatedPhotoAssets.map(p => {
         if (p.dataUrl && captionIndex < captions.length) {
           return { ...p, caption: captions[captionIndex++] };
         }
         return p;
       });
-
-      let updatedPhotos = session.photos ? [...session.photos] : [];
       updatedPhotos = updatedPhotos.map(p => {
         if ((p.localUri || p.remoteUrl) && captionIndex < captions.length) {
           return { ...p, description: captions[captionIndex++] };
         }
         return p;
       });
-
-      onUpdate({ ...session, photoAssets: updatedPhotoAssets, photos: updatedPhotos });
     }
+
+    onUpdate({
+      ...session,
+      photoAssets: updatedPhotoAssets,
+      photos: updatedPhotos,
+      findings: {
+        ...session.findings,
+        outcomeType: cls,
+        urgentItemsCount: calculatedUrgent,
+        stormRelatedItemsCount: calculatedStorm,
+        monitorItemsCount: calculatedMonitor,
+        summaryHeadline: autoClassifyResult.headline,
+        summaryBody: autoClassifyResult.reasoning,
+      }
+    });
 
     setErrors({});
     setAutoClassifyResult(null);
