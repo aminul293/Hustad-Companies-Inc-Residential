@@ -80,7 +80,6 @@ export async function POST(req: NextRequest) {
   let ticketId: string;
   try {
     const ticket = await createResidentialTicket({
-      companyName: input.name,
       companyId,
       propertyId,
       managerId: input.manager || undefined,

@@ -1,7 +1,6 @@
 import { CP_BASE, cpJsonHeaders } from "./client";
 
 export interface TicketInput {
-  companyName: string;
   companyId: string;
   propertyId: string;
   managerId?: string;
@@ -18,7 +17,6 @@ export async function createResidentialTicket(input: TicketInput): Promise<CpTic
     data: {
       type: "services",
       attributes: {
-        name: `Residential Inspection - ${input.companyName}`,
         workflowType: "service",
         domain: "Service",
         workType: "Inspection",
@@ -64,7 +62,7 @@ export async function createResidentialTicket(input: TicketInput): Promise<CpTic
   const attr = json.data?.attributes ?? {};
   return {
     id: String(json.data?.id ?? ""),
-    name: attr.name ?? `Residential Inspection - ${input.companyName}`,
+    name: String(attr.name ?? json.data?.id ?? ""),
     status: attr.status ?? attr.displayStatus ?? "created",
   };
 }
