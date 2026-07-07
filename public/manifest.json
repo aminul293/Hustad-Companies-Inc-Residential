@@ -6,6 +6,30 @@
   "orientation": "portrait",
   "background_color": "#0a1929",
   "theme_color": "#2563ba",
+  "description": "Tablet-first storm inspection to sale platform for Hustad Companies field reps",
+  "screenshots": [
+    {
+      "src": "/screenshots/WALK-step1.png",
+      "sizes": "820x620",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "App walkthrough — launch inspection from the field"
+    },
+    {
+      "src": "/screenshots/P00_rep_launch.png",
+      "sizes": "1640x2360",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Rep launch screen — field identity and property address"
+    },
+    {
+      "src": "/screenshots/A01_welcome.png",
+      "sizes": "1640x2360",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Homeowner welcome screen during on-site inspection"
+    }
+  ],
   "icons": [
     {
       "src": "/icons/icon-192.png",
