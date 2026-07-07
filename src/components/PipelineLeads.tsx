@@ -60,7 +60,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
           </button>
           <div>
             <h2 className="text-4xl font-inter font-medium tracking-tight">Sales Pipeline</h2>
-            <p className="text-[#567090] text-sm mt-1 font-light tracking-wide">Lead lifecycle and field conversion intelligence</p>
+            <p className="text-[var(--tx2)] opacity-60 text-sm mt-1 font-light tracking-wide">Lead lifecycle and field conversion intelligence</p>
           </div>
         </div>
 
@@ -71,12 +71,12 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
             { label: "Avg Touches",  value: p.stats.avgAttempts, sub: "contact attempts",                icon: Phone, color: "text-sky-400" },
           ].map((s, i) => (
             <div key={i} className="px-5 py-4 rounded-2xl dark:bg-white/[0.03] bg-black/[0.04] dark:border-white/[0.08] border-black/[0.08] min-w-[148px]">
-              <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-[0.2em] mb-1">{s.label}</p>
+              <p className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-[0.2em] mb-1">{s.label}</p>
               <div className="flex items-baseline gap-2">
                 <s.icon className={cn("w-3.5 h-3.5 shrink-0", s.color)} />
                 <p className="text-xl font-inter font-light">{s.value}</p>
               </div>
-              <p className="text-[10px] text-[#2D4060] mt-1 font-light truncate">{s.sub}</p>
+              <p className="text-[10px] text-[var(--tx2)] opacity-60 mt-1 font-light truncate">{s.sub}</p>
             </div>
           ))}
         </div>
@@ -92,10 +92,10 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
       ) : p.leads.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <div className="w-16 h-16 rounded-3xl dark:bg-white/5 bg-black/5 dark:border-white/10 border-black/10 flex items-center justify-center mb-6">
-            <Activity className="w-7 h-7 text-[#2D4060]" />
+            <Activity className="w-7 h-7 text-[var(--tx2)] opacity-40" />
           </div>
-          <p className="text-[#567090] font-light text-lg">No leads in pipeline</p>
-          <p className="text-[#2D4060] text-sm mt-2">Import tickets from CP Inbox to get started</p>
+          <p className="text-[var(--tx2)] opacity-60 font-light text-lg">No leads in pipeline</p>
+          <p className="text-[var(--tx2)] opacity-40 text-sm mt-2">Import tickets from CP Inbox to get started</p>
         </div>
       ) : (
         <div className="flex gap-5 overflow-x-auto pb-6 -mx-8 px-8 h-full min-h-[60vh]">
@@ -105,7 +105,7 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
               <div key={col.id} className="flex-shrink-0 w-[340px] flex flex-col dark:bg-white/[0.02] bg-black/[0.04] dark:border-white/[0.05] border-black/[0.08] rounded-2xl overflow-hidden h-[calc(100vh-240px)] min-h-[500px]">
                 <div className="p-4 dark:border-b dark:border-white/[0.05] border-b border-black/[0.08] dark:bg-black/20 bg-black/[0.04] flex items-center justify-between shrink-0">
                   <h3 className="text-sm font-medium text-[var(--tx1)] tracking-wide">{col.label}</h3>
-                  <span className="text-[10px] font-mono text-[#7090B0] dark:bg-white/[0.05] bg-black/[0.05] px-2 py-0.5 rounded-full">{colLeads.length}</span>
+                  <span className="text-[10px] font-mono text-[var(--tx2)] opacity-60 bg-[var(--bg-subtle)] px-2 py-0.5 rounded-full">{colLeads.length}</span>
                 </div>
                 <div className="flex-1 overflow-y-auto p-3 space-y-3">
                   <AnimatePresence>

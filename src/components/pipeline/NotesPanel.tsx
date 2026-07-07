@@ -31,17 +31,17 @@ export function NotesPanel({ open, leadName, existingNotes, newNoteText, onNoteC
             className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={onClose} />
           <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 32, stiffness: 340 }}
-            className="fixed right-0 top-0 bottom-0 w-[440px] max-w-full bg-[#0d0d0d] border-l border-white/10 z-50 flex flex-col shadow-2xl"
+            className="fixed right-0 top-0 bottom-0 w-[440px] max-w-full bg-[var(--bg-elevated)] border-l border-[var(--border-color)] z-50 flex flex-col shadow-2xl"
           >
-            <div className="flex items-center justify-between px-8 py-6 border-b border-white/[0.06]">
+            <div className="flex items-center justify-between px-8 py-6 border-b border-[var(--border-color)]">
               <div>
                 <div className="flex items-center gap-2.5 mb-0.5">
                   <MessageSquare className="w-4 h-4 text-[#2563ba]" />
                   <h3 className="text-lg font-inter font-medium">Activity Log</h3>
                 </div>
-                <p className="text-xs text-[#3F5878] font-light">{leadName}</p>
+                <p className="text-xs text-[var(--tx2)] opacity-60 font-light">{leadName}</p>
               </div>
-              <button onClick={onClose} className="p-2.5 rounded-2xl text-[#3F5878] hover:text-[#E8EDF8] hover:bg-white/5 transition-all">
+              <button onClick={onClose} className="p-2.5 rounded-2xl text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] hover:bg-[var(--bg-subtle)] transition-all">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -49,11 +49,11 @@ export function NotesPanel({ open, leadName, existingNotes, newNoteText, onNoteC
             <div className="flex-1 overflow-y-auto px-8 py-6 space-y-3">
               {entries.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center mb-4">
-                    <MessageSquare className="w-5 h-5 text-[#293A58]" />
+                  <div className="w-12 h-12 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] flex items-center justify-center mb-4">
+                    <MessageSquare className="w-5 h-5 text-[var(--tx2)] opacity-40" />
                   </div>
-                  <p className="text-[#354D6F] text-sm font-light">No activity yet</p>
-                  <p className="text-[#293A58] text-xs mt-1">Add a note below to get started</p>
+                  <p className="text-[var(--tx2)] opacity-60 text-sm font-light">No activity yet</p>
+                  <p className="text-[var(--tx2)] opacity-40 text-xs mt-1">Add a note below to get started</p>
                 </div>
               ) : (
                 [...entries].reverse().map((entry, i) => {
@@ -65,11 +65,11 @@ export function NotesPanel({ open, leadName, existingNotes, newNoteText, onNoteC
                       <div className={cn("w-7 h-7 rounded-xl flex items-center justify-center shrink-0 mt-0.5", color)}>
                         <EntryIcon className="w-3.5 h-3.5" />
                       </div>
-                      <div className="flex-1 bg-white/[0.025] border border-white/[0.06] rounded-2xl px-4 py-3 min-w-0">
+                      <div className="flex-1 bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl px-4 py-3 min-w-0">
                         {entry.timestamp && (
-                          <p className="text-[9px] font-mono text-[#354D6F] uppercase tracking-widest mb-1.5">{entry.timestamp}</p>
+                          <p className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest mb-1.5">{entry.timestamp}</p>
                         )}
-                        <p className="text-sm text-[#AABDCF] font-light leading-relaxed break-words">{entry.content}</p>
+                        <p className="text-sm text-[var(--tx1)] font-light leading-relaxed break-words">{entry.content}</p>
                       </div>
                     </motion.div>
                   );
@@ -77,15 +77,15 @@ export function NotesPanel({ open, leadName, existingNotes, newNoteText, onNoteC
               )}
             </div>
 
-            <div className="px-8 py-6 border-t border-white/[0.06] space-y-3">
+            <div className="px-8 py-6 border-t border-[var(--border-color)] space-y-3">
               <textarea ref={notesRef} value={newNoteText} onChange={e => onNoteChange(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) onSave(); }}
                 placeholder="Add a note… (⌘↵ to save)" rows={3}
-                className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl px-4 py-3 text-sm text-[#C2D0E4] placeholder:text-[#2D4060] focus:outline-none focus:border-[#2563ba]/40 resize-none leading-relaxed"
+                className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl px-4 py-3 text-sm text-[var(--tx1)] placeholder:text-[var(--tx2)] focus:outline-none focus:border-[#2563ba]/40 resize-none leading-relaxed"
               />
               <div className="flex gap-3">
                 <button onClick={onClose}
-                  className="flex-1 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-[#567090] hover:text-[#E8EDF8] hover:border-white/20 transition-all text-sm">
+                  className="flex-1 py-2.5 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] hover:border-[var(--border-color)] transition-all text-sm">
                   Close
                 </button>
                 <button onClick={onSave} disabled={!newNoteText.trim()}

@@ -94,7 +94,7 @@ export function SessionCard({
             <p className="text-base md:text-xl font-display font-medium tracking-tight group-hover:text-indigo-300 transition-colors">
               {d.address}
             </p>
-            <div className="flex items-center gap-3 md:gap-6 text-[10px] md:text-[11px] font-mono text-[#567090] uppercase tracking-wider flex-wrap">
+            <div className="flex items-center gap-3 md:gap-6 text-[10px] md:text-[11px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-wider flex-wrap">
               <span className="flex items-center gap-1.5">
                 <User className="w-3 h-3 md:w-3.5 md:h-3.5 text-indigo-400/50" />
                 {d.homeownerName || "No Owner Listed"}
@@ -103,7 +103,7 @@ export function SessionCard({
                 <Calendar className="w-3 h-3 md:w-3.5 md:h-3.5 text-indigo-400/50" />
                 {new Date(d.lastSavedAt).toLocaleDateString()}
               </span>
-              <span className="md:hidden text-[9px] text-[#567090]">
+              <span className="md:hidden text-[9px] text-[var(--tx2)] opacity-60">
                 {d.sessionStatus.replace(/_/g, " ").toUpperCase()}
               </span>
             </div>
@@ -113,8 +113,8 @@ export function SessionCard({
         {/* Right side */}
         <div className="flex items-center gap-4 md:gap-8 shrink-0">
           <div className="text-right hidden md:block">
-            <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-[0.2em] mb-1.5">Operational Phase</p>
-            <p className="text-[10px] font-mono font-medium text-[#8BA5C5] tracking-widest">
+            <p className="text-[9px] font-mono text-[var(--tx2)] opacity-40 uppercase tracking-[0.2em] mb-1.5">Operational Phase</p>
+            <p className="text-[10px] font-mono font-medium text-[var(--tx1)] tracking-widest">
               {d.sessionStatus.replace(/_/g, " ").toUpperCase()}
             </p>
           </div>
@@ -138,7 +138,7 @@ export function SessionCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-0.5">
             <Smartphone className="w-3 h-3 text-indigo-400/50" />
-            <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-[0.2em]">Rep Camera Link</p>
+            <p className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-[0.2em]">Rep Camera Link</p>
           </div>
           <p className="text-[10px] font-mono text-indigo-300/60 truncate">
             /rep-capture?s={d.sessionId.slice(0, 16)}…

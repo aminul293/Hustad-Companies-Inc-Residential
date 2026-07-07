@@ -118,16 +118,16 @@ export function AccessControlPanel() {
         <div>
           <div className="flex items-center gap-3 mb-1">
             <Shield className="w-5 h-5 text-[#4a8fd4]" />
-            <h2 className="text-xl font-inter font-medium text-[#DDE5F5]">Access Control</h2>
+            <h2 className="text-xl font-inter font-medium text-[var(--tx1)]">Access Control</h2>
           </div>
-          <p className="text-sm text-[#3F5878] font-light ml-8">
+          <p className="text-sm text-[var(--tx2)] opacity-60 font-light ml-8">
             Assign workspace roles to each team member. Changes take effect on next sign-in.
           </p>
         </div>
         <button
           onClick={loadReps}
           disabled={loading}
-          className="flex items-center gap-2 text-[10px] font-mono text-[#3F5878] hover:text-[#E8EDF8] uppercase tracking-widest transition-colors"
+          className="flex items-center gap-2 text-[10px] font-mono text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] uppercase tracking-widest transition-colors"
         >
           <RefreshCw className={cn("w-3.5 h-3.5", loading && "animate-spin")} />
           Refresh
@@ -144,11 +144,11 @@ export function AccessControlPanel() {
             <div className="flex items-center gap-2 mb-2">
               <role.icon className={cn("w-4 h-4", role.color)} />
               <span className={cn("text-xs font-inter font-medium", role.color)}>{role.label}</span>
-              <span className="ml-auto text-[10px] font-mono text-[#2D4060]">
+              <span className="ml-auto text-[10px] font-mono text-[var(--tx2)] opacity-40">
                 {reps.filter(r => r.role === role.id).length} member{reps.filter(r => r.role === role.id).length !== 1 ? "s" : ""}
               </span>
             </div>
-            <p className="text-[10px] font-inter text-[#3F5878] leading-relaxed">{role.description}</p>
+            <p className="text-[10px] font-inter text-[var(--tx2)] opacity-60 leading-relaxed">{role.description}</p>
           </div>
         ))}
       </div>
@@ -156,12 +156,12 @@ export function AccessControlPanel() {
       {/* ── Rep list ── */}
       {loading ? (
         <div className="flex items-center justify-center py-16">
-          <RefreshCw className="w-5 h-5 text-[#2D4060] animate-spin" />
+          <RefreshCw className="w-5 h-5 text-[var(--tx2)] opacity-40 animate-spin" />
         </div>
       ) : reps.length === 0 ? (
         <div className="py-16 text-center">
-          <Users className="w-8 h-8 text-[#1F2E48] mx-auto mb-3" />
-          <p className="text-sm text-[#354D6F]">No team members yet. Members appear here after first sign-in.</p>
+          <Users className="w-8 h-8 text-[var(--tx2)] opacity-30 mx-auto mb-3" />
+          <p className="text-sm text-[var(--tx2)] opacity-60">No team members yet. Members appear here after first sign-in.</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -172,7 +172,7 @@ export function AccessControlPanel() {
             { group: "Unassigned", list: unknown   },
           ] as const).filter(g => g.list.length > 0).map(({ group, list }) => (
             <div key={group} className="space-y-2">
-              <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-[0.2em] px-1 pt-2">{group}</p>
+              <p className="text-[9px] font-mono text-[var(--tx2)] opacity-40 uppercase tracking-[0.2em] px-1 pt-2">{group}</p>
               {list.map((rep, i) => {
                 const currentRole = ROLE_MAP[rep.role] ?? ROLE_MAP["sales_rep"];
                 const isExpanded = expanded === rep.id;
@@ -184,19 +184,19 @@ export function AccessControlPanel() {
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.04 }}
-                    className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden"
+                    className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-subtle)] overflow-hidden"
                   >
                     {/* Rep row */}
                     <button
                       onClick={() => setExpanded(isExpanded ? null : rep.id)}
-                      className="w-full flex items-center gap-4 px-5 py-4 hover:bg-white/[0.02] transition-all text-left"
+                      className="w-full flex items-center gap-4 px-5 py-4 hover:bg-[var(--bg-elevated)] transition-all text-left"
                     >
-                      <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                        <User className="w-4 h-4 text-[#3F5878]" />
+                      <div className="w-9 h-9 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] flex items-center justify-center shrink-0">
+                        <User className="w-4 h-4 text-[var(--tx2)] opacity-60" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-inter font-medium text-[#DDE5F5] truncate">{rep.name}</p>
-                        <p className="text-[10px] font-mono text-[#354D6F] truncate">{rep.email}</p>
+                        <p className="text-sm font-inter font-medium text-[var(--tx1)] truncate">{rep.name}</p>
+                        <p className="text-[10px] font-mono text-[var(--tx2)] opacity-60 truncate">{rep.email}</p>
                       </div>
                       <div className="flex items-center gap-3 shrink-0">
                         <span className={cn(
@@ -206,8 +206,8 @@ export function AccessControlPanel() {
                           {currentRole.label}
                         </span>
                         {isSaving
-                          ? <RefreshCw className="w-3.5 h-3.5 text-[#3F5878] animate-spin" />
-                          : <ChevronDown className={cn("w-3.5 h-3.5 text-[#2D4060] transition-transform", isExpanded && "rotate-180")} />
+                          ? <RefreshCw className="w-3.5 h-3.5 text-[var(--tx2)] opacity-40 animate-spin" />
+                          : <ChevronDown className={cn("w-3.5 h-3.5 text-[var(--tx2)] opacity-40 transition-transform", isExpanded && "rotate-180")} />
                         }
                       </div>
                     </button>
@@ -222,8 +222,8 @@ export function AccessControlPanel() {
                           transition={{ duration: 0.18 }}
                           className="overflow-hidden"
                         >
-                          <div className="border-t border-white/[0.06] px-5 py-4 space-y-2">
-                            <p className="text-[9px] font-mono text-[#354D6F] uppercase tracking-widest mb-3">
+                          <div className="border-t border-[var(--border-color)] px-5 py-4 space-y-2">
+                            <p className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest mb-3">
                               Assign role for {rep.name.split(" ")[0]}
                             </p>
                             {ROLES.map(role => {
@@ -237,17 +237,17 @@ export function AccessControlPanel() {
                                     "w-full flex items-start gap-3 p-3 rounded-xl border transition-all text-left",
                                     isActive
                                       ? cn("cursor-default", role.bg, role.border)
-                                      : "border-white/[0.06] bg-white/[0.02] hover:border-white/15 hover:bg-white/[0.04]"
+                                      : "border-[var(--border-color)] bg-[var(--bg-elevated)] hover:border-[var(--border-color)] hover:bg-[var(--bg-subtle)]"
                                   )}
                                 >
-                                  <div className={cn("p-1.5 rounded-lg mt-0.5", isActive ? role.bg : "bg-white/5")}>
-                                    <role.icon className={cn("w-3.5 h-3.5", isActive ? role.color : "text-[#3F5878]")} />
+                                  <div className={cn("p-1.5 rounded-lg mt-0.5", isActive ? role.bg : "bg-[var(--bg-subtle)]")}>
+                                    <role.icon className={cn("w-3.5 h-3.5", isActive ? role.color : "text-[var(--tx2)] opacity-60")} />
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                    <p className={cn("text-xs font-inter font-medium", isActive ? role.color : "text-[#AABDCF]")}>
+                                    <p className={cn("text-xs font-inter font-medium", isActive ? role.color : "text-[var(--tx1)]")}>
                                       {role.label}
                                     </p>
-                                    <p className="text-[10px] text-[#354D6F] mt-0.5 leading-relaxed">{role.description}</p>
+                                    <p className="text-[10px] text-[var(--tx2)] opacity-60 mt-0.5 leading-relaxed">{role.description}</p>
                                   </div>
                                   {isActive && (
                                     <Check className={cn("w-3.5 h-3.5 shrink-0 mt-0.5", role.color)} />
@@ -268,10 +268,10 @@ export function AccessControlPanel() {
       )}
 
       {/* ── Access matrix toggle ── */}
-      <div className="border-t border-white/[0.05] pt-6">
+      <div className="border-t border-[var(--border-color)] pt-6">
         <button
           onClick={() => setShowMatrix(v => !v)}
-          className="flex items-center gap-3 text-sm font-inter text-[#567090] hover:text-[#AABDCF] transition-colors"
+          className="flex items-center gap-3 text-sm font-inter text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] transition-colors"
         >
           <Eye className="w-4 h-4" />
           {showMatrix ? "Hide" : "Show"} permission matrix
@@ -287,10 +287,10 @@ export function AccessControlPanel() {
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <div className="mt-4 rounded-2xl border border-white/[0.07] overflow-hidden">
+              <div className="mt-4 rounded-2xl border border-[var(--border-color)] overflow-hidden">
                 {/* Matrix header */}
-                <div className="grid grid-cols-[1fr_80px_80px_80px] gap-0 px-5 py-3 border-b border-white/[0.07] bg-white/[0.02]">
-                  <span className="text-[9px] font-mono text-[#2D4060] uppercase tracking-widest">Feature</span>
+                <div className="grid grid-cols-[1fr_80px_80px_80px] gap-0 px-5 py-3 border-b border-[var(--border-color)] bg-[var(--bg-subtle)]">
+                  <span className="text-[9px] font-mono text-[var(--tx2)] opacity-40 uppercase tracking-widest">Feature</span>
                   {ROLES.map(r => (
                     <span key={r.id} className={cn("text-[9px] font-mono uppercase tracking-wider text-center", r.color)}>{r.label}</span>
                   ))}
@@ -299,19 +299,19 @@ export function AccessControlPanel() {
                   <div
                     key={i}
                     className={cn(
-                      "grid grid-cols-[1fr_80px_80px_80px] gap-0 px-5 py-3 border-b border-white/[0.04] last:border-0",
+                      "grid grid-cols-[1fr_80px_80px_80px] gap-0 px-5 py-3 border-b border-[var(--border-color)] last:border-0",
                       i % 2 === 0 ? "bg-transparent" : "bg-white/[0.01]"
                     )}
                   >
                     <div className="flex items-center gap-2">
-                      <row.icon className="w-3.5 h-3.5 text-[#2D4060]" />
-                      <span className="text-[10px] font-inter text-[#567090]">{row.label}</span>
+                      <row.icon className="w-3.5 h-3.5 text-[var(--tx2)] opacity-40" />
+                      <span className="text-[10px] font-inter text-[var(--tx2)] opacity-60">{row.label}</span>
                     </div>
                     {(["manager", "sales_rep", "viewer"] as const).map(role => (
                       <div key={role} className="flex items-center justify-center">
                         {row[role]
                           ? <Check className="w-3 h-3 text-[#3aada3]" />
-                          : <span className="w-3 h-px bg-white/10 inline-block" />
+                          : <span className="w-3 h-px bg-[var(--border-color)] inline-block" />
                         }
                       </div>
                     ))}
@@ -337,7 +337,7 @@ export function AccessControlPanel() {
       {/* ── Warning ── */}
       <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-500/[0.04] border border-amber-500/15">
         <AlertTriangle className="w-4 h-4 text-amber-400/70 shrink-0 mt-0.5" />
-        <p className="text-[10px] font-mono text-[#567090] leading-relaxed">
+        <p className="text-[10px] font-mono text-[var(--tx2)] opacity-60 leading-relaxed">
           Role changes require the affected user to sign out and back in to take effect.
           Pipeline lead visibility is enforced server-side — rep-filtered leads are always scoped to assigned tickets only.
         </p>

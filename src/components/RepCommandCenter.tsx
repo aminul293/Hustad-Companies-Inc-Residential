@@ -229,7 +229,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                   </span>
                 )}
               </div>
-              <p className="hidden md:block text-sm text-[#7090B0] font-light">
+              <p className="hidden md:block text-sm text-[var(--tx2)] opacity-60 font-light">
                 {{ dashboard: "Field intelligence and session management.", pipeline: "Manage leads from reach-out to appointment scheduling.", schedule: "Appointments, conflicts, and daily work queue.", calendar: "Day and week r.view with conflict detection and route navigation.", centerpoint: "Jobs synced from CenterPoint Connect.", opportunities: "Sales opportunities created from inspection sessions.", tickets: "Your managed pipeline — stages, touches, and write-back.", manager: "All-rep activity, no-shows, follow-ups, and queue health.", settings: "Manage field identities and operational parameters." }[r.view]}
               </p>
             </div>
@@ -252,7 +252,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                   onClick={() => r.setView(tab.id)}
                   className={cn(
                     "px-4 py-2 rounded-full text-xs font-inter transition-all",
-                    r.view === tab.id ? "bg-[var(--tx1)] text-[var(--bg-base)]" : "text-[#567090] hover:text-[var(--tx1)]"
+                    r.view === tab.id ? "bg-[var(--tx1)] text-[var(--bg-base)]" : "text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)]"
                   )}
                 >{tab.label}</button>
               ))}
@@ -264,7 +264,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                 "md:hidden p-2.5 rounded-2xl border transition-all",
                 r.view === "settings"
                   ? "dark:bg-white/10 bg-black/10 dark:border-white/20 border-black/20 text-[var(--tx1)]"
-                  : "dark:bg-white/5 bg-black/5 dark:border-white/10 border-black/10 text-[#567090]"
+                  : "dark:bg-white/5 bg-black/5 dark:border-white/10 border-black/10 text-[var(--tx2)] opacity-60"
               )}
             >
               <Settings className="w-4 h-4" />
@@ -320,7 +320,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
             {/* ── Search + Stripi tab-bar r.filter ── */}
             <div className="flex flex-col gap-0">
               <div className="relative w-full mb-0">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#3F5878]" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--tx2)] opacity-60" />
                 <input
                   type="text"
                   placeholder="Search address or homeowner..."
@@ -413,7 +413,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                             <p className="text-sm font-display font-medium text-[var(--tx1)]">
                               {lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name || lead.cpc_ticket_id}
                             </p>
-                            <p className="text-[10px] font-mono text-[#4D678A] uppercase tracking-wider mt-0.5">
+                            <p className="text-[10px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-wider mt-0.5">
                               {dateStr}{timeStr ? ` · ${timeStr}` : ""}
                               {lead.centerpoint_jobs?.raw?._owner ? ` · ${lead.centerpoint_jobs.raw._owner}` : ""}
                             </p>
@@ -478,8 +478,8 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-display font-medium text-[var(--tx1)] truncate">{currentRep.name}</p>
-                  <p className="text-[11px] font-mono text-[#4D678A] truncate">{currentRep.email}</p>
-                  <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-widest mt-0.5">Hustad Rep · Azure AD</p>
+                  <p className="text-[11px] font-mono text-[var(--tx2)] opacity-60 truncate">{currentRep.email}</p>
+                  <p className="text-[9px] font-mono text-[var(--tx2)] opacity-40 uppercase tracking-widest mt-0.5">Hustad Rep · Azure AD</p>
                 </div>
               </div>
               <button
@@ -504,16 +504,16 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                 </div>
                 <div>
                   <p className="text-sm font-display font-medium text-[var(--tx1)]">Platform User Guide</p>
-                  <p className="text-[11px] font-mono text-[#4D678A]">Walkthroughs, field workflows, and AI classification reference</p>
+                  <p className="text-[11px] font-mono text-[var(--tx2)] opacity-60">Walkthroughs, field workflows, and AI classification reference</p>
                 </div>
               </div>
-              <ExternalLink className="w-4 h-4 text-[#3F5878] group-hover:text-[#4a8fd4] transition-colors shrink-0" />
+              <ExternalLink className="w-4 h-4 text-[var(--tx2)] opacity-40 group-hover:opacity-100 group-hover:text-[#4a8fd4] transition-colors shrink-0" />
             </a>
 
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <h3 className="text-xl font-display font-medium">Field Operatives</h3>
-                <p className="text-xs text-[#567090]">Add or manage reps authorized for forensic sessions.</p>
+                <p className="text-xs text-[var(--tx2)] opacity-60">Add or manage reps authorized for forensic sessions.</p>
               </div>
               <button 
                 onClick={() => r.setIsAdding(!r.isAdding)}
@@ -541,15 +541,15 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                   />
                 </div>
                 <div className="flex justify-end gap-3">
-                  <button onClick={() => r.setIsAdding(false)} className="text-xs text-[#567090] px-4">Cancel</button>
-                  <button 
+                  <button onClick={() => r.setIsAdding(false)} className="text-xs text-[var(--tx2)] opacity-60 px-4">Cancel</button>
+                  <button
                     onClick={() => {
                       saveCustomRep({ id: `custom_${Date.now()}`, name: r.newRep.name, role: r.newRep.role, active: true });
                       r.setIsAdding(false);
                       r.setNewRep({ name: "", role: "" });
                       r.setLiveReps(getLiveReps());
                     }}
-                    className="bg-[#2563ba] text-[#E8EDF8] px-6 py-2 rounded-2xl text-xs font-inter font-medium"
+                    className="bg-[#2563ba] text-white px-6 py-2 rounded-2xl text-xs font-inter font-medium"
                   >
                     Save Operative
                   </button>
@@ -562,17 +562,17 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
                 <div key={rep.id} className="p-5 rounded-2xl dark:bg-white/[0.02] bg-black/[0.02] dark:border-white/[0.05] border-black/[0.05] flex items-center justify-between group dark:hover:bg-white/[0.04] hover:bg-black/[0.04] transition-all">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl dark:bg-white/5 bg-black/5 flex items-center justify-center">
-                      <User className="w-5 h-5 text-[#567090]" />
+                      <User className="w-5 h-5 text-[var(--tx2)] opacity-60" />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-[var(--tx1)]">{rep.name}</p>
-                      <p className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest">{rep.role}</p>
+                      <p className="text-[10px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest">{rep.role}</p>
                     </div>
                   </div>
                   {rep.id.startsWith("custom_") && (
                     <button 
                       onClick={() => { deleteCustomRep(rep.id); r.setLiveReps(getLiveReps()); }}
-                      className="p-2 text-[#1F2E48] hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-all"
+                      className="p-2 text-[var(--tx2)] opacity-0 hover:text-rose-400 group-hover:opacity-60 hover:!opacity-100 transition-all"
                     >
                       <Trash className="w-4 h-4" />
                     </button>
@@ -597,7 +597,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
             onClick={() => { r.setView(tab.id); r.setMoreOpen(false); }}
             className={cn(
               "flex flex-col items-center gap-1 py-3 px-4 min-w-[56px] transition-all active:scale-95",
-              r.view === tab.id ? "text-[#4a8fd4]" : "text-[#3F5878]"
+              r.view === tab.id ? "text-[#4a8fd4]" : "text-[var(--tx2)] opacity-60"
             )}
           >
             <tab.icon className="w-5 h-5" />
@@ -609,7 +609,7 @@ export function RepCommandCenter({ currentRep, onLoadDraft, onNewSession, onPref
           onClick={() => r.setMoreOpen(prev => !prev)}
           className={cn(
             "flex flex-col items-center gap-1 py-3 px-4 min-w-[56px] transition-all active:scale-95 relative",
-            r.moreOpen || ["opportunities","calendar","tickets","manager"].includes(r.view) ? "text-[#4a8fd4]" : "text-[#3F5878]"
+            r.moreOpen || ["opportunities","calendar","tickets","manager"].includes(r.view) ? "text-[#4a8fd4]" : "text-[var(--tx2)] opacity-60"
           )}
         >
           <MoreHorizontal className="w-5 h-5" />

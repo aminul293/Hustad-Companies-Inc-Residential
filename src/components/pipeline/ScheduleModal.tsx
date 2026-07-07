@@ -41,7 +41,7 @@ export function ScheduleModal({
         >
           <motion.div initial={{ opacity: 0, scale: 0.96, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 12 }} transition={{ type: "spring", damping: 28, stiffness: 320 }}
-            className="bg-[#0d0d0d] border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl"
+            className="bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-3xl p-8 w-full max-w-md shadow-2xl"
           >
             <div className="flex items-start justify-between mb-7">
               <div>
@@ -49,44 +49,44 @@ export function ScheduleModal({
                   <CalendarDays className="w-5 h-5 text-[#2a8a82]" />
                   <h3 className="text-xl font-inter font-medium">Schedule Inspection</h3>
                 </div>
-                <p className="text-sm text-[#4D678A] font-light">{leadName}</p>
+                <p className="text-sm text-[var(--tx2)] opacity-60 font-light">{leadName}</p>
               </div>
-              <button onClick={onClose} className="p-2 rounded-2xl text-[#3F5878] hover:text-[#E8EDF8] hover:bg-white/5 transition-all">
+              <button onClick={onClose} className="p-2 rounded-2xl text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] hover:bg-[var(--bg-subtle)] transition-all">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="mb-6">
-              <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2">Date</label>
+              <label className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest block mb-2">Date</label>
               <input type="date" value={schedDate} min={new Date().toISOString().split("T")[0]}
                 onChange={e => onDateChange(e.target.value)}
-                className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3 text-[#E8EDF8] text-sm focus:outline-none focus:border-[#2563ba]/50 [color-scheme:dark]"
+                className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl px-4 py-3 text-[var(--tx1)] text-sm focus:outline-none focus:border-[#2563ba]/50 [color-scheme:light] dark:[color-scheme:dark]"
               />
             </div>
 
             <div className="mb-6">
-              <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2.5">Time</label>
+              <label className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest block mb-2.5">Time</label>
               <div className="grid grid-cols-4 gap-2">
                 {TIME_SLOTS.map(slot => (
                   <button key={slot.value} onClick={() => onTimeChange(slot.value)}
                     className={cn("py-2.5 rounded-xl text-xs font-medium transition-all",
                       schedTime === slot.value
                         ? "bg-[#2563ba] text-white"
-                        : "bg-white/[0.04] text-[#4D678A] hover:bg-white/[0.08] hover:text-[#AABDCF]"
+                        : "bg-[var(--bg-subtle)] text-[var(--tx2)] opacity-60 hover:bg-[var(--bg-elevated)] hover:opacity-100"
                     )}>{slot.label}</button>
                 ))}
               </div>
             </div>
 
             <div className="mb-7">
-              <label className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest block mb-2.5">Duration</label>
+              <label className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest block mb-2.5">Duration</label>
               <div className="flex gap-2">
                 {DURATIONS.map(dur => (
                   <button key={dur.value} onClick={() => onDurationChange(dur.value)}
                     className={cn("flex-1 py-2.5 rounded-xl text-xs font-medium transition-all",
                       schedDuration === dur.value
                         ? "bg-[#2a8a82]/20 border border-[#2a8a82]/40 text-[#3aada3]"
-                        : "bg-white/[0.04] text-[#3F5878] hover:bg-white/[0.07] hover:text-[#8BA5C5]"
+                        : "bg-[var(--bg-subtle)] text-[var(--tx2)] opacity-60 hover:bg-[var(--bg-elevated)] hover:opacity-100"
                     )}>{dur.label}</button>
                 ))}
               </div>
@@ -119,7 +119,7 @@ export function ScheduleModal({
 
             <div className="flex gap-3">
               <button onClick={onClose}
-                className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-[#7090B0] hover:text-[#E8EDF8] hover:border-white/20 transition-all text-sm">
+                className="flex-1 py-3 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] hover:border-[var(--border-color)] transition-all text-sm">
                 Cancel
               </button>
               <button onClick={() => onConfirm(false)} disabled={!schedDate || scheduling}

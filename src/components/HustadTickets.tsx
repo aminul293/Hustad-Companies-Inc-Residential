@@ -207,34 +207,34 @@ export function HustadTickets() {
           <div className="flex items-center gap-4">
             <button 
               onClick={() => window.dispatchEvent(new CustomEvent('changeView', { detail: 'dashboard' }))}
-              className="p-3 rounded-[14px] bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all"
+              className="p-3 rounded-[14px] bg-[var(--bg-subtle)] border border-[var(--border-color)] hover:bg-[var(--tx1)] hover:text-[var(--bg-base)] transition-all"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
               <h2 className="text-2xl font-inter font-medium tracking-tight">Hustad Tickets</h2>
-              <p className="text-sm text-[#567090] mt-1">
+              <p className="text-sm text-[var(--tx2)] opacity-60 mt-1">
                 {total.toLocaleString()} tickets · managed pipeline
               </p>
             </div>
           </div>
           <button
             onClick={() => fetchTickets({ refresh: true, newPage: 1 })}
-            className={cn("p-3 bg-white/5 border border-white/10 rounded-[14px] hover:bg-white/10 transition-all", refreshing && "animate-spin")}
+            className={cn("p-3 bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-[14px] hover:bg-[var(--bg-elevated)] transition-all", refreshing && "animate-spin")}
           >
-            <RefreshCw className="w-4 h-4 text-[#7090B0]" />
+            <RefreshCw className="w-4 h-4 text-[var(--tx2)]" />
           </button>
         </div>
 
         {/* Search */}
         <form onSubmit={(e) => { e.preventDefault(); setSearch(searchInput); }} className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#3F5878]" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--tx2)]" />
           <input
             type="text"
             placeholder="Search by property, client, or job number..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full bg-white/[0.03] border border-white/[0.1] rounded-2xl py-3.5 pl-12 pr-32 text-sm outline-none focus:border-[#2563ba]/50 transition-all"
+            className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl py-3.5 pl-12 pr-32 text-sm outline-none focus:border-[#2563ba]/50 transition-all text-[var(--tx1)]"
           />
           <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-[#2563ba]/20 border border-[#2563ba]/30 rounded-xl text-xs text-[#4a8fd4] hover:bg-[#2563ba]/30 transition-all">
             Search
@@ -243,14 +243,14 @@ export function HustadTickets() {
 
         {/* Stage filter */}
         <div className="flex items-center gap-3 overflow-x-auto pb-1">
-          <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest shrink-0">Stage</span>
+          <span className="text-[10px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest shrink-0">Stage</span>
           {STAGE_FILTERS.map(f => (
             <button
               key={f.id}
               onClick={() => setStageFilter(f.id)}
               className={cn(
                 "px-4 py-2 rounded-lg border text-xs font-inter transition-all whitespace-nowrap shrink-0",
-                stageFilter === f.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-[#7090B0] hover:bg-white/10"
+                stageFilter === f.id ? "bg-[var(--tx1)] text-[var(--bg-base)] border-[var(--tx1)]" : "bg-[var(--bg-subtle)] border-[var(--border-color)] text-[var(--tx2)] opacity-60 hover:opacity-100 hover:bg-[var(--bg-elevated)]"
               )}
             >{f.label}</button>
           ))}
@@ -261,14 +261,14 @@ export function HustadTickets() {
       <div className="flex-1 overflow-y-auto p-8 space-y-3">
         {loading ? (
           <div className="py-20 flex flex-col items-center gap-4 opacity-40">
-            <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            <p className="text-sm font-mono text-[#567090]">Loading tickets...</p>
+            <div className="w-8 h-8 border-2 border-[var(--border-color)] border-t-[var(--tx1)] rounded-full animate-spin" />
+            <p className="text-sm font-mono text-[var(--tx2)] opacity-60">Loading tickets...</p>
           </div>
         ) : tickets.length === 0 ? (
           <div className="py-20 text-center opacity-30">
             <Ticket className="w-12 h-12 mx-auto mb-4" />
             <p className="font-inter">No tickets yet</p>
-            <p className="text-xs text-[#567090] mt-2">Push jobs from CenterPoint to create tickets</p>
+            <p className="text-xs text-[var(--tx2)] opacity-60 mt-2">Push jobs from CenterPoint to create tickets</p>
           </div>
         ) : (
           <>
@@ -284,7 +284,7 @@ export function HustadTickets() {
                 <motion.div
                   key={ticket.id}
                   layout
-                  className="rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-white/15 transition-all overflow-hidden"
+                  className="rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] hover:border-[var(--border-color)] transition-all overflow-hidden"
                 >
                   {/* Ticket row */}
                   <button
@@ -295,11 +295,11 @@ export function HustadTickets() {
                       <div className={cn("w-2.5 h-2.5 rounded-full shrink-0", stage.ring)} />
                       <div className="min-w-0">
                         <div className="flex items-center gap-3 mb-1 flex-wrap">
-                          <span className="text-base font-inter font-medium text-[#E8EDF8] truncate">
+                          <span className="text-base font-inter font-medium text-[var(--tx1)] truncate">
                             {ticket.property_name}
                           </span>
                           {ticket.cp_job_name && (
-                            <span className="text-[9px] font-mono text-[#3F5878] tracking-widest">#{ticket.cp_job_name}</span>
+                            <span className="text-[9px] font-mono text-[var(--tx2)] opacity-60 tracking-widest">#{ticket.cp_job_name}</span>
                           )}
                         </div>
                         <div className="flex items-center gap-4 flex-wrap">
@@ -307,10 +307,10 @@ export function HustadTickets() {
                             {stage.label}
                           </span>
                           {ticket.client_name && (
-                            <span className="text-[10px] font-mono text-[#3F5878]">{ticket.client_name}</span>
+                            <span className="text-[10px] font-mono text-[var(--tx2)] opacity-60">{ticket.client_name}</span>
                           )}
                           {lastTouch && (
-                            <span className="text-[10px] font-mono text-[#354D6F]">
+                            <span className="text-[10px] font-mono text-[var(--tx2)] opacity-60">
                               Last touch: {new Date(lastTouch.occurred_at).toLocaleDateString()} · {lastTouch.outcome.replace(/_/g, " ")}
                             </span>
                           )}
@@ -325,16 +325,16 @@ export function HustadTickets() {
 
                     <div className="flex items-center gap-6 shrink-0">
                       <div className="text-right hidden md:block">
-                        <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-widest mb-0.5">Touches</p>
-                        <p className="text-sm font-inter font-medium text-[#E8EDF8]">{touches.length}</p>
+                        <p className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest mb-0.5">Touches</p>
+                        <p className="text-sm font-inter font-medium text-[var(--tx1)]">{touches.length}</p>
                       </div>
                       {ticket.price > 0 && (
                         <div className="text-right hidden md:block">
-                          <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-widest mb-0.5">Value</p>
-                          <p className="text-sm font-inter font-medium text-[#E8EDF8]">${Number(ticket.price).toLocaleString()}</p>
+                          <p className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest mb-0.5">Value</p>
+                          <p className="text-sm font-inter font-medium text-[var(--tx1)]">${Number(ticket.price).toLocaleString()}</p>
                         </div>
                       )}
-                      <ChevronRight className={cn("w-4 h-4 text-[#2D4060] transition-transform duration-200", isExpanded && "rotate-90")} />
+                      <ChevronRight className={cn("w-4 h-4 text-[var(--tx2)] opacity-60 transition-transform duration-200", isExpanded && "rotate-90")} />
                     </div>
                   </button>
 
@@ -348,11 +348,11 @@ export function HustadTickets() {
                         transition={{ duration: 0.2 }}
                         className="overflow-hidden"
                       >
-                        <div className="px-6 pb-6 space-y-6 border-t border-white/[0.05] pt-5">
+                        <div className="px-6 pb-6 space-y-6 border-t border-[var(--border-color)] pt-5">
 
                           {/* Stage pipeline */}
                           <div>
-                            <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest mb-3">Pipeline</p>
+                            <p className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest mb-3">Pipeline</p>
                             <div className="flex items-center gap-1 overflow-x-auto pb-2">
                               {STAGE_ORDER.map((s, i) => {
                                 const isPast = i < currentIndex;
@@ -363,13 +363,13 @@ export function HustadTickets() {
                                     <div className={cn(
                                       "px-3 py-1.5 rounded-lg text-[9px] font-mono uppercase tracking-widest border transition-all",
                                       isCurrent ? stg.color + " ring-1 ring-white/20" :
-                                      isPast ? "bg-white/5 text-[#2D4060] border-white/5" :
-                                      "bg-transparent text-[#293A58] border-white/[0.04]"
+                                      isPast ? "bg-[var(--bg-subtle)] text-[var(--tx2)] opacity-40 border-[var(--border-color)]" :
+                                      "bg-transparent text-[var(--tx2)] opacity-30 border-[var(--border-color)]"
                                     )}>
                                       {stg.label}
                                     </div>
                                     {i < STAGE_ORDER.length - 1 && (
-                                      <div className={cn("w-4 h-[1px]", isPast ? "bg-white/20" : "bg-white/[0.05]")} />
+                                      <div className={cn("w-4 h-[1px]", isPast ? "bg-[var(--border-color)]" : "bg-[var(--border-color)] opacity-50")} />
                                     )}
                                   </div>
                                 );
@@ -392,8 +392,8 @@ export function HustadTickets() {
                                   : "None yet" },
                             ].map(item => (
                               <div key={item.label} className="space-y-1">
-                                <p className="text-[9px] font-mono text-[#354D6F] uppercase tracking-widest">{item.label}</p>
-                                <p className="text-xs text-[#AABDCF] font-inter">{item.value}</p>
+                                <p className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest">{item.label}</p>
+                                <p className="text-xs text-[var(--tx1)] font-inter">{item.value}</p>
                               </div>
                             ))}
                           </div>
@@ -401,16 +401,16 @@ export function HustadTickets() {
                           {/* Notes */}
                           <div>
                             <div className="flex items-center justify-between mb-2">
-                              <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest">Notes</p>
+                              <p className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest">Notes</p>
                               {editingNotes === ticket.id ? (
                                 <div className="flex items-center gap-2">
-                                  <button onClick={() => setEditingNotes(null)} className="text-[10px] text-[#3F5878] hover:text-[#8BA5C5]">Cancel</button>
+                                  <button onClick={() => setEditingNotes(null)} className="text-[10px] text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)]">Cancel</button>
                                   <button onClick={() => handleSaveNotes(ticket)} className="text-[10px] text-[#2563ba] hover:text-[#4a8fd4]">Save</button>
                                 </div>
                               ) : (
                                 <button
                                   onClick={() => { setEditingNotes(ticket.id); setNotesValue(ticket.notes || ""); }}
-                                  className="text-[10px] font-mono text-[#354D6F] hover:text-[#8BA5C5] uppercase tracking-widest"
+                                  className="text-[10px] font-mono text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] uppercase tracking-widest"
                                 >Edit</button>
                               )}
                             </div>
@@ -419,17 +419,17 @@ export function HustadTickets() {
                                 value={notesValue}
                                 onChange={(e) => setNotesValue(e.target.value)}
                                 rows={3}
-                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-[#AABDCF] outline-none focus:border-[#2563ba]/50 resize-none"
+                                className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm text-[var(--tx1)] outline-none focus:border-[#2563ba]/50 resize-none"
                               />
                             ) : (
-                              <p className="text-sm text-[#567090] font-inter">{ticket.notes || "No notes yet."}</p>
+                              <p className="text-sm text-[var(--tx2)] opacity-60 font-inter">{ticket.notes || "No notes yet."}</p>
                             )}
                           </div>
 
                           {/* Touch log */}
                           <div>
                             <div className="flex items-center justify-between mb-3">
-                              <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest">
+                              <p className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest">
                                 Touch Log · {touches.length} contacts
                               </p>
                               <button
@@ -450,31 +450,31 @@ export function HustadTickets() {
                                   exit={{ height: 0, opacity: 0 }}
                                   className="overflow-hidden mb-3"
                                 >
-                                  <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] space-y-3">
+                                  <div className="p-4 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] space-y-3">
                                     <div className="grid grid-cols-2 gap-3">
                                       <div>
-                                        <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest mb-1.5">Method</p>
+                                        <p className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest mb-1.5">Method</p>
                                         <div className="flex flex-wrap gap-1.5">
                                           {TOUCH_METHODS.map(m => (
                                             <button key={m}
                                               onClick={() => setTouchForm(f => ({ ...f, method: m }))}
                                               className={cn(
                                                 "px-3 py-1 rounded-lg text-[10px] font-mono border transition-all",
-                                                touchForm.method === m ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-[#567090] hover:bg-white/10"
+                                                touchForm.method === m ? "bg-[var(--tx1)] text-[var(--bg-base)] border-[var(--tx1)]" : "bg-[var(--bg-subtle)] border-[var(--border-color)] text-[var(--tx2)] opacity-60 hover:opacity-100 hover:bg-[var(--bg-elevated)]"
                                               )}
                                             >{m.replace(/_/g, " ")}</button>
                                           ))}
                                         </div>
                                       </div>
                                       <div>
-                                        <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest mb-1.5">Outcome</p>
+                                        <p className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest mb-1.5">Outcome</p>
                                         <div className="flex flex-wrap gap-1.5">
                                           {TOUCH_OUTCOMES.map(o => (
                                             <button key={o}
                                               onClick={() => setTouchForm(f => ({ ...f, outcome: o }))}
                                               className={cn(
                                                 "px-3 py-1 rounded-lg text-[10px] font-mono border transition-all",
-                                                touchForm.outcome === o ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-[#567090] hover:bg-white/10"
+                                                touchForm.outcome === o ? "bg-[var(--tx1)] text-[var(--bg-base)] border-[var(--tx1)]" : "bg-[var(--bg-subtle)] border-[var(--border-color)] text-[var(--tx2)] opacity-60 hover:opacity-100 hover:bg-[var(--bg-elevated)]"
                                               )}
                                             >{o.replace(/_/g, " ")}</button>
                                           ))}
@@ -485,17 +485,17 @@ export function HustadTickets() {
                                       placeholder="Rep name"
                                       value={touchForm.rep_name}
                                       onChange={(e) => setTouchForm(f => ({ ...f, rep_name: e.target.value }))}
-                                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#2563ba]/50"
+                                      className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 text-sm text-[var(--tx1)] outline-none focus:border-[#2563ba]/50"
                                     />
                                     <textarea
                                       placeholder="Notes (optional)"
                                       value={touchForm.notes}
                                       onChange={(e) => setTouchForm(f => ({ ...f, notes: e.target.value }))}
                                       rows={2}
-                                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#2563ba]/50 resize-none"
+                                      className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 text-sm text-[var(--tx1)] outline-none focus:border-[#2563ba]/50 resize-none"
                                     />
                                     <div className="flex justify-end gap-2">
-                                      <button onClick={() => setAddingTouchId(null)} className="text-xs text-[#3F5878] px-4">Cancel</button>
+                                      <button onClick={() => setAddingTouchId(null)} className="text-xs text-[var(--tx2)] opacity-60 hover:opacity-100 px-4">Cancel</button>
                                       <button
                                         onClick={() => handleAddTouch(ticket)}
                                         disabled={savingTouch}
@@ -511,24 +511,24 @@ export function HustadTickets() {
 
                             {/* Touch entries */}
                             {touches.length === 0 ? (
-                              <p className="text-[10px] font-mono text-[#2D4060]">No touches logged yet.</p>
+                              <p className="text-[10px] font-mono text-[var(--tx2)] opacity-40">No touches logged yet.</p>
                             ) : (
                               <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                                 {touches.map((touch) => {
                                   const Icon = METHOD_ICONS[touch.method] ?? Phone;
                                   return (
-                                    <div key={touch.id} className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
-                                      <div className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center shrink-0 mt-0.5">
-                                        <Icon className="w-3.5 h-3.5 text-[#567090]" />
+                                    <div key={touch.id} className="flex items-start gap-3 p-3 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)]">
+                                      <div className="w-7 h-7 rounded-lg bg-[var(--bg-elevated)] flex items-center justify-center shrink-0 mt-0.5">
+                                        <Icon className="w-3.5 h-3.5 text-[var(--tx2)]" />
                                       </div>
                                       <div className="min-w-0 flex-1">
                                         <div className="flex items-center gap-2 flex-wrap">
-                                          <span className="text-[10px] font-mono text-[#8BA5C5] uppercase tracking-widest">{touch.outcome.replace(/_/g, " ")}</span>
-                                          <span className="text-[9px] font-mono text-[#354D6F]">{touch.method.replace(/_/g, " ")}</span>
-                                          {touch.rep_name && <span className="text-[9px] font-mono text-[#354D6F]">· {touch.rep_name}</span>}
-                                          <span className="text-[9px] font-mono text-[#2D4060] ml-auto">{new Date(touch.occurred_at).toLocaleDateString()}</span>
+                                          <span className="text-[10px] font-mono text-[var(--tx1)] uppercase tracking-widest">{touch.outcome.replace(/_/g, " ")}</span>
+                                          <span className="text-[9px] font-mono text-[var(--tx2)] opacity-60">{touch.method.replace(/_/g, " ")}</span>
+                                          {touch.rep_name && <span className="text-[9px] font-mono text-[var(--tx2)] opacity-60">· {touch.rep_name}</span>}
+                                          <span className="text-[9px] font-mono text-[var(--tx2)] opacity-40 ml-auto">{new Date(touch.occurred_at).toLocaleDateString()}</span>
                                         </div>
-                                        {touch.notes && <p className="text-xs text-[#567090] mt-1">{touch.notes}</p>}
+                                        {touch.notes && <p className="text-xs text-[var(--tx2)] opacity-60 mt-1">{touch.notes}</p>}
                                       </div>
                                     </div>
                                   );
@@ -538,7 +538,7 @@ export function HustadTickets() {
                           </div>
 
                           {/* Stage advance + close lost + delete */}
-                          <div className="flex items-center justify-between pt-2 border-t border-white/[0.05]">
+                          <div className="flex items-center justify-between pt-2 border-t border-[var(--border-color)]">
                             <div className="flex items-center gap-2 flex-wrap">
                               {nextStage && (
                                 <button
@@ -566,7 +566,7 @@ export function HustadTickets() {
                               )}
                               <button
                                 onClick={() => setDeleteModal({ id: ticket.id, name: ticket.property_name })}
-                                className="flex items-center gap-1.5 px-4 py-2.5 rounded-[14px] bg-white/[0.03] border border-white/10 text-xs font-inter text-[#3F5878] hover:text-rose-400 hover:border-rose-500/30 hover:bg-rose-500/[0.06] transition-all"
+                                className="flex items-center gap-1.5 px-4 py-2.5 rounded-[14px] bg-[var(--bg-subtle)] border border-[var(--border-color)] text-xs font-inter text-[var(--tx2)] opacity-60 hover:text-rose-400 hover:opacity-100 hover:border-rose-500/30 hover:bg-rose-500/[0.06] transition-all"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                                 Delete
@@ -575,7 +575,7 @@ export function HustadTickets() {
                             {STAGES[ticket.stage]?.cpWriteback && (
                               <div className="flex items-center gap-1.5">
                                 <CheckCircle2 className="w-3 h-3 text-[#2a8a82]/50" />
-                                <span className="text-[9px] font-mono text-[#354D6F]">Will sync to CP at this stage</span>
+                                <span className="text-[9px] font-mono text-[var(--tx2)] opacity-60">Will sync to CP at this stage</span>
                               </div>
                             )}
                           </div>
@@ -590,7 +590,7 @@ export function HustadTickets() {
             {tickets.length < total && (
               <button
                 onClick={() => { const next = page + 1; setPage(next); fetchTickets({ newPage: next }); }}
-                className="w-full py-4 rounded-2xl border border-white/10 text-[#567090] text-sm font-inter hover:bg-white/5 hover:text-[#AABDCF] transition-all"
+                className="w-full py-4 rounded-2xl border border-[var(--border-color)] text-[var(--tx2)] opacity-60 text-sm font-inter hover:bg-[var(--bg-subtle)] hover:opacity-100 hover:text-[var(--tx1)] transition-all"
               >
                 Load more · {(total - tickets.length).toLocaleString()} remaining
               </button>
@@ -610,24 +610,24 @@ export function HustadTickets() {
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-[#0d0d0d] border border-white/10 rounded-3xl p-8 max-w-sm w-full shadow-2xl"
+              className="bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-3xl p-8 max-w-sm w-full shadow-2xl"
             >
               <div className="flex items-start justify-between mb-6">
                 <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
                   <Trash2 className="w-5 h-5 text-rose-400" />
                 </div>
-                <button onClick={() => setDeleteModal(null)} className="p-2 rounded-xl text-[#3F5878] hover:text-[#E8EDF8] hover:bg-white/5 transition-all">
+                <button onClick={() => setDeleteModal(null)} className="p-2 rounded-xl text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] hover:bg-[var(--bg-subtle)] transition-all">
                   <X className="w-4 h-4" />
                 </button>
               </div>
               <h3 className="text-xl font-inter font-medium mb-3">Delete Ticket?</h3>
-              <p className="text-[#567090] text-sm leading-relaxed mb-8">
-                <span className="text-[#AABDCF] font-medium">{deleteModal.name}</span> and all its touch history will be permanently deleted. This cannot be undone.
+              <p className="text-[var(--tx2)] opacity-60 text-sm leading-relaxed mb-8">
+                <span className="text-[var(--tx1)] font-medium">{deleteModal.name}</span> and all its touch history will be permanently deleted. This cannot be undone.
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setDeleteModal(null)}
-                  className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-[#7090B0] hover:text-[#E8EDF8] hover:border-white/20 transition-all text-sm"
+                  className="flex-1 py-3 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] hover:border-[var(--border-color)] transition-all text-sm"
                 >
                   Cancel
                 </button>

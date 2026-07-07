@@ -33,15 +33,15 @@ export function MobileMoreDrawer({ open, view, onNavigate, onClose, onNewSession
             onClick={onClose}
           />
           <motion.div
-            className="md:hidden fixed bottom-16 left-3 right-3 z-40 rounded-[28px] bg-[#111827] border border-white/[0.1] p-2 overflow-hidden"
+            className="md:hidden fixed bottom-16 left-3 right-3 z-40 rounded-[28px] bg-[var(--bg-elevated)] border border-[var(--border-color)] p-2 overflow-hidden"
             initial={{ opacity: 0, y: 16, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.96 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="flex items-center justify-between px-3 py-2 mb-1">
-              <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-[0.2em]">More Sections</p>
-              <button onClick={onClose} className="p-1 rounded-lg text-[#3F5878] hover:text-white transition-colors">
+              <p className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-[0.2em]">More Sections</p>
+              <button onClick={onClose} className="p-1 rounded-lg text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] transition-colors">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -52,15 +52,15 @@ export function MobileMoreDrawer({ open, view, onNavigate, onClose, onNewSession
                 onClick={() => { onNavigate(item.id); onClose(); }}
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-3 rounded-2xl transition-all active:scale-[0.98] text-left",
-                  view === item.id ? "bg-indigo-500/15 text-indigo-300" : "text-[#C2D0E4] hover:bg-white/5"
+                  view === item.id ? "bg-indigo-500/15 text-indigo-300" : "text-[var(--tx1)] hover:bg-[var(--bg-subtle)]"
                 )}
               >
-                <div className={cn("p-2 rounded-xl", view === item.id ? "bg-indigo-500/20" : "bg-white/5")}>
+                <div className={cn("p-2 rounded-xl", view === item.id ? "bg-indigo-500/20" : "bg-[var(--bg-subtle)]")}>
                   <item.icon className="w-4 h-4" />
                 </div>
                 <div>
                   <p className="text-sm font-display font-medium">{item.label}</p>
-                  <p className="text-[10px] font-mono text-[#567090]">{item.sub}</p>
+                  <p className="text-[10px] font-mono text-[var(--tx2)] opacity-60">{item.sub}</p>
                 </div>
                 {view === item.id && <CheckIcon className="w-4 h-4 ml-auto text-indigo-400" />}
               </button>
@@ -68,7 +68,7 @@ export function MobileMoreDrawer({ open, view, onNavigate, onClose, onNewSession
 
             {onNewSession && (
                <>
-                 <div className="h-px bg-white/[0.06] my-2" />
+                 <div className="h-px bg-[var(--border-color)] my-2" />
                  <button
                    onClick={() => { onNewSession(); onClose(); }}
                    className="w-full flex items-center gap-3 px-3 py-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 hover:bg-indigo-500/20 transition-all active:scale-[0.98]"

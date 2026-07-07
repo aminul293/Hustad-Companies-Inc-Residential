@@ -216,7 +216,7 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
   if (loading && !data) {
     return (
       <div className="flex items-center justify-center h-64">
-        <RefreshCw className="w-5 h-5 text-[#2D4060] animate-spin" />
+        <RefreshCw className="w-5 h-5 text-[var(--tx2)] opacity-40 animate-spin" />
       </div>
     );
   }
@@ -224,7 +224,7 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
     return (
       <div className="p-8 text-center">
         <p className="text-rose-400 text-sm">{error}</p>
-        <button onClick={fetchData} className="mt-4 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-xs text-[#8BA5C5] hover:text-[#E8EDF8] transition-all">
+        <button onClick={fetchData} className="mt-4 px-4 py-2 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-color)] text-xs text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] transition-all">
           Retry
         </button>
       </div>
@@ -267,11 +267,11 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
 
       {/* ── Date + Refresh ── */}
       <div className="flex items-center justify-between">
-        <p className="text-[9px] font-mono text-[#354D6F] uppercase tracking-[0.2em]">
+        <p className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-[0.2em]">
           {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
         </p>
         <button onClick={fetchData}
-          className="flex items-center gap-2 text-[10px] font-mono text-[#3F5878] hover:text-[#E8EDF8] uppercase tracking-widest transition-colors">
+          className="flex items-center gap-2 text-[10px] font-mono text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] uppercase tracking-widest transition-colors">
           <RefreshCw className={cn("w-3.5 h-3.5", loading && "animate-spin")} />
           Refresh
         </button>
@@ -309,7 +309,7 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
                   )}
                 </div>
                 <p className="text-3xl font-inter font-light tracking-tight mb-1">{s.value}</p>
-                <p className="text-[10px] font-mono text-[#4D678A] uppercase tracking-widest">{s.label}</p>
+                <p className="text-[10px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest">{s.label}</p>
               </motion.div>
             );
           })}
@@ -319,8 +319,8 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
       {/* ── Pipeline Stage Funnel ── */}
       {ps.total > 0 && (
         <section className="space-y-4">
-          <SectionHeader icon={Activity} label="Stage Breakdown" color="text-[#567090]" />
-          <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/[0.06] space-y-3">
+          <SectionHeader icon={Activity} label="Stage Breakdown" color="text-[var(--tx2)]" />
+          <div className="p-5 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] space-y-3">
             {FUNNEL_STAGES.map((stage, i) => {
               const val = ps[stage.key as keyof PipelineStats] as number;
               const pct = ps.total > 0 ? Math.round((val / ps.total) * 100) : 0;
@@ -336,12 +336,12 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
                   onClick={() => isClickable && setSelectedStage(isSelected ? null : stage.key)}
                   className={cn(
                     "flex items-center gap-4 rounded-xl px-3 py-2 -mx-3 transition-all",
-                    isClickable && "cursor-pointer hover:bg-white/[0.03]",
-                    isSelected && "bg-white/[0.04]"
+                    isClickable && "cursor-pointer hover:bg-[var(--bg-elevated)]",
+                    isSelected && "bg-[var(--bg-elevated)]"
                   )}
                 >
-                  <span className="w-20 text-[10px] font-mono text-[#4D678A] uppercase tracking-wider shrink-0 text-right">{stage.label}</span>
-                  <div className="flex-1 h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+                  <span className="w-20 text-[10px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-wider shrink-0 text-right">{stage.label}</span>
+                  <div className="flex-1 h-1.5 bg-[var(--border-color)] rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${barWidth}%` }}
@@ -351,7 +351,7 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
                   </div>
                   <div className="flex items-center gap-2 shrink-0 w-16 justify-end">
                     <span className={cn("text-sm font-inter font-light", stage.text)}>{val}</span>
-                    <span className="text-[9px] font-mono text-[#2D4060]">{pct}%</span>
+                    <span className="text-[9px] font-mono text-[var(--tx2)] opacity-40">{pct}%</span>
                   </div>
                 </motion.div>
               );
@@ -362,7 +362,7 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
 
       {/* ── Today's Operations ── */}
       <section className="space-y-4">
-        <SectionHeader icon={Clock} label="Today's Operations" color="text-[#567090]" />
+        <SectionHeader icon={Clock} label="Today's Operations" color="text-[var(--tx2)] opacity-60" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: "Appointments",  value: total,         icon: CalendarDays,  color: "text-[#8BA5C5]",  bg: "bg-white/[0.02]",      border: "border-white/[0.07]"     },
@@ -378,7 +378,7 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
                 </div>
               </div>
               <p className="text-2xl font-inter font-light tracking-tight mb-0.5">{s.value}</p>
-              <p className="text-[10px] font-mono text-[#4D678A] uppercase tracking-widest">{s.label}</p>
+              <p className="text-[10px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest">{s.label}</p>
             </motion.div>
           ))}
         </div>
@@ -397,9 +397,9 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
                 </p>
                 <div className="grid grid-cols-2 gap-3">
                   {[a, b].map(appt => (
-                    <div key={appt.id} className="p-3 rounded-xl bg-black/20 border border-white/[0.06]">
-                      <p className="text-xs font-inter font-medium text-[#DDE5F5] truncate">{getAddress(appt)}</p>
-                      <p className="text-[10px] font-mono text-[#567090] mt-0.5">
+                    <div key={appt.id} className="p-3 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)]">
+                      <p className="text-xs font-inter font-medium text-[var(--tx1)] truncate">{getAddress(appt)}</p>
+                      <p className="text-[10px] font-mono text-[var(--tx2)] opacity-60 mt-0.5">
                         {fmtTime(appt.appointment_start_at)} – {fmtTime(appt.appointment_end_at)}
                       </p>
                     </div>
@@ -423,17 +423,17 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
             const repConflicts  = appts.filter(a => conflictApptIds.has(a.id)).length;
             return (
               <motion.div key={repId} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
-                className="bg-white/[0.02] border border-white/[0.06] rounded-3xl">
-                <button className="w-full p-5 flex items-center justify-between gap-4 hover:bg-white/[0.02] transition-all rounded-t-3xl"
+                className="bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-3xl">
+                <button className="w-full p-5 flex items-center justify-between gap-4 hover:bg-[var(--bg-elevated)] transition-all rounded-t-3xl"
                   onClick={() => setExpandedRep(isOpen ? null : repId)}>
                   <div className="flex items-center gap-4 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                      <Users className="w-4 h-4 text-[#3F5878]" />
+                    <div className="w-9 h-9 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] flex items-center justify-center shrink-0">
+                      <Users className="w-4 h-4 text-[var(--tx2)] opacity-60" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-inter font-medium text-[#DDE5F5] truncate">{resolveRepName(repId)}</p>
+                      <p className="text-sm font-inter font-medium text-[var(--tx1)] truncate">{resolveRepName(repId)}</p>
                       <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-                        <Pill label={`${appts.length} total`} color="text-[#3F5878]" />
+                        <Pill label={`${appts.length} total`} color="text-[var(--tx2)] opacity-60" />
                         {repRemaining > 0 && <Pill label={`${repRemaining} remaining`} color="text-[#3aada3]" />}
                         {repCompleted > 0 && <Pill label={`${repCompleted} done`} color="text-[#2563ba]" />}
                         {repNoShows > 0 && <Pill label={`${repNoShows} no-show`} color="text-rose-400" />}
@@ -441,14 +441,14 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
                       </div>
                     </div>
                   </div>
-                  <ChevronDown className={cn("w-4 h-4 text-[#2D4060] transition-transform shrink-0", isOpen && "rotate-180")} />
+                  <ChevronDown className={cn("w-4 h-4 text-[var(--tx2)] opacity-40 transition-transform shrink-0", isOpen && "rotate-180")} />
                 </button>
                 <AnimatePresence>
                   {isOpen && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.2 }}
                       className={cn("transition-all", isOpen ? "overflow-visible" : "overflow-hidden")}>
-                      <div className="border-t border-white/[0.05] divide-y divide-white/[0.04]">
+                      <div className="border-t border-[var(--border-color)] divide-y divide-[var(--border-color)]">
                         {appts.map(appt => (
                           <RepApptRow key={appt.id} appt={appt} hasConflict={conflictApptIds.has(appt.id)} onReassigned={fetchData} reps={dbReps} />
                         ))}
@@ -461,8 +461,8 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
           })}
           {Object.keys(byRep).length === 0 && (
             <div className="py-12 text-center">
-              <CalendarDays className="w-8 h-8 text-[#1F2E48] mx-auto mb-3" />
-              <p className="text-[#354D6F] text-sm">No appointments scheduled for today.</p>
+              <CalendarDays className="w-8 h-8 text-[var(--tx2)] opacity-30 mx-auto mb-3" />
+              <p className="text-[var(--tx2)] opacity-60 text-sm">No appointments scheduled for today.</p>
             </div>
           )}
         </div>
@@ -477,8 +477,8 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
               <motion.div key={appt.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
                 className="p-4 rounded-2xl bg-rose-500/[0.04] border border-rose-500/15 flex items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="text-sm font-inter font-medium text-[#DDE5F5] truncate">{getAddress(appt)}</p>
-                  <p className="text-[10px] font-mono text-[#3F5878] mt-0.5">
+                  <p className="text-sm font-inter font-medium text-[var(--tx1)] truncate">{getAddress(appt)}</p>
+                  <p className="text-[10px] font-mono text-[var(--tx2)] opacity-60 mt-0.5">
                     {fmtTime(appt.appointment_start_at)} · {resolveRepName(appt.assigned_rep_id)}
                   </p>
                 </div>
@@ -498,12 +498,12 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
               <motion.div key={lead.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
                 className="p-4 rounded-2xl bg-orange-500/[0.04] border border-orange-500/15 flex items-center justify-between gap-4">
                 <div className="min-w-0 space-y-0.5">
-                  <p className="text-sm font-inter font-medium text-[#DDE5F5] truncate">
+                  <p className="text-sm font-inter font-medium text-[var(--tx1)] truncate">
                     {lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id}
                   </p>
                   <div className="flex items-center gap-3 flex-wrap">
                     {lead.centerpoint_jobs?.raw?._owner && (
-                      <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-wider">
+                      <span className="text-[10px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-wider">
                         {lead.centerpoint_jobs.raw._owner}
                       </span>
                     )}
@@ -512,7 +512,7 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
                         Due {fmtShortDate(lead.next_follow_up_at)}
                       </span>
                     )}
-                    <span className="text-[10px] font-mono text-[#2D4060]">{lead.contact_attempt_count} attempts</span>
+                    <span className="text-[10px] font-mono text-[var(--tx2)] opacity-40">{lead.contact_attempt_count} attempts</span>
                   </div>
                 </div>
                 <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse shrink-0" />
@@ -536,12 +536,12 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[10px] font-mono text-[#8BA5C5] uppercase">{item.target_system}</span>
-                        <span className="text-[10px] font-mono text-[#3F5878]">→</span>
-                        <span className="text-[10px] font-mono text-[#567090]">{item.action}</span>
+                        <span className="text-[10px] font-mono text-[var(--tx1)] uppercase">{item.target_system}</span>
+                        <span className="text-[10px] font-mono text-[var(--tx2)] opacity-40">→</span>
+                        <span className="text-[10px] font-mono text-[var(--tx2)] opacity-60">{item.action}</span>
                       </div>
                       {item.target_id && (
-                        <p className="text-[10px] font-mono text-[#354D6F] mt-0.5 truncate">ID: {item.target_id}</p>
+                        <p className="text-[10px] font-mono text-[var(--tx2)] opacity-60 mt-0.5 truncate">ID: {item.target_id}</p>
                       )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -554,7 +554,7 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
                           try { await dismissQueueItems([item.id]); await fetchData(); }
                           finally { setDismissing(null); }
                         }}
-                        className="p-1 rounded-lg text-[#3F5878] hover:text-red-400 hover:bg-red-500/10 transition-all disabled:opacity-30"
+                        className="p-1 rounded-lg text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-red-400 hover:bg-red-500/10 transition-all disabled:opacity-30"
                         title="Dismiss">
                         {dismissing === item.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : <X className="w-3 h-3" />}
                       </button>
@@ -565,7 +565,7 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
                       {item.error.slice(0, 120)}{item.error.length > 120 ? "…" : ""}
                     </p>
                   )}
-                  <p className="text-[9px] font-mono text-[#2D4060]">
+                  <p className="text-[9px] font-mono text-[var(--tx2)] opacity-40">
                     Failed {fmtShortDate(item.updated_at)} · Created {fmtShortDate(item.created_at)}
                   </p>
                 </motion.div>
@@ -579,7 +579,7 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
                   try { await processQueue(); await fetchData(); }
                   finally { setTimeout(() => setRetryCooldown(false), 5000); }
                 }}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-[#567090] hover:text-[#E8EDF8] hover:bg-white/10 transition-all disabled:opacity-40">
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-color)] text-xs font-mono text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] transition-all disabled:opacity-40">
                 <Zap className="w-3.5 h-3.5" />
                 {retryCooldown ? "Retrying…" : "Retry Failed Items"}
               </button>
@@ -602,14 +602,14 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
       {/* All clear */}
       {ps.total === 0 && total === 0 && overdue_followups.length === 0 && outbound_failures.length === 0 && (
         <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
-          <Activity className="w-8 h-8 text-[#1F2E48]" />
-          <p className="text-lg font-inter font-medium text-[#3F5878]">All clear</p>
-          <p className="text-sm text-[#2D4060] font-light">No pipeline leads, appointments, follow-ups, or queue failures.</p>
+          <Activity className="w-8 h-8 text-[var(--tx2)] opacity-30" />
+          <p className="text-lg font-inter font-medium text-[var(--tx2)] opacity-60">All clear</p>
+          <p className="text-sm text-[var(--tx2)] opacity-40 font-light">No pipeline leads, appointments, follow-ups, or queue failures.</p>
         </div>
       )}
 
       {/* ── Access Control ── */}
-      <section className="space-y-4 border-t border-white/[0.05] pt-8">
+      <section className="space-y-4 border-t border-[var(--border-color)] pt-8">
         <SectionHeader icon={Shield} label="Access Control" color="text-[#4a8fd4]" />
         <AccessControlPanel />
       </section>
@@ -631,7 +631,7 @@ export function ManagerDashboard({ currentRep: _currentRep }: Props) {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 260 }}
-              className="fixed top-0 right-0 bottom-0 z-50 w-[420px] max-w-[92vw] flex flex-col bg-[#080808] border-l border-white/[0.08] shadow-2xl"
+              className="fixed top-0 right-0 bottom-0 z-50 w-[420px] max-w-[92vw] flex flex-col bg-[var(--bg-elevated)] border-l border-[var(--border-color)] shadow-2xl"
             >
               <StageLeadsPanel
                 stageKey={selectedStage}
@@ -677,18 +677,18 @@ function StageLeadsPanel({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.07] shrink-0">
+      <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--border-color)] shrink-0">
         <div>
-          <p className="text-[9px] font-mono text-[#354D6F] uppercase tracking-[0.2em] mb-0.5">Pipeline · Drill-down</p>
-          <h2 className="text-base font-inter font-medium text-[#DDE5F5]">{STAGE_LABEL_MAP[stageKey]}</h2>
+          <p className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-[0.2em] mb-0.5">Pipeline · Drill-down</p>
+          <h2 className="text-base font-inter font-medium text-[var(--tx1)]">{STAGE_LABEL_MAP[stageKey]}</h2>
         </div>
         <div className="flex items-center gap-3">
-          <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-[#8BA5C5]">
+          <span className="px-2.5 py-1 rounded-full bg-[var(--bg-subtle)] border border-[var(--border-color)] text-xs font-mono text-[var(--tx2)] opacity-60">
             {leads.length}
           </span>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl bg-white/5 border border-white/10 text-[#3F5878] hover:text-[#E8EDF8] hover:bg-white/10 transition-all"
+            className="p-2 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] transition-all"
           >
             <X className="w-4 h-4" />
           </button>
@@ -696,13 +696,13 @@ function StageLeadsPanel({
       </div>
 
       {/* "View in Pipeline" shortcut */}
-      <div className="px-6 py-3 border-b border-white/[0.05] shrink-0">
+      <div className="px-6 py-3 border-b border-[var(--border-color)] shrink-0">
         <button
           onClick={() => {
             window.dispatchEvent(new CustomEvent("changeView", { detail: "pipeline" }));
             onClose();
           }}
-          className="flex items-center gap-2 text-[10px] font-mono text-[#3F5878] hover:text-[#8BA5C5] uppercase tracking-widest transition-colors"
+          className="flex items-center gap-2 text-[10px] font-mono text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] uppercase tracking-widest transition-colors"
         >
           <ExternalLink className="w-3 h-3" />
           Open in Pipeline view
@@ -713,8 +713,8 @@ function StageLeadsPanel({
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2">
         {leads.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
-            <Activity className="w-7 h-7 text-[#1F2E48]" />
-            <p className="text-sm text-[#354D6F]">No leads in this stage.</p>
+            <Activity className="w-7 h-7 text-[var(--tx2)] opacity-30" />
+            <p className="text-sm text-[var(--tx2)] opacity-60">No leads in this stage.</p>
           </div>
         ) : (
           leads.map((lead, i) => {
@@ -730,11 +730,11 @@ function StageLeadsPanel({
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.03 }}
-                className="p-4 rounded-2xl bg-white/[0.025] border border-white/[0.07] hover:border-white/[0.12] hover:bg-white/[0.04] transition-all space-y-2.5"
+                className="p-4 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] hover:bg-[var(--bg-elevated)] transition-all space-y-2.5"
               >
                 {/* Address + status badge */}
                 <div className="flex items-start justify-between gap-3">
-                  <p className="text-sm font-inter font-medium text-[#DDE5F5] leading-snug">{address}</p>
+                  <p className="text-sm font-inter font-medium text-[var(--tx1)] leading-snug">{address}</p>
                   <span className={cn("shrink-0 text-[9px] font-mono px-2 py-0.5 rounded-full border", statusColor)}>
                     {statusLabel}
                   </span>
@@ -743,18 +743,18 @@ function StageLeadsPanel({
                 {/* Meta row */}
                 <div className="flex items-center gap-3 flex-wrap">
                   {lead.cpc_ticket_id && (
-                    <span className="text-[10px] font-mono text-[#2D4060] bg-white/[0.03] border border-white/[0.06] rounded px-1.5 py-0.5">
+                    <span className="text-[10px] font-mono text-[var(--tx2)] opacity-40 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded px-1.5 py-0.5">
                       #{lead.cpc_ticket_id}
                     </span>
                   )}
                   {owner && (
-                    <span className="flex items-center gap-1 text-[10px] font-mono text-[#3F5878] uppercase tracking-wider">
+                    <span className="flex items-center gap-1 text-[10px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-wider">
                       <User className="w-2.5 h-2.5" />
                       {owner}
                     </span>
                   )}
                   {lead.contact_attempt_count > 0 && (
-                    <span className="text-[10px] font-mono text-[#2D4060]">
+                    <span className="text-[10px] font-mono text-[var(--tx2)] opacity-40">
                       {lead.contact_attempt_count} {lead.contact_attempt_count === 1 ? "touch" : "touches"}
                     </span>
                   )}
@@ -762,7 +762,7 @@ function StageLeadsPanel({
 
                 {/* Rep + follow-up row */}
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-[10px] font-mono text-[#354D6F]">
+                  <span className="text-[10px] font-mono text-[var(--tx2)] opacity-60">
                     {resolveRepName(lead.assigned_rep_id)}
                   </span>
                   {lead.next_follow_up_at && (
@@ -777,7 +777,7 @@ function StageLeadsPanel({
                   <button
                     onClick={() => setAssigningLead(isAssigning ? null : lead.id)}
                     disabled={isSaving}
-                    className="flex items-center gap-1.5 text-[10px] font-mono text-[#3F5878] hover:text-[#8BA5C5] uppercase tracking-wider transition-colors"
+                    className="flex items-center gap-1.5 text-[10px] font-mono text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] uppercase tracking-wider transition-colors"
                   >
                     {isSaving
                       ? <RefreshCw className="w-2.5 h-2.5 animate-spin" />
@@ -793,19 +793,19 @@ function StageLeadsPanel({
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -4, scale: 0.97 }}
                         transition={{ duration: 0.12 }}
-                        className="absolute bottom-full left-0 mb-2 z-10 w-52 rounded-xl border border-white/[0.12] bg-[#0c0c0c] shadow-2xl overflow-hidden"
+                        className="absolute bottom-full left-0 mb-2 z-10 w-52 rounded-xl border border-[var(--border-color)] bg-[var(--bg-elevated)] shadow-2xl overflow-hidden"
                       >
-                        <p className="px-3 py-2 text-[9px] font-mono text-[#2D4060] uppercase tracking-widest border-b border-white/[0.06]">
+                        <p className="px-3 py-2 text-[9px] font-mono text-[var(--tx2)] opacity-40 uppercase tracking-widest border-b border-[var(--border-color)]">
                           Assign to rep
                         </p>
                         {reps.map(rep => (
                           <button
                             key={rep.id}
                             onClick={() => handleAssign(lead.id, rep.id)}
-                            className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-white/[0.04] transition-colors text-left"
+                            className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-[var(--bg-subtle)] transition-colors text-left"
                           >
-                            <User className="w-3 h-3 text-[#3F5878] shrink-0" />
-                            <span className="text-xs font-inter text-[#AABDCF] truncate flex-1">{rep.name}</span>
+                            <User className="w-3 h-3 text-[var(--tx2)] opacity-40 shrink-0" />
+                            <span className="text-xs font-inter text-[var(--tx1)] truncate flex-1">{rep.name}</span>
                             {lead.assigned_rep_id === rep.id && (
                               <Check className="w-3 h-3 text-[#3aada3] shrink-0" />
                             )}
@@ -829,9 +829,9 @@ function SectionHeader({ icon: Icon, label, count, color }: { icon: any; label: 
   return (
     <div className="flex items-center gap-3">
       <Icon className={cn("w-4 h-4", color)} />
-      <h3 className="text-sm font-inter font-medium text-[#AABDCF]">{label}</h3>
+      <h3 className="text-sm font-inter font-medium text-[var(--tx1)]">{label}</h3>
       {count !== undefined && (
-        <span className={cn("text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5", color)}>{count}</span>
+        <span className={cn("text-[10px] font-mono px-2 py-0.5 rounded-full bg-[var(--bg-subtle)]", color)}>{count}</span>
       )}
     </div>
   );
@@ -875,7 +875,7 @@ function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
 
   return (
     <div className={cn(
-      "px-5 py-4 flex items-center justify-between gap-4 transition-all hover:bg-white/[0.02] last:rounded-b-3xl",
+      "px-5 py-4 flex items-center justify-between gap-4 transition-all hover:bg-[var(--bg-elevated)] last:rounded-b-3xl",
       hasConflict && "bg-amber-500/[0.03]"
     )}>
       <div className="flex items-center gap-3 min-w-0">
@@ -886,11 +886,11 @@ function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
             {hasConflict && <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0" />}
           </div>
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-[10px] font-mono text-[#4D678A]">
+            <span className="text-[10px] font-mono text-[var(--tx2)] opacity-60">
               {fmtTime(appt.appointment_start_at)} – {fmtTime(appt.appointment_end_at)}
             </span>
-            {owner && <span className="text-[10px] font-mono text-[#354D6F] uppercase">{owner}</span>}
-            <span className="text-[10px] font-mono text-[#2D4060]">{label}</span>
+            {owner && <span className="text-[10px] font-mono text-[var(--tx2)] opacity-60 uppercase">{owner}</span>}
+            <span className="text-[10px] font-mono text-[var(--tx2)] opacity-40">{label}</span>
           </div>
         </div>
       </div>
@@ -898,12 +898,12 @@ function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
       <div className="flex items-center gap-3 shrink-0">
         {phone && (
           <button onClick={() => window.open(`tel:${phone}`)}
-            className="p-2 rounded-lg bg-white/5 border border-white/10 text-[#3F5878] hover:text-[#E8EDF8] transition-all">
+            className="p-2 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] transition-all">
             <Phone className="w-3 h-3" />
           </button>
         )}
         <button onClick={() => navigate(address)}
-          className="p-2 rounded-lg bg-white/5 border border-white/10 text-[#3F5878] hover:text-[#E8EDF8] transition-all">
+          className="p-2 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] transition-all">
           <Navigation2 className="w-3 h-3" />
         </button>
         {canStart && (
@@ -925,7 +925,7 @@ function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
           <button
             onClick={() => setShowReassign(v => !v)}
             disabled={reassigning}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-[#3F5878] hover:text-sky-400 hover:border-sky-500/30 hover:bg-sky-500/10 transition-all text-[10px] font-mono disabled:opacity-40"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-sky-400 hover:border-sky-500/30 hover:bg-sky-500/10 transition-all text-[10px] font-mono disabled:opacity-40"
           >
             <UserPlus className="w-3 h-3" />
             Reassign
@@ -937,9 +937,9 @@ function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -4 }}
                 transition={{ duration: 0.12 }}
-                className="absolute right-0 top-full mt-1.5 z-50 min-w-[180px] bg-[#111] border border-white/15 rounded-2xl shadow-2xl overflow-hidden"
+                className="absolute right-0 top-full mt-1.5 z-50 min-w-[180px] bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-2xl shadow-2xl overflow-hidden"
               >
-                <p className="px-3 pt-2.5 pb-1 text-[9px] font-mono text-[#354D6F] uppercase tracking-widest">
+                <p className="px-3 pt-2.5 pb-1 text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest">
                   Assign to rep
                 </p>
                 {reps.map(rep => (
@@ -947,8 +947,8 @@ function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
                     key={rep.id}
                     onClick={() => handleReassign(rep.id)}
                     className={cn(
-                      "w-full text-left px-3 py-2.5 text-xs font-inter transition-all hover:bg-white/10",
-                      appt.assigned_rep_id === rep.id ? "text-sky-400 bg-sky-500/10" : "text-[#AABDCF]"
+                      "w-full text-left px-3 py-2.5 text-xs font-inter transition-all hover:bg-[var(--bg-subtle)]",
+                      appt.assigned_rep_id === rep.id ? "text-sky-400 bg-sky-500/10" : "text-[var(--tx1)]"
                     )}
                   >
                     {rep.name}
@@ -959,7 +959,7 @@ function RepApptRow({ appt, hasConflict, onReassigned, reps }: {
                 ))}
                 <button
                   onClick={() => setShowReassign(false)}
-                  className="w-full text-left px-3 py-2 text-[10px] font-mono text-[#2D4060] hover:text-[#7090B0] transition-all border-t border-white/[0.06]"
+                  className="w-full text-left px-3 py-2 text-[10px] font-mono text-[var(--tx2)] opacity-40 hover:opacity-100 transition-all border-t border-[var(--border-color)]"
                 >
                   Cancel
                 </button>

@@ -45,13 +45,13 @@ export function PipelineLeadSlideOver({
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 bottom-0 w-full max-w-[420px] bg-[#0b0b0b] border-l border-white/10 z-50 overflow-y-auto shadow-2xl flex flex-col"
+            className="fixed top-0 right-0 bottom-0 w-full max-w-[420px] bg-[var(--bg-elevated)] border-l border-[var(--border-color)] z-50 overflow-y-auto shadow-2xl flex flex-col"
           >
-            <div className="flex items-center justify-between p-6 border-b border-white/10 shrink-0">
-              <h2 className="text-lg font-inter font-medium text-[#E8EDF8]">Lead Details</h2>
+            <div className="flex items-center justify-between p-6 border-b border-[var(--border-color)] shrink-0">
+              <h2 className="text-lg font-inter font-medium text-[var(--tx1)]">Lead Details</h2>
               <button
                 onClick={onClose}
-                className="p-2 -mr-2 rounded-xl text-[#7090B0] hover:text-white hover:bg-white/10 transition-all"
+                className="p-2 -mr-2 rounded-xl text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] hover:bg-[var(--bg-subtle)] transition-all"
               >
                 <X className="w-5 h-5" />
               </button>

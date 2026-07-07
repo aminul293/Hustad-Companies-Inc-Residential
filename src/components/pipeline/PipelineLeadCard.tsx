@@ -79,7 +79,7 @@ export function PipelineLeadCard({
               <h3 className="text-[13px] font-inter font-medium text-[var(--tx1)] tracking-tight leading-snug truncate">
                 {lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name}
               </h3>
-              <p className="text-[10px] text-[#7090B0] mt-0.5 font-light truncate">
+              <p className="text-[10px] text-[var(--tx2)] opacity-60 mt-0.5 font-light truncate">
                 {lead.centerpoint_jobs?.raw?._owner ? (lead.centerpoint_jobs.raw._owner as string).replace(/\b\w/g, c => c.toUpperCase()) : "Unknown Owner"}
               </p>
             </div>
@@ -155,8 +155,8 @@ export function PipelineLeadCard({
               <div key={i} className="relative flex-1 group/dot">
                 <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/dot:opacity-100 transition-opacity z-10">
                   <div className="dark:bg-[#111] bg-white dark:border-white/10 border-black/10 rounded-xl px-3 py-2 text-center shadow-lg" style={{ minWidth: "140px", maxWidth: "200px" }}>
-                    <p className="text-[9px] font-mono text-[#AABDCF] uppercase tracking-widest mb-0.5">{label}</p>
-                    <p className="text-[9px] text-[#4D678A] font-light leading-snug">{hint}</p>
+                    <p className="text-[9px] font-mono text-[var(--tx1)] uppercase tracking-widest mb-0.5">{label}</p>
+                    <p className="text-[9px] text-[var(--tx2)] opacity-60 font-light leading-snug">{hint}</p>
                   </div>
                 </div>
                 <button
@@ -198,14 +198,14 @@ export function PipelineLeadCard({
             {lead.centerpoint_jobs?.property_name || lead.centerpoint_jobs?.name}
           </h3>
           <div className="flex items-center gap-3 mb-1.5">
-            <span className="text-xs text-[#8BA5C5] flex items-center gap-1.5 font-light">
+            <span className="text-xs text-[var(--tx1)] flex items-center gap-1.5 font-light">
               <User className="w-3.5 h-3.5 text-[#567090]" />
               {lead.centerpoint_jobs?.raw?._owner
                 ? (lead.centerpoint_jobs.raw._owner as string).replace(/\b\w/g, c => c.toUpperCase())
                 : "Unknown Owner"}
             </span>
             <div className="w-1 h-1 rounded-full dark:bg-white/15 bg-black/15" />
-            <span className="text-[9px] font-mono text-[#7090B0] uppercase tracking-widest">Residential</span>
+            <span className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest">Residential</span>
           </div>
           {lead.assigned_rep_id && repsMap?.[lead.assigned_rep_id] && (
             <div className="flex items-center gap-1.5 mt-1">
@@ -257,15 +257,15 @@ export function PipelineLeadCard({
         <div className="grid grid-cols-3 gap-2.5 mb-6">
           <div className="dark:bg-white/[0.025] bg-black/[0.04] dark:border-white/[0.05] border-black/[0.07] rounded-2xl p-3.5">
             <div className="flex items-center justify-between mb-1.5">
-              <p className="text-[7px] font-mono text-[#8BA5C5] uppercase tracking-[0.2em]">Attempts</p>
-              <Phone className="w-2.5 h-2.5 text-[#4D678A]" />
+              <p className="text-[7px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-[0.2em]">Attempts</p>
+              <Phone className="w-2.5 h-2.5 text-[var(--tx2)] opacity-60" />
             </div>
             <p className="text-[1.3rem] font-sans font-semibold leading-none text-[var(--tx1)]">{lead.contact_attempt_count}</p>
           </div>
           <div className="dark:bg-white/[0.025] bg-black/[0.04] dark:border-white/[0.05] border-black/[0.07] rounded-2xl p-3.5">
             <div className="flex items-center justify-between mb-1.5">
-              <p className="text-[7px] font-mono text-[#8BA5C5] uppercase tracking-[0.2em]">{isScheduled ? "Date" : "Last Contact"}</p>
-              <Clock className="w-2.5 h-2.5 text-[#4D678A]" />
+              <p className="text-[7px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-[0.2em]">{isScheduled ? "Date" : "Last Contact"}</p>
+              <Clock className="w-2.5 h-2.5 text-[var(--tx2)] opacity-60" />
             </div>
             <p className="text-[11px] font-sans font-semibold text-[var(--tx1)] leading-tight">
               {isScheduled && lead.scheduled_start_at ? fmtDate(lead.scheduled_start_at) : fmtDate(lead.last_contacted_at) || "Never"}
@@ -273,17 +273,17 @@ export function PipelineLeadCard({
           </div>
           <div className="dark:bg-white/[0.025] bg-black/[0.04] dark:border-white/[0.05] border-black/[0.07] rounded-2xl p-3.5">
             <div className="flex items-center justify-between mb-1.5">
-              <p className="text-[7px] font-mono text-[#8BA5C5] uppercase tracking-[0.2em]">
+              <p className="text-[7px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-[0.2em]">
                 {isScheduled ? "Duration" : lead.pipeline_status === "follow_up_needed" ? "Follow Up" : "Idle"}
               </p>
-              <CalendarDays className="w-2.5 h-2.5 text-[#4D678A]" />
+              <CalendarDays className="w-2.5 h-2.5 text-[var(--tx2)] opacity-60" />
             </div>
             {isScheduled ? (
               <div>
                 <p className="text-[11px] font-sans font-semibold text-[#3aada3] leading-tight">
                   {lead.scheduled_start_at ? fmtTime(lead.scheduled_start_at) : "—"}
                 </p>
-                <p className="text-[9px] font-mono text-[#7090B0] mt-0.5">
+                <p className="text-[9px] font-mono text-[var(--tx2)] opacity-60 mt-0.5">
                   {apptDurationMin !== null ? (apptDurationMin < 60 ? `${apptDurationMin} min` : `${apptDurationMin / 60} hr`) : "—"}
                 </p>
               </div>
@@ -307,10 +307,10 @@ export function PipelineLeadCard({
                 <ActIcon className="w-3 h-3" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] text-[#7090B0] font-light truncate">{label}</p>
+                <p className="text-[10px] text-[var(--tx2)] opacity-60 font-light truncate">{label}</p>
               </div>
               {lastActivity.timestamp && (
-                <span className="text-[9px] font-mono text-[#2D4060] shrink-0">{lastActivity.timestamp}</span>
+                <span className="text-[9px] font-mono text-[var(--tx2)] opacity-40 shrink-0">{lastActivity.timestamp}</span>
               )}
             </div>
           );

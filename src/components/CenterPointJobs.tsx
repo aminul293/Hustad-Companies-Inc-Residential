@@ -761,8 +761,8 @@ export function CenterPointJobs() {
                                         className={cn(
                                           "px-3 py-1.5 rounded-lg text-[9px] font-mono uppercase tracking-widest border transition-all",
                                           s === attr.status
-                                            ? "bg-white/5 text-[#3F5878] border-white/5 cursor-default"
-                                            : "bg-white/[0.03] border-white/10 text-[#7090B0] hover:bg-[#2563ba]/20 hover:border-[#2563ba]/40 hover:text-[#4a8fd4] active:scale-95"
+                                            ? "bg-[var(--bg-subtle)] text-[var(--tx2)] opacity-60 border-[var(--border-color)] cursor-default"
+                                            : "bg-[var(--bg-subtle)] border-[var(--border-color)] text-[var(--tx2)] opacity-60 hover:bg-[#2563ba]/20 hover:border-[#2563ba]/40 hover:text-[#4a8fd4] hover:opacity-100 active:scale-95"
                                         )}
                                       >
                                         {STAGES[s]?.label ?? s}
@@ -770,7 +770,7 @@ export function CenterPointJobs() {
                                     ))}
                                     <button
                                       onClick={() => setStagePickerJobId(null)}
-                                      className="px-3 py-1.5 rounded-lg text-[9px] font-mono uppercase tracking-widest border border-white/[0.04] text-[#2D4060] hover:bg-white/5 hover:text-[#567090] transition-all"
+                                      className="px-3 py-1.5 rounded-lg text-[9px] font-mono uppercase tracking-widest border border-[var(--border-color)] text-[var(--tx2)] opacity-60 hover:bg-[var(--bg-subtle)] hover:opacity-100 transition-all"
                                     >
                                       Cancel
                                     </button>
@@ -782,7 +782,7 @@ export function CenterPointJobs() {
                                     <button
                                       onClick={() => handleStageTransition(job, nextStage)}
                                       disabled={isTransitioning}
-                                      className="flex items-center gap-2 px-5 py-2.5 rounded-[14px] bg-white/10 text-[#E8EDF8] text-xs font-inter font-medium hover:bg-white/20 active:scale-95 transition-all disabled:opacity-50"
+                                      className="flex items-center gap-2 px-5 py-2.5 rounded-[14px] bg-[var(--bg-subtle)] text-[var(--tx1)] text-xs font-inter font-medium hover:bg-[var(--bg-elevated)] active:scale-95 transition-all disabled:opacity-50"
                                     >
                                       {isTransitioning ? (
                                         <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -794,7 +794,7 @@ export function CenterPointJobs() {
                                   ) : null}
                                   <button
                                     onClick={() => setStagePickerJobId(job.id)}
-                                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-[14px] bg-white/[0.03] border border-white/[0.08] text-[#567090] text-[10px] font-mono uppercase tracking-widest hover:bg-white/[0.07] hover:text-[#7090B0] hover:border-white/15 active:scale-95 transition-all"
+                                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-[14px] bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--tx2)] opacity-60 text-[10px] font-mono uppercase tracking-widest hover:bg-[var(--bg-elevated)] hover:opacity-100 hover:border-[var(--border-color)] active:scale-95 transition-all"
                                   >
                                     <RefreshCw className="w-3 h-3" />
                                     Change Stage
