@@ -15,15 +15,15 @@ const STAGES: Record<string, {
   ring: string;
   chip: { bg: string; fg: string; dot: string };
 }> = {
-  new_service:   { label: "New Service", next: "accepted",        color: "bg-sky-500/20 text-sky-300 border-sky-500/30",               ring: "bg-sky-400",     chip: { bg: "#d0e4f7", fg: "#1e4d8c", dot: "#2563ba" } },
-  accepted:      { label: "Accepted",    next: "scheduled",     color: "bg-[#2563ba]/20 text-[#4a8fd4] border-[#2563ba]/30",          ring: "bg-[#2563ba]",   chip: { bg: "#c5daf4", fg: "#163975", dot: "#2563ba" } },
-  scheduled:     { label: "Scheduled",   next: "started",       color: "bg-[#1e4d8c]/25 text-[#4a8fd4] border-[#1e4d8c]/35",          ring: "bg-[#1e4d8c]",   chip: { bg: "#b9d0ef", fg: "#123068", dot: "#1e4d8c" } },
-  started:       { label: "In Progress", next: "completed",     color: "bg-[#2a8a82]/20 text-[#3aada3] border-[#2a8a82]/30",          ring: "bg-[#2a8a82]",   chip: { bg: "#b8d9d7", fg: "#165955", dot: "#2a8a82" } },
-  completed:     { label: "Completed",   next: "closed",        color: "bg-[#2a8a82]/25 text-[#3aada3] border-[#2a8a82]/35",          ring: "bg-[#3aada3]",   chip: { bg: "#a8d2d0", fg: "#115250", dot: "#2a8a82" } },
-  closed:        { label: "Closed Out",  next: null,            color: "bg-white/10 text-[#567090] border-white/10",                  ring: "bg-white/30",    chip: { bg: "#f6f9fc", fg: "#64748d", dot: "#94a3b8" } },
+  new_service: { label: "New Service", next: "accepted", color: "bg-sky-500/20 text-sky-300 border-sky-500/30", ring: "bg-sky-400", chip: { bg: "#d0e4f7", fg: "#1e4d8c", dot: "#2563ba" } },
+  accepted: { label: "Accepted", next: "scheduled", color: "bg-[#2563ba]/20 text-[#4a8fd4] border-[#2563ba]/30", ring: "bg-[#2563ba]", chip: { bg: "#c5daf4", fg: "#163975", dot: "#2563ba" } },
+  scheduled: { label: "Scheduled", next: "started", color: "bg-[#1e4d8c]/25 text-[#4a8fd4] border-[#1e4d8c]/35", ring: "bg-[#1e4d8c]", chip: { bg: "#b9d0ef", fg: "#123068", dot: "#1e4d8c" } },
+  started: { label: "In Progress", next: "completed", color: "bg-[#2a8a82]/20 text-[#3aada3] border-[#2a8a82]/30", ring: "bg-[#2a8a82]", chip: { bg: "#b8d9d7", fg: "#165955", dot: "#2a8a82" } },
+  completed: { label: "Completed", next: "closed", color: "bg-[#2a8a82]/25 text-[#3aada3] border-[#2a8a82]/35", ring: "bg-[#3aada3]", chip: { bg: "#a8d2d0", fg: "#115250", dot: "#2a8a82" } },
+  closed: { label: "Closed Out", next: null, color: "bg-white/10 text-[#567090] border-white/10", ring: "bg-white/30", chip: { bg: "#f6f9fc", fg: "#64748d", dot: "#94a3b8" } },
 };
 
-const STAGE_ORDER = ["new_service","accepted","scheduled","started","completed","closed"];
+const STAGE_ORDER = ["new_service", "accepted", "scheduled", "started", "completed", "closed"];
 
 const STATUS_FILTERS = [
   { id: "all", label: "All Stages" },
@@ -89,8 +89,8 @@ export function CenterPointJobs() {
   const [stagePickerJobId, setStagePickerJobId] = useState<string | null>(null);
 
   // Role-aware assign-rep state
-  const [userRole, setUserRole]         = useState<string | null>(null);
-  const [reps, setReps]                 = useState<{ id: string; name: string; email: string }[]>([]);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [reps, setReps] = useState<{ id: string; name: string; email: string }[]>([]);
   const [assigningJobId, setAssigningJobId] = useState<string | null>(null);
   const [savingAssignId, setSavingAssignId] = useState<string | null>(null);
   const [unassigningId, setUnassigningId] = useState<string | null>(null);
@@ -143,7 +143,7 @@ export function CenterPointJobs() {
         lastSync: lastCompleted?.completed_at ?? null,
         totalCached: data.total_cached ?? 0,
       }));
-    } catch {}
+    } catch { }
   }, []);
 
   const handleSync = async () => {
@@ -326,74 +326,69 @@ export function CenterPointJobs() {
       </AnimatePresence>
 
       {/* Header */}
-      <div className="p-8 pb-0 space-y-6">
-        <div className="flex items-center gap-4">
-          <button 
+      <div className="p-4 md:p-8 pb-0 space-y-4 md:space-y-6">
+        <div className="flex items-start gap-3">
+          <button
             onClick={() => window.dispatchEvent(new CustomEvent('changeView', { detail: 'dashboard' }))}
-            className="p-3 rounded-[14px] bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all"
+            className="p-2.5 md:p-3 rounded-[14px] bg-[var(--bg-subtle)] border border-[var(--border-color)] hover:bg-[var(--border-color)] transition-all shrink-0 mt-0.5"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
           </button>
-          <div className="min-w-0">
-            <h2 className="text-2xl font-inter font-medium tracking-tight">CenterPoint Jobs</h2>
-            <div className="flex items-center gap-3 mt-1 flex-wrap">
-              <p className="text-sm text-[#567090]">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl md:text-2xl font-inter font-medium tracking-tight">CenterPoint Jobs</h2>
+            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+              <p className="text-xs md:text-sm text-[var(--tx2)] opacity-60">
                 {totalJobs.toLocaleString()} jobs
                 {syncStatus.totalCached > 0 && ` · ${syncStatus.totalCached.toLocaleString()} cached`}
               </p>
               {syncStatus.lastSync && (
-                <span className="flex items-center gap-1 text-[10px] font-mono text-[#354D6F] uppercase tracking-widest">
+                <span className="flex items-center gap-1 text-[10px] font-mono text-[var(--tx2)] opacity-50 uppercase tracking-widest">
                   <CheckCircle2 className="w-3 h-3 text-[#2a8a82]/50" />
-                  synced {new Date(syncStatus.lastSync).toLocaleString()}
+                  <span className="hidden sm:inline">synced </span>{new Date(syncStatus.lastSync).toLocaleString()}
                 </span>
-              )}
-              {syncStatus.result && (
-                <span className="text-[10px] font-mono text-[#2563ba]/70">{syncStatus.result}</span>
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {/* Sync from CenterPoint → Supabase */}
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={handleSync}
               disabled={syncStatus.syncing}
               className={cn(
-                "flex items-center gap-2 px-4 py-2.5 rounded-[14px] border text-xs font-inter transition-all",
+                "flex items-center gap-1.5 px-3 md:px-4 py-2 md:py-2.5 rounded-[14px] border text-xs font-inter transition-all",
                 syncStatus.syncing
                   ? "bg-[#2563ba]/10 border-[#2563ba]/20 text-[#2563ba]/50 cursor-not-allowed"
                   : "bg-[#2563ba]/10 border-[#2563ba]/20 text-[#4a8fd4] hover:bg-[#2563ba]/20"
               )}
             >
               <CloudDownload className={cn("w-3.5 h-3.5", syncStatus.syncing && "animate-pulse")} />
-              {syncStatus.syncing ? "Syncing…" : "Sync Now"}
+              <span className="hidden sm:inline">{syncStatus.syncing ? "Syncing…" : "Sync Now"}</span>
             </button>
-            {/* Refresh list from Supabase */}
             <button
               onClick={() => fetchJobs({ refresh: true, newPage: 1 })}
-              className={cn("p-3 bg-white/5 border border-white/10 rounded-[14px] hover:bg-white/10 transition-all", refreshing && "animate-spin")}
+              className={cn("p-2 md:p-3 bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-[14px] hover:bg-[var(--border-color)] transition-all", refreshing && "animate-spin")}
             >
-              <RefreshCw className="w-4 h-4 text-[#7090B0]" />
+              <RefreshCw className="w-3.5 h-3.5 md:w-4 md:h-4 text-[var(--tx2)] opacity-60" />
             </button>
           </div>
         </div>
 
         {/* Search */}
         <form onSubmit={handleSearchSubmit} className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#3F5878]" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--tx2)] opacity-40" />
           <input
             type="text"
-            placeholder="Search by job number or property name..."
+            placeholder="Search by job number or property..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full bg-white/[0.03] border border-white/[0.1] rounded-2xl py-3.5 pl-12 pr-32 text-sm outline-none focus:border-[#2563ba]/50 transition-all"
+            className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl py-3 pl-10 pr-24 text-sm outline-none focus:border-[#2563ba]/50 transition-all text-[var(--tx1)] placeholder:text-[var(--tx2)] placeholder:opacity-40"
           />
-          <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-[#2563ba]/20 border border-[#2563ba]/30 rounded-xl text-xs text-[#4a8fd4] hover:bg-[#2563ba]/30 transition-all">
+          <button type="submit" className="absolute right-2.5 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[#2563ba]/20 border border-[#2563ba]/30 rounded-xl text-xs text-[#4a8fd4] hover:bg-[#2563ba]/30 transition-all">
             Search
           </button>
         </form>
 
         {/* Filters */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide pt-4">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
           {STATUS_FILTERS.map((f) => {
             const isActive = statusFilter === f.id;
             return (
@@ -401,10 +396,10 @@ export function CenterPointJobs() {
                 key={f.id}
                 onClick={() => setStatusFilter(f.id)}
                 className={cn(
-                  "px-4 py-1.5 rounded-full text-xs font-inter whitespace-nowrap transition-all border",
+                  "px-3 md:px-4 py-1.5 rounded-full text-xs font-inter whitespace-nowrap transition-all border shrink-0",
                   isActive
                     ? "bg-[#2563ba]/20 border-[#2563ba]/30 text-[#4a8fd4]"
-                    : "bg-white/[0.02] border-white/10 text-[#567090] hover:bg-white/[0.06]"
+                    : "bg-[var(--bg-subtle)] border-[var(--border-color)] text-[var(--tx2)] opacity-70 hover:opacity-100"
                 )}
               >
                 {f.label}
@@ -412,12 +407,10 @@ export function CenterPointJobs() {
             );
           })}
         </div>
-
-
       </div>
 
       {/* Job list */}
-      <div className="flex-1 overflow-y-auto p-8 space-y-3">
+      <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-2 md:space-y-3">
         {loading ? (
           <div className="py-20 flex flex-col items-center gap-4 opacity-40">
             <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -443,42 +436,44 @@ export function CenterPointJobs() {
                 <motion.div
                   key={job.id}
                   layout
-                  className="rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-white/15 transition-all overflow-hidden"
+                  className="rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] hover:border-[#2563ba]/30 transition-all overflow-hidden"
                 >
                   {/* Job row */}
                   <button
                     onClick={() => setExpandedId(isExpanded ? null : job.id)}
-                    className="w-full p-6 text-left flex items-center justify-between gap-4"
+                    className="w-full p-4 md:p-6 text-left"
                   >
-                    <div className="flex items-center gap-5 min-w-0">
-                      {/* Stripi-style status chip replacing the colored dot + dark badge */}
-                      <span
-                        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded shrink-0"
-                        style={{
-                          background: stage.chip.bg,
-                          color: stage.chip.fg,
-                          fontSize: 11,
-                          fontFamily: "'Inter', system-ui, sans-serif",
-                          fontWeight: 400,
-                          fontFeatureSettings: '"ss01" 1, "tnum" 1',
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        <span
-                          className="w-1.5 h-1.5 rounded-full shrink-0"
-                          style={{ background: stage.chip.dot }}
-                        />
-                        {stage.label}
-                      </span>
-
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-3 mb-0.5 flex-wrap">
-                          <span className="text-base font-inter font-medium text-[var(--tx1)] truncate">
-                            {attr.propertyName || attr.name || `Job #${job.id}`}
+                    {/* Mobile: stacked layout / Desktop: single row */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        {/* Top row: status chip + ticket number */}
+                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                          <span
+                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded shrink-0"
+                            style={{
+                              background: stage.chip.bg,
+                              color: stage.chip.fg,
+                              fontSize: 11,
+                              fontFamily: "'Inter', system-ui, sans-serif",
+                              fontWeight: 400,
+                              fontFeatureSettings: '"ss01" 1, "tnum" 1',
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            <span
+                              className="w-1.5 h-1.5 rounded-full shrink-0"
+                              style={{ background: stage.chip.dot }}
+                            />
+                            {stage.label}
                           </span>
-                          <span className="text-[9px] font-mono text-[var(--tx2)] opacity-50 tracking-widest">#{attr.name}</span>
+                          <span className="text-[10px] font-mono text-[var(--tx2)] opacity-50 tracking-widest">#{attr.name}</span>
                         </div>
-                        <div className="flex items-center gap-4 flex-wrap">
+                        {/* Property name — full width, no truncation */}
+                        <p className="text-sm md:text-base font-inter font-semibold text-[var(--tx1)] leading-snug mb-1">
+                          {attr.propertyName || attr.name || `Job #${job.id}`}
+                        </p>
+                        {/* Meta row */}
+                        <div className="flex items-center gap-3 flex-wrap">
                           {attr.domain && (
                             <span className="text-[10px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-wider">{attr.domain}</span>
                           )}
@@ -490,32 +485,27 @@ export function CenterPointJobs() {
                               {reps.find(r => r.id === jobAssignments[attr.name])?.name ?? "Assigned"}
                             </span>
                           ) : parseCpManagers(job.cpAdditionalManagers)[0] ? (
-                            <span className="text-[10px] font-inter text-[#3aada3]/60">
+                            <span className="text-[10px] font-inter text-[#3aada3]/70">
                               {parseCpManagers(job.cpAdditionalManagers)[0]}
                             </span>
                           ) : null}
                         </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center gap-4 shrink-0">
-                      {attr.price > 0 && (
-                        <div className="text-right hidden md:block">
-                          <p className="text-[9px] font-mono text-[var(--tx2)] opacity-50 uppercase tracking-widest mb-0.5">Value</p>
-                          <p
-                            className="text-sm font-inter font-normal text-[var(--tx1)]"
-                            style={{ fontFeatureSettings: '"ss01" 1, "tnum" 1', letterSpacing: "-0.42px" }}
-                          >
-                            ${attr.price.toLocaleString()}
-                          </p>
-                        </div>
-                      )}
+                      {/* Right side: assign button + chevron */}
+                      <div className="flex items-center gap-2 shrink-0 pt-0.5">
+                        {attr.price > 0 && (
+                          <div className="text-right hidden md:block">
+                            <p className="text-[9px] font-mono text-[var(--tx2)] opacity-50 uppercase tracking-widest mb-0.5">Value</p>
+                            <p className="text-sm font-inter font-normal text-[var(--tx1)]" style={{ fontFeatureSettings: '"ss01" 1, "tnum" 1', letterSpacing: "-0.42px" }}>
+                              ${attr.price.toLocaleString()}
+                            </p>
+                          </div>
+                        )}
 
                       {/* Inline assign-rep — manager only */}
                       {isManager && (
                         <div className="relative" onClick={e => e.stopPropagation()}>
-                          {/* When a CP pre-assignment exists and the rep is in our system,
-                              clicking directly confirms that rep without opening the dropdown. */}
                           {!jobAssignments[attr.name] && getCpRepId(job) ? (
                             <button
                               onClick={() => handleAssignRep(attr.name, getCpRepId(job)!)}
@@ -529,22 +519,22 @@ export function CenterPointJobs() {
                               Assign
                             </button>
                           ) : (
-                          <button
-                            onClick={() => setAssigningJobId(assigningJobId === job.id ? null : job.id)}
-                            disabled={savingAssignId === attr.name}
-                            className={cn(
-                              "flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-mono transition-all",
-                              jobAssignments[attr.name]
-                                ? "bg-[#2a8a82]/10 border-[#2a8a82]/25 text-[#3aada3]"
-                                : "bg-[var(--bg-subtle)] border-[var(--border-color)] text-[var(--tx2)] hover:text-[var(--tx1)] hover:border-[var(--border-color)]"
-                            )}
-                          >
-                            {savingAssignId === attr.name
-                              ? <RefreshCw className="w-2.5 h-2.5 animate-spin" />
-                              : <UserPlus className="w-2.5 h-2.5" />
-                            }
-                            {jobAssignments[attr.name] ? "Reassign" : "Assign"}
-                          </button>
+                            <button
+                              onClick={() => setAssigningJobId(assigningJobId === job.id ? null : job.id)}
+                              disabled={savingAssignId === attr.name}
+                              className={cn(
+                                "flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-mono transition-all",
+                                jobAssignments[attr.name]
+                                  ? "bg-[#2a8a82]/10 border-[#2a8a82]/25 text-[#3aada3]"
+                                  : "bg-[var(--bg-subtle)] border-[var(--border-color)] text-[var(--tx2)] hover:text-[var(--tx1)]"
+                              )}
+                            >
+                              {savingAssignId === attr.name
+                                ? <RefreshCw className="w-2.5 h-2.5 animate-spin" />
+                                : <UserPlus className="w-2.5 h-2.5" />
+                              }
+                              {jobAssignments[attr.name] ? "Reassign" : "Assign"}
+                            </button>
                           )}
 
                           <AnimatePresence>
@@ -579,7 +569,8 @@ export function CenterPointJobs() {
                       )}
 
                       <ChevronRight className={cn("w-4 h-4 text-[var(--tx2)] opacity-40 transition-transform duration-200", isExpanded && "rotate-90")} />
-                    </div>
+                      </div>{/* end right side */}
+                    </div>{/* end outer flex */}
                   </button>
 
                   {/* Expanded detail */}
@@ -606,8 +597,8 @@ export function CenterPointJobs() {
                                     <div className={cn(
                                       "px-3 py-1.5 rounded-lg text-[9px] font-mono uppercase tracking-widest border transition-all",
                                       isCurrent ? stage.color + " ring-1 ring-white/20" :
-                                      isPast ? "bg-[var(--bg-subtle)] text-[var(--tx2)] opacity-60 border-[var(--border-color)]" :
-                                      "bg-transparent text-[var(--tx2)] opacity-30 border-[var(--border-color)]"
+                                        isPast ? "bg-[var(--bg-subtle)] text-[var(--tx2)] opacity-60 border-[var(--border-color)]" :
+                                          "bg-transparent text-[var(--tx2)] opacity-30 border-[var(--border-color)]"
                                     )}>
                                       {STAGES[s]?.label ?? s}
                                     </div>
@@ -800,73 +791,73 @@ export function CenterPointJobs() {
                                     Change Stage
                                   </button>
 
-                                {job.inbox_status === 'imported_to_pipeline' ? (
-                                  <span className="flex items-center gap-1 rounded-[14px] bg-[#2a8a82]/10 border border-[#2a8a82]/25 text-xs font-inter text-[#3aada3] overflow-hidden">
-                                    <span className="flex items-center gap-2 pl-4 pr-2 py-2.5">
-                                      <CheckCircle2 className="w-3.5 h-3.5" />
-                                      In Pipeline
+                                  {job.inbox_status === 'imported_to_pipeline' ? (
+                                    <span className="flex items-center gap-1 rounded-[14px] bg-[#2a8a82]/10 border border-[#2a8a82]/25 text-xs font-inter text-[#3aada3] overflow-hidden">
+                                      <span className="flex items-center gap-2 pl-4 pr-2 py-2.5">
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                        In Pipeline
+                                      </span>
+                                      <button
+                                        onClick={async (e) => {
+                                          e.stopPropagation();
+                                          setUnlinkingId(job.id);
+                                          try {
+                                            const res = await unlinkPipelineByTicket(job.attributes.name);
+                                            if (res.ok) {
+                                              setJobs(prev => prev.map(j =>
+                                                j.id === job.id ? { ...j, inbox_status: '' } : j
+                                              ));
+                                            }
+                                          } catch (e) {
+                                            /* non-fatal */
+                                          } finally {
+                                            setUnlinkingId(null);
+                                          }
+                                        }}
+                                        disabled={unlinkingId === job.id}
+                                        title="Remove from Pipeline"
+                                        className="pr-3 pl-1 py-2.5 text-[#3aada3]/50 hover:text-rose-400 hover:bg-rose-500/10 transition-all disabled:opacity-40"
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </button>
                                     </span>
+                                  ) : (
                                     <button
-                                      onClick={async (e) => {
-                                        e.stopPropagation();
-                                        setUnlinkingId(job.id);
+                                      disabled={promotingId === job.id}
+                                      className="flex items-center gap-2 px-5 py-2.5 rounded-[14px] bg-[#2563ba] text-white text-xs font-inter font-medium hover:bg-[#1e4d8c] active:scale-95 transition-all disabled:opacity-50"
+                                      onClick={async () => {
+                                        setPromotingId(job.id);
+                                        setImportError(null);
                                         try {
-                                          const res = await unlinkPipelineByTicket(job.attributes.name);
+                                          const res = await createPipelineLead({ job });
                                           if (res.ok) {
                                             setJobs(prev => prev.map(j =>
-                                              j.id === job.id ? { ...j, inbox_status: '' } : j
+                                              j.id === job.id ? { ...j, inbox_status: 'imported_to_pipeline' } : j
                                             ));
+                                            window.dispatchEvent(new CustomEvent('changeView', { detail: 'pipeline' }));
+                                          } else {
+                                            const err = await res.json().catch(() => ({}));
+                                            setImportError(err.error || "Import failed. Please try again.");
+                                            setTimeout(() => setImportError(null), 6000);
                                           }
-                                        } catch (e) {
-                                          /* non-fatal */
+                                        } catch {
+                                          setImportError("Network error — check your connection and try again.");
+                                          setTimeout(() => setImportError(null), 6000);
                                         } finally {
-                                          setUnlinkingId(null);
+                                          setPromotingId(null);
                                         }
                                       }}
-                                      disabled={unlinkingId === job.id}
-                                      title="Remove from Pipeline"
-                                      className="pr-3 pl-1 py-2.5 text-[#3aada3]/50 hover:text-rose-400 hover:bg-rose-500/10 transition-all disabled:opacity-40"
                                     >
-                                      <X className="w-3 h-3" />
+                                      {promotingId === job.id ? (
+                                        <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                      ) : (
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                      )}
+                                      Import to Pipeline
                                     </button>
-                                  </span>
-                                ) : (
-                                  <button
-                                    disabled={promotingId === job.id}
-                                    className="flex items-center gap-2 px-5 py-2.5 rounded-[14px] bg-[#2563ba] text-white text-xs font-inter font-medium hover:bg-[#1e4d8c] active:scale-95 transition-all disabled:opacity-50"
-                                    onClick={async () => {
-                                      setPromotingId(job.id);
-                                      setImportError(null);
-                                      try {
-                                        const res = await createPipelineLead({ job });
-                                        if (res.ok) {
-                                          setJobs(prev => prev.map(j =>
-                                            j.id === job.id ? { ...j, inbox_status: 'imported_to_pipeline' } : j
-                                          ));
-                                          window.dispatchEvent(new CustomEvent('changeView', { detail: 'pipeline' }));
-                                        } else {
-                                          const err = await res.json().catch(() => ({}));
-                                          setImportError(err.error || "Import failed. Please try again.");
-                                          setTimeout(() => setImportError(null), 6000);
-                                        }
-                                      } catch {
-                                        setImportError("Network error — check your connection and try again.");
-                                        setTimeout(() => setImportError(null), 6000);
-                                      } finally {
-                                        setPromotingId(null);
-                                      }
-                                    }}
-                                  >
-                                    {promotingId === job.id ? (
-                                      <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                                    ) : (
-                                      <CheckCircle2 className="w-3.5 h-3.5" />
-                                    )}
-                                    Import to Pipeline
-                                  </button>
-                                )}
-                              </div>
-                            )}
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
