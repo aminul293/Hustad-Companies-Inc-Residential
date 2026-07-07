@@ -111,7 +111,6 @@ export async function approveRequest(
       });
 
       const ticket = await createResidentialTicket({
-        companyName: req.company_name,
         companyId: companyId,
         propertyId: property.id,
         managerId: req.manager_id ?? undefined,
