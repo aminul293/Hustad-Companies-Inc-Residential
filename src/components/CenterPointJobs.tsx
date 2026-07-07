@@ -473,17 +473,17 @@ export function CenterPointJobs() {
 
                       <div className="min-w-0">
                         <div className="flex items-center gap-3 mb-0.5 flex-wrap">
-                          <span className="text-base font-inter font-medium text-[#E8EDF8] truncate">
+                          <span className="text-base font-inter font-medium text-[var(--tx1)] truncate">
                             {attr.propertyName || attr.name || `Job #${job.id}`}
                           </span>
-                          <span className="text-[9px] font-mono text-[#3F5878] tracking-widest">#{attr.name}</span>
+                          <span className="text-[9px] font-mono text-[var(--tx2)] opacity-50 tracking-widest">#{attr.name}</span>
                         </div>
                         <div className="flex items-center gap-4 flex-wrap">
                           {attr.domain && (
-                            <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-wider">{attr.domain}</span>
+                            <span className="text-[10px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-wider">{attr.domain}</span>
                           )}
                           {(attr.opportunityType || attr.workType) && (
-                            <span className="text-[10px] font-mono text-[#3F5878]">{attr.opportunityType || attr.workType}</span>
+                            <span className="text-[10px] font-mono text-[var(--tx2)] opacity-60">{attr.opportunityType || attr.workType}</span>
                           )}
                           {jobAssignments[attr.name] ? (
                             <span className="text-[10px] font-inter text-[#3aada3]">
@@ -501,9 +501,9 @@ export function CenterPointJobs() {
                     <div className="flex items-center gap-4 shrink-0">
                       {attr.price > 0 && (
                         <div className="text-right hidden md:block">
-                          <p className="text-[9px] font-mono text-[#2D4060] uppercase tracking-widest mb-0.5">Value</p>
+                          <p className="text-[9px] font-mono text-[var(--tx2)] opacity-50 uppercase tracking-widest mb-0.5">Value</p>
                           <p
-                            className="text-sm font-inter font-normal text-[#E8EDF8]"
+                            className="text-sm font-inter font-normal text-[var(--tx1)]"
                             style={{ fontFeatureSettings: '"ss01" 1, "tnum" 1', letterSpacing: "-0.42px" }}
                           >
                             ${attr.price.toLocaleString()}
@@ -536,7 +536,7 @@ export function CenterPointJobs() {
                               "flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-mono transition-all",
                               jobAssignments[attr.name]
                                 ? "bg-[#2a8a82]/10 border-[#2a8a82]/25 text-[#3aada3]"
-                                : "bg-white/[0.03] border-white/10 text-[#3F5878] hover:text-[#8BA5C5] hover:border-white/20"
+                                : "bg-[var(--bg-subtle)] border-[var(--border-color)] text-[var(--tx2)] hover:text-[var(--tx1)] hover:border-[var(--border-color)]"
                             )}
                           >
                             {savingAssignId === attr.name
@@ -554,19 +554,19 @@ export function CenterPointJobs() {
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, y: -4, scale: 0.97 }}
                                 transition={{ duration: 0.12 }}
-                                className="absolute right-0 top-full mt-2 z-20 w-52 rounded-xl border border-white/[0.12] bg-[#0c0c0c] shadow-2xl overflow-hidden"
+                                className="absolute right-0 top-full mt-2 z-20 w-52 rounded-xl border border-[var(--border-color)] bg-[var(--bg-elevated)] shadow-2xl overflow-hidden"
                               >
-                                <p className="px-3 py-2 text-[9px] font-mono text-[#2D4060] uppercase tracking-widest border-b border-white/[0.06]">
+                                <p className="px-3 py-2 text-[9px] font-mono text-[var(--tx2)] opacity-50 uppercase tracking-widest border-b border-[var(--border-color)]">
                                   Assign to rep
                                 </p>
                                 {reps.map(rep => (
                                   <button
                                     key={rep.id}
                                     onClick={() => handleAssignRep(attr.name, rep.id)}
-                                    className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-white/[0.04] transition-colors text-left"
+                                    className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-[var(--bg-subtle)] transition-colors text-left"
                                   >
-                                    <User className="w-3 h-3 text-[#3F5878] shrink-0" />
-                                    <span className="text-xs font-inter text-[#AABDCF] truncate flex-1">{rep.name}</span>
+                                    <User className="w-3 h-3 text-[var(--tx2)] opacity-50 shrink-0" />
+                                    <span className="text-xs font-inter text-[var(--tx1)] truncate flex-1">{rep.name}</span>
                                     {jobAssignments[attr.name] === rep.id && (
                                       <Check className="w-3 h-3 text-[#3aada3] shrink-0" />
                                     )}
@@ -578,7 +578,7 @@ export function CenterPointJobs() {
                         </div>
                       )}
 
-                      <ChevronRight className={cn("w-4 h-4 text-[#2D4060] transition-transform duration-200", isExpanded && "rotate-90")} />
+                      <ChevronRight className={cn("w-4 h-4 text-[var(--tx2)] opacity-40 transition-transform duration-200", isExpanded && "rotate-90")} />
                     </div>
                   </button>
 
@@ -592,11 +592,11 @@ export function CenterPointJobs() {
                         transition={{ duration: 0.2 }}
                         className="overflow-hidden"
                       >
-                        <div className="px-6 pb-6 space-y-6 border-t border-white/[0.05] pt-5">
+                        <div className="px-6 pb-6 space-y-6 border-t border-[var(--border-color)] pt-5">
 
                           {/* Stage pipeline */}
                           <div>
-                            <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest mb-3">Stage Pipeline</p>
+                            <p className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest mb-3">Stage Pipeline</p>
                             <div className="flex items-center gap-1 flex-wrap">
                               {STAGE_ORDER.map((s, i) => {
                                 const isPast = i < currentIndex;
@@ -606,13 +606,13 @@ export function CenterPointJobs() {
                                     <div className={cn(
                                       "px-3 py-1.5 rounded-lg text-[9px] font-mono uppercase tracking-widest border transition-all",
                                       isCurrent ? stage.color + " ring-1 ring-white/20" :
-                                      isPast ? "bg-white/5 text-[#2D4060] border-white/5" :
-                                      "bg-transparent text-[#293A58] border-white/[0.04]"
+                                      isPast ? "bg-[var(--bg-subtle)] text-[var(--tx2)] opacity-60 border-[var(--border-color)]" :
+                                      "bg-transparent text-[var(--tx2)] opacity-30 border-[var(--border-color)]"
                                     )}>
                                       {STAGES[s]?.label ?? s}
                                     </div>
                                     {i < STAGE_ORDER.length - 1 && (
-                                      <div className={cn("w-4 h-[1px]", isPast ? "bg-white/20" : "bg-white/[0.05]")} />
+                                      <div className={cn("w-4 h-[1px] bg-[var(--border-color)]", isPast ? "opacity-60" : "opacity-30")} />
                                     )}
                                   </div>
                                 );
@@ -633,9 +633,9 @@ export function CenterPointJobs() {
                               { label: "Created", value: new Date(attr.createdAt).toLocaleDateString() },
                             ].map((item: { label: string; value: string; isMoney?: boolean }) => (
                               <div key={item.label} className="space-y-1">
-                                <p className="text-[9px] font-mono text-[#354D6F] uppercase tracking-widest">{item.label}</p>
+                                <p className="text-[9px] font-mono text-[var(--tx2)] opacity-50 uppercase tracking-widest">{item.label}</p>
                                 <p
-                                  className="text-xs text-[#AABDCF] font-inter"
+                                  className="text-xs text-[var(--tx1)] font-inter"
                                   style={item.isMoney ? { fontFamily: "'Inter', system-ui, sans-serif", fontFeatureSettings: '"ss01" 1, "tnum" 1', letterSpacing: "-0.39px", fontWeight: 400 } : undefined}
                                 >
                                   {item.value}
@@ -646,8 +646,8 @@ export function CenterPointJobs() {
 
                           {/* Assign rep — manager only */}
                           {isManager && (
-                            <div className="border-t border-white/[0.05] pt-5">
-                              <p className="text-[9px] font-mono text-[#3F5878] uppercase tracking-widest mb-3">Assigned Rep</p>
+                            <div className="border-t border-[var(--border-color)] pt-5">
+                              <p className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest mb-3">Assigned Rep</p>
                               <div className="flex items-center gap-3 flex-wrap">
                                 {jobAssignments[attr.name] ? (
                                   <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#2a8a82]/10 border border-[#2a8a82]/25">
@@ -665,7 +665,7 @@ export function CenterPointJobs() {
                                     <span className="text-[9px] font-mono text-[#2a8a82]/50 uppercase tracking-widest">from CP</span>
                                   </div>
                                 ) : (
-                                  <span className="text-xs font-inter text-[#3F5878]">Unassigned</span>
+                                  <span className="text-xs font-inter text-[var(--tx2)] opacity-50">Unassigned</span>
                                 )}
                                 {jobAssignments[attr.name] && (
                                   <button
@@ -698,7 +698,7 @@ export function CenterPointJobs() {
                                   <button
                                     onClick={() => setAssigningJobId(assigningJobId === `detail-${job.id}` ? null : `detail-${job.id}`)}
                                     disabled={savingAssignId === attr.name || unassigningId === attr.name}
-                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/10 text-[10px] font-mono text-[#567090] hover:text-[#AABDCF] hover:border-white/20 transition-all"
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[10px] font-mono text-[var(--tx2)] hover:text-[var(--tx1)] transition-all"
                                   >
                                     {savingAssignId === attr.name
                                       ? <RefreshCw className="w-3 h-3 animate-spin" />
@@ -714,19 +714,19 @@ export function CenterPointJobs() {
                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                         exit={{ opacity: 0, y: -4, scale: 0.97 }}
                                         transition={{ duration: 0.12 }}
-                                        className="absolute left-0 top-full mt-2 z-20 w-52 rounded-xl border border-white/[0.12] bg-[#0c0c0c] shadow-2xl overflow-hidden"
+                                        className="absolute left-0 top-full mt-2 z-20 w-52 rounded-xl border border-[var(--border-color)] bg-[var(--bg-elevated)] shadow-2xl overflow-hidden"
                                       >
-                                        <p className="px-3 py-2 text-[9px] font-mono text-[#2D4060] uppercase tracking-widest border-b border-white/[0.06]">
+                                        <p className="px-3 py-2 text-[9px] font-mono text-[var(--tx2)] opacity-50 uppercase tracking-widest border-b border-[var(--border-color)]">
                                           Assign to rep
                                         </p>
                                         {reps.map(rep => (
                                           <button
                                             key={rep.id}
                                             onClick={() => handleAssignRep(attr.name, rep.id)}
-                                            className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-white/[0.04] transition-colors text-left"
+                                            className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-[var(--bg-subtle)] transition-colors text-left"
                                           >
-                                            <User className="w-3 h-3 text-[#3F5878] shrink-0" />
-                                            <span className="text-xs font-inter text-[#AABDCF] truncate flex-1">{rep.name}</span>
+                                            <User className="w-3 h-3 text-[var(--tx2)] opacity-50 shrink-0" />
+                                            <span className="text-xs font-inter text-[var(--tx1)] truncate flex-1">{rep.name}</span>
                                             {jobAssignments[attr.name] === rep.id && (
                                               <Check className="w-3 h-3 text-[#3aada3] shrink-0" />
                                             )}
