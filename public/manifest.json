@@ -1,20 +1,27 @@
 {
-  "name": "Hustad Residential",
-  "short_name": "Hustad",
+  "name": "Hustad Residential Tablet Platform",
+  "short_name": "Hustad Residential",
+  "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#06090F",
-  "theme_color": "#0f1d35",
+  "background_color": "#0a1929",
+  "theme_color": "#2563ba",
   "icons": [
     {
-      "src": "/icon-192x192.png",
+      "src": "/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/icon-512x512.png",
+      "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
