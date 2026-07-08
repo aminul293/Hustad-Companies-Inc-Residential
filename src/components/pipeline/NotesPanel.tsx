@@ -80,6 +80,14 @@ export function NotesPanel({ open, leadName, existingNotes, newNoteText, onNoteC
             <div className="px-8 py-6 border-t border-[var(--border-color)] space-y-3">
               <textarea ref={notesRef} value={newNoteText} onChange={e => onNoteChange(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) onSave(); }}
+                onPaste={e => {
+                  const pasted = e.clipboardData.getData("text");
+                  const el = e.currentTarget;
+                  const start = el.selectionStart ?? newNoteText.length;
+                  const end   = el.selectionEnd   ?? newNoteText.length;
+                  e.preventDefault();
+                  onNoteChange(newNoteText.slice(0, start) + pasted + newNoteText.slice(end));
+                }}
                 placeholder="Add a note… (⌘↵ to save)" rows={3}
                 className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl px-4 py-3 text-sm text-[var(--tx1)] placeholder:text-[var(--tx2)] focus:outline-none focus:border-[#2563ba]/40 resize-none leading-relaxed"
               />
