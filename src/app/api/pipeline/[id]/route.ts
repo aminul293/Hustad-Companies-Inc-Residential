@@ -44,7 +44,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     // 2. Fetch current pipeline lead and its related CP job cp_id + cached status
     const { data: current, error: fetchError } = await supabase
       .from('pipeline_leads')
-      .select('id, pipeline_status, centerpoint_jobs(cp_id, status)')
+      .select('id, pipeline_status, cpc_ticket_id, centerpoint_jobs(cp_id, status)')
       .eq('id', params.id)
       .single();
 
@@ -124,6 +124,71 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         } catch {
           // Non-blocking
         }
+      }
+    }
+
+    // 3b. Mark linked CP opportunity as dead when pipeline goes to dead_lead
+    if (newStatus === 'dead_lead' && current.cpc_ticket_id) {
+      try {
+        const { data: linkedOpp } = await supabase
+          .from('centerpoint_opportunities')
+          .select('cp_id, status')
+          .eq('name', current.cpc_ticket_id)
+          .maybeSingle();
+
+        if (linkedOpp && linkedOpp.status !== 'lead_dead') {
+          // Update local cache immediately so Opps screen reflects this right away
+          await supabase
+            .from('centerpoint_opportunities')
+            .update({
+              status: 'lead_dead',
+              display_status: 'Dead',
+              synced_at: new Date().toISOString(),
+            })
+            .eq('cp_id', linkedOpp.cp_id);
+
+          // Fire CP workflow transition to "Dead" / "Lost" — best-effort, non-blocking
+          try {
+            let cpHeaders;
+            try { cpHeaders = cpJsonHeaders(); } catch { throw new Error('API credentials missing'); }
+
+            const transRes = await fetch(
+              `${CP_BASE}/services/${linkedOpp.cp_id}?include=availableTransitions,workflowStage`,
+              { headers: { Accept: 'application/json', Authorization: cpHeaders.Authorization }, cache: 'no-store' }
+            );
+
+            if (transRes.ok) {
+              const transData = await transRes.json();
+              const transitions = (transData.included ?? []).filter((x: any) => x.type === 'workflow_transitions');
+
+              const deadTx = transitions.find((tx: any) => {
+                const name = (tx.attributes?.name ?? '').toLowerCase();
+                return name.includes('dead') || name.includes('lost') || name.includes('decline');
+              });
+
+              if (deadTx) {
+                await fetch(`${CP_BASE}/production_stage_transitions`, {
+                  method: 'POST',
+                  headers: cpHeaders,
+                  body: JSON.stringify({
+                    data: {
+                      type: 'production_stage_transitions',
+                      attributes: { note: 'Lead marked dead in pipeline' },
+                      relationships: {
+                        production: { data: { type: 'productions', id: linkedOpp.cp_id } },
+                        transition: { data: { type: 'workflow_transitions', id: deadTx.id } },
+                      },
+                    },
+                  }),
+                });
+              }
+            }
+          } catch (oppCpErr: any) {
+            console.warn(`[PIPELINE_OPP_DEAD] CP transition failed for opp cp_id=${linkedOpp.cp_id}:`, oppCpErr?.message);
+          }
+        }
+      } catch (oppErr: any) {
+        console.warn('[PIPELINE_OPP_DEAD] Failed to mark opportunity dead:', oppErr?.message);
       }
     }
 
