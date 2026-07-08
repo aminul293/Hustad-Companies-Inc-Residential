@@ -136,9 +136,27 @@ export const noteEntryIcon = (content: string) => {
 
 export const parseNoteEntries = (notes: string) => {
   if (!notes) return [];
-  return notes.split("\n").filter(Boolean).map(line => {
-    const m = line.match(/^\[([^\]]+)\]\s*(.+)/);
-    if (m) return { timestamp: m[1], content: m[2], isActivity: true };
-    return { timestamp: null, content: line, isActivity: false };
-  });
+  const entries: { timestamp: string | null; content: string; isActivity: boolean }[] = [];
+  let currentTimestamp: string | null = null;
+  let currentLines: string[] = [];
+
+  const flush = () => {
+    const content = currentLines.join("\n").trim();
+    if (content) entries.push({ timestamp: currentTimestamp, content, isActivity: currentTimestamp !== null });
+    currentLines = [];
+    currentTimestamp = null;
+  };
+
+  for (const line of notes.split("\n")) {
+    const m = line.match(/^\[([^\]]+)\]\s*(.*)/);
+    if (m) {
+      flush();
+      currentTimestamp = m[1];
+      if (m[2].trim()) currentLines.push(m[2]);
+    } else {
+      currentLines.push(line);
+    }
+  }
+  flush();
+  return entries;
 };

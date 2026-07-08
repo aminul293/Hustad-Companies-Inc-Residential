@@ -69,7 +69,7 @@ export function NotesPanel({ open, leadName, existingNotes, newNoteText, onNoteC
                         {entry.timestamp && (
                           <p className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest mb-1.5">{entry.timestamp}</p>
                         )}
-                        <p className="text-sm text-[var(--tx1)] font-light leading-relaxed break-words">{entry.content}</p>
+                        <p className="text-sm text-[var(--tx1)] font-light leading-relaxed break-words whitespace-pre-wrap">{entry.content}</p>
                       </div>
                     </motion.div>
                   );
