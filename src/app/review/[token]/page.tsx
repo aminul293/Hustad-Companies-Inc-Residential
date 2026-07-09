@@ -37,6 +37,18 @@ export default function RemoteReviewPage() {
   
   const sigPad = useRef<SignatureCanvas>(null);
 
+  // Unlock body scroll for this page — root layout sets overflow-hidden for the tablet app
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    const prevHeight = document.body.style.height;
+    document.body.style.overflow = 'auto';
+    document.body.style.height = 'auto';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.body.style.height = prevHeight;
+    };
+  }, []);
+
   useEffect(() => {
     async function fetchSession() {
       try {
@@ -209,8 +221,8 @@ export default function RemoteReviewPage() {
   );
 
   if (success) return (
-    <div className="fixed inset-0 overflow-y-auto bg-[#060606]">
-    <div className="flex flex-col items-center justify-center min-h-full px-6 text-center py-20">
+    <div className="min-h-screen bg-[#060606]">
+    <div className="flex flex-col items-center justify-center min-h-screen px-6 text-center py-20">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.06),transparent_70%)]" />
       
       <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative z-10 w-24 h-24 rounded-full bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center mb-10">
@@ -248,7 +260,7 @@ export default function RemoteReviewPage() {
   const photos = (session!.photoAssets || []).filter(p => p.selectedForSummary && !p.isSensitive);
 
   return (
-    <div className="fixed inset-0 overflow-y-auto bg-[#060606] text-[#E8EDF8] font-sans selection:bg-indigo-500/30 custom-scrollbar pb-32">
+    <div className="min-h-screen bg-[#060606] text-[#E8EDF8] font-sans selection:bg-indigo-500/30 custom-scrollbar pb-32">
       {/* HUD Background Layers */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.04),transparent_70%)]" />
