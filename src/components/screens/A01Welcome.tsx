@@ -129,14 +129,22 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
   );
 
   // ── Mobile portrait: flat scrollable layout, no 3D scroll animation ──
+  // Use fixed inset-0 to escape the chain of overflow:hidden ancestors from
+  // ScreenRouter and page.tsx — otherwise iOS Safari won't route touch-scroll
+  // events to a nested overflow-y:auto element. Because framer-motion keeps a
+  // CSS transform on the wrapping motion.div, position:fixed is scoped to that
+  // element, so the slide-in/out animation still works correctly.
   if (isMobile) {
     return (
-      <div className="relative flex flex-col h-full w-full bg-[var(--bg-base)] selection:bg-[#2563ba]/30 selection:text-[var(--tx1)]">
+      <div
+        className="fixed inset-0 overflow-y-auto bg-[var(--bg-base)] selection:bg-[#2563ba]/30 selection:text-[var(--tx1)]"
+        style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y', overscrollBehavior: 'contain' }}
+      >
         {backgroundAssets}
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-[0.02] invert pointer-events-none" />
         {brandingAnchor}
 
-        <div className="relative z-10 flex flex-col flex-1 px-5 pt-20 pb-10 overflow-y-auto animate-in fade-in duration-700 min-h-0" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y', overscrollBehavior: 'contain' }}>
+        <div className="relative z-10 px-5 pt-20 pb-12 animate-in fade-in duration-700">
           {/* Title */}
           <div className="text-center space-y-4 mb-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-color)] shadow-sm mx-auto">
