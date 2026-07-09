@@ -136,7 +136,7 @@ export function A01Welcome({ session, onNext, onBack, onSkip }: Props) {
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-[0.02] invert pointer-events-none" />
         {brandingAnchor}
 
-        <div className="relative z-10 flex flex-col flex-1 px-5 pt-24 pb-10 overflow-y-auto animate-in fade-in duration-700 min-h-0" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="relative z-10 flex flex-col flex-1 px-5 pt-20 pb-10 overflow-y-auto animate-in fade-in duration-700 min-h-0" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y', overscrollBehavior: 'contain' }}>
           {/* Title */}
           <div className="text-center space-y-4 mb-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-color)] shadow-sm mx-auto">
