@@ -644,11 +644,23 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 pl-2">
                             <p className="text-[10px] font-mono text-[#7090B0] uppercase tracking-widest">Mobile Number</p>
-                            {!isEmergencyOverride && <Lock className="w-2.5 h-2.5 text-[#2D4060]" />}
+                            {!isEmergencyOverride && !!form.homeownerMobile && <Lock className="w-2.5 h-2.5 text-[#2D4060]" />}
+                            {!isEmergencyOverride && !form.homeownerMobile && <span className="text-[8px] font-mono text-amber-400/70 uppercase tracking-widest">Rep entry</span>}
                           </div>
                           <div className="relative group">
-                            <Smartphone className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[#2D4060] group-focus-within:text-[#7090B0] transition-colors" />
-                            <input readOnly={!isEmergencyOverride} value={form.homeownerMobile} onChange={(e) => set("homeownerMobile", e.target.value)} className={cn("w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-[#E8EDF8] placeholder:text-[#2D4060] outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all", !isEmergencyOverride && "opacity-70 bg-white/[0.02] cursor-not-allowed focus:border-white/[0.1] focus:bg-white/[0.02]")} placeholder="(608) 000-0000" />
+                            <Smartphone className={cn("absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors", !form.homeownerMobile && !isEmergencyOverride ? "text-amber-400/50 group-focus-within:text-amber-400" : "text-[#2D4060] group-focus-within:text-[#7090B0]")} />
+                            <input
+                              readOnly={!isEmergencyOverride && !!form.homeownerMobile}
+                              value={form.homeownerMobile}
+                              onChange={(e) => set("homeownerMobile", e.target.value)}
+                              className={cn(
+                                "w-full bg-white/[0.04] border rounded-2xl py-4 pl-14 pr-6 text-[#E8EDF8] placeholder:text-[#2D4060] outline-none transition-all",
+                                !isEmergencyOverride && !!form.homeownerMobile
+                                  ? "border-white/[0.1] opacity-70 bg-white/[0.02] cursor-not-allowed"
+                                  : "border-amber-500/20 focus:border-amber-500/40 focus:bg-white/[0.06]"
+                              )}
+                              placeholder="(608) 000-0000"
+                            />
                           </div>
                         </div>
                       </div>
@@ -656,13 +668,43 @@ export function P00RepLaunch({ session, onUpdate, onNext, onLoadDraft, onRepJump
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 pl-2">
                           <p className="text-[10px] font-mono text-[#7090B0] uppercase tracking-widest">Email Address</p>
-                          {!isEmergencyOverride && <Lock className="w-2.5 h-2.5 text-[#2D4060]" />}
+                          {!isEmergencyOverride && !!form.homeownerEmail && <Lock className="w-2.5 h-2.5 text-[#2D4060]" />}
+                          {!isEmergencyOverride && !form.homeownerEmail && <span className="text-[8px] font-mono text-amber-400/70 uppercase tracking-widest">Rep entry</span>}
                         </div>
                         <div className="relative group max-w-sm">
-                          <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[#2D4060] group-focus-within:text-[#7090B0] transition-colors" />
-                          <input readOnly={!isEmergencyOverride} value={form.homeownerEmail} onChange={(e) => set("homeownerEmail", e.target.value)} type="email" className={cn("w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl py-4 pl-14 pr-6 text-[#E8EDF8] placeholder:text-[#2D4060] outline-none focus:border-indigo-500/30 focus:bg-white/[0.06] transition-all", !isEmergencyOverride && "opacity-70 bg-white/[0.02] cursor-not-allowed focus:border-white/[0.1] focus:bg-white/[0.02]")} placeholder="homeowner@example.com" />
+                          <Mail className={cn("absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors", !form.homeownerEmail && !isEmergencyOverride ? "text-amber-400/50 group-focus-within:text-amber-400" : "text-[#2D4060] group-focus-within:text-[#7090B0]")} />
+                          <input
+                            readOnly={!isEmergencyOverride && !!form.homeownerEmail}
+                            value={form.homeownerEmail}
+                            onChange={(e) => set("homeownerEmail", e.target.value)}
+                            type="email"
+                            className={cn(
+                              "w-full bg-white/[0.04] border rounded-2xl py-4 pl-14 pr-6 text-[#E8EDF8] placeholder:text-[#2D4060] outline-none transition-all",
+                              !isEmergencyOverride && !!form.homeownerEmail
+                                ? "border-white/[0.1] opacity-70 bg-white/[0.02] cursor-not-allowed"
+                                : "border-amber-500/20 focus:border-amber-500/40 focus:bg-white/[0.06]"
+                            )}
+                            placeholder="homeowner@example.com"
+                          />
                         </div>
                       </div>
+
+                      {/* Attention: no contact info from CenterPoint */}
+                      {!isEmergencyOverride && !form.homeownerEmail && !form.homeownerMobile && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="flex items-start gap-4 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25"
+                        >
+                          <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+                          <div>
+                            <p className="text-[10px] font-mono text-amber-300 uppercase tracking-widest mb-0.5">No Contact Details in CenterPoint</p>
+                            <p className="text-xs text-amber-200/70 font-light leading-relaxed">
+                              This property has no email or phone on file. Add contact details above before launching so the dossier can be delivered to the homeowner.
+                            </p>
+                          </div>
+                        </motion.div>
+                      )}
                     </div>
 
                     <div className="h-[1px] bg-white/[0.06]" />
