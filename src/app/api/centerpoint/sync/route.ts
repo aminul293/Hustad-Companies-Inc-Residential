@@ -108,12 +108,23 @@ async function enrichWithContacts(companyIds: Set<number>, contacts: CompanyCont
         for (const r of records) {
           const a = r.attributes ?? {};
 
-          const phone = a.mobile ?? a.office ?? a.custom?.phone ?? null;
+          // Check all phone field names CenterPoint uses across tenant configurations.
+          const phone =
+            a.mobile ?? a.cell ?? a.cellPhone ??
+            a.homePhone ?? a.home ?? a.workPhone ??
+            a.office ?? a.phone ?? a.phoneNumber ??
+            a.custom?.phone ?? a.custom?.mobile ?? a.custom?.cell ??
+            a.customWithLabels?.phone ?? a.customWithLabels?.mobile ??
+            null;
           if (phone && !contacts.phones.has(companyId)) {
             contacts.phones.set(companyId, String(phone));
           }
 
-          const email = a.email ?? null;
+          // Check all email field names.
+          const email =
+            a.email ?? a.emailAddress ?? a.workEmail ?? a.homeEmail ??
+            a.custom?.email ?? a.customWithLabels?.email ??
+            null;
           if (email && !contacts.emails.has(companyId)) {
             contacts.emails.set(companyId, String(email));
           }
@@ -189,6 +200,26 @@ function extractAdditionalManagers(a: any): string[] {
     .filter(Boolean);
 }
 
+// ─── Extract contact from a CenterPoint profile/contact attributes object ─────
+function extractContactPhone(a: any): string | null {
+  return (
+    a.mobile ?? a.cell ?? a.cellPhone ??
+    a.homePhone ?? a.home ?? a.workPhone ??
+    a.office ?? a.phone ?? a.phoneNumber ??
+    a.custom?.phone ?? a.custom?.mobile ?? a.custom?.cell ??
+    a.customWithLabels?.phone ?? a.customWithLabels?.mobile ??
+    null
+  );
+}
+
+function extractContactEmail(a: any): string | null {
+  const v =
+    a.email ?? a.emailAddress ?? a.workEmail ?? a.homeEmail ??
+    a.custom?.email ?? a.customWithLabels?.email ??
+    null;
+  return typeof v === "string" && v.includes("@") ? v : null;
+}
+
 // ─── Map CenterPoint record → Supabase row ───────────────────────────────────
 function toRow(r: any, contacts?: CompanyContacts) {
   const a = r.attributes;
@@ -205,6 +236,21 @@ function toRow(r: any, contacts?: CompanyContacts) {
   if (ownerName)  rawExtras._owner = ownerName;
   if (ownerPhone) rawExtras._phone = String(ownerPhone);
   if (ownerEmail) rawExtras._email = String(ownerEmail);
+
+  // If CP returned service-linked contacts in the `included` array (via ?include=contacts),
+  // those are property-specific — store with higher-priority keys so resolvePhone/resolveEmail
+  // uses them first.
+  const included: any[] = r.included ?? [];
+  const contactTypes = new Set(["contacts", "contact", "profiles", "profile"]);
+  for (const inc of included) {
+    if (!contactTypes.has((inc.type ?? "").toLowerCase())) continue;
+    const ia = inc.attributes ?? {};
+    const sPhone = extractContactPhone(ia);
+    const sEmail = extractContactEmail(ia);
+    if (sPhone && !rawExtras._service_phone) rawExtras._service_phone = String(sPhone);
+    if (sEmail && !rawExtras._service_email) rawExtras._service_email = String(sEmail);
+    if (rawExtras._service_phone && rawExtras._service_email) break;
+  }
 
   const additionalManagers = extractAdditionalManagers(a);
 
@@ -312,6 +358,9 @@ export async function POST(request: NextRequest) {
         "page[number]": String(cpPage),
         sort: "-updatedAt",
         "filter[workType]": "Inspection",
+        // Request property-linked contacts inline — if CP supports this include,
+        // toRow will extract them as _service_phone/_service_email (highest priority).
+        include: "contacts",
       });
 
       const controller = new AbortController();

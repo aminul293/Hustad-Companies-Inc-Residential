@@ -102,26 +102,32 @@ export const normalizePhone = (raw: unknown): string | null => {
   return raw.trim() || null;
 };
 
+// CP-sourced contacts (_phone, _email, _service_phone, _service_email) take
+// strict priority — they are always the homeowner contact linked to this property.
+// owner_phone / owner_email are manual rep entries used only when CP has nothing.
 export const resolvePhone = (lead: PipelineLead): string | null =>
   normalizePhone(
-    lead.owner_phone ||
-    lead.centerpoint_jobs?.raw?._phone ||
-    lead.centerpoint_jobs?.raw?.phone ||
-    lead.centerpoint_jobs?.raw?.["Phone Number"] ||
-    lead.centerpoint_jobs?.raw?.phone_number ||
+    lead.centerpoint_jobs?.raw?._service_phone ||  // property-linked (service include)
+    lead.centerpoint_jobs?.raw?._phone ||           // company profile linked to this property
+    lead.owner_phone ||                             // manual rep entry (CP had nothing)
     null
   );
 
 export const resolveEmail = (lead: PipelineLead): string | null => {
   const raw =
-    lead.owner_email ||
-    lead.centerpoint_jobs?.raw?._email ||
-    lead.centerpoint_jobs?.raw?.email ||
-    lead.centerpoint_jobs?.raw?.emailAddress ||
-    lead.centerpoint_jobs?.raw?.["Email Address"] ||
+    lead.centerpoint_jobs?.raw?._service_email ||  // property-linked (service include)
+    lead.centerpoint_jobs?.raw?._email ||           // company profile linked to this property
+    lead.owner_email ||                             // manual rep entry (CP had nothing)
     null;
   return typeof raw === "string" && raw.includes("@") ? raw.trim() : null;
 };
+
+// True if the resolved contact came from CenterPoint (not manually entered by a rep).
+export const phoneFromCP = (lead: PipelineLead): boolean =>
+  !!(lead.centerpoint_jobs?.raw?._service_phone || lead.centerpoint_jobs?.raw?._phone);
+
+export const emailFromCP = (lead: PipelineLead): boolean =>
+  !!(lead.centerpoint_jobs?.raw?._service_email || lead.centerpoint_jobs?.raw?._email);
 
 export const noteEntryIcon = (content: string) => {
   if (content.startsWith("Email sent"))    return { icon: require("lucide-react").Mail,         color: "text-[#2563ba] bg-[#2563ba]/10" };
