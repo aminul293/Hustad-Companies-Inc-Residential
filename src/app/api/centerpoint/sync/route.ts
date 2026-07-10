@@ -237,18 +237,12 @@ function toRow(r: any, contacts?: CompanyContacts) {
   if (ownerPhone) rawExtras._phone = String(ownerPhone);
   if (ownerEmail) rawExtras._email = String(ownerEmail);
 
-  // If CP returned service-linked contacts in the `included` array (via ?include=contacts),
-  // those are property-specific — store with higher-priority keys so resolvePhone/resolveEmail
-  // uses them first.
-  const included: any[] = r.included ?? [];
-  const contactTypes = new Set(["contacts", "contact", "profiles", "profile"]);
-  for (const inc of included) {
-    if (!contactTypes.has((inc.type ?? "").toLowerCase())) continue;
-    const ia = inc.attributes ?? {};
-    const sPhone = extractContactPhone(ia);
-    const sEmail = extractContactEmail(ia);
-    if (sPhone && !rawExtras._service_phone) rawExtras._service_phone = String(sPhone);
-    if (sEmail && !rawExtras._service_email) rawExtras._service_email = String(sEmail);
+  // Property-specific contacts were resolved from the JSON:API included array
+  // and attached to r._serviceContacts by the caller — use them as highest priority.
+  const serviceContacts: Array<{ phone: string | null; email: string | null }> = r._serviceContacts ?? [];
+  for (const sc of serviceContacts) {
+    if (sc.phone && !rawExtras._service_phone) rawExtras._service_phone = sc.phone;
+    if (sc.email && !rawExtras._service_email) rawExtras._service_email = sc.email;
     if (rawExtras._service_phone && rawExtras._service_email) break;
   }
 
@@ -383,6 +377,20 @@ export async function POST(request: NextRequest) {
       const records: any[] = data?.data ?? [];
       if (records.length === 0) break;
 
+      // JSON:API: included resources are on the response ROOT, not per-record.
+      // Build a map of contactId → { phone, email } from the root included array.
+      const rootIncluded: any[] = data?.included ?? [];
+      const includedContactMap = new Map<string, { phone: string | null; email: string | null }>();
+      for (const inc of rootIncluded) {
+        const type = (inc.type ?? "").toLowerCase();
+        if (!["contacts", "contact", "profiles", "profile"].includes(type)) continue;
+        const ia = inc.attributes ?? {};
+        includedContactMap.set(String(inc.id), {
+          phone: extractContactPhone(ia),
+          email: extractContactEmail(ia),
+        });
+      }
+
       for (const r of records) {
         scanned++;
         const a = r.attributes;
@@ -399,6 +407,17 @@ export async function POST(request: NextRequest) {
         const isServiceDomain = a?.domain?.toLowerCase() === "service";
 
         if (!isHailInspection || !isResidentialModule || !isInspectionType || !isActiveStatus || !isServiceDomain) continue;
+
+        // Attach property-linked contacts to the record so toRow can use them.
+        // Uses the JSON:API relationship linkage: r.relationships.contacts.data → contact IDs.
+        const relData = r.relationships?.contacts?.data;
+        const relIds: string[] = Array.isArray(relData)
+          ? relData.map((c: any) => String(c.id)).filter(Boolean)
+          : relData?.id ? [String(relData.id)] : [];
+        r._serviceContacts = relIds
+          .map((id: string) => includedContactMap.get(id))
+          .filter(Boolean);
+
         allRawRecords.push(r);
       }
 
