@@ -13,6 +13,7 @@ import {
   Download,
   ShieldCheck,
   RefreshCw,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { submitSession, addAuditEvent, createFollowUpTask, saveSession } from "@/lib/session";
@@ -50,6 +51,7 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
   const [error, setError] = useState<string | null>(null);
   const [quickEmail, setQuickEmail] = useState("");
   const [quickPhone, setQuickPhone] = useState("");
+  const [dispatchWarning, setDispatchWarning] = useState<{ address: string } | null>(null);
 
   const handleOfficeDispatch = async (s: SessionState) => {
     setIsDispatching(true);
@@ -112,7 +114,8 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
     }
   };
 
-  const handleFinish = async () => {
+  const doFinish = async () => {
+    setDispatchWarning(null);
     // Attempt auto-email if not already sent
     if (deliverySent !== "email") {
       const emailSuccess = await handleDelivery("email");
@@ -242,6 +245,20 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
       setIsSyncing(false);
       onFinish();
     }
+  };
+
+  const handleFinish = async () => {
+    try {
+      const res = await fetch("/api/office-dispatch");
+      const data = await res.json();
+      if (!data.configured) {
+        setDispatchWarning({ address: data.address });
+        return;
+      }
+    } catch {
+      // If check fails, proceed anyway
+    }
+    await doFinish();
   };
 
   useEffect(() => {
@@ -756,6 +773,57 @@ export function B19NextSteps({ session, onUpdate, onBack, onFinish }: NextStepsP
           </div>
         </div>
       </div>
+
+      {/* ─── No-dispatch-email warning modal ──────────────────────────────────── */}
+      {dispatchWarning && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className={cn(
+              "w-full max-w-md p-8 rounded-[40px] border space-y-6",
+              isDark ? "bg-[#0d1117] border-white/10" : "bg-white border-zinc-200 shadow-xl"
+            )}
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5 text-amber-400" />
+              </div>
+              <div className="space-y-1">
+                <p className={cn("text-sm font-semibold", isDark ? "text-[#E8EDF8]" : "text-[#1B2B4B]")}>
+                  No dispatch email configured
+                </p>
+                <p className={cn("text-xs font-light leading-relaxed", isDark ? "text-[#7090B0]" : "text-zinc-500")}>
+                  The office dispatch email has not been set up. The report will be sent to the fallback address:
+                </p>
+                <p className={cn("text-xs font-mono mt-1", isDark ? "text-amber-400" : "text-amber-600")}>
+                  {dispatchWarning.address}
+                </p>
+              </div>
+            </div>
+            <p className={cn("text-xs font-light leading-relaxed pl-14", isDark ? "text-[#4A6080]" : "text-zinc-400")}>
+              Ask your admin to set the <span className="font-mono">OFFICE_EMAIL</span> environment variable to route dispatches to the correct inbox.
+            </p>
+            <div className="flex gap-3 pl-14">
+              <button
+                onClick={() => setDispatchWarning(null)}
+                className={cn(
+                  "flex-1 py-3 rounded-2xl border text-xs font-mono uppercase tracking-widest transition-all",
+                  isDark ? "bg-white/5 border-white/10 text-[#AABDCF] hover:bg-white/10" : "bg-zinc-100 border-zinc-200 text-zinc-600 hover:bg-zinc-200"
+                )}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={doFinish}
+                className="flex-1 py-3 rounded-2xl bg-amber-500/90 hover:bg-amber-500 text-xs font-mono uppercase tracking-widest text-white transition-all"
+              >
+                Send Anyway
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       <div className="absolute bottom-0 inset-x-0 px-4 md:px-8 pb-8 pt-12 md:pt-20 z-30 pointer-events-none">
         <div className={cn("absolute inset-0 pt-20", isDark ? "bg-gradient-to-t from-[#060606] via-[#060606]/90 to-transparent" : "bg-gradient-to-t from-[#F7F5F1] via-[#F7F5F1]/90 to-transparent")} />

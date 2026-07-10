@@ -29,6 +29,14 @@ async function getAccessToken() {
   return data.access_token;
 }
 
+// ─── GET /api/office-dispatch ─────────────────────────────────────────────────
+// Returns whether a real dispatch email is configured or if the fallback is used.
+export async function GET() {
+  const configured = !!process.env.OFFICE_EMAIL;
+  const address    = process.env.OFFICE_EMAIL || "info@hustadcompanies.com";
+  return NextResponse.json({ configured, address });
+}
+
 export async function POST(req: NextRequest) {
   try {
     await requireAuth(req);
