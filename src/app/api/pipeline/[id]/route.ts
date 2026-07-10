@@ -20,6 +20,15 @@ const CP_STAGE_ORDER = [
   "new_service","opened","scheduled","started","completed","closed",
 ];
 
+// Once a lead reaches inspection, it must never regress to earlier pipeline stages.
+const BLOCKED_PIPELINE_STATUSES = new Set([
+  "inspection_in_progress", "inspection_completed", "signed", "closed",
+]);
+// These are the only forward or terminal statuses allowed from a blocked lead.
+const ALLOWED_FROM_BLOCKED = new Set([
+  "inspection_in_progress", "inspection_completed", "signed", "closed", "dead_lead",
+]);
+
 function cpStatusAdvances(current: string | null | undefined, next: string): boolean {
   if (!current) return true;
   const curIdx = CP_STAGE_ORDER.indexOf(current);
@@ -50,8 +59,21 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
     if (fetchError) throw fetchError;
 
-    // 3. Handle CP write-back if pipeline_status changes
+    // 3a. Guard: once a lead is in an inspection/closed stage it cannot regress
     const newStatus = updates.pipeline_status;
+    if (
+      newStatus &&
+      newStatus !== current.pipeline_status &&
+      BLOCKED_PIPELINE_STATUSES.has(current.pipeline_status) &&
+      !ALLOWED_FROM_BLOCKED.has(newStatus)
+    ) {
+      return NextResponse.json(
+        { error: `Cannot move lead back from "${current.pipeline_status}" — inspection data would be lost.` },
+        { status: 409 }
+      );
+    }
+
+    // 3. Handle CP write-back if pipeline_status changes
     const cpJob = current.centerpoint_jobs as any;
     const cpId = cpJob?.cp_id;
     const currentCpStatus: string | null = cpJob?.status ?? null;

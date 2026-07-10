@@ -162,6 +162,8 @@ export function usePipelineLeads(repId?: string, repEmail?: string) {
 
   const confirmStageBack = async () => {
     if (!stageBackModal) return;
+    const subject = leads.find(l => l.id === stageBackModal.leadId);
+    if (subject && BLOCKED_STATUSES.includes(subject.pipeline_status)) return;
     const { leadId, targetIdx } = stageBackModal;
     setStageBackModal(null);
     const updates: Record<string, unknown> = { pipeline_status: STAGE_STATUSES[targetIdx] };
