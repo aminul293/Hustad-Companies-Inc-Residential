@@ -1,8 +1,11 @@
 "use client";
 
-import { fetchCenterpointOpportunities, triggerOpportunitiesSync, fetchOpportunitiesSyncStatus } from "@/lib/api";
-import { useState, useEffect, useCallback } from "react";
-import { Search, RefreshCw, TrendingUp, ArrowLeft, ChevronRight, AlertCircle, Zap, X, Trash } from "lucide-react";
+import { fetchCenterpointOpportunities, triggerOpportunitiesSync, fetchOpportunitiesSyncStatus, patchCenterpointOpportunity } from "@/lib/api";
+import { useState, useEffect, useCallback, useRef } from "react";
+import {
+  Search, RefreshCw, TrendingUp, ArrowLeft, ChevronRight, AlertCircle, Zap, X, Trash,
+  MessageSquare, CheckCircle2, Clock, CalendarDays, Phone, Mail,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -67,6 +70,16 @@ const OPP_TYPE_COLORS: Record<string, { bg: string; fg: string }> = {
   "Roof Replacement": { bg: "rgba(42,138,130,0.10)", fg: "#3aada3" },
 };
 
+// ─── Follow-up time slots ──────────────────────────────────────────────────────
+const FU_TIME_SLOTS = [
+  { label: "7 AM",  value: "07:00" }, { label: "8 AM",  value: "08:00" },
+  { label: "9 AM",  value: "09:00" }, { label: "10 AM", value: "10:00" },
+  { label: "11 AM", value: "11:00" }, { label: "12 PM", value: "12:00" },
+  { label: "1 PM",  value: "13:00" }, { label: "2 PM",  value: "14:00" },
+  { label: "3 PM",  value: "15:00" }, { label: "4 PM",  value: "16:00" },
+  { label: "5 PM",  value: "17:00" }, { label: "6 PM",  value: "18:00" },
+];
+
 interface CPOpportunity {
   id: string;
   cp_id: string;
@@ -83,6 +96,8 @@ interface CPOpportunity {
   latest_stage_transitioned_at: string | null;
   workflow_stage_name: string | null;
   synced_at: string;
+  opp_notes: string | null;
+  follow_up_at: string | null;
 }
 
 function extractAddress(description: string | null): string {
@@ -91,6 +106,299 @@ function extractAddress(description: string | null): string {
   return match ? match[1].trim() : description;
 }
 
+// ─── Activity note helpers ────────────────────────────────────────────────────
+function callTimestamp() {
+  const now = new Date();
+  return now.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + ", " +
+    now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+}
+
+function parseNoteEntries(notes: string) {
+  if (!notes) return [];
+  const entries: { timestamp: string | null; content: string }[] = [];
+  let currentTimestamp: string | null = null;
+  let currentLines: string[] = [];
+
+  const flush = () => {
+    const content = currentLines.join("\n").trim();
+    if (content) entries.push({ timestamp: currentTimestamp, content });
+    currentLines = [];
+    currentTimestamp = null;
+  };
+
+  for (const line of notes.split("\n")) {
+    const m = line.match(/^\[([^\]]+)\]\s*(.*)/);
+    if (m) {
+      flush();
+      currentTimestamp = m[1];
+      if (m[2].trim()) currentLines.push(m[2]);
+    } else {
+      currentLines.push(line);
+    }
+  }
+  flush();
+  return entries;
+}
+
+function noteIcon(content: string) {
+  if (content.startsWith("Follow-up set")) return { icon: Clock,        color: "text-orange-400 bg-orange-400/10" };
+  if (content.startsWith("Email sent"))    return { icon: Mail,         color: "text-[#2563ba] bg-[#2563ba]/10" };
+  if (content.startsWith("Called"))        return { icon: Phone,        color: "text-[#3aada3] bg-[#3aada3]/10" };
+  return                                          { icon: MessageSquare, color: "text-[#354D6F] bg-white/5" };
+}
+
+function fmtFollowUp(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) +
+    " · " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+}
+
+function isOverdue(iso: string | null) {
+  return iso ? new Date(iso) < new Date() : false;
+}
+
+// ─── Activity Log Panel ───────────────────────────────────────────────────────
+function ActivityLogPanel({
+  opp, onClose, onSaved,
+}: {
+  opp: CPOpportunity;
+  onClose: () => void;
+  onSaved: (updated: Partial<CPOpportunity>) => void;
+}) {
+  const [newNote, setNewNote]     = useState("");
+  const [saving, setSaving]       = useState(false);
+  const textareaRef               = useRef<HTMLTextAreaElement>(null);
+  const entries                   = parseNoteEntries(opp.opp_notes ?? "");
+
+  useEffect(() => { setTimeout(() => textareaRef.current?.focus(), 100); }, []);
+
+  const handleSave = async () => {
+    if (!newNote.trim() || saving) return;
+    setSaving(true);
+    const ts      = callTimestamp();
+    const entry   = `[${ts}] ${newNote.trim()}`;
+    const merged  = opp.opp_notes ? opp.opp_notes + "\n" + entry : entry;
+    try {
+      const res = await patchCenterpointOpportunity(opp.cp_id, { opp_notes: merged });
+      if (res.ok) {
+        onSaved({ opp_notes: merged });
+        setNewNote("");
+      }
+    } finally { setSaving(false); }
+  };
+
+  return (
+    <>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
+        transition={{ type: "spring", damping: 32, stiffness: 340 }}
+        className="fixed right-0 top-0 bottom-0 w-[440px] max-w-full bg-[var(--bg-elevated)] border-l border-[var(--border-color)] z-50 flex flex-col shadow-2xl"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-8 py-6 border-b border-[var(--border-color)]">
+          <div>
+            <div className="flex items-center gap-2.5 mb-0.5">
+              <MessageSquare className="w-4 h-4 text-[#2563ba]" />
+              <h3 className="text-lg font-inter font-medium">Activity Log</h3>
+            </div>
+            <p className="text-xs text-[var(--tx2)] opacity-60 font-light">
+              {extractAddress(opp.description) || opp.name}
+            </p>
+          </div>
+          <button onClick={onClose} className="p-2.5 rounded-2xl text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] hover:bg-[var(--bg-subtle)] transition-all">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Entries */}
+        <div className="flex-1 overflow-y-auto px-8 py-6 space-y-3">
+          {entries.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] flex items-center justify-center mb-4">
+                <MessageSquare className="w-5 h-5 text-[var(--tx2)] opacity-40" />
+              </div>
+              <p className="text-[var(--tx2)] opacity-60 text-sm font-light">No activity yet</p>
+              <p className="text-[var(--tx2)] opacity-40 text-xs mt-1">Add a note below to get started</p>
+            </div>
+          ) : (
+            [...entries].reverse().map((entry, i) => {
+              const { icon: EntryIcon, color } = noteIcon(entry.content);
+              return (
+                <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.03 }} className="flex gap-3"
+                >
+                  <div className={cn("w-7 h-7 rounded-xl flex items-center justify-center shrink-0 mt-0.5", color)}>
+                    <EntryIcon className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="flex-1 bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl px-4 py-3 min-w-0">
+                    {entry.timestamp && (
+                      <p className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest mb-1.5">{entry.timestamp}</p>
+                    )}
+                    <p className="text-sm text-[var(--tx1)] font-light leading-relaxed break-words whitespace-pre-wrap">{entry.content}</p>
+                  </div>
+                </motion.div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Input */}
+        <div className="px-8 py-6 border-t border-[var(--border-color)] space-y-3">
+          <textarea
+            ref={textareaRef}
+            value={newNote}
+            onChange={e => setNewNote(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSave(); }}
+            placeholder="Add a note… (⌘↵ to save)"
+            rows={3}
+            className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl px-4 py-3 text-sm text-[var(--tx1)] placeholder:text-[var(--tx2)] focus:outline-none focus:border-[#2563ba]/40 resize-none leading-relaxed"
+          />
+          <div className="flex gap-3">
+            <button onClick={onClose}
+              className="flex-1 py-2.5 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] transition-all text-sm">
+              Close
+            </button>
+            <button onClick={handleSave} disabled={!newNote.trim() || saving}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#2563ba]/20 border border-[#2563ba]/30 text-[#4a8fd4] hover:bg-[#2563ba]/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-sm font-medium">
+              {saving
+                ? <><div className="w-3.5 h-3.5 border-2 border-[#2563ba]/30 border-t-[#4a8fd4] rounded-full animate-spin" /> Saving…</>
+                : <><CheckCircle2 className="w-3.5 h-3.5" /> Add Note</>}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </>
+  );
+}
+
+// ─── Follow-up Modal ──────────────────────────────────────────────────────────
+function FollowUpModal({
+  opp, onClose, onSaved,
+}: {
+  opp: CPOpportunity;
+  onClose: () => void;
+  onSaved: (updated: Partial<CPOpportunity>) => void;
+}) {
+  const today    = new Date().toISOString().split("T")[0];
+  const [date, setDate]   = useState(opp.follow_up_at ? new Date(opp.follow_up_at).toISOString().split("T")[0] : today);
+  const [time, setTime]   = useState(opp.follow_up_at
+    ? `${String(new Date(opp.follow_up_at).getHours()).padStart(2, "0")}:${String(new Date(opp.follow_up_at).getMinutes()).padStart(2, "0")}`
+    : "09:00");
+  const [saving, setSaving] = useState(false);
+
+  const summary = date
+    ? new Date(`${date}T${time}:00`).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) +
+      " at " + new Date(`${date}T${time}:00`).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })
+    : null;
+
+  const handleConfirm = async () => {
+    if (!date || saving) return;
+    setSaving(true);
+    const iso    = new Date(`${date}T${time}:00`).toISOString();
+    const ts     = callTimestamp();
+    const entry  = `[${ts}] Follow-up set for ${summary}`;
+    const merged = opp.opp_notes ? opp.opp_notes + "\n" + entry : entry;
+
+    try {
+      const res = await patchCenterpointOpportunity(opp.cp_id, { follow_up_at: iso, opp_notes: merged });
+      if (res.ok) {
+        onSaved({ follow_up_at: iso, opp_notes: merged });
+        onClose();
+      }
+    } finally { setSaving(false); }
+  };
+
+  const handleClear = async () => {
+    setSaving(true);
+    try {
+      const res = await patchCenterpointOpportunity(opp.cp_id, { follow_up_at: null });
+      if (res.ok) {
+        onSaved({ follow_up_at: null });
+        onClose();
+      }
+    } finally { setSaving(false); }
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
+    >
+      <motion.div initial={{ opacity: 0, scale: 0.96, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 12 }} transition={{ type: "spring", damping: 28, stiffness: 320 }}
+        className="bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-3xl p-8 w-full max-w-md shadow-2xl"
+      >
+        <div className="flex items-start justify-between mb-7">
+          <div>
+            <div className="flex items-center gap-2.5 mb-1">
+              <CalendarDays className="w-5 h-5 text-orange-400" />
+              <h3 className="text-xl font-inter font-medium">Schedule Follow-up</h3>
+            </div>
+            <p className="text-sm text-[var(--tx2)] opacity-60 font-light">
+              {extractAddress(opp.description) || opp.name}
+            </p>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-2xl text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] hover:bg-[var(--bg-subtle)] transition-all">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="mb-6">
+          <label className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest block mb-2">Date</label>
+          <input type="date" value={date} min={today}
+            onChange={e => setDate(e.target.value)}
+            className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl px-4 py-3 text-[var(--tx1)] text-sm focus:outline-none focus:border-orange-400/50 [color-scheme:light] dark:[color-scheme:dark]"
+          />
+        </div>
+
+        <div className="mb-7">
+          <label className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest block mb-2.5">Time</label>
+          <div className="grid grid-cols-4 gap-2">
+            {FU_TIME_SLOTS.map(slot => (
+              <button key={slot.value} onClick={() => setTime(slot.value)}
+                className={cn("py-2.5 rounded-xl text-xs font-medium transition-all",
+                  time === slot.value
+                    ? "bg-orange-500/20 border border-orange-500/40 text-orange-300"
+                    : "bg-[var(--bg-subtle)] text-[var(--tx2)] opacity-60 hover:bg-[var(--bg-elevated)] hover:opacity-100"
+                )}>{slot.label}</button>
+            ))}
+          </div>
+        </div>
+
+        {summary && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            className="flex items-center gap-3 bg-orange-500/[0.08] border border-orange-500/15 rounded-2xl px-4 py-3 mb-6"
+          >
+            <Clock className="w-4 h-4 text-orange-400 shrink-0" />
+            <p className="text-sm text-orange-300 font-medium">{summary}</p>
+          </motion.div>
+        )}
+
+        <div className="flex gap-3">
+          {opp.follow_up_at && (
+            <button onClick={handleClear} disabled={saving}
+              className="px-4 py-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 disabled:opacity-30 transition-all text-sm">
+              Clear
+            </button>
+          )}
+          <button onClick={onClose}
+            className="flex-1 py-3 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] transition-all text-sm">
+            Cancel
+          </button>
+          <button onClick={handleConfirm} disabled={!date || saving}
+            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-orange-500/20 border border-orange-500/30 text-orange-300 hover:bg-orange-500/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-sm font-medium"
+          >
+            {saving
+              ? <><div className="w-3.5 h-3.5 border-2 border-orange-400/30 border-t-orange-300 rounded-full animate-spin" /> Saving…</>
+              : <><ChevronRight className="w-4 h-4" /> Confirm</>}
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 export function CenterPointOpportunities() {
   const [opps, setOpps]               = useState<CPOpportunity[]>([]);
   const [loading, setLoading]         = useState(true);
@@ -104,6 +412,15 @@ export function CenterPointOpportunities() {
   const [search, setSearch]           = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [expandedId, setExpandedId]   = useState<string | null>(null);
+
+  // ── Activity log + follow-up state ─────────────────────────────────────────
+  const [activityOpp, setActivityOpp]   = useState<CPOpportunity | null>(null);
+  const [followUpOpp, setFollowUpOpp]   = useState<CPOpportunity | null>(null);
+
+  const patchLocal = (cpId: string, updates: Partial<CPOpportunity>) => {
+    setOpps(prev => prev.map(o => o.cp_id === cpId ? { ...o, ...updates } : o));
+    setActivityOpp(prev => prev?.cp_id === cpId ? { ...prev, ...updates } : prev);
+  };
 
   const fetchOpps = useCallback(async (opts?: { refresh?: boolean; newPage?: number }) => {
     const isRefresh  = opts?.refresh;
@@ -275,19 +592,22 @@ export function CenterPointOpportunities() {
           <>
             {opps.map(opp => {
               const stageKey   = resolveStageKey(opp.status, opp.display_status, opp.workflow_stage_name ?? null);
-              
+
               let statusKey = opp.status;
               if (stageKey === "quoted" || stageKey === "presentation") statusKey = "lead_quoted";
               else if (stageKey === "pending") statusKey = "lead_pending";
               else if (stageKey === "accepted") statusKey = "lead_sold";
               else if (stageKey === "qualify" || stageKey === "inspection") statusKey = "lead_opened";
-              
+
               const status     = STATUSES[statusKey] ?? STATUSES["lead_opened"];
               const isDead     = opp.status === "lead_dead";
               const currentIdx = stageIndex(stageKey);
               const isExpanded = expandedId === opp.id;
               const address    = extractAddress(opp.description);
               const typeColors = OPP_TYPE_COLORS[opp.opportunity_type ?? ""] ?? { bg: "rgba(255,255,255,0.04)", fg: "#567090" };
+              const hasFollowUp = !!opp.follow_up_at;
+              const overdue     = isOverdue(opp.follow_up_at);
+              const noteCount   = parseNoteEntries(opp.opp_notes ?? "").length;
 
               return (
                 <motion.div
@@ -301,7 +621,7 @@ export function CenterPointOpportunities() {
                     className="w-full p-6 text-left flex items-center justify-between gap-4"
                   >
                     <div className="flex items-center gap-5 min-w-0">
-                      {/* Coloured dot — matches Tickets layout */}
+                      {/* Coloured dot */}
                       <div className={cn("w-2.5 h-2.5 rounded-full shrink-0", status.ring)} />
 
                       <div className="min-w-0">
@@ -323,6 +643,25 @@ export function CenterPointOpportunities() {
                               style={{ background: typeColors.bg, color: typeColors.fg }}
                             >
                               {opp.opportunity_type}
+                            </span>
+                          )}
+                          {/* Follow-up badge */}
+                          {hasFollowUp && (
+                            <span className={cn(
+                              "inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[9px] font-mono border",
+                              overdue
+                                ? "bg-rose-500/10 border-rose-500/20 text-rose-400"
+                                : "bg-orange-500/10 border-orange-500/20 text-orange-400"
+                            )}>
+                              <Clock className="w-2.5 h-2.5" />
+                              {overdue ? "Overdue · " : ""}{fmtFollowUp(opp.follow_up_at!)}
+                            </span>
+                          )}
+                          {/* Note count badge */}
+                          {noteCount > 0 && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[9px] font-mono bg-[#2563ba]/10 border border-[#2563ba]/20 text-[#4a8fd4]">
+                              <MessageSquare className="w-2.5 h-2.5" />
+                              {noteCount}
                             </span>
                           )}
                           {/* Last updated */}
@@ -406,6 +745,32 @@ export function CenterPointOpportunities() {
                             </div>
                           )}
 
+                          {/* Follow-up banner (if set) */}
+                          {opp.follow_up_at && (
+                            <div className={cn(
+                              "flex items-center gap-3 px-4 py-3 rounded-2xl border",
+                              overdue
+                                ? "bg-rose-500/[0.06] border-rose-500/20"
+                                : "bg-orange-500/[0.06] border-orange-500/15"
+                            )}>
+                              <Clock className={cn("w-4 h-4 shrink-0", overdue ? "text-rose-400" : "text-orange-400")} />
+                              <div className="flex-1 min-w-0">
+                                <p className={cn("text-[9px] font-mono uppercase tracking-widest mb-0.5", overdue ? "text-rose-400/60" : "text-orange-400/60")}>
+                                  {overdue ? "Overdue Follow-up" : "Scheduled Follow-up"}
+                                </p>
+                                <p className={cn("text-sm font-medium", overdue ? "text-rose-300" : "text-orange-300")}>
+                                  {fmtFollowUp(opp.follow_up_at)}
+                                </p>
+                              </div>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setFollowUpOpp(opp); }}
+                                className={cn("text-[10px] font-mono uppercase tracking-widest transition-colors", overdue ? "text-rose-400/60 hover:text-rose-300" : "text-orange-400/60 hover:text-orange-300")}
+                              >
+                                Edit
+                              </button>
+                            </div>
+                          )}
+
                           {/* Meta grid */}
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             {[
@@ -439,21 +804,48 @@ export function CenterPointOpportunities() {
                           )}
 
                           {/* Actions */}
-                          <div className="flex items-center gap-2 pt-2 border-t border-[var(--border-color)] justify-between">
+                          <div className="flex items-center gap-2 pt-2 border-t border-[var(--border-color)] flex-wrap">
                             <button
                               onClick={() => window.dispatchEvent(new CustomEvent("changeView", { detail: "centerpoint" }))}
                               className="flex items-center gap-2 px-5 py-2.5 rounded-[14px] bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--tx2)] opacity-60 text-xs font-inter hover:bg-[var(--bg-elevated)] hover:opacity-100 hover:text-[var(--tx1)] active:scale-95 transition-all"
                             >
                               View Service Job in CP Inbox
                             </button>
-                            
+
+                            {/* Activity Log button */}
                             <button
-                              onClick={(e) => { e.stopPropagation(); handleDelete(opp.cp_id); }}
-                              className="flex items-center gap-2 px-4 py-2.5 rounded-[14px] bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-inter hover:bg-rose-500/20 active:scale-95 transition-all"
+                              onClick={(e) => { e.stopPropagation(); setActivityOpp(opp); }}
+                              className="flex items-center gap-2 px-5 py-2.5 rounded-[14px] bg-[#2563ba]/10 border border-[#2563ba]/20 text-[#4a8fd4] text-xs font-inter hover:bg-[#2563ba]/20 active:scale-95 transition-all"
                             >
-                              <Trash className="w-4 h-4" />
-                              Force Delete
+                              <MessageSquare className="w-3.5 h-3.5" />
+                              Activity{noteCount > 0 ? ` (${noteCount})` : ""}
                             </button>
+
+                            {/* Follow-up button */}
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setFollowUpOpp(opp); }}
+                              className={cn(
+                                "flex items-center gap-2 px-5 py-2.5 rounded-[14px] text-xs font-inter border active:scale-95 transition-all",
+                                hasFollowUp && overdue
+                                  ? "bg-rose-500/10 border-rose-500/20 text-rose-400 hover:bg-rose-500/20"
+                                  : hasFollowUp
+                                  ? "bg-orange-500/10 border-orange-500/20 text-orange-400 hover:bg-orange-500/20"
+                                  : "bg-orange-500/10 border-orange-500/20 text-orange-400 hover:bg-orange-500/20"
+                              )}
+                            >
+                              <Clock className="w-3.5 h-3.5" />
+                              {hasFollowUp ? "Edit Follow-up" : "Schedule Follow-up"}
+                            </button>
+
+                            <div className="ml-auto">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleDelete(opp.cp_id); }}
+                                className="flex items-center gap-2 px-4 py-2.5 rounded-[14px] bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-inter hover:bg-rose-500/20 active:scale-95 transition-all"
+                              >
+                                <Trash className="w-4 h-4" />
+                                Force Delete
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </motion.div>
@@ -474,6 +866,28 @@ export function CenterPointOpportunities() {
           </>
         )}
       </div>
+
+      {/* ── Activity Log Panel ────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {activityOpp && (
+          <ActivityLogPanel
+            opp={activityOpp}
+            onClose={() => setActivityOpp(null)}
+            onSaved={(updates) => patchLocal(activityOpp.cp_id, updates)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── Follow-up Modal ───────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {followUpOpp && (
+          <FollowUpModal
+            opp={followUpOpp}
+            onClose={() => setFollowUpOpp(null)}
+            onSaved={(updates) => { patchLocal(followUpOpp.cp_id, updates); }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

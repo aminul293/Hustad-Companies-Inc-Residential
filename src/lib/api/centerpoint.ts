@@ -57,3 +57,11 @@ export async function triggerOpportunitiesSync(): Promise<Response> {
 export async function fetchOpportunitiesSyncStatus(): Promise<Response> {
   return fetch(`${BASE}/opportunities/sync`);
 }
+
+export async function patchCenterpointOpportunity(cpId: string, body: Record<string, unknown>): Promise<Response> {
+  return fetch(`${BASE}/opportunities/${cpId}`, {
+    method: "PATCH",
+    headers: JSON_HEADERS,
+    body: JSON.stringify(body),
+  });
+}
