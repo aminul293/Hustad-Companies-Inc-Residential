@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSessionByToken, upsertSession } from '@/lib/supabase-relay';
 import { createClient } from '@supabase/supabase-js';
-import { getCpToken, acceptOpportunity } from '@/lib/centerpoint/client';
+import { CP_BASE, getCpToken, acceptOpportunity } from '@/lib/centerpoint/client';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -275,7 +275,24 @@ export async function POST(request: Request) {
               .eq('name', session.centerpointId)
               .maybeSingle();
 
-            const opportunityCpId = oppRow?.cp_id;
+            let opportunityCpId = oppRow?.cp_id;
+
+            // Local cache can be stale/missing (e.g. opportunity created before this
+            // session was linked). Fall back to searching CenterPoint directly instead
+            // of giving up — same lookup strategy createOpportunity() uses.
+            if (!opportunityCpId) {
+              const searchRes = await fetch(
+                `${CP_BASE}/opportunities?filter[search]=${encodeURIComponent(session.centerpointId)}`,
+                { headers: { Accept: 'application/json', Authorization: cpKey }, cache: 'no-store' }
+              );
+              if (searchRes.ok) {
+                const searchData = await searchRes.json();
+                const match = (searchData.data || []).find(
+                  (r: any) => r.attributes?.name === session.centerpointId && r.attributes?.domain === 'Sales'
+                );
+                if (match) opportunityCpId = match.id;
+              }
+            }
 
             if (opportunityCpId) {
               await acceptOpportunity(opportunityCpId, cpKey);
@@ -289,7 +306,7 @@ export async function POST(request: Request) {
                 .eq('cp_id', opportunityCpId);
               console.log(`[REVIEW_ACTION] Opportunity ${opportunityCpId} advanced to Accepted`);
             } else {
-              console.warn(`[REVIEW_ACTION] No cached opportunity found for centerpointId=${session.centerpointId}`);
+              console.error(`[REVIEW_ACTION] Could not find CenterPoint opportunity for centerpointId=${session.centerpointId}; stage was NOT advanced.`);
             }
           } catch (e) {
             console.error('[REVIEW_ACTION] Failed to advance opportunity to Accepted:', e);

@@ -1,10 +1,15 @@
 export const CP_BASE = "https://api.centerpointconnect.io/centerpoint";
 
 // Advance an existing opportunity to "Accepted" via workflow transitions.
-// Prioritises a transition explicitly named "Accepted" before falling back
-// to the first available transition, so it won't accidentally hit "Declined".
+// Matches a transition by its own name OR by the name of the stage it leads to
+// (both case-insensitively), the same matching strategy createOpportunity() uses,
+// since CenterPoint's transition names don't always literally read "Accepted".
+// Throws on any failure instead of silently stopping, so callers can log the
+// real reason and (via the caller's error handling) know the push did NOT happen.
 export async function acceptOpportunity(cpId: string, cpKey: string): Promise<void> {
+  const targetStage = "Accepted";
   let iterations = 0;
+
   while (iterations < 10) {
     iterations++;
 
@@ -12,18 +17,40 @@ export async function acceptOpportunity(cpId: string, cpKey: string): Promise<vo
       `${CP_BASE}/services/${cpId}?include=availableTransitions,workflowStage`,
       { headers: { Accept: "application/json", Authorization: cpKey }, cache: "no-store" }
     );
-    if (!res.ok) break;
+    if (!res.ok) {
+      throw new Error(`[acceptOpportunity] CenterPoint fetch failed for service ${cpId}: ${res.status} ${res.statusText}`);
+    }
 
     const data = await res.json();
     const transitions = (data.included ?? []).filter((x: any) => x.type === "workflow_transitions");
-    const currentStage = (data.included ?? []).find((x: any) => x.type === "workflow_stages");
+    const stages = (data.included ?? []).filter((x: any) => x.type === "workflow_stages");
+    const currentStage = stages[0];
     const stageName: string = currentStage?.attributes?.name ?? "";
 
-    if (stageName === "Accepted" || transitions.length === 0) break;
+    if (stageName.toLowerCase() === targetStage.toLowerCase()) return;
 
-    const nextTx =
-      transitions.find((tx: any) => tx.attributes?.name === "Accepted") ?? transitions[0];
-    if (!nextTx) break;
+    if (transitions.length === 0) {
+      throw new Error(`[acceptOpportunity] No available transitions from stage "${stageName}" for service ${cpId}; cannot reach "${targetStage}".`);
+    }
+
+    // 1. Match by the transition's own name
+    let nextTx = transitions.find(
+      (tx: any) => tx.attributes?.name?.toLowerCase() === targetStage.toLowerCase()
+    );
+
+    // 2. Fall back to matching by the destination stage's name
+    if (!nextTx) {
+      nextTx = transitions.find((tx: any) => {
+        const destStageId = tx.relationships?.workflowStage?.data?.id;
+        const destStage = stages.find((s: any) => s.id === destStageId);
+        return destStage?.attributes?.name?.toLowerCase() === targetStage.toLowerCase();
+      });
+    }
+
+    if (!nextTx) {
+      const available = transitions.map((t: any) => t.attributes?.name).filter(Boolean).join(", ") || "none";
+      throw new Error(`[acceptOpportunity] No transition to "${targetStage}" found for service ${cpId} from stage "${stageName}". Available transitions: ${available}`);
+    }
 
     const txRes = await fetch(`${CP_BASE}/production_stage_transitions`, {
       method: "POST",
@@ -43,10 +70,15 @@ export async function acceptOpportunity(cpId: string, cpKey: string): Promise<vo
         },
       }),
     });
-    if (!txRes.ok) break;
+    if (!txRes.ok) {
+      const errText = await txRes.text().catch(() => "");
+      throw new Error(`[acceptOpportunity] Transition POST failed for service ${cpId} (transition "${nextTx.attributes?.name}"): ${txRes.status} ${errText}`);
+    }
 
     await new Promise(r => setTimeout(r, 300));
   }
+
+  throw new Error(`[acceptOpportunity] Exceeded 10 iterations trying to advance service ${cpId} to "${targetStage}".`);
 }
 
 // ─── Fetch "Additional Managers" names for a single service record ────────────

@@ -171,13 +171,27 @@ export async function POST(request: NextRequest) {
 
           // 2b. Update the Opportunity (Sales) ONLY when signed
           if (session.sessionStatus === 'signed') {
-            await supabase.from('outbound_queue').insert({
-              target_system: 'centerpoint',
-              target_id: session.centerpointId, // Opportunity ID
-              action: 'update_status',
-              payload: { status: 'accepted' }
-            });
-            console.log(`[OUTBOUND_QUEUE] Queued CP Opportunity ${session.centerpointId} transition to accepted`);
+            // session.centerpointId is the job reference name, not the CenterPoint
+            // opportunity's internal ID (they're different CP records/IDs) — resolve
+            // it the same way the job lookup above does, or the queued update targets
+            // a nonexistent CenterPoint record and silently no-ops.
+            const { data: oppRow } = await supabase
+              .from('centerpoint_opportunities')
+              .select('cp_id')
+              .eq('name', session.centerpointId)
+              .maybeSingle();
+
+            if (oppRow?.cp_id) {
+              await supabase.from('outbound_queue').insert({
+                target_system: 'centerpoint',
+                target_id: oppRow.cp_id,
+                action: 'update_status',
+                payload: { status: 'accepted' }
+              });
+              console.log(`[OUTBOUND_QUEUE] Queued CP Opportunity ${oppRow.cp_id} (from ${session.centerpointId}) transition to accepted`);
+            } else {
+              console.error(`[OUTBOUND_QUEUE] No CenterPoint opportunity found for centerpointId=${session.centerpointId}; Accepted transition NOT queued.`);
+            }
           }
         } catch (e) {
           console.error('[OUTBOUND_QUEUE] Failed to queue CenterPoint write-back', e);
