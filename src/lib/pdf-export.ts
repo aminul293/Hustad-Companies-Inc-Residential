@@ -142,11 +142,43 @@ function getBadgeColors(type: string): { bg: C3, txt: C3 } {
 }
 
 
+function normalizeImageRotation(dataUrl: string): Promise<string> {
+  if (typeof window === "undefined" || !dataUrl) {
+    return Promise.resolve(dataUrl);
+  }
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(dataUrl);
+          return;
+        }
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      } catch (err) {
+        console.error("Failed to normalize image orientation:", err);
+        resolve(dataUrl);
+      }
+    };
+    img.onerror = () => {
+      resolve(dataUrl);
+    };
+    img.src = dataUrl;
+  });
+}
+
 async function collectPhotos(s: SessionState): Promise<PdfPhoto[]> {
   const result: PdfPhoto[] = [];
   const assets = (s as any).photoAssets ?? [];
   for (const p of assets.filter((a: any) => a.selectedForSummary && !a.isSensitive)) {
-    result.push({ dataUrl: p.dataUrl, label: p.caption, category: p.category, description: undefined, evaluation: p.evaluation });
+    const normalized = await normalizeImageRotation(p.dataUrl);
+    result.push({ dataUrl: normalized, label: p.caption, category: p.category, description: undefined, evaluation: p.evaluation });
   }
   for (const p of (s.photos ?? []).filter((ph: any) => ph.selectedForSummary)) {
     let dataUrl = p.remoteUrl ?? p.localUri;
@@ -154,10 +186,14 @@ async function collectPhotos(s: SessionState): Promise<PdfPhoto[]> {
       const blob = await getPhotoBlob(p.storageKey);
       if (blob) dataUrl = await blobToBase64(blob);
     }
-    if (dataUrl) result.push({ dataUrl, label: p.label, category: p.category, description: p.description, evaluation: p.evaluation });
+    if (dataUrl) {
+      const normalized = await normalizeImageRotation(dataUrl);
+      result.push({ dataUrl: normalized, label: p.label, category: p.category, description: p.description, evaluation: p.evaluation });
+    }
   }
   return result;
 }
+
 
 // --- Components ---
 
