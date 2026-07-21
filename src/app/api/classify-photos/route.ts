@@ -83,6 +83,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Build the content array — up to 10 photos to stay within token limits
+    const photoCount = Math.min(photos.length, 10);
     const imageContent: OpenAI.Chat.ChatCompletionContentPart[] = photos
       .slice(0, 10)
       .map((photo) => {
@@ -108,13 +109,17 @@ export async function POST(req: NextRequest) {
 
     imageContent.push({
       type: "text",
-      text: `Analyze these ${photos.slice(0, 10).length} roof inspection photo(s) and return the JSON classification.`,
+      text: `Analyze these ${photoCount} roof inspection photo(s) and return the JSON classification.`,
     });
 
+    // The schema requires a full photoEvaluations entry (plus a caption) per photo,
+    // so the token budget has to scale with how many photos were submitted —
+    // a fixed low cap truncates the JSON mid-object once past a couple of photos.
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
-      max_tokens: 600,
+      max_tokens: Math.min(4096, 500 + photoCount * 350),
       temperature: 0,
+      response_format: { type: "json_object" },
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: imageContent },
