@@ -14,3 +14,17 @@ export const ResidentialRequestSchema = z.object({
 });
 
 export type ResidentialRequestInput = z.infer<typeof ResidentialRequestSchema>;
+
+// Validates a new inspection ticket request against an EXISTING CenterPoint
+// company — no company fields here since the company already exists.
+export const ExistingCompanyTicketSchema = z.object({
+  propertyName: z.string().min(1, "Property name is required"),
+  timezone: z.string().min(1, "Timezone is required"),
+  streetAddress: z.string().optional(),
+  locality: z.string().optional(),
+  region: z.string().optional(),
+  postalCode: z.string().optional(),
+  manager: z.string().regex(/^\d+$/, "Manager ID must be numeric").optional().or(z.literal("")),
+});
+
+export type ExistingCompanyTicketInput = z.infer<typeof ExistingCompanyTicketSchema>;

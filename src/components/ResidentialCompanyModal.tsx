@@ -26,7 +26,7 @@ import { useSession } from "next-auth/react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Step = "search" | "form" | "confirm" | "success";
+type Step = "search" | "form" | "confirm" | "ticketForm" | "ticketConfirm" | "success";
 
 interface CompanyResult {
   id: string;
@@ -41,6 +41,18 @@ interface CompanyResult {
 interface FormState {
   name: string;
   salesStatus: string;
+  timezone: string;
+  streetAddress: string;
+  locality: string;
+  region: string;
+  postalCode: string;
+  manager: string;
+}
+
+// Form state for creating a new ticket under a company that already exists —
+// no company name/sales-status fields since the company itself isn't being created.
+interface TicketFormState {
+  propertyName: string;
   timezone: string;
   streetAddress: string;
   locality: string;
@@ -123,7 +135,7 @@ function SearchStep({
   onFound,
   onNotFound,
 }: {
-  onFound: () => void;
+  onFound: (company: CompanyResult) => void;
   onNotFound: (prefill?: string) => void;
 }) {
   const [query, setQuery] = useState("");
@@ -243,11 +255,11 @@ function SearchStep({
                         </div>
                       </div>
                       <button
-                        onClick={onFound}
+                        onClick={() => onFound(c)}
                         className="ml-4 shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-all text-xs font-medium"
                       >
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        Use this
+                        Create Ticket
                       </button>
                     </div>
                   ))}
@@ -467,6 +479,307 @@ function CompanyForm({
         >
           Review & Create
           <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Step 2b: New Ticket Form (existing company) ─────────────────────────────
+// Same shape as CompanyForm, minus the company-identity fields (name, sales
+// status) since the company already exists — this only needs the new
+// property's details plus a manager.
+
+function TicketForm({
+  company,
+  onBack,
+  onReview,
+}: {
+  company: CompanyResult;
+  onBack: () => void;
+  onReview: (form: TicketFormState) => void;
+}) {
+  const [form, setForm] = useState<TicketFormState>({
+    propertyName: company.name,
+    timezone: "America/Chicago",
+    streetAddress: company.streetAddress ?? "",
+    locality: company.locality ?? "",
+    region: company.region ?? "",
+    postalCode: company.postalCode ?? "",
+    manager: "",
+  });
+  const [errors, setErrors] = useState<Partial<Record<keyof TicketFormState, string>>>({});
+  const [isFetchingManager, setIsFetchingManager] = useState(true);
+
+  useEffect(() => {
+    fetchCenterpointMe()
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.employeeId) setForm((f) => ({ ...f, manager: data.employeeId }));
+      })
+      .catch(() => {})
+      .finally(() => setIsFetchingManager(false));
+  }, []);
+
+  const set = (k: keyof TicketFormState, v: string) => {
+    setForm((f) => ({ ...f, [k]: v }));
+    setErrors((e) => { const n = { ...e }; delete n[k]; return n; });
+  };
+
+  const validate = () => {
+    const e: Partial<Record<keyof TicketFormState, string>> = {};
+    if (!form.propertyName.trim()) e.propertyName = "Property name is required";
+    if (!form.timezone) e.timezone = "Required";
+    if (form.manager.trim() && !/^\d+$/.test(form.manager.trim())) {
+      e.manager = "Must be a numeric CenterPoint Employee ID";
+    }
+    return e;
+  };
+
+  const handleReview = () => {
+    const e = validate();
+    if (Object.keys(e).length) { setErrors(e); return; }
+    onReview(form);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Which company this ticket is for */}
+      <div className="flex items-center gap-3 p-4 rounded-2xl bg-indigo-500/[0.06] border border-indigo-500/20">
+        <div className="w-8 h-8 rounded-xl bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-center shrink-0">
+          <Building2 className="w-4 h-4 text-indigo-400" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-[9px] font-mono text-indigo-400/70 uppercase tracking-widest">Existing Company</p>
+          <p className="text-sm font-display font-medium text-[#E8EDF8] truncate">{company.name}</p>
+        </div>
+      </div>
+
+      {/* Property fields */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="col-span-2">
+          <Field label="Property Name" required error={errors.propertyName}>
+            <div className="relative">
+              <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400/50" />
+              <input
+                value={form.propertyName}
+                onChange={(e) => set("propertyName", e.target.value)}
+                placeholder="123 Main St"
+                className={cn(inputCls(errors.propertyName), "pl-10")}
+              />
+            </div>
+          </Field>
+        </div>
+
+        <Field label="Timezone" required error={errors.timezone}>
+          <div className="relative">
+            <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400/50 pointer-events-none" />
+            <select
+              value={form.timezone}
+              onChange={(e) => set("timezone", e.target.value)}
+              className={cn(selectCls, "pl-10 appearance-none")}
+            >
+              {TIMEZONES.map((t) => (
+                <option key={t.value} value={t.value} className="bg-[#111]">{t.label}</option>
+              ))}
+            </select>
+          </div>
+        </Field>
+      </div>
+
+      {/* Address */}
+      <div className="space-y-3 pt-2 border-t border-white/[0.06]">
+        <p className="text-[10px] font-mono text-[#2D4060] uppercase tracking-widest">Address — optional</p>
+        <Field label="Street Address">
+          <div className="relative">
+            <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400/50" />
+            <input
+              value={form.streetAddress}
+              onChange={(e) => set("streetAddress", e.target.value)}
+              placeholder="123 Main St"
+              className={cn(inputCls(), "pl-10")}
+            />
+          </div>
+        </Field>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="col-span-1">
+            <Field label="City">
+              <input value={form.locality} onChange={(e) => set("locality", e.target.value)} placeholder="Madison" className={inputCls()} />
+            </Field>
+          </div>
+          <Field label="State">
+            <input value={form.region} onChange={(e) => set("region", e.target.value)} placeholder="WI" maxLength={2} className={inputCls()} />
+          </Field>
+          <Field label="Zip Code">
+            <input value={form.postalCode} onChange={(e) => set("postalCode", e.target.value)} placeholder="53703" className={inputCls()} />
+          </Field>
+        </div>
+      </div>
+
+      {/* Manager */}
+      <div className="pt-2 border-t border-white/[0.06]">
+        <Field label="Manager ID (CenterPoint Employee ID)" error={errors.manager}>
+          <div className="relative">
+            {isFetchingManager
+              ? <Loader2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400/50 animate-spin" />
+              : <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400/50" />
+            }
+            <input
+              value={form.manager}
+              onChange={(e) => set("manager", e.target.value)}
+              placeholder={isFetchingManager ? "Looking up…" : "74522"}
+              disabled={isFetchingManager}
+              className={cn(inputCls(errors.manager), "pl-10", isFetchingManager && "opacity-50")}
+            />
+          </div>
+        </Field>
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-3 pt-2">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 px-5 py-3.5 rounded-xl bg-white/[0.05] border border-white/[0.1] text-[#7090B0] hover:text-[#E8EDF8] hover:bg-white/[0.08] transition-all text-sm"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </button>
+        <button
+          onClick={handleReview}
+          className="flex-1 flex items-center justify-center gap-3 py-3.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 active:scale-[0.98] transition-all text-[#E8EDF8] font-display font-semibold shadow-[0_0_30px_rgba(99,102,241,0.25)]"
+        >
+          Review & Create Ticket
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Step 3b: Confirm New Ticket (existing company) ──────────────────────────
+
+function TicketConfirmStep({
+  company,
+  form,
+  onBack,
+  onSuccess,
+}: {
+  company: CompanyResult;
+  form: TicketFormState;
+  onBack: () => void;
+  onSuccess: (companyId: string, ticketId: string) => void;
+}) {
+  const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const tz = TIMEZONES.find((t) => t.value === form.timezone)?.label ?? form.timezone;
+  const address = [form.streetAddress, form.locality, form.region, form.postalCode]
+    .filter(Boolean).join(", ");
+
+  const handleCreate = async () => {
+    setIsCreating(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/companies/residential/${company.id}/ticket`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          propertyName: form.propertyName.trim(),
+          timezone: form.timezone,
+          ...(form.streetAddress.trim() && { streetAddress: form.streetAddress.trim() }),
+          ...(form.locality.trim() && { locality: form.locality.trim() }),
+          ...(form.region.trim() && { region: form.region.trim() }),
+          ...(form.postalCode.trim() && { postalCode: form.postalCode.trim() }),
+          ...(form.manager.trim() && { manager: form.manager.trim() }),
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setError(data.message ?? "Failed to create ticket");
+        return;
+      }
+      onSuccess(data.companyId, data.ticketId);
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  return (
+    <div className="space-y-5">
+      <p className="text-[11px] font-mono text-[#3F5878] uppercase tracking-widest">
+        This ticket will be created directly in CenterPoint
+      </p>
+
+      {/* Summary card */}
+      <div className="rounded-2xl bg-white/[0.03] border border-white/[0.08] overflow-hidden">
+        <div className="p-5 border-b border-white/[0.06] bg-indigo-500/[0.06]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-center shrink-0">
+              <Building2 className="w-5 h-5 text-indigo-400" />
+            </div>
+            <div>
+              <p className="text-[9px] font-mono text-indigo-400/60 uppercase tracking-widest">Existing Company</p>
+              <p className="text-base font-display font-medium text-[#E8EDF8]">{company.name}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="divide-y divide-white/[0.05]">
+          {[
+            { label: "Property Name", value: form.propertyName },
+            { label: "Timezone", value: tz },
+            ...(address ? [{ label: "Address", value: address }] : []),
+            ...(form.manager ? [{ label: "Manager ID", value: form.manager }] : []),
+          ].map((row) => (
+            <div key={row.label} className="flex items-center justify-between px-5 py-3">
+              <span className="text-[10px] font-mono text-[#3F5878] uppercase tracking-widest">{row.label}</span>
+              <span className="text-sm text-[#A0BAD8] font-body text-right max-w-[60%] truncate">{row.value}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="px-5 py-3.5 bg-emerald-500/[0.04] border-t border-emerald-500/[0.1] flex items-center gap-3">
+          <Ticket className="w-4 h-4 text-emerald-400/70 shrink-0" />
+          <p className="text-[11px] text-emerald-300/60 font-mono">
+            Company already exists — only the property and ticket are created
+          </p>
+        </div>
+      </div>
+
+      {error && (
+        <div className="flex items-center gap-3 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20">
+          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+          <p className="text-sm text-rose-300">{error}</p>
+        </div>
+      )}
+
+      <div className="flex gap-3 pt-1">
+        <button
+          onClick={onBack}
+          disabled={isCreating}
+          className="flex items-center gap-2 px-5 py-3.5 rounded-xl bg-white/[0.05] border border-white/[0.1] text-[#7090B0] hover:text-[#E8EDF8] hover:bg-white/[0.08] disabled:opacity-40 transition-all text-sm"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </button>
+        <button
+          onClick={handleCreate}
+          disabled={isCreating}
+          className="flex-1 flex items-center justify-center gap-3 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 active:scale-[0.98] transition-all text-white font-display font-semibold shadow-[0_0_30px_rgba(16,185,129,0.25)]"
+        >
+          {isCreating ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Creating ticket…
+            </>
+          ) : (
+            <>
+              <CheckCircle2 className="w-4 h-4" />
+              Confirm & Create Ticket
+            </>
+          )}
         </button>
       </div>
     </div>
@@ -722,20 +1035,35 @@ function SuccessStep({
 // ─── Main Modal ───────────────────────────────────────────────────────────────
 
 const STEP_TITLES: Record<Step, string> = {
-  search:  "Find Residential Company",
-  form:    "New Residential Company",
-  confirm: "Confirm Details",
-  success: "Company Created",
+  search:        "Find Residential Company",
+  form:          "New Residential Company",
+  confirm:       "Confirm Details",
+  ticketForm:    "New Inspection Ticket",
+  ticketConfirm: "Confirm Ticket Details",
+  success:       "Company Created",
 };
 
 const STEP_SUBTITLES: Record<Step, string> = {
-  search:  "Search CenterPoint before creating a new one",
-  form:    "Fill in the details below",
-  confirm: "Review before creating in CenterPoint",
-  success: "",
+  search:        "Search CenterPoint before creating a new one",
+  form:          "Fill in the details below",
+  confirm:       "Review before creating in CenterPoint",
+  ticketForm:    "This company already exists — just add a property",
+  ticketConfirm: "Review before creating in CenterPoint",
+  success:       "",
 };
 
 const ALL_STEPS: Step[] = ["search", "form", "confirm", "success"];
+
+// ticketForm/ticketConfirm reuse the same dot positions as form/confirm —
+// it's the same 2nd/3rd step, just for the "company already exists" path.
+const DOT_STEP: Record<Step, Step> = {
+  search: "search",
+  form: "form",
+  confirm: "confirm",
+  ticketForm: "form",
+  ticketConfirm: "confirm",
+  success: "success",
+};
 
 export function ResidentialCompanyModal({ isOpen, onClose }: Props) {
   const { data: authSession } = useSession();
@@ -744,6 +1072,8 @@ export function ResidentialCompanyModal({ isOpen, onClose }: Props) {
   const [step, setStep] = useState<Step>("search");
   const [namePrefill, setNamePrefill] = useState<string | undefined>(undefined);
   const [pendingForm, setPendingForm] = useState<FormState | null>(null);
+  const [foundCompany, setFoundCompany] = useState<CompanyResult | null>(null);
+  const [pendingTicketForm, setPendingTicketForm] = useState<TicketFormState | null>(null);
   const [companyId, setCompanyId] = useState("");
   const [ticketId, setTicketId] = useState("");
 
@@ -752,6 +1082,8 @@ export function ResidentialCompanyModal({ isOpen, onClose }: Props) {
       setStep("search");
       setNamePrefill(undefined);
       setPendingForm(null);
+      setFoundCompany(null);
+      setPendingTicketForm(null);
       setCompanyId("");
       setTicketId("");
     }
@@ -762,9 +1094,19 @@ export function ResidentialCompanyModal({ isOpen, onClose }: Props) {
     setStep("form");
   };
 
+  const handleFound = (company: CompanyResult) => {
+    setFoundCompany(company);
+    setStep("ticketForm");
+  };
+
   const handleReview = (form: FormState) => {
     setPendingForm(form);
     setStep("confirm");
+  };
+
+  const handleTicketReview = (form: TicketFormState) => {
+    setPendingTicketForm(form);
+    setStep("ticketConfirm");
   };
 
   const handleCreated = (cId: string, tId: string) => {
@@ -803,9 +1145,9 @@ export function ResidentialCompanyModal({ isOpen, onClose }: Props) {
                         key={s}
                         className={cn(
                           "h-1 rounded-full transition-all duration-300",
-                          step === s
+                          DOT_STEP[step] === s
                             ? "w-6 bg-indigo-400"
-                            : ALL_STEPS.indexOf(step) > i
+                            : ALL_STEPS.indexOf(DOT_STEP[step]) > i
                               ? "w-2 bg-indigo-500/40"
                               : "w-2 bg-white/10"
                         )}
@@ -837,7 +1179,7 @@ export function ResidentialCompanyModal({ isOpen, onClose }: Props) {
               <AnimatePresence mode="wait">
                 {step === "search" && (
                   <motion.div key="search" initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} transition={{ duration: 0.18 }}>
-                    <SearchStep onFound={onClose} onNotFound={handleNotFound} />
+                    <SearchStep onFound={handleFound} onNotFound={handleNotFound} />
                   </motion.div>
                 )}
 
@@ -856,6 +1198,27 @@ export function ResidentialCompanyModal({ isOpen, onClose }: Props) {
                     <ConfirmStep
                       form={pendingForm}
                       onBack={() => setStep("form")}
+                      onSuccess={handleCreated}
+                    />
+                  </motion.div>
+                )}
+
+                {step === "ticketForm" && foundCompany && (
+                  <motion.div key="ticketForm" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }} transition={{ duration: 0.18 }} className="max-h-[60vh] overflow-y-auto pr-1 space-y-1">
+                    <TicketForm
+                      company={foundCompany}
+                      onBack={() => setStep("search")}
+                      onReview={handleTicketReview}
+                    />
+                  </motion.div>
+                )}
+
+                {step === "ticketConfirm" && foundCompany && pendingTicketForm && (
+                  <motion.div key="ticketConfirm" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }} transition={{ duration: 0.18 }}>
+                    <TicketConfirmStep
+                      company={foundCompany}
+                      form={pendingTicketForm}
+                      onBack={() => setStep("ticketForm")}
                       onSuccess={handleCreated}
                     />
                   </motion.div>
