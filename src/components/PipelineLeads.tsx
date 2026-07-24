@@ -8,6 +8,7 @@ import { NotesPanel } from "./pipeline/NotesPanel";
 import {
   CallModal, DraftEmailModal, EditPhoneModal, EditEmailModal,
   FollowUpModal, DeadLeadModal, ConfirmRemoveModal, BlockedModal, StageBackModal,
+  ContactRequiredModal,
 } from "./pipeline/PipelineModals";
 import { PipelineLeadCard } from "./pipeline/PipelineLeadCard";
 import { PipelineLeadSlideOver } from "./pipeline/PipelineLeadSlideOver";
@@ -237,6 +238,18 @@ export function PipelineLeads({ repId, repEmail }: PipelineLeadsProps) {
         onChange={p.setEditEmailValue}
         onSave={p.saveEmail}
         onClose={() => p.setEditEmailModal(null)}
+      />
+
+      <ContactRequiredModal
+        open={!!p.contactRequiredModal}
+        leadName={p.contactRequiredModal?.leadName || ""}
+        phoneValue={p.contactRequiredPhone}
+        emailValue={p.contactRequiredEmail}
+        error={p.contactRequiredError}
+        onPhoneChange={p.setContactRequiredPhone}
+        onEmailChange={p.setContactRequiredEmail}
+        onConfirm={p.confirmContactRequired}
+        onClose={() => p.setContactRequiredModal(null)}
       />
 
       <FollowUpModal

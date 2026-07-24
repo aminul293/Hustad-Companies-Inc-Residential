@@ -31,6 +31,12 @@ export function usePipelineLeads(repId?: string, repEmail?: string) {
   const [followModal,    setFollowModal]    = useState<SimpleModalState | null>(null);
   const [stageBackModal, setStageBackModal] = useState<StageBackState | null>(null);
   const [notesPanel,     setNotesPanel]     = useState<{ leadId: string; leadName: string; current: string } | null>(null);
+  // Shown before opening the Schedule modal when the lead is missing phone
+  // and/or email — the homeowner can't be notified of the appointment without them.
+  const [contactRequiredModal, setContactRequiredModal] = useState<SimpleModalState | null>(null);
+  const [contactRequiredPhone, setContactRequiredPhone] = useState("");
+  const [contactRequiredEmail, setContactRequiredEmail] = useState("");
+  const [contactRequiredError, setContactRequiredError] = useState<string | null>(null);
 
   // ── Schedule form state ────────────────────────────────────────────────────
   const [schedDate,     setSchedDate]     = useState("");
@@ -244,11 +250,46 @@ export function usePipelineLeads(repId?: string, repEmail?: string) {
     } catch { /* non-fatal */ }
   };
 
-  const openSchedModal = (lead: PipelineLead) => {
-    setSchedModal({ leadId: lead.id, leadName: lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id });
+  const beginSchedule = (leadId: string, leadName: string) => {
+    setSchedModal({ leadId, leadName });
     setSchedDate(addDays(1));
     setSchedTime("09:00");
     setSchedDuration(60);
+  };
+
+  // The homeowner can only be notified of the appointment if we have both a
+  // phone and an email on file — require them before letting scheduling proceed.
+  const openSchedModal = (lead: PipelineLead) => {
+    const leadName = lead.centerpoint_jobs?.property_name || lead.cpc_ticket_id;
+    const email = resolveEmail(lead);
+    const phone = resolvePhone(lead);
+    if (!email || !phone) {
+      setContactRequiredModal({ leadId: lead.id, leadName });
+      setContactRequiredPhone(phone || lead.owner_phone || "");
+      setContactRequiredEmail(email || lead.owner_email || "");
+      setContactRequiredError(null);
+      return;
+    }
+    beginSchedule(lead.id, leadName);
+  };
+
+  const confirmContactRequired = async () => {
+    if (!contactRequiredModal) return;
+    const phone = contactRequiredPhone.trim();
+    const email = contactRequiredEmail.trim();
+    if (!phone || !email) {
+      setContactRequiredError("Both phone and email are required so the homeowner can be notified.");
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      setContactRequiredError("Enter a valid email address.");
+      return;
+    }
+    const { leadId, leadName } = contactRequiredModal;
+    await patch(leadId, { owner_phone: phone, owner_email: email });
+    setContactRequiredModal(null);
+    setContactRequiredError(null);
+    beginSchedule(leadId, leadName);
   };
 
   const confirmSchedule = async (force = false) => {
@@ -432,7 +473,7 @@ export function usePipelineLeads(repId?: string, repEmail?: string) {
     // modal state
     deadLeadModal, confirmModal, blockedModal, schedModal,
     callModal, editPhoneModal, editEmailModal, draftEmailModal,
-    followModal, stageBackModal, notesPanel,
+    followModal, stageBackModal, notesPanel, contactRequiredModal,
     // schedule form
     schedDate, schedTime, schedDuration, clashWarning, scheduling,
     setSchedDate, setSchedTime, setSchedDuration,
@@ -443,6 +484,9 @@ export function usePipelineLeads(repId?: string, repEmail?: string) {
     setFollowDate, setFollowReason, setFollowNote,
     // contact edit
     editPhoneValue, editEmailValue, setEditPhoneValue, setEditEmailValue,
+    // contact required (pre-schedule gate)
+    contactRequiredPhone, contactRequiredEmail, contactRequiredError,
+    setContactRequiredPhone, setContactRequiredEmail,
     // notes
     notesText, setNotesText,
     // email
@@ -452,7 +496,7 @@ export function usePipelineLeads(repId?: string, repEmail?: string) {
     handleCall, confirmCall,
     handleDeadLead, confirmDeadLead,
     handleStartInspection, handleStageClick, confirmStageBack,
-    openSchedModal, confirmSchedule,
+    openSchedModal, confirmSchedule, confirmContactRequired,
     openFollowModal, confirmFollowUp,
     openNotes, saveNotes,
     openEditPhone, savePhone,
@@ -463,5 +507,6 @@ export function usePipelineLeads(repId?: string, repEmail?: string) {
     setDeadLeadModal, setConfirmModal, setBlockedModal,
     setSchedModal, setCallModal, setEditPhoneModal,
     setEditEmailModal, setFollowModal, setStageBackModal, setNotesPanel,
+    setContactRequiredModal,
   };
 }

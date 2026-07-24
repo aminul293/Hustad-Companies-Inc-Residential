@@ -181,6 +181,54 @@ export function EditEmailModal({ open, leadName, current, value, onChange, onSav
   );
 }
 
+// ─── Contact Required Modal (pre-Schedule gate) ──────────────────────────────
+// Shown when a rep tries to schedule a lead that's missing phone and/or email —
+// the homeowner can't be notified of the appointment without both on file.
+interface ContactRequiredModalProps {
+  open: boolean;
+  leadName: string;
+  phoneValue: string;
+  emailValue: string;
+  error: string | null;
+  onPhoneChange: (v: string) => void;
+  onEmailChange: (v: string) => void;
+  onConfirm: () => void;
+  onClose: () => void;
+}
+export function ContactRequiredModal({ open, leadName, phoneValue, emailValue, error, onPhoneChange, onEmailChange, onConfirm, onClose }: ContactRequiredModalProps) {
+  return (
+    <AnimatePresence>{open && (<ModalShell onClose={onClose}>
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <div className="flex items-center gap-2.5 mb-1"><AlertCircle className="w-5 h-5 text-orange-400" /><h3 className="text-xl font-inter font-medium">Contact Info Needed</h3></div>
+          <p className="text-sm text-[var(--tx2)] opacity-60 font-light">{leadName}</p>
+        </div>
+        <button onClick={onClose} className="p-2 rounded-2xl text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] hover:bg-[var(--bg-subtle)] transition-all"><X className="w-4 h-4" /></button>
+      </div>
+      <p className="text-sm text-[var(--tx2)] opacity-70 leading-relaxed mb-6">
+        The homeowner can only be notified of the appointment if we have a phone number and email on file. Add both to continue scheduling.
+      </p>
+      <div className="mb-4">
+        <label className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest block mb-2">Homeowner Phone</label>
+        <input type="tel" value={phoneValue} onChange={e => onPhoneChange(e.target.value)} placeholder="(555) 867-5309" autoFocus
+          className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl px-4 py-3 text-[var(--tx1)] text-base placeholder:text-[var(--tx2)] focus:outline-none focus:border-sky-500/40 tracking-wide" />
+      </div>
+      <div className="mb-4">
+        <label className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest block mb-2">Homeowner Email</label>
+        <input type="email" value={emailValue} onChange={e => onEmailChange(e.target.value)} placeholder="homeowner@example.com"
+          className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl px-4 py-3 text-[var(--tx1)] text-base placeholder:text-[var(--tx2)] focus:outline-none focus:border-[#2563ba]/40 tracking-wide" />
+      </div>
+      <AnimatePresence>
+        {error && (<motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-start gap-3 bg-rose-500/[0.08] border border-rose-500/20 rounded-2xl px-4 py-3 mb-4"><AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" /><p className="text-sm text-rose-300">{error}</p></motion.div>)}
+      </AnimatePresence>
+      <div className="flex gap-3">
+        <button onClick={onClose} className="flex-1 py-3 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] hover:border-[var(--border-color)] transition-all text-sm">Cancel</button>
+        <button onClick={onConfirm} className="flex-1 py-3 rounded-2xl bg-orange-500/15 border border-orange-500/25 text-orange-300 hover:bg-orange-500/25 transition-all text-sm font-medium">Continue to Schedule</button>
+      </div>
+    </ModalShell>)}</AnimatePresence>
+  );
+}
+
 // ─── Follow-up Modal ──────────────────────────────────────────────────────────
 interface FollowModalProps { open: boolean; leadName: string; followDate: string; followReason: string; followNote: string; onDateChange: (v: string) => void; onReasonChange: (v: string) => void; onNoteChange: (v: string) => void; onConfirm: () => void; onClose: () => void; }
 export function FollowUpModal({ open, leadName, followDate, followReason, followNote, onDateChange, onReasonChange, onNoteChange, onConfirm, onClose }: FollowModalProps) {
