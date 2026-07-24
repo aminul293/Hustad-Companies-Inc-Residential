@@ -4,6 +4,7 @@ export interface TicketInput {
   companyId: string;
   propertyId: string;
   managerId?: string;
+  description?: string;
 }
 
 export interface CpTicket {
@@ -21,7 +22,7 @@ export async function createResidentialTicket(input: TicketInput): Promise<CpTic
         domain: "Service",
         workType: "Inspection",
         custom: {
-          description: "STORM INSPECTION-HAIL",
+          description: input.description?.trim() || "STORM INSPECTION-HAIL",
         },
       },
       relationships: {

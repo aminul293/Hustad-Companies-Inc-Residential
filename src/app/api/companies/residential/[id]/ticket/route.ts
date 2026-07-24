@@ -53,6 +53,8 @@ export async function POST(
       region: input.region,
       postalCode: input.postalCode,
       timezone: input.timezone,
+      email: input.homeownerEmail || undefined,
+      phone: input.homeownerPhone || undefined,
     });
     propertyId = property.id;
   } catch (err: any) {
@@ -69,6 +71,7 @@ export async function POST(
       companyId,
       propertyId,
       managerId: input.manager || undefined,
+      description: input.description || undefined,
     });
     ticketId = ticket.id;
   } catch (err: any) {

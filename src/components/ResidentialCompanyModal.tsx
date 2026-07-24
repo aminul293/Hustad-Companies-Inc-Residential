@@ -20,6 +20,9 @@ import {
   RefreshCw,
   Ticket,
   Zap,
+  Mail,
+  Phone,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
@@ -59,6 +62,9 @@ interface TicketFormState {
   region: string;
   postalCode: string;
   manager: string;
+  description: string;
+  homeownerEmail: string;
+  homeownerPhone: string;
 }
 
 interface Props {
@@ -507,6 +513,9 @@ function TicketForm({
     region: company.region ?? "",
     postalCode: company.postalCode ?? "",
     manager: "",
+    description: "",
+    homeownerEmail: "",
+    homeownerPhone: "",
   });
   const [errors, setErrors] = useState<Partial<Record<keyof TicketFormState, string>>>({});
   const [isFetchingManager, setIsFetchingManager] = useState(true);
@@ -532,6 +541,9 @@ function TicketForm({
     if (!form.timezone) e.timezone = "Required";
     if (form.manager.trim() && !/^\d+$/.test(form.manager.trim())) {
       e.manager = "Must be a numeric CenterPoint Employee ID";
+    }
+    if (form.homeownerEmail.trim() && !/^\S+@\S+\.\S+$/.test(form.homeownerEmail.trim())) {
+      e.homeownerEmail = "Must be a valid email address";
     }
     return e;
   };
@@ -616,6 +628,54 @@ function TicketForm({
         </div>
       </div>
 
+      {/* Description */}
+      <div className="space-y-3 pt-2 border-t border-white/[0.06]">
+        <p className="text-[10px] font-mono text-[#2D4060] uppercase tracking-widest">Description — optional</p>
+        <Field label="Ticket Description">
+          <div className="relative">
+            <FileText className="absolute left-3.5 top-4 w-4 h-4 text-indigo-400/50" />
+            <textarea
+              value={form.description}
+              onChange={(e) => set("description", e.target.value)}
+              placeholder="STORM INSPECTION-HAIL"
+              rows={2}
+              className={cn(inputCls(), "pl-10 resize-none")}
+            />
+          </div>
+        </Field>
+      </div>
+
+      {/* Homeowner contact */}
+      <div className="space-y-3 pt-2 border-t border-white/[0.06]">
+        <p className="text-[10px] font-mono text-[#2D4060] uppercase tracking-widest">Homeowner Contact — optional</p>
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Homeowner Email" error={errors.homeownerEmail}>
+            <div className="relative">
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400/50" />
+              <input
+                type="email"
+                value={form.homeownerEmail}
+                onChange={(e) => set("homeownerEmail", e.target.value)}
+                placeholder="homeowner@example.com"
+                className={cn(inputCls(errors.homeownerEmail), "pl-10")}
+              />
+            </div>
+          </Field>
+          <Field label="Homeowner Phone">
+            <div className="relative">
+              <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400/50" />
+              <input
+                type="tel"
+                value={form.homeownerPhone}
+                onChange={(e) => set("homeownerPhone", e.target.value)}
+                placeholder="(555) 123-4567"
+                className={cn(inputCls(), "pl-10")}
+              />
+            </div>
+          </Field>
+        </div>
+      </div>
+
       {/* Manager */}
       <div className="pt-2 border-t border-white/[0.06]">
         <Field label="Manager ID (CenterPoint Employee ID)" error={errors.manager}>
@@ -691,6 +751,9 @@ function TicketConfirmStep({
           ...(form.region.trim() && { region: form.region.trim() }),
           ...(form.postalCode.trim() && { postalCode: form.postalCode.trim() }),
           ...(form.manager.trim() && { manager: form.manager.trim() }),
+          ...(form.description.trim() && { description: form.description.trim() }),
+          ...(form.homeownerEmail.trim() && { homeownerEmail: form.homeownerEmail.trim() }),
+          ...(form.homeownerPhone.trim() && { homeownerPhone: form.homeownerPhone.trim() }),
         }),
       });
       const data = await res.json();
@@ -731,6 +794,9 @@ function TicketConfirmStep({
             { label: "Property Name", value: form.propertyName },
             { label: "Timezone", value: tz },
             ...(address ? [{ label: "Address", value: address }] : []),
+            ...(form.description ? [{ label: "Description", value: form.description }] : []),
+            ...(form.homeownerEmail ? [{ label: "Homeowner Email", value: form.homeownerEmail }] : []),
+            ...(form.homeownerPhone ? [{ label: "Homeowner Phone", value: form.homeownerPhone }] : []),
             ...(form.manager ? [{ label: "Manager ID", value: form.manager }] : []),
           ].map((row) => (
             <div key={row.label} className="flex items-center justify-between px-5 py-3">

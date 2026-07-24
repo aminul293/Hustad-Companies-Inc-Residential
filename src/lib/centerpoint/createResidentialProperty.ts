@@ -8,6 +8,8 @@ export interface PropertyInput {
   region?: string;
   postalCode?: string;
   timezone?: string;
+  email?: string;
+  phone?: string;
 }
 
 export interface CpProperty {
@@ -27,6 +29,8 @@ export async function createResidentialProperty(input: PropertyInput): Promise<C
         postalCode: input.postalCode || "",
         timezone: input.timezone || "America/Chicago",
         isVisible: true,
+        ...(input.email && { email: input.email }),
+        ...(input.phone && { phone: input.phone }),
       },
       relationships: {
         company: {
