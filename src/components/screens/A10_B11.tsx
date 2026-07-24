@@ -37,7 +37,9 @@ import {
   Scan,
   Database,
   Shield,
-  Layers
+  Layers,
+  Sparkles,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { lockSummary, setOutcomeType } from "@/lib/session";
@@ -619,12 +621,21 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
   const [autoClassifyError, setAutoClassifyError] = useState<string | null>(null);
   const [repConfirmed, setRepConfirmed] = useState(false);
   const [showHandoffPanel, setShowHandoffPanel] = useState(true);
+  // Points reps at Auto-Classify as soon as it's actually usable (photos exist,
+  // no classification chosen yet). Re-appears every time this screen is opened —
+  // component state resets on mount, so no dismissal flag needs to persist.
+  const [showAutoClassifyHint, setShowAutoClassifyHint] = useState(false);
 
   const availablePhotoCount =
     (session.photoAssets?.filter(p => p.dataUrl).length ?? 0) +
     (session.photos?.filter(p => p.localUri || p.remoteUrl).length ?? 0);
 
+  useEffect(() => {
+    setShowAutoClassifyHint(availablePhotoCount > 0 && !outcomeType);
+  }, [availablePhotoCount, outcomeType]);
+
   const handleAutoClassify = async () => {
+    setShowAutoClassifyHint(false);
     const photos = session.photoAssets?.map(p => p.dataUrl).filter(Boolean) ?? [];
     const inspectionPhotos = session.photos?.map(p => p.localUri || p.remoteUrl).filter(Boolean) ?? [];
     const allPhotos = [...photos, ...inspectionPhotos];
@@ -1269,25 +1280,66 @@ export function B11RepFindingsPrep({ session, onUpdate, onNext, onBack }: RepPre
 
               {/* Classification helpers */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-                <button
-                  onClick={handleAutoClassify}
-                  disabled={isAutoClassifying || availablePhotoCount === 0}
-                  title={availablePhotoCount === 0 ? "Add inspection photos below before classifying" : `Analyze ${availablePhotoCount} photo${availablePhotoCount !== 1 ? "s" : ""}`}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-xl border text-[10px] font-mono uppercase tracking-widest transition-all active:scale-95",
-                    (isAutoClassifying || availablePhotoCount === 0) ? "opacity-40 cursor-not-allowed" : "",
-                    isHighContrast
-                      ? "bg-white border-black text-black hover:bg-black hover:text-white"
-                      : "bg-indigo-500/10 border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/20"
-                  )}
-                >
-                  <Camera className={cn("w-3 h-3", isAutoClassifying && "animate-pulse")} />
-                  {isAutoClassifying
-                    ? "Analyzing photos…"
-                    : availablePhotoCount > 0
-                    ? `Auto-classify from ${availablePhotoCount} photo${availablePhotoCount !== 1 ? "s" : ""}`
-                    : "Auto-classify (no photos yet)"}
-                </button>
+                <div className="relative">
+                  <AnimatePresence>
+                    {showAutoClassifyHint && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 6, scale: 0.96 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 6, scale: 0.96 }}
+                        transition={{ type: "spring", stiffness: 340, damping: 26 }}
+                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 z-20"
+                      >
+                        <div className={cn(
+                          "relative rounded-2xl border px-4 py-3 shadow-xl",
+                          isHighContrast ? "bg-white border-black" : "bg-indigo-500/15 border-indigo-500/40 backdrop-blur-md"
+                        )}>
+                          <button
+                            onClick={() => setShowAutoClassifyHint(false)}
+                            className={cn("absolute top-2 right-2 p-0.5 rounded-md transition-opacity hover:opacity-70",
+                              isHighContrast ? "text-black" : "text-indigo-300"
+                            )}
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <Sparkles className={cn("w-3.5 h-3.5", isHighContrast ? "text-black" : "text-indigo-300")} />
+                            <p className={cn("text-[10px] font-mono uppercase tracking-widest font-bold",
+                              isHighContrast ? "text-black" : "text-indigo-200"
+                            )}>Try this first</p>
+                          </div>
+                          <p className={cn("text-xs leading-relaxed", isHighContrast ? "text-black/80" : "text-indigo-100/80")}>
+                            Let AI review your photos and suggest a classification below.
+                          </p>
+                          {/* Pointer arrow */}
+                          <div className={cn(
+                            "absolute top-full left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 -mt-1.5 border-r border-b",
+                            isHighContrast ? "bg-white border-black" : "bg-indigo-500/15 border-indigo-500/40"
+                          )} />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  <button
+                    onClick={handleAutoClassify}
+                    disabled={isAutoClassifying || availablePhotoCount === 0}
+                    title={availablePhotoCount === 0 ? "Add inspection photos below before classifying" : `Analyze ${availablePhotoCount} photo${availablePhotoCount !== 1 ? "s" : ""}`}
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-2 rounded-xl border text-[10px] font-mono uppercase tracking-widest transition-all active:scale-95",
+                      (isAutoClassifying || availablePhotoCount === 0) ? "opacity-40 cursor-not-allowed" : "",
+                      isHighContrast
+                        ? "bg-white border-black text-black hover:bg-black hover:text-white"
+                        : "bg-indigo-500/10 border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/20"
+                    )}
+                  >
+                    <Camera className={cn("w-3 h-3", isAutoClassifying && "animate-pulse")} />
+                    {isAutoClassifying
+                      ? "Analyzing photos…"
+                      : availablePhotoCount > 0
+                      ? `Auto-classify from ${availablePhotoCount} photo${availablePhotoCount !== 1 ? "s" : ""}`
+                      : "Auto-classify (no photos yet)"}
+                  </button>
+                </div>
                 <button
                   onClick={() => setShowDecisionTree(true)}
                   className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-[var(--tx3)] hover:text-[var(--tx1)] transition-colors"
