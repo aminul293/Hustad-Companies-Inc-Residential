@@ -4,7 +4,6 @@ export interface TicketInput {
   companyId: string;
   propertyId: string;
   managerId?: string;
-  description?: string;
 }
 
 export interface CpTicket {
@@ -21,8 +20,12 @@ export async function createResidentialTicket(input: TicketInput): Promise<CpTic
         workflowType: "service",
         domain: "Service",
         workType: "Inspection",
+        // This maps to CenterPoint's "Service Type Hustad" categorization field
+        // (read back as customWithLabels.serviceTypeHustad) — the sync filter in
+        // /api/centerpoint/sync/route.ts requires this exact value to list a
+        // ticket under "New Leads". It must NOT be a free-text/rep-editable field.
         custom: {
-          description: input.description?.trim() || "STORM INSPECTION-HAIL",
+          description: "STORM INSPECTION-HAIL",
         },
       },
       relationships: {

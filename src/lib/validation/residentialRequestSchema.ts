@@ -11,7 +11,6 @@ export const ResidentialRequestSchema = z.object({
   region: z.string().optional(),
   postalCode: z.string().optional(),
   manager: z.string().regex(/^\d+$/, "Manager ID must be numeric").optional().or(z.literal("")),
-  description: z.string().optional(),
   homeownerEmail: z.email("Must be a valid email").optional().or(z.literal("")),
   homeownerPhone: z.string().optional(),
 });
@@ -28,7 +27,6 @@ export const ExistingCompanyTicketSchema = z.object({
   region: z.string().optional(),
   postalCode: z.string().optional(),
   manager: z.string().regex(/^\d+$/, "Manager ID must be numeric").optional().or(z.literal("")),
-  description: z.string().optional(),
   homeownerEmail: z.email("Must be a valid email").optional().or(z.literal("")),
   homeownerPhone: z.string().optional(),
 });

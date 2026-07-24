@@ -22,7 +22,6 @@ import {
   Zap,
   Mail,
   Phone,
-  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
@@ -50,7 +49,6 @@ interface FormState {
   region: string;
   postalCode: string;
   manager: string;
-  description: string;
   homeownerEmail: string;
   homeownerPhone: string;
 }
@@ -65,7 +63,6 @@ interface TicketFormState {
   region: string;
   postalCode: string;
   manager: string;
-  description: string;
   homeownerEmail: string;
   homeownerPhone: string;
 }
@@ -98,7 +95,6 @@ const INITIAL_FORM: FormState = {
   region: "",
   postalCode: "",
   manager: "",
-  description: "",
   homeownerEmail: "",
   homeownerPhone: "",
 };
@@ -460,23 +456,6 @@ function CompanyForm({
         </div>
       </div>
 
-      {/* Description */}
-      <div className="space-y-3 pt-2 border-t border-white/[0.06]">
-        <p className="text-[10px] font-mono text-[#2D4060] uppercase tracking-widest">Description — optional</p>
-        <Field label="Ticket Description">
-          <div className="relative">
-            <FileText className="absolute left-3.5 top-4 w-4 h-4 text-indigo-400/50" />
-            <textarea
-              value={form.description}
-              onChange={(e) => set("description", e.target.value)}
-              placeholder="STORM INSPECTION-HAIL"
-              rows={2}
-              className={cn(inputCls(), "pl-10 resize-none")}
-            />
-          </div>
-        </Field>
-      </div>
-
       {/* Homeowner contact */}
       <div className="space-y-3 pt-2 border-t border-white/[0.06]">
         <p className="text-[10px] font-mono text-[#2D4060] uppercase tracking-widest">Homeowner Contact — optional</p>
@@ -570,7 +549,6 @@ function TicketForm({
     region: company.region ?? "",
     postalCode: company.postalCode ?? "",
     manager: "",
-    description: "",
     homeownerEmail: "",
     homeownerPhone: "",
   });
@@ -685,23 +663,6 @@ function TicketForm({
         </div>
       </div>
 
-      {/* Description */}
-      <div className="space-y-3 pt-2 border-t border-white/[0.06]">
-        <p className="text-[10px] font-mono text-[#2D4060] uppercase tracking-widest">Description — optional</p>
-        <Field label="Ticket Description">
-          <div className="relative">
-            <FileText className="absolute left-3.5 top-4 w-4 h-4 text-indigo-400/50" />
-            <textarea
-              value={form.description}
-              onChange={(e) => set("description", e.target.value)}
-              placeholder="STORM INSPECTION-HAIL"
-              rows={2}
-              className={cn(inputCls(), "pl-10 resize-none")}
-            />
-          </div>
-        </Field>
-      </div>
-
       {/* Homeowner contact */}
       <div className="space-y-3 pt-2 border-t border-white/[0.06]">
         <p className="text-[10px] font-mono text-[#2D4060] uppercase tracking-widest">Homeowner Contact — optional</p>
@@ -808,7 +769,6 @@ function TicketConfirmStep({
           ...(form.region.trim() && { region: form.region.trim() }),
           ...(form.postalCode.trim() && { postalCode: form.postalCode.trim() }),
           ...(form.manager.trim() && { manager: form.manager.trim() }),
-          ...(form.description.trim() && { description: form.description.trim() }),
           ...(form.homeownerEmail.trim() && { homeownerEmail: form.homeownerEmail.trim() }),
           ...(form.homeownerPhone.trim() && { homeownerPhone: form.homeownerPhone.trim() }),
         }),
@@ -851,7 +811,6 @@ function TicketConfirmStep({
             { label: "Property Name", value: form.propertyName },
             { label: "Timezone", value: tz },
             ...(address ? [{ label: "Address", value: address }] : []),
-            ...(form.description ? [{ label: "Description", value: form.description }] : []),
             ...(form.homeownerEmail ? [{ label: "Homeowner Email", value: form.homeownerEmail }] : []),
             ...(form.homeownerPhone ? [{ label: "Homeowner Phone", value: form.homeownerPhone }] : []),
             ...(form.manager ? [{ label: "Manager ID", value: form.manager }] : []),
@@ -943,7 +902,6 @@ function ConfirmStep({
           ...(form.region.trim() && { region: form.region.trim() }),
           ...(form.postalCode.trim() && { postalCode: form.postalCode.trim() }),
           ...(form.manager.trim() && { manager: form.manager.trim() }),
-          ...(form.description.trim() && { description: form.description.trim() }),
           ...(form.homeownerEmail.trim() && { homeownerEmail: form.homeownerEmail.trim() }),
           ...(form.homeownerPhone.trim() && { homeownerPhone: form.homeownerPhone.trim() }),
         }),
@@ -988,7 +946,6 @@ function ConfirmStep({
             { label: "Sales Status", value: form.salesStatus },
             { label: "Timezone", value: tz },
             ...(address ? [{ label: "Address", value: address }] : []),
-            ...(form.description ? [{ label: "Description", value: form.description }] : []),
             ...(form.homeownerEmail ? [{ label: "Homeowner Email", value: form.homeownerEmail }] : []),
             ...(form.homeownerPhone ? [{ label: "Homeowner Phone", value: form.homeownerPhone }] : []),
             ...(form.manager ? [{ label: "Manager ID", value: form.manager }] : []),

@@ -71,7 +71,6 @@ export async function POST(
       companyId,
       propertyId,
       managerId: input.manager || undefined,
-      description: input.description || undefined,
     });
     ticketId = ticket.id;
   } catch (err: any) {
