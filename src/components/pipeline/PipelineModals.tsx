@@ -229,6 +229,51 @@ export function ContactRequiredModal({ open, leadName, phoneValue, emailValue, e
   );
 }
 
+// ─── Assign Rep Modal (pre-Schedule gate, Manager view) ──────────────────────
+// Manager view has no bound rep — scheduling needs to know which rep this
+// appointment belongs to, otherwise no real appointment record gets created.
+interface AssignRepModalProps {
+  open: boolean;
+  leadName: string;
+  reps: { id: string; name: string }[];
+  selected: string;
+  error: string | null;
+  onSelectedChange: (v: string) => void;
+  onConfirm: () => void;
+  onClose: () => void;
+}
+export function AssignRepModal({ open, leadName, reps, selected, error, onSelectedChange, onConfirm, onClose }: AssignRepModalProps) {
+  return (
+    <AnimatePresence>{open && (<ModalShell onClose={onClose}>
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <div className="flex items-center gap-2.5 mb-1"><User className="w-5 h-5 text-[#2563ba]" /><h3 className="text-xl font-inter font-medium">Assign a Rep</h3></div>
+          <p className="text-sm text-[var(--tx2)] opacity-60 font-light">{leadName}</p>
+        </div>
+        <button onClick={onClose} className="p-2 rounded-2xl text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] hover:bg-[var(--bg-subtle)] transition-all"><X className="w-4 h-4" /></button>
+      </div>
+      <p className="text-sm text-[var(--tx2)] opacity-70 leading-relaxed mb-6">
+        Choose which rep this appointment is for. Scheduling needs a rep to create a real appointment — otherwise it won&apos;t show up in Schedule or Calendar.
+      </p>
+      <div className="mb-4">
+        <label className="text-[9px] font-mono text-[var(--tx2)] opacity-60 uppercase tracking-widest block mb-2">Rep</label>
+        <select value={selected} onChange={e => onSelectedChange(e.target.value)}
+          className="w-full bg-[var(--bg-subtle)] border border-[var(--border-color)] rounded-2xl px-4 py-3 text-[var(--tx1)] text-base focus:outline-none focus:border-[#2563ba]/40">
+          <option value="">Select a rep…</option>
+          {reps.map(r => (<option key={r.id} value={r.id}>{r.name}</option>))}
+        </select>
+      </div>
+      <AnimatePresence>
+        {error && (<motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-start gap-3 bg-rose-500/[0.08] border border-rose-500/20 rounded-2xl px-4 py-3 mb-4"><AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" /><p className="text-sm text-rose-300">{error}</p></motion.div>)}
+      </AnimatePresence>
+      <div className="flex gap-3">
+        <button onClick={onClose} className="flex-1 py-3 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border-color)] text-[var(--tx2)] opacity-60 hover:opacity-100 hover:text-[var(--tx1)] hover:border-[var(--border-color)] transition-all text-sm">Cancel</button>
+        <button onClick={onConfirm} className="flex-1 py-3 rounded-2xl bg-[#2563ba]/15 border border-[#2563ba]/25 text-[#4a8fd4] hover:bg-[#2563ba]/25 transition-all text-sm font-medium">Continue to Schedule</button>
+      </div>
+    </ModalShell>)}</AnimatePresence>
+  );
+}
+
 // ─── Follow-up Modal ──────────────────────────────────────────────────────────
 interface FollowModalProps { open: boolean; leadName: string; followDate: string; followReason: string; followNote: string; onDateChange: (v: string) => void; onReasonChange: (v: string) => void; onNoteChange: (v: string) => void; onConfirm: () => void; onClose: () => void; }
 export function FollowUpModal({ open, leadName, followDate, followReason, followNote, onDateChange, onReasonChange, onNoteChange, onConfirm, onClose }: FollowModalProps) {

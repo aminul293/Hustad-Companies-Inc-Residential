@@ -37,6 +37,12 @@ export function usePipelineLeads(repId?: string, repEmail?: string) {
   const [contactRequiredPhone, setContactRequiredPhone] = useState("");
   const [contactRequiredEmail, setContactRequiredEmail] = useState("");
   const [contactRequiredError, setContactRequiredError] = useState<string | null>(null);
+  // Shown when scheduling with no bound repId (manager view) — an appointment
+  // needs a rep to actually be created rather than just updating the lead.
+  const [assignRepModal, setAssignRepModal] = useState<SimpleModalState | null>(null);
+  const [assignRepSelected, setAssignRepSelected] = useState("");
+  const [assignRepError, setAssignRepError] = useState<string | null>(null);
+  const [scheduleForRepId, setScheduleForRepId] = useState<string | null>(null);
 
   // ── Schedule form state ────────────────────────────────────────────────────
   const [schedDate,     setSchedDate]     = useState("");
@@ -270,6 +276,15 @@ export function usePipelineLeads(repId?: string, repEmail?: string) {
       setContactRequiredError(null);
       return;
     }
+    // No bound repId means this is the Manager view — without picking a rep
+    // here, scheduling would only update the lead's cached fields and never
+    // create a real appointment (so it'd never show up in Schedule/Calendar).
+    if (!repId) {
+      setAssignRepModal({ leadId: lead.id, leadName });
+      setAssignRepSelected(lead.assigned_rep_id || "");
+      setAssignRepError(null);
+      return;
+    }
     beginSchedule(lead.id, leadName);
   };
 
@@ -289,6 +304,28 @@ export function usePipelineLeads(repId?: string, repEmail?: string) {
     await patch(leadId, { owner_phone: phone, owner_email: email });
     setContactRequiredModal(null);
     setContactRequiredError(null);
+    // Re-run the (now-satisfied) contact check, which will fall through to the
+    // rep-assignment gate in Manager view, or straight to scheduling otherwise.
+    const lead = leads.find(l => l.id === leadId);
+    if (!repId) {
+      setAssignRepModal({ leadId, leadName });
+      setAssignRepSelected(lead?.assigned_rep_id || "");
+      setAssignRepError(null);
+      return;
+    }
+    beginSchedule(leadId, leadName);
+  };
+
+  const confirmAssignRep = () => {
+    if (!assignRepModal) return;
+    if (!assignRepSelected) {
+      setAssignRepError("Select a rep to assign this appointment to.");
+      return;
+    }
+    const { leadId, leadName } = assignRepModal;
+    setScheduleForRepId(assignRepSelected);
+    setAssignRepModal(null);
+    setAssignRepError(null);
     beginSchedule(leadId, leadName);
   };
 
@@ -296,16 +333,17 @@ export function usePipelineLeads(repId?: string, repEmail?: string) {
     if (!schedModal || !schedDate) return;
     const start = new Date(`${schedDate}T${schedTime}:00`);
     const end   = new Date(start.getTime() + schedDuration * 60000);
-    if (repId && !force) {
+    const effectiveRepId = repId || scheduleForRepId;
+    if (effectiveRepId && !force) {
       setScheduling(true);
       setClashWarning(null);
       try {
-        const res = await createAppointment({ pipeline_lead_id: schedModal.leadId, rep_id: repId, appointment_start_at: start.toISOString(), appointment_end_at: end.toISOString() });
+        const res = await createAppointment({ pipeline_lead_id: schedModal.leadId, rep_id: effectiveRepId, appointment_start_at: start.toISOString(), appointment_end_at: end.toISOString() });
         if (res.status === 409) { const data = await res.json(); setClashWarning(data.message || "Schedule conflict detected."); return; }
         if (!res.ok) throw new Error("Failed to create appointment");
         const apptData = await res.json();
         const appointmentId: string | undefined = apptData.appointment?.id;
-        setSchedModal(null); setClashWarning(null);
+        setSchedModal(null); setClashWarning(null); setScheduleForRepId(null);
         fireScheduleEmail(schedModal.leadId, start, schedDuration, !!apptData.wasRescheduled);
         fireCalendarEvent(schedModal.leadId, start, end, appointmentId);
         await reloadLeads();
@@ -313,7 +351,7 @@ export function usePipelineLeads(repId?: string, repEmail?: string) {
     } else {
       const lead = leads.find(l => l.id === schedModal.leadId);
       const wasRescheduled = !!lead?.scheduled_start_at;
-      setSchedModal(null); setClashWarning(null);
+      setSchedModal(null); setClashWarning(null); setScheduleForRepId(null);
       fireScheduleEmail(schedModal.leadId, start, schedDuration, wasRescheduled);
       fireCalendarEvent(schedModal.leadId, start, end);
       await patch(schedModal.leadId, { pipeline_status: "scheduled", scheduled_start_at: start.toISOString(), scheduled_end_at: end.toISOString() });
@@ -473,7 +511,7 @@ export function usePipelineLeads(repId?: string, repEmail?: string) {
     // modal state
     deadLeadModal, confirmModal, blockedModal, schedModal,
     callModal, editPhoneModal, editEmailModal, draftEmailModal,
-    followModal, stageBackModal, notesPanel, contactRequiredModal,
+    followModal, stageBackModal, notesPanel, contactRequiredModal, assignRepModal,
     // schedule form
     schedDate, schedTime, schedDuration, clashWarning, scheduling,
     setSchedDate, setSchedTime, setSchedDuration,
@@ -487,6 +525,8 @@ export function usePipelineLeads(repId?: string, repEmail?: string) {
     // contact required (pre-schedule gate)
     contactRequiredPhone, contactRequiredEmail, contactRequiredError,
     setContactRequiredPhone, setContactRequiredEmail,
+    // assign rep (pre-schedule gate, Manager view only)
+    assignRepSelected, assignRepError, setAssignRepSelected,
     // notes
     notesText, setNotesText,
     // email
@@ -496,7 +536,7 @@ export function usePipelineLeads(repId?: string, repEmail?: string) {
     handleCall, confirmCall,
     handleDeadLead, confirmDeadLead,
     handleStartInspection, handleStageClick, confirmStageBack,
-    openSchedModal, confirmSchedule, confirmContactRequired,
+    openSchedModal, confirmSchedule, confirmContactRequired, confirmAssignRep,
     openFollowModal, confirmFollowUp,
     openNotes, saveNotes,
     openEditPhone, savePhone,
@@ -507,6 +547,6 @@ export function usePipelineLeads(repId?: string, repEmail?: string) {
     setDeadLeadModal, setConfirmModal, setBlockedModal,
     setSchedModal, setCallModal, setEditPhoneModal,
     setEditEmailModal, setFollowModal, setStageBackModal, setNotesPanel,
-    setContactRequiredModal,
+    setContactRequiredModal, setAssignRepModal,
   };
 }
