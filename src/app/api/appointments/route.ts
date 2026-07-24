@@ -115,6 +115,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, clash: false });
     }
 
+    // Rescheduling: if this lead already has another active appointment, cancel
+    // it before creating the new one — otherwise the old appointment lingers as
+    // an uncancelled duplicate in every schedule/calendar view.
+    const { data: supersededRows } = await supabase
+      .from('appointments')
+      .select('id')
+      .eq('pipeline_lead_id', pipeline_lead_id)
+      .not('appointment_status', 'in', '("cancelled","completed","no_show")');
+
+    const wasRescheduled = (supersededRows?.length ?? 0) > 0;
+
+    if (wasRescheduled) {
+      const { error: cancelErr } = await supabase
+        .from('appointments')
+        .update({ appointment_status: 'cancelled' })
+        .in('id', (supersededRows ?? []).map((r: any) => r.id));
+      if (cancelErr) {
+        console.warn('[APPOINTMENTS_POST] Failed to cancel superseded appointment:', cancelErr.message);
+      }
+    }
+
     const { data: appt, error: apptErr } = await supabase
       .from('appointments')
       .insert({
@@ -207,7 +228,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ success: true, appointment: appt }, { status: 201 });
+    return NextResponse.json({ success: true, appointment: appt, wasRescheduled }, { status: 201 });
   } catch (err: any) {
     console.error('[APPOINTMENTS_POST_ERROR]', err);
     return NextResponse.json({ error: err.message || "Internal Server Error" }, { status: err.status || 500 });

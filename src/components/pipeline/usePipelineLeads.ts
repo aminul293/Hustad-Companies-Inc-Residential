@@ -205,7 +205,7 @@ export function usePipelineLeads(repId?: string, repEmail?: string) {
     }).catch(() => {});
   };
 
-  const fireScheduleEmail = (leadId: string, start: Date, durationMin: number) => {
+  const fireScheduleEmail = (leadId: string, start: Date, durationMin: number, wasRescheduled = false) => {
     const lead = leads.find(l => l.id === leadId);
     if (!lead) return;
     const em = resolveEmail(lead);
@@ -215,10 +215,12 @@ export function usePipelineLeads(repId?: string, repEmail?: string) {
     const dateStr = start.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
     const timeStr = start.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
     const durStr  = durationMin < 60 ? `${durationMin} minutes` : `${durationMin / 60} hour${durationMin > 60 ? "s" : ""}`;
-    const html = `<div style="max-width:580px;margin:0 auto;padding:40px 32px;background:#ffffff;font-family:Arial,sans-serif;"><div style="background:#0f0f0f;border-radius:16px;padding:28px 32px;margin-bottom:28px;"><p style="margin:0 0 4px;font-size:11px;color:#666;text-transform:uppercase;letter-spacing:0.15em;">Hustad Companies</p><h1 style="margin:0;font-size:22px;color:#ffffff;font-weight:600;">Inspection Confirmed</h1></div><p style="font-size:16px;color:#1a1a1a;margin:0 0 20px;">Hi ${ownerFirst},</p><p style="font-size:15px;color:#333;line-height:1.6;margin:0 0 24px;">Your storm inspection at <strong>${propertyName}</strong> has been scheduled.</p><div style="background:#f7f7f7;border-radius:12px;padding:20px 24px;margin:0 0 24px;"><table style="width:100%;border-collapse:collapse;"><tr><td style="padding:6px 0;font-size:13px;color:#888;width:90px;">Date</td><td style="font-size:14px;color:#1a1a1a;font-weight:600;">${dateStr}</td></tr><tr><td style="padding:6px 0;font-size:13px;color:#888;">Time</td><td style="font-size:14px;color:#1a1a1a;font-weight:600;">${timeStr}</td></tr><tr><td style="padding:6px 0;font-size:13px;color:#888;">Duration</td><td style="font-size:14px;color:#1a1a1a;font-weight:600;">Approx. ${durStr}</td></tr><tr><td style="padding:6px 0;font-size:13px;color:#888;">Address</td><td style="font-size:14px;color:#1a1a1a;font-weight:600;">${propertyName}</td></tr></table></div><p style="font-size:15px;color:#333;margin:0 0 4px;">Best regards,</p><p style="font-size:15px;color:#1a1a1a;font-weight:600;margin:0 0 4px;">Hustad Companies</p><p style="font-size:14px;color:#666;margin:0;">(402) 934-2173</p></div>`;
-    const subject = `Inspection Confirmed — ${dateStr} at ${timeStr} · ${propertyName}`;
+    const heading = wasRescheduled ? "Inspection Rescheduled" : "Inspection Confirmed";
+    const verb = wasRescheduled ? "has been rescheduled to" : "has been scheduled for";
+    const html = `<div style="max-width:580px;margin:0 auto;padding:40px 32px;background:#ffffff;font-family:Arial,sans-serif;"><div style="background:#0f0f0f;border-radius:16px;padding:28px 32px;margin-bottom:28px;"><p style="margin:0 0 4px;font-size:11px;color:#666;text-transform:uppercase;letter-spacing:0.15em;">Hustad Companies</p><h1 style="margin:0;font-size:22px;color:#ffffff;font-weight:600;">${heading}</h1></div><p style="font-size:16px;color:#1a1a1a;margin:0 0 20px;">Hi ${ownerFirst},</p><p style="font-size:15px;color:#333;line-height:1.6;margin:0 0 24px;">Your storm inspection at <strong>${propertyName}</strong> ${verb} the time below.</p><div style="background:#f7f7f7;border-radius:12px;padding:20px 24px;margin:0 0 24px;"><table style="width:100%;border-collapse:collapse;"><tr><td style="padding:6px 0;font-size:13px;color:#888;width:90px;">Date</td><td style="font-size:14px;color:#1a1a1a;font-weight:600;">${dateStr}</td></tr><tr><td style="padding:6px 0;font-size:13px;color:#888;">Time</td><td style="font-size:14px;color:#1a1a1a;font-weight:600;">${timeStr}</td></tr><tr><td style="padding:6px 0;font-size:13px;color:#888;">Duration</td><td style="font-size:14px;color:#1a1a1a;font-weight:600;">Approx. ${durStr}</td></tr><tr><td style="padding:6px 0;font-size:13px;color:#888;">Address</td><td style="font-size:14px;color:#1a1a1a;font-weight:600;">${propertyName}</td></tr></table></div><p style="font-size:15px;color:#333;margin:0 0 4px;">Best regards,</p><p style="font-size:15px;color:#1a1a1a;font-weight:600;margin:0 0 4px;">Hustad Companies</p><p style="font-size:14px;color:#666;margin:0;">(402) 934-2173</p></div>`;
+    const subject = `${heading} — ${dateStr} at ${timeStr} · ${propertyName}`;
     sendEmail({ to: em, subject, html }).then(async () => {
-      const entry = `[${callTimestamp()}] Confirmation email sent to ${em} — ${dateStr} at ${timeStr}`;
+      const entry = `[${callTimestamp()}] ${wasRescheduled ? "Reschedule" : "Confirmation"} email sent to ${em} — ${dateStr} at ${timeStr}`;
       const currentNotes = lead.lead_notes || "";
       await patch(leadId, { lead_notes: currentNotes ? `${currentNotes}\n${entry}` : entry });
     }).catch(() => {});
@@ -263,13 +265,15 @@ export function usePipelineLeads(repId?: string, repEmail?: string) {
         const apptData = await res.json();
         const appointmentId: string | undefined = apptData.appointment?.id;
         setSchedModal(null); setClashWarning(null);
-        fireScheduleEmail(schedModal.leadId, start, schedDuration);
+        fireScheduleEmail(schedModal.leadId, start, schedDuration, !!apptData.wasRescheduled);
         fireCalendarEvent(schedModal.leadId, start, end, appointmentId);
         await reloadLeads();
       } catch { /* handled by UI */ } finally { setScheduling(false); }
     } else {
+      const lead = leads.find(l => l.id === schedModal.leadId);
+      const wasRescheduled = !!lead?.scheduled_start_at;
       setSchedModal(null); setClashWarning(null);
-      fireScheduleEmail(schedModal.leadId, start, schedDuration);
+      fireScheduleEmail(schedModal.leadId, start, schedDuration, wasRescheduled);
       fireCalendarEvent(schedModal.leadId, start, end);
       await patch(schedModal.leadId, { pipeline_status: "scheduled", scheduled_start_at: start.toISOString(), scheduled_end_at: end.toISOString() });
     }
